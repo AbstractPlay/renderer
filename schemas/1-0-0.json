@@ -1,0 +1,351 @@
+{
+	"$schema": "http://json-schema.org/schema#",
+	"id": "https://www.abstractplay.com/schemas/games_render_response/1-0-0.json#",
+	"description": "Schema describing expected format of a render representation. Most abstract strategy board games can be represented quite simply by a string with some extra metadata. To make it easier on game designers, I want to design as automated a render process as possible. For most games, when returning a game state, it can return this object, and the server will render as necessary. 
+
+	This is the most complex schema because it tries to protect the renderer from most of the error checking. It includes renderer-specific schemas where possible. That said, really complex games may have to be rendered by the game script itself, in which case this schema would be ignored.
+
+	Note how there are no required fields! The system will assume default values, as defined in the schema. So an empty schema would be interpreted as an empty checkered board with no metadata rendered by the default renderer using the generic sprite set.",
+	"definitions":
+	{
+		"positiveInteger":
+		{
+			"type": "integer",
+			"minimum": 0,
+			"exclusiveMinimum": true
+		},
+		"rgbaval":
+		{
+			"description": "Pattern for the number format of an RGBA value.",
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 255
+		},
+		"stashstrings":
+		{
+			"description": "Pattern for the global stash definitions for the 'homeworlds' renderer.",
+			"type": "string",
+			"pattern": "^1*2*3*$"
+		},
+		"boardreps":
+		{
+			"anyOf":
+			[
+				{
+					"description": "One character per cell. Commas and whitespace are not permitted. Use a newline (\\n) to separate rows (the first row is the far row). Hyphens and underscores are reserved for representing blank spaces. Hyphens represent a single blank space. A line containing only an underscore will be interpreted as meaning the entire row is empty.",
+					"type": "string",
+					"pattern": "^[^,\\r\\t\\f\\ ]+$"
+				},
+				{
+					"description": "Comma-delimited string, allowing for multiple characters per cell. How multiple characters are handled depends on the renderer. The default renderer just assumes the character string matches a legend. Other renderers may assume the pieces are stacking. Use newlines to delimit rows (the first row is the far row). No other whitespace is permitted. Hyphens are *not* reserved here. Just put nothing between commas to indicate an empty cell. Underscores *are* still reserved, though. A line containing only an underscore will be interpreted as meaning the entire row is empty",
+					"type": "string",
+					"pattern": "^[^\\r\\t\\f\\ ]+$"
+				},
+				{
+					"description": "Nested arrays. This level is the row (0 index being the bottom row).",
+					"type": "array",
+					"minItems": 1,
+					"items":
+					{
+						"description": "Each item here represents a specific cell from left to right in the row (0 index being left most)",
+						"type": "array",
+						"minItems": 0,
+						"items":
+						{
+							"description": "Each item here represents a specific cell from left to right in the row (0 index being left most). The default renderer layers the sprites on top of each other in the order given. Other renderers may treat them as stacked in a more traditional sense (0 index being the bottom).",
+							"type": "array",
+							"minItems": 0,
+							"items":
+							{
+								"description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend.",
+								"type": "string"
+							}
+						}
+					}
+				},
+			]
+		},
+	},
+	"type": "object",
+	"properties": 
+	{
+		"renderer":
+		{
+			"description": "For unusual boards, guide the system as to how to render it. The wiki will list available renderers and their features.",
+			"enum": ["default", "stacking", "homeworlds"],
+			"default": "default"
+		},
+		"spriteset":
+		{
+			"description": "The name of the sprite set this should draw from. See the wiki for a list of available sprite sets and for instructions on how to create them. Always choose the game-specific set over any other. The renderer will resolve asset names up the chain, always falling back to the system-wide generic set. See description of 'legend' property for details.",
+			"type": "string",
+			"default": "generic"
+		},
+		"legend":
+		{
+			"description": "Each cell in a 'board' or 'position' property contains (usually) an abbreviated form of the piece. These abbreviations must map to an asset of some kind on the server side. If an abbreviation is not found in this property, then the system will assume the abbreviation *is* the name of the asset (not likely). Asset names are resolved as follows:
+
+				- User-specified variant of user-specified 'spriteset' for a specific game (override)
+				- default variant of user-specified 'spriteset' for a specific game (override)
+				- User-specified variant of 'spriteset'
+				- Default variant of 'spriteset'
+				- User-specified variant of 'generic' spriteset
+				- Default variant of 'generic' spriteset
+
+				If the asset is still not found, an error is raised.
+
+				Remember that the hyphen character is reserved to represent empty spaces.",
+			"type": "object",
+			"additionalProperties":
+			{
+				"type": "string"
+			}
+		},
+		"surface":
+		{
+			"description": "Some games require three layers for display (you have an underlying grid upon which you then place certain board features, upon which again you place pieces). Since the goal is to semantically describe the playing field, we went with separating out the 'surface' from the 'board'.",
+			"type": "object",
+			"properties":
+			{
+				"style":
+				{
+					"description": "
+						blank: Just that. Draws nothing.
+						checkered: Produces a standard, checkered chess-style board. The bottom-left cell is always dark.
+						plain: Produces a chess-style board with no differentiation of light and dark squares.
+						vertex: Places the pieces on the intersections of the grid.
+						go: Same as 'vertex' but with small nodes at the traditional points, assuming the board is one of the traditional sizes. Otherwise, just choose 'vertex'.
+						tiled_checkered_2x2: Implies a 'checkered' board, but the dividing lines every two cells are thicker, creating 2x2 tiles.
+						tiled_plain_2x2: Same as above but with no differentiation of light and dark squares.
+						hex_odd-r: A pointy-toped hex grid where the odd-numbered rows are indented.
+						hex_even-r: A pointy-toped hex grid where the even-numbered rows are indented.
+						hex_odd-c: A flat-topped hex grid where the odd-numbered columns are indented.
+						hex_even-c: A flat-topped hex grid where the even-numbered columns are indented.
+						snubsquare_linear: The 'width' and 'height' properties are required. Rendering starts at the top-left corner. 
+						snubsquare_alternating: The 'width' and 'height' properties are required. Rendering starts at the top-left corner. 
+					",
+					"enum": 
+					[
+						"blank", 
+						"checkered", "plain", "vertex", "go", 
+						"tiled_plain_2x2", "tiled_checkered_2x2", 
+						"hex_odd-r", "hex_even-r", "hex_odd-c", "hex_even-c",
+						"hex_as_hex", "hex_as_tri",
+						"snubsquare_linear", "snubsquare_alternating"
+					],
+					"default": "checkered"
+				},
+				"minWidth":
+				{
+					"description": "Only meaningful for the 'hex_as_*' styles. Determines the minimum width at the top and bottom of the board. Symmetry is required.",
+					"$ref": "#/definitions/positiveInteger"
+				},
+				"maxWidth":
+				{
+					"description": "Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board. Symmetry is required.",
+					"$ref": "#/definitions/positiveInteger"
+				},
+				"width": 
+				{
+					"description": "The 'width' and 'height' properties are optional. If neither are provided, then the renderer will attempt to calculate the size by the 'board' or 'position' properites. If only one of 'width' and 'height' is specifed, the board is assumed to be square, and the specified size will be used. You only need to provide both if the board is not square.",
+					"$ref": "#/definitions/positiveInteger"
+				},
+				"height": 
+				{
+					"description": "The 'width' and 'height' properties are optional. If neither are provided, then the renderer will attempt to calculate the size by the 'board' or 'position' properites. If only one of 'width' and 'height' is specifed, the board is assumed to be square, and the specified size will be used. You only need to provide both if the board is not square.",
+					"$ref": "#/definitions/positiveInteger"
+				}
+			},
+			"required": ["style"],
+			"additionalProperties": false
+		},
+		"board":
+		{
+			"description": "This describes the physical board. This is rendered first, then the pieces on top of that. For most boards, you just use the enum. For more complex boards, you will need to follow one of the renderer-specific schemas. Note that the size of the board is implied based on the 'board' and 'position' properties.",
+			"anyOf":
+			[
+				{"$ref": "#/definitions/boardreps"},
+				{
+					"description": "The required schema for the 'homeworlds' renderer. It supports 4 players and colours. The 'board' property describes the systems. The 'position' property describes the pieces.",
+					"type": "array",
+					"items":
+					{
+						"type": "object",
+						"properties":
+						{
+							"name":
+							{
+								"description": "The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.",
+								"type": "string",
+								"minLength": 1,
+								"maxLength": 25,
+								"pattern": "^[A-Za-z0-9_]+$"
+							},
+							"seat":
+							{
+								"description": "If this is a home system, give the compass direction representing the player's seat. Omit property in shared systems.",
+								"enum": ["N", "E", "S", "W"]
+							},
+							"stars":
+							{
+								"description": "Describes the system's stars.",
+								"type": "array",
+								"minItems": 1,
+								"maxItems": 2,
+								"items":
+								{
+									"type": "string",
+									"pattern": "^[RGBY][123]$"
+								}
+							}
+						},
+						"required": ["name", "stars"]
+					}
+				}
+			]
+		},
+		"position":
+		{
+			"anyOf":
+			[
+				{"$ref": "#/definitions/boardreps"},
+				{
+					"description": "The required schema for the 'homeworlds' renderer. It supports 4 players and colours. The 'board' property describes the systems. The 'position' property describes the pieces. The order the pieces are declared must be the same as how they are declared in the 'board' property. That means the arrays must also be the same length. Empty arrays are not possible because empty systems are not possible.",
+					"type": "array",
+					"items":
+					{
+						"description": "The actual array of pieces in the given system.",
+						"type": "array",
+						"minItems": 1,
+						"items":
+						{
+							"type": "string",
+							"pattern": "^[RGBY][123][NESW]$",
+						}
+					}
+				}
+			]
+		},
+		"metadata":
+		{
+			"description": "Many games have some basic information that applies to each player (e.g., current score) or globally (e.g., shared pieces). Here's where you define that data.",
+			"type": "object",
+			"properties":
+			{
+				"players":
+				{
+					"description": "This is for metadata that is symmetrically applied to each player. The array should be in player order. This generic schema supported additional properties, but only simple key-value pairs, which will be displayed as provided.",
+					"type": "array",
+					"items": {
+						"description": "Definition of a metadata object used in the 'metadata' property array. The properties 'pieces' and 'score' are predefined. Additional properties can also be provided but they must be objects with two required fields: 'label' and 'value' (both strings) and are displayed as given.",
+						"type": "object",
+						"properties":
+						{
+							"pieces":
+							{
+								"description": "What pieces the given player is using. Only use this in games where a player is restricted to a specifc set of pieces. The system will render the actual image of the piece based on the 'legend' mapping.",
+								"type": "string"
+							},
+							"score":
+							{
+								"description": "Represent a numeric score.",
+								"type": "number"
+							}
+						},
+						"additionalProperties":
+						{
+							"type": "object",
+							"properties":
+							{
+								"label": {"type": "string"},
+								"value": 
+								{
+									"description": "Can be Markdown-encoded. Can also include templating tags as described on the wiki.",
+									"type": "string"
+								}
+							},
+							"required": ["label", "value"]
+						}
+					}
+				},
+				"global":
+				{
+					"description": "This is global game information. Unfortunately there's no obvious default for this. Each renderer will need to parse this as necessary.",
+					"anyOf":
+					[
+						{
+							"description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
+							"type": "object",
+							"properties":
+							{
+								"R": {"$ref": "#/definitions/stashstrings"},
+								"G": {"$ref": "#/definitions/stashstrings"},
+								"B": {"$ref": "#/definitions/stashstrings"},
+								"Y": {"$ref": "#/definitions/stashstrings"}
+							},
+							"required": ["R", "G", "B", "Y"]
+						}
+					]
+				}
+			},
+			"additionalProperties": false
+		},
+		"drawing":
+		{
+			"description": "Some very rudimentary drawing tools are available to highlight the move just made. Depending on the renderer, the target format (PNG vs plain text), and user preferences (they can override your specifications), these directives may be ignored or rendered differently than requested. Elements are drawn in the order presented. Drawing tools should *not* be used to create the board or draw pieces! The point of this schema is to present the board state in a semantically meaningful way that actually makes sense to human readers. If you need the rendering system to do something specific, please contact the system admin who will happily do what they can to provide the necessary features.",
+			"type": "array",
+			"minItems": 1,
+			"items":
+			{
+				"type": "object",
+				"properties":
+				{
+					"element":
+					{
+						"description": "These are the drawing functions available. Points are not currently supported.
+							line: Takes each coordinate pair and draws a line between them. Small nodes are added at the endpoints based on the size of the board being rendered. To build closed polygons (e.g., a square), you have to repeat the last coordinate.
+							circle: Takes two or three coordinates. The first coordinate is always the centre. If only one other coordinate is provided, then an entire circle is drawn with a radius based on that second coordinate. If three are provided, then only the arc segment between the second and third coordinates is rendered. Note that this third coordinates *must* lie on the circle! This element does not support ellipses!",
+						"enum": ["line", "circle"]
+					},
+					"coordinates":
+					{
+						"description": "An array of x,y coordinates. These coordinates do not actually correspond to pixel positions. Instead they map to a board cell (see the 'board' and 'position' properites). The renderer will decide where exactly to draw the element (e.g., from vertices or from the centre of a cell).",
+						"type": "array",
+						"minItems": 2,
+						"items":
+						{
+							"description": "Each item must itself be an array. The first element is the x coordinate. The second is the y coordinate.",
+							"type": "array",
+							"minItems": 2,
+							"maxItems": 2,
+							"items": {"type": "integer"}
+						}
+					},
+					"weight":
+					{
+						"description": "Requested thickness of the lines drawn. This is a suggestion only! Users can override this, as can renderers. Expressed as a decimal percent since absolute values don't make sense at this level of abstraction. The renderer will draw the image at the size and in the format requested by the user. If for whatever reason you feel the given line should be thicker (>1.0) or thinner (<1.0), feel free to make the suggestion.",
+						"type": "number",
+						"minimum": 0,
+						"exclusiveMinimum": true
+					},
+					"color":
+					{
+						"description": "Again, only a suggestion. The renderer will make the final determination based on the context. An array of integer values in the order of RGBA.",
+						"type": "array",
+						"minItems": 4,
+						"maxItems": 4,
+						"items": {"$ref": "#/definitions/rgbaval"}
+					},
+					"style":
+					{
+						"description": "You can request a particular style of line as well. Remember that the user can override this.",
+						"enum": ["solid", "dotted", "dashed"],
+						"default": "solid"
+					}
+				},
+				"required": ["element", "coordinates"],
+				"additionalProperties": false
+			}
+		}
+	}
+}
