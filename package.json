@@ -1,5 +1,5 @@
 {
-    "name": "abstractplay-renderer",
+    "name": "@abstractplay/renderer",
     "version": "0.0.1",
     "description": "Renders Abstract Play game states graphically",
     "repository": {
@@ -12,6 +12,12 @@
     },
     "author": "Aaron Dalton <aaron@daltons.ca> (https://www.perlkonig.com)",
     "license": "MIT",
-    "keywords": ["abstractplay", "svg"],
-    "private": true
+    "keywords": [
+        "abstractplay",
+        "svg"
+    ],
+    "private": true,
+    "dependencies": {
+        "svg.js": "^2.6.5"
+    }
 }
