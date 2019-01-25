@@ -1,11 +1,22 @@
 {
     "compilerOptions": {
         "module": "commonjs",
+        "target": "es6",
         "sourceMap": true,
-        "outDir": "build",
-        "allowJs": true
+        "outDir": "dist",
+        "allowJs": true,
+        "strictNullChecks": true,
+        "noImplicitThis": true,
+        "noImplicitAny": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "node_modules/*",
+                "src/types/*"
+            ]
+        }
     },
-    "exclude": [
-        "node_modules"
+    "include": [
+        "src/**/*"
     ]
 }
