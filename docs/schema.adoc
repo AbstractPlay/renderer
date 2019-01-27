@@ -1,0 +1,78 @@
+= Render Schema Documentation
+:toc:
+:schemaver: 1.0.0
+
+Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. The `description` fields in the schema itself are rather curt because JSON doesn't allow niceties like multi-line strings. So this file is intended to give you complete instructions on how to build an instance of this schema.
+
+This document describes version {schemaver} of the schema.
+
+== Concepts
+
+The JSON file represents the game table.
+
+At the very least, the table must contain a `board`, upon which one places `pieces`.
+
+The table can also have multiple `areas`, which get placed vertically below the board in the order provided. These are used by specialized renderers for showing things like global stashes or previous game states.
+
+== The Schema
+
+This section walks through each of the properties of the schema and explains what they're for and how to use them. The `definitions` section is only there for convenience of notation and is not itself discussed.
+
+=== `renderer`
+
+This tells the renderer which engine to use. The following engines are available:
+
+default:: This is the renderer used by most games. It does not support stacked pieces.
+stacking:: This works almost identically to the `default` engine but supports stacking multiple pieces in a single space.
+homeworlds:: This engine generates Homeworlds boards only.
+
+=== `legend`
+
+Here you map references to glyphs and their options to (usually) single characters used to represent pieces in the `pieces` property. For player pieces, you need to use the object schema that includes the `colour` property. For most other pieces, you'll just have a string that points to the glyph you want.
+
+Glyphs are resolved based on user settings. The renderer will look at each glyph sheet in order until it finds the first implementation of that glyph. If it fails, an error will be thrown.
+
+=== `board`
+
+Now for the game board itself. This is rendered first, followed by the pieces. There are only two options currently.
+
+* The first is a set of preset boards, which includes the following:
+  squares:: A grid of squares, all of the same colour.
+  squares-checkered:: Same as `squares` but alternating dark and light colours. The bottom-left cell is always dark.
+  vertex:: Pieces are placed on the intersections of a grid of squares.
+  go:: Same as `vertex` but with small nodes at the traditional points, if the board is one of the traditional sizes. Otherwise it renders exactly like `vertex`.
+  hex_odd-r:: A pointy-topped hex grid where the odd-numbered rows are indented.
+  hex_even-r:: A pointy-topped hex grid where the even-numbered rows are indented.
+  hex_odd-c:: A flat-topped hex grid where the odd-numbered rows are indented.
+  hex_even-c:: A flat-topped hex grid where the even-numbered rows are indented.
+  hex_of_hex:: A hex-shaped board composed of hexagons.
+  hex_of_tri:: A hex-shaped board composed of triangles.
+  snubsquare:: A basic https://en.wikipedia.org/wiki/Snub_square_tiling[snub square grid].
+
+* The Homeworlds-specific schema is next and is adequately described there.
+
+=== `pieces`
+
+Now that the board has been rendered, and there are spaces for the pieces, here's where you define where those pieces go. There are a few different ways of approaching this.
+
+* First is a simple string. Each pieces must be represented by only a single character, mapped in the `legend`. Use `\n` to separate rows (the first row is the top row). Hyphens represent a single blank space. Underscores represent an entire empty row. Commas and whitespace are forbidden.
+
+* This option is also a simple string but it uses commas to separate cells. This allows you to use multiple characters per cell. How multi-character cells are handled depends on the renderer. The default renderer just looks for a matching `legend` entry. But a stacking renderer will assume each character is a piece in a stack.
++
+You still use `\n` to separate rows (the first row is the top row), and whitespace is still forbidden. Hyphens are _not_ reserved (just don't put anything after the comma to represent blankk spaces), but underscores still represent blank rows.
+
+* This nested-array approach is more explicit but also more verbose. Each top-level array is a row (the first row is the top row). Each row is itself an array of cells in that row (from left to right). And each cell is itself an array of pieces in that cell.
++
+Different renderers will handle this differently. The default renderer will simply layer the glyphs on top of each other. A stacking renderer will try to stack the pieces.
+
+* Finally is the Homeworlds schema. This is also an array of arrays. Each top-level array is a system, and each of those contains an array of ships. The systems must be declared in the same order as in the `board` property. The renderer will deal with positioning the systems on the playing surface.
+
+=== `areas`
+
+This section is unique to different renderers. The default renderer ignores it. The Homewords renderer uses it for the global stash. Each area is rendered vertically below the game board.
+
+=== `metadata`
+
+This property is an array of each player in player order. The front end can use this information to render a helpful sidebar identifying pieces a player controls, running scores, etc.
+
+The default renderer will only process `pieces` and `score`. Any additional properties will need to be handled by a specific renderer.

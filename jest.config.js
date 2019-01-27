@@ -5,9 +5,9 @@ module.exports = {
         }
     },
     'coverageDirectory': undefined,
-    'collectCoverage': true,
+    'collectCoverage': false,
     'collectCoverageFrom': [
-        'src/**/*.{js|jsx}'
+        '**/src/**/*.{ts,js}'
     ],
     moduleFileExtensions: [
         'ts',

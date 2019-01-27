@@ -2,6 +2,6 @@
 Todo:
   ☐ Review and reconsider schema
   ☐ Support the following colours:
-    ☐ Basic 9 palette: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#f781bf', '#999999']
+    ☐ Basic 9 palette: ['#e41a1c', '#377eb8', '#4daf4a', '#ffff33', '#984ea3', '#ff7f00', '#a65628', '#f781bf', '#999999']
     ☐ Color-blind friendly 4 palette: ['#a6611a','#018571','#dfc27d','#80cdc1']
   

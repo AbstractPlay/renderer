@@ -1,0 +1,247 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "$id": "https://www.abstractplay.com/schemas/rendergame/1-0-0.json#",
+    "description": "Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.",
+    "definitions": {
+        "positiveInteger": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "stashstrings": {
+            "description": "Pattern for the global stash definitions for the `homeworlds` renderer.",
+            "type": "string",
+            "pattern": "^1*2*3*$"
+        }
+    },
+    "type": "object",
+    "properties": {
+        "renderer": {
+            "description": "The rendering engine the game wants to use.",
+            "enum": [
+                "default",
+                "stacking",
+                "homeworlds"
+            ],
+            "default": "default"
+        },
+        "legend": {
+            "description": "Map each `piece` to an actual glyph with possible options.",
+            "type": "object",
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "description": "A simple string pointing to a specific glyph.",
+                        "type": "string"
+                    },
+                    {
+                        "description": "The object form is used for glyphs with options (like player colours).",
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "The name of the actual glyph.",
+                                "type": "string"
+                            },
+                            "colour": {
+                                "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
+                                "$ref": "#/definitions/positiveInteger"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ]
+                    }
+                ]
+            }
+        },
+        "board": {
+            "description": "This is the game board itself.",
+            "oneOf": [
+                {
+                    "description": "One of the preset boards.",
+                    "type": "object",
+                    "properties": {
+                        "style": {
+                            "enum": [
+                                "squares",
+                                "squares-checkered",
+                                "vertex",
+                                "go",
+                                "hex_odd-r",
+                                "hex_even-r",
+                                "hex_odd-c",
+                                "hex_even-c",
+                                "hex_of_hex",
+                                "hex_of_tri",
+                                "snubsquare"
+                            ],
+                            "default": "checkered"
+                        },
+                        "minWidth": {
+                            "description": "Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.",
+                            "$ref": "#/definitions/positiveInteger"
+                        },
+                        "maxWidth": {
+                            "description": "Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board.",
+                            "$ref": "#/definitions/positiveInteger"
+                        },
+                        "width": {
+                            "description": "Optional. If not provided, the renderer will calculate based on the `pieces` property. If only one of 'width' and 'height' is specifed, the board is assumed to be square.",
+                            "$ref": "#/definitions/positiveInteger"
+                        },
+                        "height": {
+                            "description": "Optional. If not provided, the renderer will calculate based on the `pieces` property. If only one of 'width' and 'height' is specifed, the board is assumed to be square.",
+                            "$ref": "#/definitions/positiveInteger"
+                        },
+                        "tiling": {
+                            "description": "Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids by X grids square.",
+                            "$ref": "#/definitions/positiveInteger"
+                        }
+                    },
+                    "required": [
+                        "style"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 25,
+                                "pattern": "^[A-Za-z0-9_]+$"
+                            },
+                            "seat": {
+                                "description": "If this is a home system, give the compass direction representing the player's seat. Omit property in shared systems.",
+                                "enum": [
+                                    "N",
+                                    "E",
+                                    "S",
+                                    "W"
+                                ]
+                            },
+                            "stars": {
+                                "description": "Describes the system's stars.",
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 2,
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^[RGBY][123]$"
+                                }
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "stars"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            ]
+        },
+        "pieces": {
+            "anyOf": [
+                {
+                    "description": "One character per cell. Commas and whitespace are not permitted. Use a newline (\\n) to separate rows (the first row is the far row). Hyphens and underscores are reserved for representing blank spaces. Hyphens represent a single blank space. A line containing only an underscore will be interpreted as meaning the entire row is empty.",
+                    "type": "string",
+                    "pattern": "^[^,\\r\\t\\f\\ ]+$"
+                },
+                {
+                    "description": "Comma-delimited string, allowing for multiple characters per cell. How multiple characters are handled depends on the renderer. The default renderer just assumes the character string matches a legend. Other renderers may assume the pieces are stacking. Use newlines to delimit rows (the first row is the far row). No other whitespace is permitted. Hyphens are *not* reserved here. Just put nothing between commas to indicate an empty cell. Underscores *are* still reserved, though. A line containing only an underscore will be interpreted as meaning the entire row is empty",
+                    "type": "string",
+                    "pattern": "^[^\\r\\t\\f\\ ]+$"
+                },
+                {
+                    "description": "Nested arrays. This level is the row (0 index being the bottom row).",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "description": "Each item here represents a specific cell from left to right in the row (0 index being left most)",
+                        "type": "array",
+                        "minItems": 0,
+                        "items": {
+                            "description": "Each item here represents a specific cell from left to right in the row (0 index being left most). The default renderer layers the sprites on top of each other in the order given. Other renderers may treat them as stacked in a more traditional sense (0 index being the bottom).",
+                            "type": "array",
+                            "minItems": 0,
+                            "items": {
+                                "description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend.",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                {
+                    "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are not possible because empty systems are not possible.",
+                    "type": "array",
+                    "items": {
+                        "description": "The actual array of pieces in the given system.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "type": "string",
+                            "pattern": "^[RGBY][123][NESW]$"
+                        }
+                    }
+                }
+            ]
+        },
+        "areas": {
+            "description": "Areas are placed vertically under the game board. There's no default way of handling this. Each renderer will need to know what to do with it.",
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
+                        "type": "object",
+                        "properties": {
+                            "R": {
+                                "$ref": "#/definitions/stashstrings"
+                            },
+                            "G": {
+                                "$ref": "#/definitions/stashstrings"
+                            },
+                            "B": {
+                                "$ref": "#/definitions/stashstrings"
+                            },
+                            "Y": {
+                                "$ref": "#/definitions/stashstrings"
+                            }
+                        },
+                        "required": [
+                            "R",
+                            "G",
+                            "B",
+                            "Y"
+                        ]
+                    }
+                ]
+            }
+        },
+        "metadata": {
+            "description": "Player-specific data that the front end can use to render a helpful sidebar (identifying the pieces a player controls, running score, etc.).",
+            "type": "array",
+            "items": {
+                "description": "Definition of a metadata object used in the 'metadata' property array. The properties 'pieces' and 'score' are predefined. Additional properties can also be provided, but if the render doesn't know what to do with them, they won't be displayed.",
+                "type": "object",
+                "properties": {
+                    "pieces": {
+                        "description": "If a simple boolean, the system will derive the player's colour based on user settings. If a string, it will try to match that string against the `legend` and render that specific glyph.",
+                        "oneOf": [
+                            {"type": "boolean"},
+                            {"type": "string"}
+                        ]
+                    },
+                    "score": {
+                        "description": "Represent a numeric score.",
+                        "type": "number"
+                    }
+                }
+            }
+        }
+    }
+}
