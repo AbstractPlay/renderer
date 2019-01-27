@@ -1,9 +1,14 @@
+import svg from "svg.js";
+import sheets from "./sheets";
+
 export default class Renderer {
     public readonly name: string;
-    // The JSON data is compiled and validated before coming here.
-    public json: object;
 
     constructor(name = "default") {
         this.name = name;
+    }
+
+    public render(json: object) {
+        return;
     }
 }
