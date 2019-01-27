@@ -1,4 +1,4 @@
-import { Nested } from "svg.js";
+import { Nested } from "@svgdotjs/svg.js";
 import ISheet from "../sheet";
 
 const sheet: ISheet = {

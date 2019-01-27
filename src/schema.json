@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "$id": "https://www.abstractplay.com/schemas/rendergame/1-0-0.json#",
+    "title": "AP Render Rep",
     "description": "Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.",
     "definitions": {
         "positiveInteger": {

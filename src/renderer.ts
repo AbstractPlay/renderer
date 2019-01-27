@@ -1,4 +1,5 @@
-import svg from "svg.js";
+import svg from "@svgdotjs/svg.js";
+import { APRenderRep } from "./schema";
 import sheets from "./sheets";
 
 export default class Renderer {
@@ -8,7 +9,7 @@ export default class Renderer {
         this.name = name;
     }
 
-    public render(json: object) {
+    public render(json: APRenderRep, draw: svg.Doc, sheetList: string[]) {
         return;
     }
 }

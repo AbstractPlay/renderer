@@ -12,4 +12,5 @@ No releases yet! Once I have a minimal viable product, I'll start using numbers.
 ### Added
 
 - Created scaffolding for contact sheets.
-- Started documenting (and revising) the schema.
+- Schema reviewed, revised, and documented.
+- Starting work on the default renderer.

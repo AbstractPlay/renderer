@@ -1,4 +1,4 @@
-import { Nested } from "svg.js";
+import { Nested } from "@svgdotjs/svg.js";
 
 export default interface ISheet {
     readonly name: string;
