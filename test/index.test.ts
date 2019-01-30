@@ -1,5 +1,5 @@
 import Ajv from "ajv";
-import render from "../src/index";
+import { render } from "../src/index";
 import schema from "../src/schema.json";
 
 test("placeholder that always succeeds", () => {
