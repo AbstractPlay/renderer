@@ -1,4 +1,3 @@
-import Renderer from "../renderer";
+import { Renderer } from "../renderer";
 
-const dr = new Renderer();
-export default dr;
+export const DefaultRenderer = new Renderer();

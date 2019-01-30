@@ -24,6 +24,9 @@
         "abstractplay",
         "svg"
     ],
+    "bin": {
+        "render": "./bin/render.js"
+    },
     "private": true,
     "dependencies": {
         "@svgdotjs/svg.js": "github:svgdotjs/svg.js",
@@ -35,15 +38,16 @@
         "@types/node": "^10.12.18",
         "@types/supertest": "^2.0.7",
         "chai": "^4.2.0",
-        "gulp": "^4.0.0",
-        "gulp-webpack-typescript-pipeline": "^14.0.0",
         "jest": "^23.6.0",
         "json-schema-to-typescript": "^6.1.0",
         "supertest": "^3.4.2",
         "svgdom": "0.0.18",
         "ts-jest": "^23.10.5",
+        "ts-loader": "^5.3.3",
         "ts-node": "^8.0.1",
         "tslint": "^5.12.1",
-        "typescript": "^3.2.4"
+        "typescript": "^3.2.4",
+        "webpack": "^4.29.0",
+        "webpack-cli": "^3.2.1"
     }
 }

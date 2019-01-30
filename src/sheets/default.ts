@@ -1,5 +1,5 @@
 import { Nested } from "@svgdotjs/svg.js";
-import ISheet from "../sheet";
+import { ISheet } from "../sheet";
 
 const sheet: ISheet = {
     name: "default",
@@ -11,7 +11,8 @@ const sheet: ISheet = {
 sheet.glyphs.set("piece", (svg: Nested) => {
     svg.circle(100)
         .id("playerfill")
-        .stroke({width: 1, color: "#000"});
+        .fill("#fff")
+        .stroke({width: 2, color: "#000"});
 });
 
-export default sheet;
+export { sheet as DefaultSheet };

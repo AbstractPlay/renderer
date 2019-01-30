@@ -39,7 +39,7 @@ export interface APRenderRep {
   /**
    * This is the game board itself.
    */
-  board?:
+  board:
     | {
         style:
           | "squares"
@@ -88,7 +88,7 @@ export interface APRenderRep {
          */
         stars: string[];
       }[];
-  pieces?: string | string[][][] | string[][];
+  pieces: null | string | string[][][] | string[][];
   /**
    * Areas are placed vertically under the game board. There's no default way of handling this. Each renderer will need to know what to do with it.
    */

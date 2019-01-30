@@ -1,6 +1,6 @@
-import svg from "@svgdotjs/svg.js";
+import SVG from "@svgdotjs/svg.js";
 import Ajv from "ajv";
-import renderers from "./renderers";
+import { renderers } from "./renderers";
 import { APRenderRep } from "./schema";
 import schema from "./schema.json";
 
@@ -13,14 +13,22 @@ interface IRenderOptions {
     gamename?: string;
 }
 
-export default function render(json: APRenderRep, opts = {} as IRenderOptions): void {
+function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
+    let retstr = "";
+    for (const error of errors) {
+        retstr += `\nKeyword: ${error.keyword}, dataPath: ${error.dataPath}, schemaPath: ${error.schemaPath}`;
+    }
+    return retstr;
+}
+
+export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
     // Validate the JSON
     if (! validate(json)) {
-        throw Error("The json object you submitted does not validate against the established schema.");
+        throw Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
     }
 
     // Initialize the SVG container
-    const draw = svg(opts.divid);
+    const draw = SVG(opts.divid);
 
     // Pass the JSON and the SVG container to the appropriate renderer
     // let renderer = json.renderer

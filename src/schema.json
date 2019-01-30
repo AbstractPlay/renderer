@@ -74,8 +74,7 @@
                                 "hex_of_hex",
                                 "hex_of_tri",
                                 "snubsquare"
-                            ],
-                            "default": "checkered"
+                            ]
                         },
                         "minWidth": {
                             "description": "Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.",
@@ -147,6 +146,10 @@
         },
         "pieces": {
             "anyOf": [
+                {
+                    "description": "If the board is completely empty.",
+                    "type": "null"
+                },
                 {
                     "description": "One character per cell. Commas and whitespace are not permitted. Use a newline (\\n) to separate rows (the first row is the far row). Hyphens and underscores are reserved for representing blank spaces. Hyphens represent a single blank space. A line containing only an underscore will be interpreted as meaning the entire row is empty.",
                     "type": "string",
@@ -244,5 +247,6 @@
                 }
             }
         }
-    }
+    },
+    "required": ["board", "pieces"]
 }
