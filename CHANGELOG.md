@@ -14,3 +14,4 @@ No releases yet! Once I have a minimal viable product, I'll start using numbers.
 - Created scaffolding for contact sheets.
 - Schema reviewed, revised, and documented.
 - Starting work on the default renderer.
+- Reverted to SVG.js v2.7.1, which actually works with TS.
