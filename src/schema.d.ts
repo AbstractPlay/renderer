@@ -52,7 +52,7 @@ export interface APRenderRep {
           | "hex_even-c"
           | "hex_of_hex"
           | "hex_of_tri"
-          | "snubsquare";
+          | "snubsquare" | string;
         /**
          * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
          */

@@ -24,7 +24,7 @@ function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
 }
 
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
-export function render(json: any, opts = {} as IRenderOptions): void {
+export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
     // Validate the JSON
     if (! validate(json)) {
         throw Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
