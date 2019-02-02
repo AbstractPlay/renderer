@@ -11,6 +11,7 @@ interface IRenderOptions {
     divid: string;
     sheets?: string[];
     gamename?: string;
+    target?: SVG.Doc;
 }
 
 function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
@@ -21,14 +22,19 @@ function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
     return retstr;
 }
 
-export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
+export function render(json: object, opts = {} as IRenderOptions): void {
     // Validate the JSON
     if (! validate(json)) {
         throw Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
     }
 
     // Initialize the SVG container
-    const draw = SVG(opts.divid);
+    let draw: SVG.Doc;
+    if ( ("target" in opts) && (opts.target != null) ) {
+        draw = opts.target;
+    } else {
+        draw = SVG(opts.divid);
+    }
 
     // Pass the JSON and the SVG container to the appropriate renderer
     // let renderer = json.renderer
