@@ -37,9 +37,16 @@ test("debugging outputter", () => {
         pieces: "YYRR\nY--R\nB--G\nBBGG",
     };
     const window = require("svgdom");
-    const {SVG, registerWindow} = require("@svgdotjs/svg.js");
-    registerWindow(window, window.document);
+    // v3
+    // const {SVG, registerWindow} = require("@svgdotjs/svg.js");
+    // registerWindow(window, window.document);
+    // const canvas = SVG(document.documentElement);
+
+    // v2
+    const SVG = require("svg.js")(window);
+    const document = window.document;
     const canvas = SVG(document.documentElement);
+
     render(data, {divid: "", target: canvas});
     console.log(canvas.svg());
     // const canvas = SVG(document.documentElement);
