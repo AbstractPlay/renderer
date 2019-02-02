@@ -12,8 +12,8 @@
         "build-ts": "tsc",
         "test": "jest --forceExit --detectOpenHandles --verbose --config jest.config.js",
         "tslint": "tslint -c tslint.json -p tsconfig.json",
-        "dist-dev": "gulp tsPipeline:build:dev",
-        "dist-prod": "gulp tsPipeline:build:release",
+        "dist-dev": "webpack",
+        "dist-prod": "webpack --mode=production",
         "json2ts": "npx json2ts -i src/schema.json -o src/schema.d.ts",
         "full-dev": "npm run test && npm run build && npm run dist-dev",
         "full-prod": "npm run test && npm run build && npm run dist-prod"
