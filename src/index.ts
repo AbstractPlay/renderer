@@ -27,7 +27,7 @@ function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
 export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
     // Validate the JSON
     if (! validate(json)) {
-        throw Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
+        throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
     }
 
     // Initialize the SVG container
@@ -45,9 +45,9 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
 
     const renderer = renderers.get(json.renderer as string);
     if ( (renderer === undefined) || (renderer === null) ) {
-        throw Error(`Could not find the renderer "${ json.renderer }".`);
+        throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, []);
+    renderer.render(json, draw, {});
 }
 
 export function renderglyph(glyphid: string, opts = {} as IRenderOptions): void {
