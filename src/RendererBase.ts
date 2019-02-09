@@ -1,38 +1,89 @@
 // import svg, { Nested } from "@svgdotjs/svg.js";
 import svg from "svg.js";
+import { GridPoints } from "./GridGenerator";
+import { rectOfSquares } from "./grids";
 import { APRenderRep } from "./schema";
 import { sheets } from "./sheets";
 
-export class Renderer {
+export interface IRendererOptions {
+    sheetList?: string[];
+    colours?: string[];
+    patterns?: boolean;
+    patternList?: string[];
+    colourBlind?: boolean;
+}
+
+export abstract class RendererBase {
     public readonly name: string;
     public readonly coloursBasic = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
     public readonly coloursBlind = ["#a6611a", "#80cdc1", "#018571", "#dfc27d"];
-    public readonly patternsBW = ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"];
+    public readonly patternNames = ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"];
 
     constructor(name = "default") {
         this.name = name;
     }
 
-    public render(json: APRenderRep, draw: svg.Doc, sheetList: string[]): void {
-        json = this.prechecks(json);
+    public abstract render(json: APRenderRep, draw: svg.Doc, opts: IRendererOptions): void;
 
-        // Board first
-        const board = draw.group().id("board");
-        board.circle(100).fill("#999").stroke({width: 2, color: "black"});
-    }
-
-    protected prechecks(json: APRenderRep): APRenderRep {
+    protected jsonPrechecks(json: APRenderRep): APRenderRep {
         // Check for missing renderer
-        if ("renderer" ! in json) {
+        if (json.renderer === undefined) {
             json.renderer = "default";
         }
 
         // Make sure the JSON is intended for you
         if (json.renderer !== this.name) {
-            throw Error(`Renderer mismatch. The JSON data you provided is intended for the "${json.renderer}" renderer, but the "${this.name}" renderer received it.`);
+            throw new Error(`Renderer mismatch. The JSON data you provided is intended for the "${json.renderer}" renderer, but the "${this.name}" renderer received it.`);
         }
 
         return json;
+    }
+
+    protected optionsPrecheck(opts: IRendererOptions): IRendererOptions {
+        const newOpts: IRendererOptions = {sheetList: ["default"], colourBlind: false};
+
+        // Check colour blindness
+        if (opts.colourBlind !== undefined) {
+            newOpts.colourBlind = opts.colourBlind;
+        }
+
+        // Validate sheet list
+        if ( (opts.sheetList !== undefined) && (opts.sheetList.length > 0) ) {
+            for (const name of opts.sheetList) {
+                if (! sheets.has(name)) {
+                    throw new Error(`A glyph sheet you requested could not be found: ${ name }`);
+                }
+            }
+            newOpts.sheetList = opts.sheetList;
+        }
+
+        // Validate patterns settings
+        newOpts.patterns = false;
+        if (opts.patterns) {
+            newOpts.patterns = true;
+            // Validate pattern list if given
+            if ( (opts.patternList !== undefined) && (opts.patternList.length > 0) ) {
+                for (const name of opts.patternList) {
+                    if (this.patternNames.indexOf(name) < 0) {
+                        throw new Error(`A pattern you requested could not be found: ${ name }`);
+                    }
+                }
+                newOpts.patternList = opts.patternList;
+            }
+        }
+
+        // Validate colour list if given
+        if ( (opts.colours !== undefined) && (opts.colours.length > 0) ) {
+            const re = new RegExp(/^\#[a-f0-9]{6}$/, "i");
+            for (const c of opts.colours) {
+                if (! re.test(c)) {
+                    throw new Error(`One of the colours you requested is malformed: ${ c }`);
+                }
+            }
+            newOpts.colours = opts.colours;
+        }
+
+        return newOpts;
     }
 
     protected loadPatterns(canvas: svg.Doc): void {
@@ -58,5 +109,9 @@ export class Renderer {
         canvas.defs().svg("<pattern id='triangles' patternUnits='userSpaceOnUse' width='15' height='15'><svg xmlns='http://www.w3.org/2000/svg' width='15' height='15'><rect width='15' height='15' fill='#fff'/><path d='M0 15L7.5 0L15 15Z' fill='#000'/></svg></pattern>");
 
         canvas.defs().svg("<pattern id='wavy' patternUnits='userSpaceOnUse' width='15' height='20' viewbox='0 0 75 100'><svg xmlns='http://www.w3.org/2000/svg' width='75' height='100'><rect width='75' height='100' fill='#fff'/><circle cx='75' cy='50' r='28.3%' stroke-width='12' stroke='#000' fill='none'/><circle cx='0' r='28.3%' stroke-width='12' stroke='#000' fill='none'/><circle cy='100' r='28.3%' stroke-width='12' stroke='#000' fill='none'/></svg></pattern>");
+    }
+
+    protected getGlyph(glyph: string, canvas: svg.Container) {
+        // Do stuff
     }
 }

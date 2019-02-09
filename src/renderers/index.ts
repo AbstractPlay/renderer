@@ -1,6 +1,8 @@
-import { Renderer } from "../renderer";
+import { RendererBase } from "../RendererBase";
 import { DefaultRenderer } from "./default";
 
-const renderers = new Map<string, Renderer>();
-renderers.set(DefaultRenderer.name, DefaultRenderer);
+export { RendererBase as Renderer, DefaultRenderer };
+
+const renderers = new Map<string, RendererBase>();
+renderers.set(DefaultRenderer.name, new DefaultRenderer());
 export {renderers};

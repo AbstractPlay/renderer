@@ -85,11 +85,11 @@
                             "$ref": "#/definitions/positiveInteger"
                         },
                         "width": {
-                            "description": "Optional. If not provided, the renderer will calculate based on the `pieces` property. If only one of 'width' and 'height' is specifed, the board is assumed to be square.",
+                            "description": "Required for the `squares*`, `vertex`, and `go` styles.",
                             "$ref": "#/definitions/positiveInteger"
                         },
                         "height": {
-                            "description": "Optional. If not provided, the renderer will calculate based on the `pieces` property. If only one of 'width' and 'height' is specifed, the board is assumed to be square.",
+                            "description": "Required for the `squares*`, `vertex`, and `go` styles.",
                             "$ref": "#/definitions/positiveInteger"
                         },
                         "tiling": {
