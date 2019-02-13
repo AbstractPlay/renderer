@@ -4,5 +4,6 @@ import { DefaultRenderer } from "./default";
 export { RendererBase as Renderer, DefaultRenderer };
 
 const renderers = new Map<string, RendererBase>();
-renderers.set(DefaultRenderer.name, new DefaultRenderer());
+const rDefault = new DefaultRenderer();
+renderers.set(rDefault.name, rDefault);
 export {renderers};

@@ -11,7 +11,7 @@ test("placeholder that always succeeds", () => {
 
 test("schema validator", () => {
     const data = {
-        board: {style: "squares-checkered"},
+        board: {style: "squares-checkered", height: 4, width: 4},
         legend: {
             B: {name: "piece", colour: 2},
             G: {name: "piece", colour: 3},

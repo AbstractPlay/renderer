@@ -48,6 +48,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
     renderer.render(json, draw, {});
+    draw.viewbox(draw.bbox());
 }
 
 export function renderglyph(glyphid: string, opts = {} as IRenderOptions): void {

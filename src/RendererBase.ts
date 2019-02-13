@@ -13,6 +13,14 @@ export interface IRendererOptions {
     colourBlind?: boolean;
 }
 
+export interface IRendererOptionsProcessed {
+    sheetList: string[];
+    colours: string[];
+    patterns: boolean;
+    patternList?: string[];
+    colourBlind: boolean;
+}
+
 export abstract class RendererBase {
     public readonly name: string;
     public readonly coloursBasic = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
@@ -39,12 +47,15 @@ export abstract class RendererBase {
         return json;
     }
 
-    protected optionsPrecheck(opts: IRendererOptions): IRendererOptions {
-        const newOpts: IRendererOptions = {sheetList: ["default"], colourBlind: false};
+    protected optionsPrecheck(opts: IRendererOptions): IRendererOptionsProcessed {
+        const newOpts: IRendererOptionsProcessed = {sheetList: ["default"], colourBlind: false, colours: this.coloursBasic, patterns: false};
 
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
             newOpts.colourBlind = opts.colourBlind;
+            if (newOpts.colourBlind) {
+                newOpts.colours = this.coloursBlind;
+            }
         }
 
         // Validate sheet list
@@ -69,6 +80,8 @@ export abstract class RendererBase {
                     }
                 }
                 newOpts.patternList = opts.patternList;
+            } else {
+                newOpts.patternList = this.patternNames;
             }
         }
 
@@ -111,7 +124,15 @@ export abstract class RendererBase {
         canvas.defs().svg("<pattern id='wavy' patternUnits='userSpaceOnUse' width='15' height='20' viewbox='0 0 75 100'><svg xmlns='http://www.w3.org/2000/svg' width='75' height='100'><rect width='75' height='100' fill='#fff'/><circle cx='75' cy='50' r='28.3%' stroke-width='12' stroke='#000' fill='none'/><circle cx='0' r='28.3%' stroke-width='12' stroke='#000' fill='none'/><circle cy='100' r='28.3%' stroke-width='12' stroke='#000' fill='none'/></svg></pattern>");
     }
 
-    protected getGlyph(glyph: string, canvas: svg.Container) {
-        // Do stuff
+    protected loadGlyph(glyph: string, sheetList: string[], canvas: svg.Container) {
+        for (const s of sheetList) {
+            const sheet = sheets.get(s);
+            if (sheet !== undefined) {
+                const func = sheet.glyphs.get(glyph);
+                if (func !== undefined) {
+                    func(canvas.defs());
+                }
+            }
+        }
     }
 }
