@@ -165,8 +165,8 @@ export class DefaultRenderer extends RendererBase {
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-            labels.text(`${row + 1}`).center(pointL.x, pointL.y);
-            labels.text(`${row + 1}`).center(pointR.x, pointR.y);
+            labels.text(`${height - row}`).center(pointL.x, pointL.y);
+            labels.text(`${height - row}`).center(pointR.x, pointR.y);
         }
 
         // Now the tiles
