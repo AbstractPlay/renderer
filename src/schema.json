@@ -161,7 +161,7 @@
                     "pattern": "^[^\\r\\t\\f\\ ]+$"
                 },
                 {
-                    "description": "Nested arrays. This level is the row (0 index being the bottom row).",
+                    "description": "Nested arrays. This level is the row (0 index being the top row).",
                     "type": "array",
                     "minItems": 1,
                     "items": {
@@ -169,11 +169,11 @@
                         "type": "array",
                         "minItems": 0,
                         "items": {
-                            "description": "Each item here represents a specific cell from left to right in the row (0 index being left most). The default renderer layers the sprites on top of each other in the order given. Other renderers may treat them as stacked in a more traditional sense (0 index being the bottom).",
+                            "description": "Each item here represents a specific cell from left to right in the row (0 index being left most). The default renderer layers the glyphs on top of each other in the order given. Other renderers may treat them as stacked in a more traditional sense (0 index being the bottom).",
                             "type": "array",
                             "minItems": 0,
                             "items": {
-                                "description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend.",
+                                "description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend. Leaving an entire row empty will result in the renderer using the `board.width` property. Use an empty array to represent an empty cell.",
                                 "type": "string"
                             }
                         }

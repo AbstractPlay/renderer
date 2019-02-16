@@ -89,55 +89,61 @@ export class DefaultRenderer extends RendererBase {
         const group = draw.group().id("pieces");
         if (json.pieces !== null) {
             // Generate pieces array
-            const pieces: string[][] = new Array();
+            let pieces: string[][][] = new Array();
 
-            // Is it an array
-            if (json.pieces instanceof Array) {
-                throw new Error("The array format of the `pieces` property is not yet implemented.");
-            // Does it contain commas
-            } else if (json.pieces.indexOf(",") >= 0) {
-                for (const row of json.pieces.split("\n")) {
-                    let node: string[];
-                    if (row === "_") {
-                        node = new Array(json.board.width).fill("-");
-                    } else {
-                        node = row.split(",");
+            if (typeof json.pieces === "string") {
+                // Does it contain commas
+                if (json.pieces.indexOf(",") >= 0) {
+                    for (const row of json.pieces.split("\n")) {
+                        let node: string[][];
+                        if (row === "_") {
+                            node = new Array(json.board.width).fill([]);
+                        } else {
+                            let cells = row.split(",");
+                            cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
+                            node = cells.map((x) => [x]);
+                        }
+                        pieces.push(node);
                     }
-                    node = node.map((x) => { if (x === "") {return "-"; } else {return x; } });
-                    pieces.push(node);
+                } else {
+                    for (const row of json.pieces.split("\n")) {
+                        let node: string[][];
+                        if (row === "_") {
+                            node = new Array(json.board.width).fill([]);
+                        } else {
+                            const cells = row.split("");
+                            node = cells.map((x) => [x]);
+                        }
+                        pieces.push(node);
+                    }
                 }
+            } else if ( (json.pieces instanceof Array) && (json.pieces[0] instanceof Array) && (json.pieces[0][0] instanceof Array) ) {
+                pieces = json.pieces as string[][][];
             } else {
-                for (const row of json.pieces.split("\n")) {
-                    let node: string[];
-                    if (row === "_") {
-                        node = new Array(json.board.width).fill("-");
-                    } else {
-                        node = row.split("");
-                    }
-                    pieces.push(node);
-                }
+                throw new Error("Unrecognized `pieces` property.");
             }
 
             // Place the pieces according to the grid
             for (let row = 0; row < pieces.length; row++) {
                 for (let col = 0; col < pieces[row].length; col++) {
-                    const key = pieces[row][col];
-                    if ( (key !== null) && (key !== "-") ) {
-                        const point = gridPoints[row][col];
-                        const piece = svg.get(key);
-                        if ( (piece === null) || (piece === undefined) ) {
-                            throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                        }
-                        const use = group.use(piece);
-                        use.center(point.x, point.y);
-                        if (piece.is(svg.G)) {
-                            const sheetCellSize = piece.attr("data-cellsize");
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                    for (const key of pieces[row][col]) {
+                        if ( (key !== null) && (key !== "-") ) {
+                            const point = gridPoints[row][col];
+                            const piece = svg.get(key);
+                            if ( (piece === null) || (piece === undefined) ) {
+                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            use.scale(this.cellsize / sheetCellSize);
-                        } else {
-                            use.size(this.cellsize);
+                            const use = group.use(piece);
+                            use.center(point.x, point.y);
+                            if (piece.is(svg.G)) {
+                                const sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
+                                use.scale(this.cellsize / sheetCellSize);
+                            } else {
+                                use.size(this.cellsize);
+                            }
                         }
                     }
                 }
