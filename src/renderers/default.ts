@@ -88,14 +88,25 @@ export class DefaultRenderer extends RendererBase {
         // Now place the pieces
         const group = draw.group().id("pieces");
         if (json.pieces !== null) {
+            // Generate pieces array
+            const pieces: string[][] = new Array();
+
             // Is it an array
             if (json.pieces instanceof Array) {
                 throw new Error("The array format of the `pieces` property is not yet implemented.");
             // Does it contain commas
             } else if (json.pieces.indexOf(",") >= 0) {
-                throw new Error("The comma format of the `pieces` property is not yet implemented.");
+                for (const row of json.pieces.split("\n")) {
+                    let node: string[];
+                    if (row === "_") {
+                        node = new Array(json.board.width).fill("-");
+                    } else {
+                        node = row.split(",");
+                    }
+                    node = node.map((x) => { if (x === "") {return "-"; } else {return x; } });
+                    pieces.push(node);
+                }
             } else {
-                const pieces: string[][] = new Array();
                 for (const row of json.pieces.split("\n")) {
                     let node: string[];
                     if (row === "_") {
@@ -105,26 +116,28 @@ export class DefaultRenderer extends RendererBase {
                     }
                     pieces.push(node);
                 }
-                for (let row = 0; row < pieces.length; row++) {
-                    for (let col = 0; col < pieces[row].length; col++) {
-                        const key = pieces[row][col];
-                        if (key !== "-") {
-                            const point = gridPoints[row][col];
-                            const piece = svg.get(key);
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+            }
+
+            // Place the pieces according to the grid
+            for (let row = 0; row < pieces.length; row++) {
+                for (let col = 0; col < pieces[row].length; col++) {
+                    const key = pieces[row][col];
+                    if ( (key !== null) && (key !== "-") ) {
+                        const point = gridPoints[row][col];
+                        const piece = svg.get(key);
+                        if ( (piece === null) || (piece === undefined) ) {
+                            throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                        }
+                        const use = group.use(piece);
+                        use.center(point.x, point.y);
+                        if (piece.is(svg.G)) {
+                            const sheetCellSize = piece.attr("data-cellsize");
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
-                            const use = group.use(piece);
-                            use.center(point.x, point.y);
-                            if (piece.is(svg.G)) {
-                                const sheetCellSize = piece.attr("data-cellsize");
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                                use.scale(this.cellsize / sheetCellSize);
-                            } else {
-                                use.size(this.cellsize);
-                            }
+                            use.scale(this.cellsize / sheetCellSize);
+                        } else {
+                            use.size(this.cellsize);
                         }
                     }
                 }
