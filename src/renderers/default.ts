@@ -138,8 +138,12 @@ export class DefaultRenderer extends RendererBase {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
         const width: number = json.board.width;
+        const gridWidth = width + 2;
         const height: number = json.board.height;
+        const gridHeight = height + 2;
         const cellsize = this.cellsize;
+        const boardOffsetX = 1;
+        const boardOffsetY = 1;
 
         // Load glyphs for light and dark squares
         this.loadGlyph("tileLight", opts.sheetList, draw);
@@ -148,8 +152,29 @@ export class DefaultRenderer extends RendererBase {
         const tileDark = svg.get("tileDark").size(cellsize, cellsize);
 
         // Get a grid of points
-        const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const grid = rectOfSquares({gridHeight, gridWidth, cellSize: cellsize});
+        const board = draw.group().id("board");
 
+        // Add board labels
+        const labels = board.group().id("labels");
+        // Columns (letters)
+        for (let col = 0; col < width; col++) {
+            const pointTop = grid[0][boardOffsetX + col];
+            const pointBottom = grid[gridHeight - 1][boardOffsetX + col];
+            labels.text(this.columnLabels[col]).center(pointTop.x, pointTop.y);
+            labels.text(this.columnLabels[col]).center(pointBottom.x, pointBottom.y);
+        }
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = grid[boardOffsetY + row][0];
+            const pointR = grid[boardOffsetY + row][gridWidth - 1];
+            labels.text(`${row + 1}`).center(pointL.x, pointL.y);
+            labels.text(`${row + 1}`).center(pointR.x, pointR.y);
+        }
+
+        // Now the tiles
+        const tiles = board.group().id("tiles");
         // Determine whether the first row starts with a light or dark square
         let startLight: number = 1;
         if (height % 2 === 0) {
@@ -157,7 +182,6 @@ export class DefaultRenderer extends RendererBase {
         }
 
         // Place them
-        const board = draw.group().id("board");
         for (let row = 0; row < height; row++) {
             let lightCol: number = 1;
             if (row % 2 === startLight) {
@@ -168,8 +192,8 @@ export class DefaultRenderer extends RendererBase {
                 if (col % 2 === lightCol) {
                     tile = tileLight;
                 }
-                const {x, y} = grid[row][col];
-                board.use(tile).center(x, y);
+                const {x, y} = grid[boardOffsetY + row][boardOffsetX + col];
+                tiles.use(tile).center(x, y);
             }
         }
 
@@ -177,32 +201,40 @@ export class DefaultRenderer extends RendererBase {
         const gridlines = draw.group().id("gridlines");
         // Horizontal, top of each row, then bottom line after loop
         for (let row = 0; row < height; row++) {
-            const x1 = grid[row][0].x - (cellsize / 2);
-            const y1 = grid[row][0].y - (cellsize / 2);
-            const x2 = grid[row][width - 1].x + (cellsize / 2);
-            const y2 = grid[row][width - 1].y - (cellsize / 2);
+            const x1 = grid[boardOffsetY + row][boardOffsetX].x - (cellsize / 2);
+            const y1 = grid[boardOffsetY + row][boardOffsetX].y - (cellsize / 2);
+            const x2 = grid[boardOffsetY + row][boardOffsetX + width - 1].x + (cellsize / 2);
+            const y2 = grid[boardOffsetY + row][boardOffsetX + width - 1].y - (cellsize / 2);
             gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
         }
-        let lastx1 = grid[height - 1][0].x - (cellsize / 2);
-        let lasty1 = grid[height - 1][0].y + (cellsize / 2);
-        let lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
-        let lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
+        let lastx1 = grid[boardOffsetY + height - 1][boardOffsetX].x - (cellsize / 2);
+        let lasty1 = grid[boardOffsetY + height - 1][boardOffsetX].y + (cellsize / 2);
+        let lastx2 = grid[boardOffsetY + height - 1][boardOffsetX + width - 1].x + (cellsize / 2);
+        let lasty2 = grid[boardOffsetY + height - 1][boardOffsetX + width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
 
         // Vertical, left of each column, then right line after loop
         for (let col = 0; col < width; col++) {
-            const x1 = grid[0][col].x - (cellsize / 2);
-            const y1 = grid[0][col].y - (cellsize / 2);
-            const x2 = grid[height - 1][col].x - (cellsize / 2);
-            const y2 = grid[height - 1][col].y + (cellsize / 2);
+            const x1 = grid[boardOffsetY][boardOffsetX + col].x - (cellsize / 2);
+            const y1 = grid[boardOffsetY][boardOffsetX + col].y - (cellsize / 2);
+            const x2 = grid[boardOffsetY + height - 1][boardOffsetX + col].x - (cellsize / 2);
+            const y2 = grid[boardOffsetY + height - 1][boardOffsetX + col].y + (cellsize / 2);
             gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
         }
-        lastx1 = grid[0][width - 1].x + (cellsize / 2);
-        lasty1 = grid[0][width - 1].y - (cellsize / 2);
-        lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
-        lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
+        lastx1 = grid[boardOffsetY][boardOffsetX + width - 1].x + (cellsize / 2);
+        lasty1 = grid[boardOffsetY][boardOffsetX + width - 1].y - (cellsize / 2);
+        lastx2 = grid[boardOffsetY + height - 1][boardOffsetX + width - 1].x + (cellsize / 2);
+        lasty2 = grid[boardOffsetY + height - 1][boardOffsetX + width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
 
-        return grid;
+        const boardGrid: GridPoints = new Array();
+        for (let row = 0; row < width; row++) {
+            const node = new Array();
+            for (let col = 0; col < height; col++) {
+                node.push(grid[boardOffsetY + row][boardOffsetX + col]);
+            }
+            boardGrid.push(node);
+        }
+        return boardGrid;
     }
 }
