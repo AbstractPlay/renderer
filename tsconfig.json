@@ -10,6 +10,10 @@
         "strictNullChecks": true,
         "noImplicitThis": true,
         "noImplicitAny": true,
+//        "forceConsistentCasingInFileNames": true,
+        "noImplicitReturns": true,
+        "strict": true,
+        "noUnusedLocals": true,
         "baseUrl": ".",
         "paths": {
             "*": [

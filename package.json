@@ -18,7 +18,8 @@
         "json2ts": "npx json2ts -i src/schema.json -o src/schema.d.ts",
         "full-dev": "npm run test && npm run build && npm run dist-dev",
         "full-prod": "npm run test && npm run build && npm run dist-prod",
-        "distribute": "copy .\\test\\index.html D:\\xampp\\htdocs\\renderer && copy .\\dist\\APRender.js D:\\xampp\\htdocs\\renderer"
+        "distribute": "copy .\\test\\index.html D:\\xampp\\htdocs\\renderer && copy .\\dist\\APRender.js D:\\xampp\\htdocs\\renderer",
+        "quick": "npm run build-ts && npm run dist-dev && npm run distribute"
     },
     "author": "Aaron Dalton <aaron@daltons.ca> (https://www.perlkonig.com)",
     "license": "MIT",

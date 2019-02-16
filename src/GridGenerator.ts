@@ -1,5 +1,5 @@
 // import { Nested } from "@svgdotjs/svg.js";
-import svg from "svg.js";
+// import svg from "svg.js";
 
 export interface IPoint {
     readonly x: number;

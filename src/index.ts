@@ -13,6 +13,14 @@ interface IRenderOptions {
     sheets?: string[];
     gamename?: string;
     target?: SVG.Doc;
+    patterns?: boolean;
+    patternList?: string[];
+    colourBlind?: boolean;
+    colourList?: string[];
+}
+
+interface IMyObject {
+    bbox(): any;
 }
 
 function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
@@ -29,6 +37,18 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
     if (! validate(json)) {
         throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
     }
+
+    // Kludge to fix fact that `Use` type doesn't have `width` and `height` properties
+    SVG.extend(SVG.Use, {
+// tslint:disable-next-line: space-before-function-paren
+// tslint:disable-next-line: object-literal-shorthand
+        width: function() {
+            return (this as IMyObject).bbox().width;
+        },
+        height() {
+            return (this as IMyObject).bbox().height;
+        },
+    });
 
     // Initialize the SVG container
     let draw: SVG.Doc;
@@ -47,7 +67,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {});
+    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList});
     draw.viewbox(draw.bbox());
 }
 

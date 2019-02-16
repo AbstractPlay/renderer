@@ -14,6 +14,8 @@
                 while (myNode.lastChild) {
                     myNode.removeChild(myNode.lastChild);
                 }                
+                // var options = {divid: "drawing", colourList: ["#ff0000", "#00ff00", "#0000ff", "#ffff00"]};
+                // var options = {divid: "drawing", patterns: true};
                 var options = {divid: "drawing"};
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 APRender.render(data, options);

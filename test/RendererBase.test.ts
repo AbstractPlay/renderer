@@ -1,27 +1,27 @@
 // tslint:disable: no-var-requires
 
-import { IRendererOptions } from "../src/RendererBase";
-import { DefaultRenderer } from "../src/renderers";
-import { APRenderRep } from "../src/schema";
+// import { IRendererOptions } from "../src/RendererBase";
+// import { DefaultRenderer } from "../src/renderers";
+// import { APRenderRep } from "../src/schema";
 
-const r = new DefaultRenderer();
+// const r = new DefaultRenderer();
 
 // tslint:disable-next-line: no-var-requires
-const window = require("svgdom");
-const SVG = require("svg.js")(window);
-const document = window.document;
-const canvas = SVG(document.documentElement);
+// const window = require("svgdom");
+// const SVG = require("svg.js")(window);
+// const document = window.document;
+// const canvas = SVG(document.documentElement);
 
-const cloneDeep = require("lodash/cloneDeep");
+// const cloneDeep = require("lodash/cloneDeep");
 
-const baseData: APRenderRep = {
-    board: {
-        height: 8,
-        style: "squares-checkered",
-        width: 8,
-    },
-    pieces: null,
-};
+// const baseData: APRenderRep = {
+//     board: {
+//         height: 8,
+//         style: "squares-checkered",
+//         width: 8,
+//     },
+//     pieces: null,
+// };
 
 test("Placeholder that will always pass", () => {
     expect(true).toBe(true);

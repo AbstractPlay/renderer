@@ -1,8 +1,8 @@
 /* tslint:disable:no-console */
 
 import Ajv from "ajv";
-import { render } from "../src/index";
-import { APRenderRep } from "../src/schema";
+// import { render } from "../src/index";
+// import { APRenderRep } from "../src/schema";
 import schema from "../src/schema.json";
 
 test("placeholder that always succeeds", () => {

@@ -1,11 +1,11 @@
 // import svg, { Nested } from "@svgdotjs/svg.js";
 import svg from "svg.js";
-import { GridPoints } from "./GridGenerator";
-import { rectOfSquares } from "./grids";
+// import { GridPoints } from "./GridGenerator";
+// import { rectOfSquares } from "./grids";
 import { APRenderRep } from "./schema";
 import { sheets } from "./sheets";
 
-export interface IRendererOptions {
+export interface IRendererOptionsIn {
     sheetList?: string[];
     colours?: string[];
     patterns?: boolean;
@@ -13,11 +13,11 @@ export interface IRendererOptions {
     colourBlind?: boolean;
 }
 
-export interface IRendererOptionsProcessed {
+export interface IRendererOptionsOut {
     sheetList: string[];
     colours: string[];
     patterns: boolean;
-    patternList?: string[];
+    patternList: string[];
     colourBlind: boolean;
 }
 
@@ -26,12 +26,13 @@ export abstract class RendererBase {
     public readonly coloursBasic = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
     public readonly coloursBlind = ["#a6611a", "#80cdc1", "#018571", "#dfc27d"];
     public readonly patternNames = ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"];
+    protected readonly cellsize = 50;
 
     constructor(name = "default") {
         this.name = name;
     }
 
-    public abstract render(json: APRenderRep, draw: svg.Doc, opts: IRendererOptions): void;
+    public abstract render(json: APRenderRep, draw: svg.Doc, opts: IRendererOptionsIn): void;
 
     protected jsonPrechecks(json: APRenderRep): APRenderRep {
         // Check for missing renderer
@@ -47,8 +48,8 @@ export abstract class RendererBase {
         return json;
     }
 
-    protected optionsPrecheck(opts: IRendererOptions): IRendererOptionsProcessed {
-        const newOpts: IRendererOptionsProcessed = {sheetList: ["default"], colourBlind: false, colours: this.coloursBasic, patterns: false};
+    protected optionsPrecheck(opts: IRendererOptionsIn): IRendererOptionsOut {
+        const newOpts: IRendererOptionsOut = {sheetList: ["default"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames};
 
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
