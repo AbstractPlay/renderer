@@ -226,6 +226,31 @@
                 ]
             }
         },
+        "annotations": {
+            "description": "Instruct the renderer how to show any changes to the game state. See the docs for details.",
+            "type": "array",
+            "items": {
+                "description": "One step in the state change",
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "description": "The type of change being annotated",
+                        "enum": ["mvmtMain", "mvmtSub"]
+                    },
+                    "points": {
+                        "description": "A sequence of points representing the beginning, any middle, and finally end points. Used by the `mvmtX` types for drawing lines.",
+                        "type": "array",
+                        "items": {
+                            "description": "Coordinates based on the renderer's system: 0,0 is the top left corner of the board.",
+                            "type": "string",
+                            "pattern": "\\d+,\\d+"
+                        },
+                        "minItems": 2
+                    }
+                },
+                "required": ["type"]
+            }
+        },
         "metadata": {
             "description": "Player-specific data that the front end can use to render a helpful sidebar (identifying the pieces a player controls, running score, etc.).",
             "type": "array",

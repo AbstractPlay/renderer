@@ -52,7 +52,7 @@ export interface APRenderRep {
           | "hex_even-c"
           | "hex_of_hex"
           | "hex_of_tri"
-          | "snubsquare" | string;
+          | "snubsquare";
         /**
          * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
          */
@@ -62,11 +62,11 @@ export interface APRenderRep {
          */
         maxWidth?: number;
         /**
-         * Optional. If not provided, the renderer will calculate based on the `pieces` property. If only one of 'width' and 'height' is specifed, the board is assumed to be square.
+         * Required for the `squares*`, `vertex`, and `go` styles.
          */
         width?: number;
         /**
-         * Optional. If not provided, the renderer will calculate based on the `pieces` property. If only one of 'width' and 'height' is specifed, the board is assumed to be square.
+         * Required for the `squares*`, `vertex`, and `go` styles.
          */
         height?: number;
         /**
@@ -97,6 +97,20 @@ export interface APRenderRep {
     G: Stashstrings;
     B: Stashstrings;
     Y: Stashstrings;
+    [k: string]: any;
+  }[];
+  /**
+   * Instruct the renderer how to show any changes to the game state. See the docs for details.
+   */
+  annotations?: {
+    /**
+     * The type of change being annotated
+     */
+    type: "mvmtMain" | "mvmtSub";
+    /**
+     * A sequence of points representing the beginning, any middle, and finally end points. Used by the `mvmtX` types for drawing lines.
+     */
+    points?: string[];
     [k: string]: any;
   }[];
   /**
