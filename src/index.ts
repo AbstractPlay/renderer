@@ -32,7 +32,7 @@ function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
 }
 
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
-export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
+export function render(json: APRenderRep, opts = {} as IRenderOptions): SVG.Doc {
     // Validate the JSON
     if (! validate(json)) {
         throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
@@ -69,6 +69,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): void {
     }
     renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList});
     draw.viewbox(draw.bbox());
+    return draw;
 }
 
 export function renderglyph(glyphid: string, opts = {} as IRenderOptions): void {

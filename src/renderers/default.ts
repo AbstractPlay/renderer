@@ -10,11 +10,6 @@ export class DefaultRenderer extends RendererBase {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
-        // If patterns were requested, load them into the canvas
-        if (opts.patterns) {
-            this.loadPatterns(draw);
-        }
-
         // BOARD
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
@@ -47,6 +42,22 @@ export class DefaultRenderer extends RendererBase {
             }
             for (const glyph of glyphSet) {
                 this.loadGlyph(glyph, opts.sheetList, draw);
+            }
+
+            // Load any requested patterns
+            if (opts.patterns) {
+                // tslint:disable-next-line: forin
+                for (const key in json.legend) {
+                    const node = json.legend[key];
+                    if (typeof(node) !== "string") {
+                        if (node.colour !== undefined) {
+                            if (node.colour > opts.patternList.length) {
+                                throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                            }
+                            this.loadPattern(opts.patternList[node.colour - 1], draw);
+                        }
+                    }
+                }
             }
 
             // Now look for coloured pieces and add those to the <defs> section for placement

@@ -71,6 +71,10 @@ Different renderers will handle this differently. The default renderer will simp
 
 This section is unique to different renderers. The default renderer ignores it. The Homewords renderer uses it for the global stash. Each area is rendered vertically below the game board.
 
+=== `annotations`
+
+This is how a game tells the renderer how illustrate state changes. Most commonly it's a simple arrow showing where a piece moved from and to. But more complex ones will be made available as needed.
+
 === `metadata`
 
 This property is an array of each player in player order. The front end can use this information to render a helpful sidebar identifying pieces a player controls, running scores, etc.

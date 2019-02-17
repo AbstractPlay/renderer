@@ -8,7 +8,15 @@
         <meta charset="utf-8"/>
         <title>Render Tester</title>
         <script src="./APRender.js"></script>
+        <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
         <script type="text/javascript">
+            function escapeHtml(html) {
+                var text = document.createTextNode(html);
+                var p = document.createElement('p');
+                p.appendChild(text);
+                return p.innerHTML;
+            }
+
             function processJson() {
                 var myNode = document.getElementById("drawing");
                 while (myNode.lastChild) {
@@ -18,8 +26,15 @@
                 // var options = {divid: "drawing", patterns: true};
                 // var options = {divid: "drawing", colourBlind: true};
                 var options = {divid: "drawing"};
+                var radio = document.querySelector('input[name="playerfill"]:checked').value;
+                if (radio === "blind") {
+                    options.colourBlind = true;
+                } else if (radio === "patterns") {
+                    options.patterns = true;
+                }
                 var data = JSON.parse(document.getElementById("jsonIn").value);
-                APRender.render(data, options);
+                var canvas = APRender.render(data, options);
+                document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(canvas.svg()) + "</p>"
                 return false;
             }
 
@@ -34,6 +49,16 @@
             <h1>JSON Input</h1>
             <form>
                 <textarea id="jsonIn" style="width: 100%; height: 10em"></textarea>
+                <div>
+                    <input type="radio" id="fillStandard" name="playerfill" value="standard" checked>
+                    <label for="fillStandard">Standard colours (9 max)</label>
+
+                    <input type="radio" id="fillBlind" name="playerfill" value="blind">
+                    <label for="fillBlind">Colour-blind-friendly colours (4 max)</label>
+
+                    <input type="radio" id="fillPatterns" name="playerfill" value="patterns">
+                    <label for="fillPatterns">Black-and-white patterns (10 max)</label>
+                </div>
                 <button id="submit" name="submit" type="button">Generate SVG</button>
             </form>
         </section>
@@ -41,6 +66,10 @@
         <section>
             <h1>SVG Output</h1>
             <div id="drawing" style="width: 100%; height: 30em; border: 1px solid black; padding: 0.5em"></div>
+        </section>
+        <section>
+            <h1>SVG Code</h1>
+            <div id="svgcode"></div>
         </section>
     </body>
 </html>
