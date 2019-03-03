@@ -10,6 +10,7 @@ const validate = ajv.compile(schema);
 
 interface IRenderOptions {
     divid: string;
+    divelem?: HTMLElement;
     sheets?: string[];
     gamename?: string;
     target?: SVG.Doc;
@@ -29,6 +30,21 @@ function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
         retstr += `\nKeyword: ${error.keyword}, dataPath: ${error.dataPath}, schemaPath: ${error.schemaPath}`;
     }
     return retstr;
+}
+
+/*
+    Creates a detached DOM element in which to render the image unseen.
+    You can then just export the SVG.
+    Intended for use in React functional components.
+*/
+export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): string {
+    const node = document.createElement("div");
+    const uuidv4 = require("uuid/v4");
+    const uid = uuidv4();
+    node.setAttribute("id", uid);
+    opts.divelem = node;
+    const canvas = render(json, opts);
+    return canvas.svg();
 }
 
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
@@ -54,6 +70,8 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): SVG.Doc 
     let draw: SVG.Doc;
     if ( ("target" in opts) && (opts.target != null) ) {
         draw = opts.target;
+    } else if ( ("divelem" in opts) && (opts.divelem != null) ) {
+        draw = SVG(opts.divelem);
     } else {
         draw = SVG(opts.divid);
     }

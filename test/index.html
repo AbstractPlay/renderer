@@ -35,6 +35,8 @@
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
                 document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(canvas.svg()) + "</p>"
+                var svgcode = APRender.renderStatic(data, options);
+                document.getElementById("staticsvgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
                 return false;
             }
 
@@ -70,6 +72,10 @@
         <section>
             <h1>SVG Code</h1>
             <div id="svgcode"></div>
+        </section>
+        <section>
+            <h1>Static SVG Code</h1>
+            <div id="staticsvgcode"></div>
         </section>
     </body>
 </html>
