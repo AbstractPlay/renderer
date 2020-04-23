@@ -86,9 +86,9 @@ export interface APRenderRep {
         /**
          * Describes the system's stars.
          */
-        stars: string[];
+        stars: [string] | [string, string];
       }[];
-  pieces: null | string | string[][][] | string[][];
+  pieces: null | string | [string[][], ...string[][][]] | [string, ...string[]][];
   /**
    * Areas are placed vertically under the game board. There's no default way of handling this. Each renderer will need to know what to do with it.
    */
@@ -110,7 +110,7 @@ export interface APRenderRep {
     /**
      * A sequence of points representing the beginning, any middle, and finally end points. Used by the `mvmtX` types for drawing lines.
      */
-    points?: string[];
+    points?: [string, string, ...string[]];
     [k: string]: any;
   }[];
   /**

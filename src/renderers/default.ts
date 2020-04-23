@@ -30,7 +30,7 @@ export class DefaultRenderer extends RendererBase {
         // PIECES
         // Load all the pieces in the legend
         if ( ("legend" in json) && (json.legend !== undefined) ) {
-            const glyphSet = new Set();
+            const glyphSet: Set<string> = new Set();
             // tslint:disable-next-line: forin
             for (const key in json.legend) {
                 const node = json.legend[key];
