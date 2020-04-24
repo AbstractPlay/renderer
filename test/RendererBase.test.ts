@@ -1,5 +1,8 @@
 // tslint:disable: no-var-requires
 
+import { expect } from "chai";
+import "mocha";
+
 // import { IRendererOptions } from "../src/RendererBase";
 // import { DefaultRenderer } from "../src/renderers";
 // import { APRenderRep } from "../src/schema";
@@ -23,8 +26,10 @@
 //     pieces: null,
 // };
 
-test("Placeholder that will always pass", () => {
-    expect(true).toBe(true);
+describe("Base renderer", () => {
+    it("should always pass", () => {
+        expect(true).to.equal(true);
+    });
 });
 
 // test("JSON Prechecks: Correct renderer (default)", () => {

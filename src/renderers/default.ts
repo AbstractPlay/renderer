@@ -66,6 +66,9 @@ export class DefaultRenderer extends RendererBase {
                 const node = json.legend[key];
                 if (typeof(node) !== "string") {
                     const use = svg.get(node.name);
+                    if ( (use === undefined) || (use === null) ) {
+                        throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
+                    }
                     const newuse = use.clone().id(key);
                     // draw.defs().use(use).id(key);
                     // const newuse = svg.get(key);
