@@ -2,7 +2,7 @@ import svg from "svg.js";
 import { GridPoints } from "../GridGenerator";
 import { rectOfSquares } from "../grids";
 import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "../RendererBase";
-import { APRenderRep } from "../schema";
+import { APRenderRep, Glyph } from "../schema";
 
 export class DefaultRenderer extends RendererBase {
 
@@ -36,6 +36,10 @@ export class DefaultRenderer extends RendererBase {
                 const node = json.legend[key];
                 if (typeof(node) === "string") {
                     glyphSet.add(node);
+                } else if (Array.isArray(node)) {
+                    node.forEach((e) => {
+                        glyphSet.add(e.name);
+                    });
                 } else {
                     glyphSet.add(node.name);
                 }
@@ -46,18 +50,32 @@ export class DefaultRenderer extends RendererBase {
 
             // Load any requested patterns
             if (opts.patterns) {
+                const patterns: Array<number> = new Array();
                 // tslint:disable-next-line: forin
                 for (const key in json.legend) {
                     const node = json.legend[key];
                     if (typeof(node) !== "string") {
-                        if (node.colour !== undefined) {
-                            if (node.colour > opts.patternList.length) {
-                                throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
-                            }
-                            this.loadPattern(opts.patternList[node.colour - 1], draw);
+                        let glyphs: Array<Glyph>;
+                        if (! Array.isArray(node)) {
+                            glyphs = [node];
+                        } else {
+                            glyphs = node;
                         }
+                        glyphs.forEach((e) => {
+                            if (e.colour !== undefined) {
+                                if (! patterns.includes(e.colour)) {
+                                    patterns.push(e.colour);
+                                }
+                            }
+                        });
                     }
                 }
+                patterns.forEach((n) => {
+                    if (n >= opts.patternList.length) {
+                        throw new Error("The system does not support the number of patterns you have requested.");
+                    }
+                    this.loadPattern(opts.patternList[n - 1], draw);
+                });
             }
 
             // Now look for coloured pieces and add those to the <defs> section for placement
@@ -65,36 +83,44 @@ export class DefaultRenderer extends RendererBase {
             for (const key in json.legend) {
                 const node = json.legend[key];
                 if (typeof(node) !== "string") {
-                    const use = svg.get(node.name);
-                    if ( (use === undefined) || (use === null) ) {
-                        throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
+                    let glyphs: Array<Glyph>;
+                    if (! Array.isArray(node)) {
+                        glyphs = [node];
+                    } else {
+                        glyphs = node;
                     }
-                    const newuse = use.clone().id(key);
-                    // draw.defs().use(use).id(key);
-                    // const newuse = svg.get(key);
-                    if (node.colour !== undefined) {
-                        if  (opts.patterns) {
-                            if (node.colour > opts.patternList.length) {
-                                throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
-                            }
-                            const fill = svg.get(opts.patternList[node.colour - 1]);
-                            if (newuse.is(svg.G)) {
-                                (newuse as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
+                    glyphs.forEach((g) => {
+                        const use = svg.get(g.name);
+                        if ( (use === undefined) || (use === null) ) {
+                            throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
+                        }
+                        const newuse = use.clone().id(key);
+                        // draw.defs().use(use).id(key);
+                        // const newuse = svg.get(key);
+                        if (g.colour !== undefined) {
+                            if  (opts.patterns) {
+                                if (g.colour > opts.patternList.length) {
+                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                                }
+                                const fill = svg.get(opts.patternList[g.colour - 1]);
+                                if (newuse.is(svg.G)) {
+                                    (newuse as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
+                                } else {
+                                    newuse.fill(fill);
+                                }
                             } else {
-                                newuse.fill(fill);
-                            }
-                        } else {
-                            if (node.colour > opts.colours.length) {
-                                throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
-                            }
-                            const fill = opts.colours[node.colour - 1];
-                            if (newuse.is(svg.G)) {
-                                (newuse as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
-                            } else {
-                                newuse.fill(fill);
+                                if (g.colour > opts.colours.length) {
+                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                                }
+                                const fill = opts.colours[g.colour - 1];
+                                if (newuse.is(svg.G)) {
+                                    (newuse as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
+                                } else {
+                                    newuse.fill(fill);
+                                }
                             }
                         }
-                    }
+                    });
                 }
             }
         }

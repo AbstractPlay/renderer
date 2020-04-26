@@ -3,7 +3,20 @@
 import "mocha";
 import { sheets } from "../../src/sheets";
 
-describe("All glyph sheets", () => {
+describe("Glyph sheets", () => {
+    it ("sheet names should match the file name", () => {
+        const fs = require("fs");
+        fs
+            .readdirSync("src/sheets/")
+            .filter((file: string) => (file.indexOf(".") !== 0) && (! file.startsWith("index")) && (file.slice(-3) === ".ts"))
+            .forEach((file: string) => {
+                const root = file.slice(0, -3);
+                if (! sheets.has(root)) {
+                    throw new Error("There is not a parsed sheet with the same name as '" + root + "'");
+                }
+            });
+    });
+
     it("explicit ids should match internal SVG ids", () => {
         const window = require("svgdom");
         const SVG = require("svg.js")(window);
@@ -19,36 +32,38 @@ describe("All glyph sheets", () => {
             });
         });
     });
-});
 
-describe("Default glyph sheet", () => {
     it("should be in alphabetical order", (done) => {
         const fs = require("fs");
         const readline = require("readline");
         const reGlyph: RegExp = /^sheet\.glyphs\.set\(\"(\S+)\"/;
 
-        const rl = readline.createInterface({
-            crlfDelay: Infinity,
-            input: fs.createReadStream("src/sheets/default.ts"),
-        });
+        fs
+            .readdirSync("src/sheets/")
+            .filter((file: string) => (file.indexOf(".") !== 0) && (file.slice(-3) === ".ts"))
+            .forEach((file: string) => {
+                const full = "src/sheets/" + file;
 
-        let error: Error;
-        const names: Array<string> = new Array();
-        rl.on("line", (line: string) => {
-            const m = reGlyph.exec(line);
-            if (m !== null) {
-                const name = m[1];
-                if (names.length === 0) {
-                    names.push(name);
-                } else if (name < names[names.length - 1]) {
-                    if (error === undefined) {
-                        error = new Error("The glyph '" + name + "' is out of order");
+                const rl = readline.createInterface({
+                    crlfDelay: Infinity,
+                    input: fs.createReadStream(full),
+                });
+
+                const names: Array<string> = new Array();
+                rl.on("line", (line: string) => {
+                    const m = reGlyph.exec(line);
+                    if (m !== null) {
+                        const name = m[1];
+                        if (names.length === 0) {
+                            names.push(name);
+                        } else if (name < names[names.length - 1]) {
+                            throw new Error("Glyph sheet: " + file + "\nThe glyph '" + name + "' is out of order");
+                        } else {
+                            names.push(name);
+                        }
                     }
-                } else {
-                    names.push(name);
-                }
-            }
-        });
-        rl.on("close", () => done(error));
+                });
+            });
+        done();
     });
 });

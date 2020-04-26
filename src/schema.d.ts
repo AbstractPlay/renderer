@@ -22,19 +22,7 @@ export interface APRenderRep {
    * Map each `piece` to an actual glyph with possible options.
    */
   legend?: {
-    [k: string]:
-      | string
-      | {
-          /**
-           * The name of the actual glyph.
-           */
-          name: string;
-          /**
-           * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
-           */
-          colour?: number;
-          [k: string]: any;
-        };
+    [k: string]: string | Glyph | [Glyph, ...Glyph[]];
   };
   /**
    * This is the game board itself.
@@ -127,5 +115,19 @@ export interface APRenderRep {
     score?: number;
     [k: string]: any;
   }[];
+  [k: string]: any;
+}
+/**
+ * An individual glyph with options, used in the `legend` property.
+ */
+export interface Glyph {
+  /**
+   * The name of the actual glyph.
+   */
+  name: string;
+  /**
+   * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
+   */
+  colour?: number;
   [k: string]: any;
 }

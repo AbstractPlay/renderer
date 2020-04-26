@@ -50,7 +50,7 @@ export abstract class RendererBase {
     }
 
     protected optionsPrecheck(opts: IRendererOptionsIn): IRendererOptionsOut {
-        const newOpts: IRendererOptionsOut = {sheetList: ["default"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames};
+        const newOpts: IRendererOptionsOut = {sheetList: ["core", "chess", "piecepack"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames};
 
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
@@ -142,14 +142,21 @@ export abstract class RendererBase {
     }
 
     protected loadGlyph(glyph: string, sheetList: string[], canvas: svg.Container) {
+        let found: boolean = false;
         for (const s of sheetList) {
             const sheet = sheets.get(s);
             if (sheet !== undefined) {
                 const func = sheet.glyphs.get(glyph);
                 if (func !== undefined) {
+                    found = true;
                     func(canvas.defs());
                 }
+            } else {
+                throw new Error("Could not load the glyph sheet '" + s + "'");
             }
+        }
+        if (! found) {
+            throw new Error("The glyph '" + glyph + "' could not be found in the requested sheets: " + sheetList.join(", "));
         }
     }
 }

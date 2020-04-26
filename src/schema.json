@@ -12,6 +12,23 @@
             "description": "Pattern for the global stash definitions for the `homeworlds` renderer.",
             "type": "string",
             "pattern": "^1*2*3*$"
+        },
+        "glyph": {
+            "description": "An individual glyph with options, used in the `legend` property.",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of the actual glyph.",
+                    "type": "string"
+                },
+                "colour": {
+                    "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
+                    "$ref": "#/definitions/positiveInteger"
+                }
+            },
+            "required": [
+                "name"
+            ]
         }
     },
     "type": "object",
@@ -35,21 +52,15 @@
                         "type": "string"
                     },
                     {
-                        "description": "The object form is used for glyphs with options (like player colours).",
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "description": "The name of the actual glyph.",
-                                "type": "string"
-                            },
-                            "colour": {
-                                "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
-                                "$ref": "#/definitions/positiveInteger"
-                            }
-                        },
-                        "required": [
-                            "name"
-                        ]
+                        "$ref": "#/definitions/glyph"
+                    },
+                    {
+                        "description": "The array version is for compositing glyphs into a single piece. Each glyph is simply stacked on top of the others.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "$ref": "#/definitions/glyph"
+                        }
                     }
                 ]
             }
