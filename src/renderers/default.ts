@@ -22,7 +22,7 @@ export class DefaultRenderer extends RendererBase {
                 break;
             }
             default: {
-                throw new Error(`The requested board style (${ json.board.style })is not yet supported by the default renderer.`);
+                throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
                 break;
             }
         }
@@ -62,23 +62,23 @@ export class DefaultRenderer extends RendererBase {
                             glyphs = node;
                         }
                         glyphs.forEach((e) => {
-                            if (e.colour !== undefined) {
-                                if (! patterns.includes(e.colour)) {
-                                    patterns.push(e.colour);
+                            if (e.player !== undefined) {
+                                if (! patterns.includes(e.player)) {
+                                    patterns.push(e.player);
                                 }
                             }
                         });
                     }
                 }
                 patterns.forEach((n) => {
-                    if (n >= opts.patternList.length) {
+                    if (n > opts.patternList.length) {
                         throw new Error("The system does not support the number of patterns you have requested.");
                     }
                     this.loadPattern(opts.patternList[n - 1], draw);
                 });
             }
 
-            // Now look for coloured pieces and add those to the <defs> section for placement
+            // Now look for composite and coloured pieces and add those to the <defs> section for placement
             // tslint:disable-next-line: forin
             for (const key in json.legend) {
                 const node = json.legend[key];
@@ -89,37 +89,92 @@ export class DefaultRenderer extends RendererBase {
                     } else {
                         glyphs = node;
                     }
-                    glyphs.forEach((g) => {
-                        const use = svg.get(g.name);
+
+                    // Create a new SVG.Nested to represent the composite piece and add it to <defs>
+                    const cellsize = 500;
+                    const nested = draw.defs().group().id(key).size(cellsize, cellsize).attr("data-cellsize", cellsize);
+
+                    // Layer the glyphs, manipulating as you go
+                    glyphs.forEach((glyph) => {
+                        // Get the glyph from <defs>
+                        const got = svg.get(glyph.name);
+                        const use = got.clone();
                         if ( (use === undefined) || (use === null) ) {
                             throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
                         }
-                        const newuse = use.clone().id(key);
-                        // draw.defs().use(use).id(key);
-                        // const newuse = svg.get(key);
-                        if (g.colour !== undefined) {
+
+                        // Scale it appropriately
+                        if (use.is(svg.G)) {
+                            const sheetCellSize = use.attr("data-cellsize");
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            }
+                            use.scale(cellsize / sheetCellSize);
+                        } else {
+                            use.size(cellsize);
+                        }
+
+                        // Colourize (`player` first, then `colour` if defined)
+                        if (glyph.player !== undefined) {
                             if  (opts.patterns) {
-                                if (g.colour > opts.patternList.length) {
+                                if (glyph.player > opts.patternList.length) {
                                     throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                                 }
-                                const fill = svg.get(opts.patternList[g.colour - 1]);
-                                if (newuse.is(svg.G)) {
-                                    (newuse as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
+                                const fill = svg.get(opts.patternList[glyph.player - 1]);
+                                if (use.is(svg.G)) {
+                                    (use as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
                                 } else {
-                                    newuse.fill(fill);
+                                    use.fill(fill);
                                 }
                             } else {
-                                if (g.colour > opts.colours.length) {
-                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                                if (glyph.player > opts.colours.length) {
+                                    throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                                 }
-                                const fill = opts.colours[g.colour - 1];
-                                if (newuse.is(svg.G)) {
-                                    (newuse as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
+                                const fill = opts.colours[glyph.player - 1];
+                                if (use.is(svg.G)) {
+                                    (use as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
                                 } else {
-                                    newuse.fill(fill);
+                                    use.fill(fill);
                                 }
                             }
+                        } else if (glyph.colour !== undefined) {
+                            if (use.is(svg.G)) {
+                                (use as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill({color: glyph.colour}); });
+                            } else {
+                                use.fill(glyph.colour);
+                            }
                         }
+
+                        // Scale as requested
+                        if (glyph.scale !== undefined) {
+                            use.transform({scale: glyph.scale, cx: use.attr("data-cellsize") / 2, cy: use.attr("data-cellsize") / 2}, true);
+                        }
+
+                        // Rotate if requested
+                        if (glyph.rotate !== undefined) {
+                            use.rotate(glyph.rotate, use.attr("data-cellsize") / 2, use.attr("data-cellsize") / 2);
+                        }
+
+                        // Shift if requested
+                        let dx = 0;
+                        let dy = 0;
+                        if (glyph.nudge !== undefined) {
+                            if (glyph.nudge.dx !== undefined) {
+                                dx = glyph.nudge.dx;
+                            }
+                            if (glyph.nudge.dy !== undefined) {
+                                dy = glyph.nudge.dy;
+                            }
+                        }
+                        use.dmove(dx, dy);
+
+                        // Apply requested opacity
+                        if (glyph.opacity !== undefined) {
+                            use.fill({opacity: glyph.opacity});
+                        }
+
+                        // Add to the nested figure
+                        nested.add(use);
                     });
                 }
             }

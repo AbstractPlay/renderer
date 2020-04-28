@@ -28,9 +28,18 @@ homeworlds:: This engine generates Homeworlds boards only.
 
 === `legend`
 
-Here you map references to glyphs and their options to (usually) single characters used to represent pieces in the `pieces` property. For player pieces, you need to use the object schema that includes the `colour` property. For most other pieces, you'll just have a string that points to the glyph you want.
+Here you map references to glyphs and their options to (usually) single characters used to represent pieces in the `pieces` property. For player pieces, you need to use the object schema that includes the `player` property. For most other pieces, you'll just have a string that points to the glyph you want.
 
 Glyphs are resolved based on user settings. The renderer will look at each glyph sheet in order until it finds the first implementation of that glyph. If it fails, an error will be thrown.
+
+If you pass an array of glyphs, they are simply layered over each other, creating a composite piece. The object form supports the following options
+
+player:: This marks the piece as belonging to a specific player. The fill colour will be chosen based on user settings. This is the preferred way to assign colours to pieces.
+color:: A 3- or 6-digit hex colour value. This should only be used for tweaking composite pieces. Do not use this to assign player colours, which should be determined by player settings. Use the `player` property for that. This setting is ignored if `player` is also defined.
+scale:: This is a factor for growing or shrinking a glyph. Values <1 cause the glyph to shrink. Values >1 cause it to grow.
+opacity:: Applies an opacity to the entire glyph. A number between 0 and 1 where 0 is completely transparent.
+rotate:: A number between -360 and 360 representing the number of degrees to rotate the glyph. A negative value rotates counterclockwise.
+nudge:: A way of nudging a glyph off mathematical centre. Negative values nudge the piece up and to the left.
 
 === `board`
 

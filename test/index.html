@@ -34,9 +34,9 @@
                 }
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
-                document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(canvas.svg()) + "</p>"
-                var svgcode = APRender.renderStatic(data, options);
-                document.getElementById("staticsvgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
+                //document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(canvas.svg()) + "</p>"
+                //var svgcode = APRender.renderStatic(data, options);
+                //document.getElementById("staticsvgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
                 return false;
             }
 

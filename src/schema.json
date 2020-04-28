@@ -21,14 +21,56 @@
                     "description": "The name of the actual glyph.",
                     "type": "string"
                 },
-                "colour": {
+                "player": {
                     "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
                     "$ref": "#/definitions/positiveInteger"
+                },
+                "colour": {
+                    "description": "A 3- or 6-digit hex colour value. Do not use this to assign player colours! This should only be used for tweaking composite pieces. Ignored if `player` is also defined.",
+                    "type": "string",
+                    "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+                },
+                "scale": {
+                    "description": "A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.",
+                    "type": "number",
+                    "default": 1
+                },
+                "opacity": {
+                    "description": "A number between 0 and 1 indicating how opaque to render the glyph. A value of 0 means completely transparent.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "rotate": {
+                    "description": "A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.",
+                    "type": "number",
+                    "minimum": -360,
+                    "maximum": 360,
+                    "default": 0
+                },
+                "nudge" : {
+                    "description": "The number of units to nudge the glyph from centre.",
+                    "type": "object",
+                    "properties": {
+                        "dx": {
+                            "description": "Negative values move the glyph to the left.",
+                            "type": "number",
+                            "default": 0
+                        },
+                        "dy": {
+                            "description": "Negative values move the glyph up.",
+                            "type": "number",
+                            "default": 0
+                        }
+                    },
+                    "additionalProperties": false
                 }
             },
             "required": [
                 "name"
-            ]
+            ],
+            "additionalProperties": false
         }
     },
     "type": "object",

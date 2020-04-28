@@ -10,10 +10,10 @@ describe("Schema validator", () => {
         const data = {
             board: {style: "squares-checkered", height: 4, width: 4},
             legend: {
-                B: {name: "piece", colour: 2},
-                G: {name: "piece", colour: 3},
-                R: {name: "piece", colour: 1},
-                Y: {name: "piece", colour: 4},
+                B: {name: "piece", player: 2},
+                G: {name: "piece", player: 3},
+                R: {name: "piece", player: 1},
+                Y: {name: "piece", player: 4},
             },
             pieces: "YYRR\nY--R\nB--G\nBBGG",
         };

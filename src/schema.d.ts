@@ -128,6 +128,34 @@ export interface Glyph {
   /**
    * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
    */
-  colour?: number;
-  [k: string]: any;
+  player?: number;
+  /**
+   * A 3- or 6-digit hex colour value. Do not use this to assign player colours! This should only be used for tweaking composite pieces. Ignored if `player` is also defined.
+   */
+  colour?: string;
+  /**
+   * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
+   */
+  scale?: number;
+  /**
+   * A number between 0 and 1 indicating how opaque to render the glyph. A value of 0 means completely transparent.
+   */
+  opacity?: number;
+  /**
+   * A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.
+   */
+  rotate?: number;
+  /**
+   * The number of units to nudge the glyph from centre.
+   */
+  nudge?: {
+    /**
+     * Negative values move the glyph to the left.
+     */
+    dx?: number;
+    /**
+     * Negative values move the glyph up.
+     */
+    dy?: number;
+  };
 }
