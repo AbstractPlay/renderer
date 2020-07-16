@@ -40,7 +40,7 @@
         "acorn": "^6.4.1",
         "chai": "^4.2.0",
         "json-schema-to-typescript": "^8.2.0",
-        "lodash": "^4.17.15",
+        "lodash": "^4.17.19",
         "mocha": "^7.1.1",
         "svgdom": "0.0.21",
         "ts-loader": "^5.4.5",
