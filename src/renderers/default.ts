@@ -91,8 +91,8 @@ export class DefaultRenderer extends RendererBase {
                         glyphs = node;
                     }
 
+                    const cellsize = 500;
                     // Create a new SVG.Nested to represent the composite piece and add it to <defs>
-                    const cellsize = 100;
                     const nested = draw.defs().group().id(key).size(cellsize, cellsize).attr("data-cellsize", cellsize);
 
                     // Layer the glyphs, manipulating as you go
@@ -253,7 +253,6 @@ export class DefaultRenderer extends RendererBase {
                     }
                 }
             }
-            // group.move(100, 0);
         }
 
         // Finally, annotations
@@ -373,8 +372,6 @@ export class DefaultRenderer extends RendererBase {
         lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
         lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
-
-        board.move(0, 0);
 
         return grid;
     }
