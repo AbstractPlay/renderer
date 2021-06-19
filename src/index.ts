@@ -37,18 +37,20 @@ function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
     You can then just export the SVG.
     Intended for use in React functional components.
 */
-export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): string {
+export function renderStatic(json: APRenderRep, boardClick: (row: number, col: number, piece: string) => void,
+                             opts = {} as IRenderOptions): string {
     const node = document.createElement("div");
     const uuidv4 = require("uuid/v4");
     const uid = uuidv4();
     node.setAttribute("id", uid);
     opts.divelem = node;
-    const canvas = render(json, opts);
+    const canvas = render(json, boardClick, opts);
     return canvas.svg();
 }
 
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
-export function render(json: APRenderRep, opts = {} as IRenderOptions): SVG.Doc {
+export function render(json: APRenderRep, boardClick: (row: number, col: number, piece: string) => void,
+                       opts = {} as IRenderOptions): SVG.Doc {
     // Validate the JSON
     if (! validate(json)) {
         throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
@@ -85,7 +87,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): SVG.Doc 
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList});
+    renderer.render(json, draw, boardClick, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList});
     draw.viewbox(draw.bbox());
     return draw;
 }

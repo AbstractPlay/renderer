@@ -6,7 +6,8 @@ import { APRenderRep, Glyph } from "../schema";
 
 export class DefaultRenderer extends RendererBase {
 
-    public render(json: APRenderRep, draw: svg.Doc, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: svg.Doc, boardClick: (row: number, col: number, piece: string) => void,
+                  options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
@@ -18,7 +19,7 @@ export class DefaultRenderer extends RendererBase {
         }
         switch (json.board.style) {
             case "squares-checkered": {
-                gridPoints = this.squaresCheckered(json, draw, opts);
+                gridPoints = this.squaresCheckered(json, draw, boardClick, opts);
                 break;
             }
             default: {
@@ -91,7 +92,7 @@ export class DefaultRenderer extends RendererBase {
                     }
 
                     // Create a new SVG.Nested to represent the composite piece and add it to <defs>
-                    const cellsize = 500;
+                    const cellsize = 100;
                     const nested = draw.defs().group().id(key).size(cellsize, cellsize).attr("data-cellsize", cellsize);
 
                     // Layer the glyphs, manipulating as you go
@@ -109,7 +110,7 @@ export class DefaultRenderer extends RendererBase {
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
-                            use.scale(cellsize / sheetCellSize);
+                            use.scale(cellsize / sheetCellSize, 0, 0);
                         } else {
                             use.size(cellsize);
                         }
@@ -189,7 +190,7 @@ export class DefaultRenderer extends RendererBase {
             if (typeof json.pieces === "string") {
                 // Does it contain commas
                 if (json.pieces.indexOf(",") >= 0) {
-                    for (const row of json.pieces.split("\n")) {
+                    for (const row of json.pieces.split(";")) {
                         let node: string[][];
                         if (row === "_") {
                             node = new Array(json.board.width).fill([]);
@@ -200,8 +201,8 @@ export class DefaultRenderer extends RendererBase {
                         }
                         pieces.push(node);
                     }
-                } else {
-                    for (const row of json.pieces.split("\n")) {
+                } else if (json.pieces.indexOf(";") >= 0) {
+                    for (const row of json.pieces.split(";")) {
                         let node: string[][];
                         if (row === "_") {
                             node = new Array(json.board.width).fill([]);
@@ -209,6 +210,13 @@ export class DefaultRenderer extends RendererBase {
                             const cells = row.split("");
                             node = cells.map((x) => [x]);
                         }
+                        pieces.push(node);
+                    }
+                } else {
+                    for (let i = json.board.height! - 1; i >= 0; i--) {
+                        const cells = json.pieces.substring(json.board.width! * i, json.board.width! * (i + 1)).split("");
+                        let node: string[][];
+                        node = cells.map((x) => [x]);
                         pieces.push(node);
                     }
                 }
@@ -230,6 +238,7 @@ export class DefaultRenderer extends RendererBase {
                             }
                             const use = group.use(piece);
                             use.center(point.x, point.y);
+
                             if (piece.is(svg.G)) {
                                 const sheetCellSize = piece.attr("data-cellsize");
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
@@ -239,10 +248,12 @@ export class DefaultRenderer extends RendererBase {
                             } else {
                                 use.size(this.cellsize);
                             }
+                            use.click(() => boardClick(row, col, key[0]));
                         }
                     }
                 }
             }
+            // group.move(100, 0);
         }
 
         // Finally, annotations
@@ -271,7 +282,8 @@ export class DefaultRenderer extends RendererBase {
         }
     }
 
-    private squaresCheckered(json: APRenderRep, draw: svg.Doc, opts: IRendererOptionsOut): GridPoints {
+    private squaresCheckered(json: APRenderRep, draw: svg.Doc, boardClick: (row: number, col: number, piece: string) => void,
+                             opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -328,12 +340,12 @@ export class DefaultRenderer extends RendererBase {
                     tile = tileLight;
                 }
                 const {x, y} = grid[row][col];
-                tiles.use(tile).center(x, y);
+                tiles.use(tile).center(x, y).click(() => boardClick(row, col, ""));
             }
         }
 
         // Draw grid lines
-        const gridlines = draw.group().id("gridlines");
+        const gridlines = board.group().id("gridlines");
         // Horizontal, top of each row, then bottom line after loop
         for (let row = 0; row < height; row++) {
             const x1 = grid[row][0].x - (cellsize / 2);
@@ -361,6 +373,8 @@ export class DefaultRenderer extends RendererBase {
         lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
         lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
+
+        board.move(0, 0);
 
         return grid;
     }

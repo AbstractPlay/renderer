@@ -13,6 +13,7 @@
         "build-ts": "tsc",
         "test": "mocha -r ts-node/register test/**/*.test.ts",
         "tslint": "tslint -c tslint.json -p tsconfig.json",
+        "build-local": "npm run build-ts && webpack",
         "dist-dev": "webpack",
         "dist-prod": "webpack --mode=production",
         "json2ts": "npx json2ts -i src/schema.json -o src/schema.d.ts",
@@ -37,6 +38,7 @@
     "devDependencies": {
         "@types/chai": "^4.2.11",
         "@types/mocha": "^7.0.2",
+        "@types/node": "^15.0.2",
         "acorn": "^6.4.1",
         "chai": "^4.2.0",
         "json-schema-to-typescript": "^8.2.0",

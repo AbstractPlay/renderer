@@ -17,12 +17,11 @@ sheet.glyphs.set("piece", (canvas: svg.Nested) => {
     const group = canvas.group()
         .id("piece")
         .attr("data-cellsize", sheet.cellsize);
-    group.circle(sheet.cellsize)
-        .fill({color: "#000", opacity: 0});
+    group.rect(sheet.cellsize, sheet.cellsize).fill({opacity: 0});
     group.circle(sheet.cellsize - (sheet.cellsize * 0.15))
         .attr("data-playerfill", true)
         .fill("#fff")
-        .stroke({width: 2, color: "#000"})
+        .stroke({width: 5, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
 });
 

@@ -33,7 +33,8 @@ export abstract class RendererBase {
         this.name = name;
     }
 
-    public abstract render(json: APRenderRep, draw: svg.Doc, opts: IRendererOptionsIn): void;
+    public abstract render(json: APRenderRep, draw: svg.Doc, boardClick: (row: number, col: number, piece: string) => void,
+                           opts: IRendererOptionsIn): void;
 
     protected jsonPrechecks(json: APRenderRep): APRenderRep {
         // Check for missing renderer
