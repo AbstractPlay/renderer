@@ -18,14 +18,20 @@ describe("Glyph sheets", () => {
     });
 
     it("explicit ids should match internal SVG ids", () => {
-        const window = require("svgdom");
-        const SVG = require("svg.js")(window);
+        // returns a window with a document and an svg root node
+        const { createSVGWindow } = require("svgdom");
+        const window = createSVGWindow();
         const document = window.document;
+        const { SVG, registerWindow } = require("@svgdotjs/svg.js");
+
+        // register window and document
+        registerWindow(window, document);
+
         Array.from(sheets.values()).forEach((sheet) => {
             sheet.glyphs.forEach((v, k) => {
-                const canvas: svgjs.Doc = SVG(document.documentElement);
+                const canvas = SVG(document.documentElement);
                 v(canvas.defs());
-                const retrieved = SVG.get(k);
+                const retrieved = SVG("#" + k);
                 if ( (retrieved === undefined) || (retrieved === null) ) {
                     throw new Error("ID mismatch for glyph '" + k + "'");
                 }

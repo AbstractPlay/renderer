@@ -29,26 +29,26 @@
     ],
     "private": true,
     "dependencies": {
-        "ajv": "^6.12.2",
+        "@svgdotjs/svg.js": "^3.1.1",
+        "ajv": "^6.12.6",
         "graphlib": "^2.1.8",
-        "svg.js": "github:svgdotjs/svg.js#2.x",
         "uuid": "^3.4.0"
     },
     "devDependencies": {
-        "@types/chai": "^4.2.11",
+        "@types/chai": "^4.2.21",
         "@types/mocha": "^7.0.2",
-        "acorn": "^6.4.1",
-        "chai": "^4.2.0",
+        "acorn": "^6.4.2",
+        "chai": "^4.3.4",
         "json-schema-to-typescript": "^8.2.0",
-        "lodash": "^4.17.15",
-        "mocha": "^7.1.1",
-        "moment": "^2.26.0",
-        "svgdom": "0.0.21",
+        "lodash": "^4.17.21",
+        "mocha": "^7.2.0",
+        "moment": "^2.29.1",
+        "svgdom": "^0.1.8",
         "ts-loader": "^5.4.5",
-        "ts-node": "^8.9.0",
+        "ts-node": "^8.10.2",
         "tslint": "^5.20.1",
-        "typescript": "^3.8.3",
-        "webpack": "^4.43.0",
-        "webpack-cli": "^3.3.11"
+        "typescript": "^3.9.10",
+        "webpack": "^5.52.0",
+        "webpack-cli": "^3.3.12"
     }
 }

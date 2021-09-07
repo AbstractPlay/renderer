@@ -1,5 +1,5 @@
 // import svg, { Nested } from "@svgdotjs/svg.js";
-import svg from "svg.js";
+import { Container as SVGContainer, Svg } from "@svgdotjs/svg.js";
 // import { GridPoints } from "./GridGenerator";
 // import { rectOfSquares } from "./grids";
 import { APRenderRep } from "./schema";
@@ -33,7 +33,7 @@ export abstract class RendererBase {
         this.name = name;
     }
 
-    public abstract render(json: APRenderRep, draw: svg.Doc, opts: IRendererOptionsIn): void;
+    public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
 
     protected jsonPrechecks(json: APRenderRep): APRenderRep {
         // Check for missing renderer
@@ -101,7 +101,7 @@ export abstract class RendererBase {
         return newOpts;
     }
 
-    protected loadPattern(name: string, canvas: svg.Doc): void {
+    protected loadPattern(name: string, canvas: Svg): void {
         // Keep in alphabetical order.
         // If you change any `id`s, you need to change them in the `patternsBW` property, too.
 
@@ -141,7 +141,7 @@ export abstract class RendererBase {
         }
     }
 
-    protected loadGlyph(glyph: string, sheetList: string[], canvas: svg.Container) {
+    protected loadGlyph(glyph: string, sheetList: string[], canvas: SVGContainer) {
         let found: boolean = false;
         for (const s of sheetList) {
             const sheet = sheets.get(s);
@@ -149,7 +149,7 @@ export abstract class RendererBase {
                 const func = sheet.glyphs.get(glyph);
                 if (func !== undefined) {
                     found = true;
-                    func(canvas.defs());
+                    func(canvas.root().defs());
                 }
             } else {
                 throw new Error("Could not load the glyph sheet '" + s + "'");

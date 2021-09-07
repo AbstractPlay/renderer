@@ -1,4 +1,4 @@
-import svg from "svg.js";
+import { Container as SVGContainer } from "@svgdotjs/svg.js";
 import { ISheet } from "../ISheet";
 
 const sheet: ISheet = {
@@ -6,14 +6,14 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "Various chess sets based on freely available fonts",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: svg.Nested) => svg.Element | svg.Container>(),
+    glyphs: new Map<string, (canvas: SVGContainer) => SVGContainer>(),
 };
 
 // Alphabetize by glyph name, please!
 // The element's root `id` must be the same as its map key.
 // If using groups to make complex glyphs, be sure to include the attribute `data-cellsize` (the greater of width and height) so the renderer can scale it properly.
 
-sheet.glyphs.set("chess-bishop-outline-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-bishop-outline-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-bishop-outline-line")
         .attr("data-cellsize", 4096);
@@ -25,7 +25,7 @@ sheet.glyphs.set("chess-bishop-outline-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-bishop-outline-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-bishop-outline-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-bishop-outline-millenia")
         .attr("data-cellsize", 2048);
@@ -37,7 +37,7 @@ sheet.glyphs.set("chess-bishop-outline-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-bishop-outline-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-bishop-outline-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-bishop-outline-montreal")
         .attr("data-cellsize", 1000);
@@ -48,7 +48,7 @@ sheet.glyphs.set("chess-bishop-outline-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-bishop-solid-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-bishop-solid-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-bishop-solid-line")
         .attr("data-cellsize", 4096);
@@ -61,7 +61,7 @@ sheet.glyphs.set("chess-bishop-solid-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-bishop-solid-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-bishop-solid-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-bishop-solid-millenia")
         .attr("data-cellsize", 2048);
@@ -74,7 +74,7 @@ sheet.glyphs.set("chess-bishop-solid-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-bishop-solid-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-bishop-solid-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-bishop-solid-montreal")
         .attr("data-cellsize", 1000);
@@ -86,7 +86,7 @@ sheet.glyphs.set("chess-bishop-solid-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-ex-solid-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-ex-solid-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-ex-solid-line")
         .attr("data-cellsize", 4096);
@@ -98,7 +98,7 @@ sheet.glyphs.set("chess-ex-solid-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-ex-solid-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-ex-solid-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-ex-solid-millenia")
         .attr("data-cellsize", 2048);
@@ -110,7 +110,7 @@ sheet.glyphs.set("chess-ex-solid-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-king-outline-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-king-outline-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-king-outline-line")
         .attr("data-cellsize", 4096);
@@ -122,7 +122,7 @@ sheet.glyphs.set("chess-king-outline-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-king-outline-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-king-outline-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-king-outline-millenia")
         .attr("data-cellsize", 2048);
@@ -134,7 +134,7 @@ sheet.glyphs.set("chess-king-outline-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-king-outline-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-king-outline-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-king-outline-montreal")
         .attr("data-cellsize", 1000);
@@ -145,7 +145,7 @@ sheet.glyphs.set("chess-king-outline-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-king-solid-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-king-solid-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-king-solid-line")
         .attr("data-cellsize", 4096);
@@ -158,7 +158,7 @@ sheet.glyphs.set("chess-king-solid-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-king-solid-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-king-solid-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-king-solid-millenia")
         .attr("data-cellsize", 2048);
@@ -171,7 +171,7 @@ sheet.glyphs.set("chess-king-solid-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-king-solid-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-king-solid-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-king-solid-montreal")
         .attr("data-cellsize", 1000);
@@ -183,7 +183,7 @@ sheet.glyphs.set("chess-king-solid-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-knight-outline-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-knight-outline-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-knight-outline-line")
         .attr("data-cellsize", 4096);
@@ -195,7 +195,7 @@ sheet.glyphs.set("chess-knight-outline-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-knight-outline-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-knight-outline-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-knight-outline-millenia")
         .attr("data-cellsize", 2048);
@@ -207,7 +207,7 @@ sheet.glyphs.set("chess-knight-outline-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-knight-outline-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-knight-outline-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-knight-outline-montreal")
         .attr("data-cellsize", 1000);
@@ -218,7 +218,7 @@ sheet.glyphs.set("chess-knight-outline-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-knight-solid-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-knight-solid-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-knight-solid-line")
         .attr("data-cellsize", 4096);
@@ -231,7 +231,7 @@ sheet.glyphs.set("chess-knight-solid-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-knight-solid-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-knight-solid-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-knight-solid-millenia")
         .attr("data-cellsize", 2048);
@@ -244,7 +244,7 @@ sheet.glyphs.set("chess-knight-solid-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-knight-solid-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-knight-solid-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-knight-solid-montreal")
         .attr("data-cellsize", 1000);
@@ -256,7 +256,7 @@ sheet.glyphs.set("chess-knight-solid-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-pawn-outline-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-pawn-outline-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-pawn-outline-line")
         .attr("data-cellsize", 4096);
@@ -269,7 +269,7 @@ sheet.glyphs.set("chess-pawn-outline-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-pawn-outline-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-pawn-outline-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-pawn-outline-millenia")
         .attr("data-cellsize", 2048);
@@ -281,7 +281,7 @@ sheet.glyphs.set("chess-pawn-outline-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-pawn-outline-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-pawn-outline-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-pawn-outline-montreal")
         .attr("data-cellsize", 1000);
@@ -292,7 +292,7 @@ sheet.glyphs.set("chess-pawn-outline-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-pawn-solid-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-pawn-solid-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-pawn-solid-line")
         .attr("data-cellsize", 4096);
@@ -304,7 +304,7 @@ sheet.glyphs.set("chess-pawn-solid-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-pawn-solid-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-pawn-solid-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-pawn-solid-millenia")
         .attr("data-cellsize", 2048);
@@ -317,7 +317,7 @@ sheet.glyphs.set("chess-pawn-solid-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-pawn-solid-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-pawn-solid-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-pawn-solid-montreal")
         .attr("data-cellsize", 1000);
@@ -329,7 +329,7 @@ sheet.glyphs.set("chess-pawn-solid-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-queen-outline-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-queen-outline-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-queen-outline-line")
         .attr("data-cellsize", 4096);
@@ -341,7 +341,7 @@ sheet.glyphs.set("chess-queen-outline-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-queen-outline-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-queen-outline-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-queen-outline-millenia")
         .attr("data-cellsize", 2048);
@@ -353,7 +353,7 @@ sheet.glyphs.set("chess-queen-outline-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-queen-outline-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-queen-outline-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-queen-outline-montreal")
         .attr("data-cellsize", 1000);
@@ -364,7 +364,7 @@ sheet.glyphs.set("chess-queen-outline-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-queen-solid-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-queen-solid-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-queen-solid-line")
         .attr("data-cellsize", 4096);
@@ -377,7 +377,7 @@ sheet.glyphs.set("chess-queen-solid-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-queen-solid-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-queen-solid-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-queen-solid-millenia")
         .attr("data-cellsize", 2048);
@@ -390,7 +390,7 @@ sheet.glyphs.set("chess-queen-solid-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-queen-solid-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-queen-solid-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-queen-solid-montreal")
         .attr("data-cellsize", 1000);
@@ -402,7 +402,7 @@ sheet.glyphs.set("chess-queen-solid-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-rook-outline-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-rook-outline-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-rook-outline-line")
         .attr("data-cellsize", 4096);
@@ -414,7 +414,7 @@ sheet.glyphs.set("chess-rook-outline-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-rook-outline-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-rook-outline-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-rook-outline-millenia")
         .attr("data-cellsize", 2048);
@@ -426,7 +426,7 @@ sheet.glyphs.set("chess-rook-outline-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-rook-outline-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-rook-outline-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-rook-outline-montreal")
         .attr("data-cellsize", 1000);
@@ -437,7 +437,7 @@ sheet.glyphs.set("chess-rook-outline-montreal", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-rook-solid-line", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-rook-solid-line", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-rook-solid-line")
         .attr("data-cellsize", 4096);
@@ -450,7 +450,7 @@ sheet.glyphs.set("chess-rook-solid-line", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-rook-solid-millenia", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-rook-solid-millenia", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-rook-solid-millenia")
         .attr("data-cellsize", 2048);
@@ -463,7 +463,7 @@ sheet.glyphs.set("chess-rook-solid-millenia", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("chess-rook-solid-montreal", (canvas: svg.Nested) => {
+sheet.glyphs.set("chess-rook-solid-montreal", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("chess-rook-solid-montreal")
         .attr("data-cellsize", 1000);

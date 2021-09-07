@@ -1,4 +1,4 @@
-import svg from "svg.js";
+import { Container as SVGContainer } from "@svgdotjs/svg.js";
 import { ISheet } from "../ISheet";
 
 const sheet: ISheet = {
@@ -6,14 +6,14 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "Core Piecepack graphics set",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: svg.Nested) => svg.Element | svg.Container>(),
+    glyphs: new Map<string, (canvas: SVGContainer) => SVGContainer>(),
 };
 
 // Alphabetize by glyph name, please!
 // The element's root `id` must be the same as its map key.
 // If using groups to make complex glyphs, be sure to include the attribute `data-cellsize` (the greater of width and height) so the renderer can scale it properly.
 
-sheet.glyphs.set("piecepack-misc-coin-back", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-misc-coin-back", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-misc-coin-back")
         .attr("data-cellsize", 680);
@@ -26,7 +26,7 @@ sheet.glyphs.set("piecepack-misc-coin-back", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-misc-tile-back", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-misc-tile-back", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-misc-tile-back")
         .attr("data-cellsize", 733);
@@ -39,7 +39,7 @@ sheet.glyphs.set("piecepack-misc-tile-back", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-0", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-0", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-0")
         .attr("data-cellsize", 800);
@@ -52,7 +52,7 @@ sheet.glyphs.set("piecepack-number-0", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-1", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-1", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-1")
         .attr("data-cellsize", 673);
@@ -65,7 +65,7 @@ sheet.glyphs.set("piecepack-number-1", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-2", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-2", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-2")
         .attr("data-cellsize", 685);
@@ -78,7 +78,7 @@ sheet.glyphs.set("piecepack-number-2", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-3", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-3", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-3")
         .attr("data-cellsize", 696);
@@ -91,7 +91,7 @@ sheet.glyphs.set("piecepack-number-3", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-4", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-4", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-4")
         .attr("data-cellsize", 673);
@@ -104,7 +104,7 @@ sheet.glyphs.set("piecepack-number-4", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-5", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-5", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-5")
         .attr("data-cellsize", 686);
@@ -117,7 +117,7 @@ sheet.glyphs.set("piecepack-number-5", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-6", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-6", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-6")
         .attr("data-cellsize", 697);
@@ -130,7 +130,7 @@ sheet.glyphs.set("piecepack-number-6", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-7", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-7", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-7")
         .attr("data-cellsize", 673);
@@ -143,7 +143,7 @@ sheet.glyphs.set("piecepack-number-7", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-8", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-8", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-8")
         .attr("data-cellsize", 697);
@@ -156,7 +156,7 @@ sheet.glyphs.set("piecepack-number-8", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-9", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-9", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-9")
         .attr("data-cellsize", 696);
@@ -169,7 +169,7 @@ sheet.glyphs.set("piecepack-number-9", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-number-void", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-number-void", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-number-void")
         .attr("data-cellsize", 670);
@@ -182,7 +182,7 @@ sheet.glyphs.set("piecepack-number-void", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-anchors", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-anchors", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-anchors")
         .attr("data-cellsize", 707);
@@ -195,7 +195,7 @@ sheet.glyphs.set("piecepack-suit-anchors", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-clubs", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-clubs", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-clubs")
         .attr("data-cellsize", 657);
@@ -208,7 +208,7 @@ sheet.glyphs.set("piecepack-suit-clubs", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-crowns", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-crowns", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-crowns")
         .attr("data-cellsize", 716);
@@ -221,7 +221,7 @@ sheet.glyphs.set("piecepack-suit-crowns", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-diamonds", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-diamonds", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-diamonds")
         .attr("data-cellsize", 690);
@@ -234,7 +234,7 @@ sheet.glyphs.set("piecepack-suit-diamonds", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-fleurdelis", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-fleurdelis", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-fleurdelis")
         .attr("data-cellsize", 452);
@@ -248,7 +248,7 @@ sheet.glyphs.set("piecepack-suit-fleurdelis", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-hearts", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-hearts", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-hearts")
         .attr("data-cellsize", 671);
@@ -261,7 +261,7 @@ sheet.glyphs.set("piecepack-suit-hearts", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-moons", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-moons", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-moons")
         .attr("data-cellsize", 645);
@@ -274,7 +274,7 @@ sheet.glyphs.set("piecepack-suit-moons", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-spades", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-spades", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-spades")
         .attr("data-cellsize", 683);
@@ -287,7 +287,7 @@ sheet.glyphs.set("piecepack-suit-spades", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-stars", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-stars", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-stars")
         .attr("data-cellsize", 729);
@@ -300,7 +300,7 @@ sheet.glyphs.set("piecepack-suit-stars", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("piecepack-suit-suns", (canvas: svg.Nested) => {
+sheet.glyphs.set("piecepack-suit-suns", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piecepack-suit-suns")
         .attr("data-cellsize", 758);

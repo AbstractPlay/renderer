@@ -1,4 +1,4 @@
-import svg from "svg.js";
+import { Container as SVGContainer } from "@svgdotjs/svg.js";
 import { ISheet } from "../ISheet";
 
 const sheet: ISheet = {
@@ -6,14 +6,14 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "This is the base contact sheet containing the default versions of all graphics used by Abstract Play.",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: svg.Nested) => svg.Element | svg.Container>(),
+    glyphs: new Map<string, (canvas: SVGContainer) => SVGContainer>(),
 };
 
 // Alphabetize by glyph name, please!
 // The element's root `id` must be the same as its map key.
 // If using groups to make complex glyphs, be sure to include the attribute `data-cellsize` (the greater of width and height) so the renderer can scale it properly.
 
-sheet.glyphs.set("piece", (canvas: svg.Nested) => {
+sheet.glyphs.set("piece", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piece")
         .attr("data-cellsize", sheet.cellsize);
@@ -27,18 +27,26 @@ sheet.glyphs.set("piece", (canvas: svg.Nested) => {
     return group;
 });
 
-sheet.glyphs.set("tileDark", (canvas: svg.Nested) => {
-    return canvas.rect(sheet.cellsize, sheet.cellsize)
+sheet.glyphs.set("tileDark", (canvas: SVGContainer) => {
+    const group = canvas.group()
+        .id("tileDark")
+        .attr("data-cellsize", sheet.cellsize);
+    group.rect(sheet.cellsize, sheet.cellsize)
         .id("tileDark")
         .fill({color: "#000", opacity: 0.4});
         // .stroke({width: 1, color: "#000"});
+    return group;
 });
 
-sheet.glyphs.set("tileLight", (canvas: svg.Nested) => {
-    return canvas.rect(sheet.cellsize, sheet.cellsize)
+sheet.glyphs.set("tileLight", (canvas: SVGContainer) => {
+    const group = canvas.group()
+        .id("tileLight")
+        .attr("data-cellsize", sheet.cellsize);
+    group.rect(sheet.cellsize, sheet.cellsize)
         .id("tileLight")
         .fill({color: "#000", opacity: 0});
         // .stroke({width: 1, color: "#000"});
+    return group;
 });
 
 export { sheet as CoreSheet };

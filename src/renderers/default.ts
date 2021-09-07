@@ -1,4 +1,4 @@
-import svg from "svg.js";
+import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../GridGenerator";
 import { rectOfSquares } from "../grids";
 import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "../RendererBase";
@@ -6,7 +6,7 @@ import { APRenderRep, Glyph } from "../schema";
 
 export class DefaultRenderer extends RendererBase {
 
-    public render(json: APRenderRep, draw: svg.Doc, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
@@ -97,14 +97,14 @@ export class DefaultRenderer extends RendererBase {
                     // Layer the glyphs, manipulating as you go
                     glyphs.forEach((glyph) => {
                         // Get the glyph from <defs>
-                        const got = svg.get(glyph.name);
+                        const got = SVG("#" + glyph.name);
                         const use = got.clone();
                         if ( (use === undefined) || (use === null) ) {
                             throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
                         }
 
                         // Scale it appropriately
-                        if (use.is(svg.G)) {
+                        if (use.is(SVGG)) {
                             const sheetCellSize = use.attr("data-cellsize");
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
@@ -120,9 +120,9 @@ export class DefaultRenderer extends RendererBase {
                                 if (glyph.player > opts.patternList.length) {
                                     throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                                 }
-                                const fill = svg.get(opts.patternList[glyph.player - 1]);
-                                if (use.is(svg.G)) {
-                                    (use as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
+                                const fill = SVG("#" + opts.patternList[glyph.player - 1]);
+                                if (use.is(SVGG)) {
+                                    (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
                                 } else {
                                     use.fill(fill);
                                 }
@@ -131,15 +131,15 @@ export class DefaultRenderer extends RendererBase {
                                     throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                                 }
                                 const fill = opts.colours[glyph.player - 1];
-                                if (use.is(svg.G)) {
-                                    (use as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill(fill); });
+                                if (use.is(SVGG)) {
+                                    (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
                                 } else {
                                     use.fill(fill);
                                 }
                             }
                         } else if (glyph.colour !== undefined) {
-                            if (use.is(svg.G)) {
-                                (use as svg.G).select("[data-playerfill=true]").each(function(this: svg.Element) { this.fill({color: glyph.colour}); });
+                            if (use.is(SVGG)) {
+                                (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
                             } else {
                                 use.fill(glyph.colour);
                             }
@@ -147,7 +147,7 @@ export class DefaultRenderer extends RendererBase {
 
                         // Scale as requested
                         if (glyph.scale !== undefined) {
-                            use.transform({scale: glyph.scale, cx: use.attr("data-cellsize") / 2, cy: use.attr("data-cellsize") / 2}, true);
+                            use.transform({scale: glyph.scale}, true);
                         }
 
                         // Rotate if requested
@@ -224,13 +224,13 @@ export class DefaultRenderer extends RendererBase {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
                             const point = gridPoints[row][col];
-                            const piece = svg.get(key);
+                            const piece = SVG("#" + key);
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
                             const use = group.use(piece);
                             use.center(point.x, point.y);
-                            if (piece.is(svg.G)) {
+                            if (piece.is(SVGG)) {
                                 const sheetCellSize = piece.attr("data-cellsize");
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
@@ -271,7 +271,7 @@ export class DefaultRenderer extends RendererBase {
         }
     }
 
-    private squaresCheckered(json: APRenderRep, draw: svg.Doc, opts: IRendererOptionsOut): GridPoints {
+    private squaresCheckered(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -283,8 +283,8 @@ export class DefaultRenderer extends RendererBase {
         // Load glyphs for light and dark squares
         this.loadGlyph("tileLight", opts.sheetList, draw);
         this.loadGlyph("tileDark", opts.sheetList, draw);
-        const tileLight = svg.get("tileLight").size(cellsize, cellsize);
-        const tileDark = svg.get("tileDark").size(cellsize, cellsize);
+        const tileLight = SVG("#tileLight").size(cellsize, cellsize);
+        const tileDark = SVG("#tileDark").size(cellsize, cellsize);
 
         // Get a grid of points
         const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});

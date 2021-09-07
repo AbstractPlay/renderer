@@ -1,6 +1,6 @@
 // import SVG from "@svgdotjs/svg.js";
+import { extend as SVGExtend, SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import Ajv from "ajv";
-import SVG from "svg.js";
 import { renderers } from "./renderers";
 import { APRenderRep } from "./schema";
 import schema from "./schema.json";
@@ -13,7 +13,7 @@ interface IRenderOptions {
     divelem?: HTMLElement;
     sheets?: string[];
     gamename?: string;
-    target?: SVG.Doc;
+    target?: Svg;
     patterns?: boolean;
     patternList?: string[];
     colourBlind?: boolean;
@@ -48,14 +48,14 @@ export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): st
 }
 
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
-export function render(json: APRenderRep, opts = {} as IRenderOptions): SVG.Doc {
+export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     // Validate the JSON
     if (! validate(json)) {
         throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
     }
 
     // Kludge to fix fact that `Use` type doesn't have `width` and `height` properties
-    SVG.extend(SVG.Use, {
+    SVGExtend(SVGUse, {
 // tslint:disable-next-line: space-before-function-paren
 // tslint:disable-next-line: object-literal-shorthand
         width: function() {
@@ -67,13 +67,13 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): SVG.Doc 
     });
 
     // Initialize the SVG container
-    let draw: SVG.Doc;
+    let draw: Svg;
     if ( ("target" in opts) && (opts.target != null) ) {
         draw = opts.target;
     } else if ( ("divelem" in opts) && (opts.divelem != null) ) {
-        draw = SVG(opts.divelem);
+        draw = SVG(opts.divelem) as Svg;
     } else {
-        draw = SVG(opts.divid);
+        draw = SVG(opts.divid) as Svg;
     }
 
     // Pass the JSON and the SVG container to the appropriate renderer
