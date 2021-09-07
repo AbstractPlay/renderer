@@ -6,7 +6,7 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "Various chess sets based on freely available fonts",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: svg.Nested) => void>(),
+    glyphs: new Map<string, (canvas: svg.Nested) => svg.Element | svg.Container>(),
 };
 
 // Alphabetize by glyph name, please!
@@ -22,6 +22,7 @@ sheet.glyphs.set("chess-bishop-outline-line", (canvas: svg.Nested) => {
         .rotate(180)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-bishop-outline-millenia", (canvas: svg.Nested) => {
@@ -33,6 +34,7 @@ sheet.glyphs.set("chess-bishop-outline-millenia", (canvas: svg.Nested) => {
         .rotate(180).flip("y")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-bishop-outline-montreal", (canvas: svg.Nested) => {
@@ -43,6 +45,7 @@ sheet.glyphs.set("chess-bishop-outline-montreal", (canvas: svg.Nested) => {
     group.path("M500 100q-8 0 -14 6t-6 14t6 14t14 6t14 -6t6 -14t-6 -14t-14 -6zM500 900q8 0 14 -6t6 -14t-6 -14t-14 -6t-14 6t-6 14t6 14t14 6zM480 823q11 -3 20 -3q11 0 20 3l23 -23l-140 -140l77 -77l140 140l134 -134q12 -12 12 -20q0 -9 -12 -9h-222l-32 -32l-32 32h-222q-12 0 -12 9q0 8 12 20zM520 177q-9 3 -20 3q-9 0 -20 -3l-23 23l140 140l-77 77l-140 -140l-134 134q-12 12 -12 20q0 9 12 9h222l32 32l32 -32h222q12 0 12 -9q0 -8 -12 -20zM237 520h215l20 -20l-20 -20h-215l-20 20zM763 480h-215l-20 20l20 20h215l20 -20zM449 151q-9 -13 -9 -31q0 -25 17.5 -42.5t42.5 -17.5t42.5 17.5t17.5 42.5q0 18 -9 31l232 232q30 29 30 56q0 14 -9 25l36 36l-36 37q9 10 9 24q0 27 -30 56l-163 163l-140 -140l-20 20l140 140l-49 49q9 14 9 31q0 25 -17.5 42.5t-42.5 17.5t-42.5 -17.5t-17.5 -42.5q0 -17 9 -31l-232 -232q-30 -30 -30 -56q0 -14 9 -25l-36 -36l36 -36q-9 -10 -9 -24q0 -27 30 -57l163 -163l140 140l20 -20l-140 -140z")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-bishop-solid-line", (canvas: svg.Nested) => {
@@ -55,6 +58,7 @@ sheet.glyphs.set("chess-bishop-solid-line", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-bishop-solid-millenia", (canvas: svg.Nested) => {
@@ -67,6 +71,7 @@ sheet.glyphs.set("chess-bishop-solid-millenia", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-bishop-solid-montreal", (canvas: svg.Nested) => {
@@ -78,6 +83,7 @@ sheet.glyphs.set("chess-bishop-solid-montreal", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-ex-solid-line", (canvas: svg.Nested) => {
@@ -89,6 +95,7 @@ sheet.glyphs.set("chess-ex-solid-line", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-ex-solid-millenia", (canvas: svg.Nested) => {
@@ -100,6 +107,7 @@ sheet.glyphs.set("chess-ex-solid-millenia", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-king-outline-line", (canvas: svg.Nested) => {
@@ -111,6 +119,7 @@ sheet.glyphs.set("chess-king-outline-line", (canvas: svg.Nested) => {
         .rotate(180)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-king-outline-millenia", (canvas: svg.Nested) => {
@@ -122,6 +131,7 @@ sheet.glyphs.set("chess-king-outline-millenia", (canvas: svg.Nested) => {
         .rotate(180).flip("y")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-king-outline-montreal", (canvas: svg.Nested) => {
@@ -132,6 +142,7 @@ sheet.glyphs.set("chess-king-outline-montreal", (canvas: svg.Nested) => {
     group.path("M500 560q25 0 42.5 -17.5t17.5 -42.5t-17.5 -42.5t-42.5 -17.5t-42.5 17.5t-17.5 42.5t17.5 42.5t42.5 17.5zM500 600q-41 0 -70.5 -29.5t-29.5 -70.5t29.5 -70.5t70.5 -29.5t70.5 29.5t29.5 70.5t-29.5 70.5t-70.5 29.5zM320 500q0 -18 5 -40h-165v40v40h165q-5 -22 -5 -40zM342 415q25 -47 73 -74q-6 -50 -20.5 -95t-35.5 -77.5t-46.5 -50.5t-52.5 -18q-32 0 -61.5 12.5t-51.5 34.5t-34.5 51.5t-12.5 61.5q0 55 68.5 98t173.5 57zM658 415q106 -14 174 -57t68 -98q0 -32 -12.5 -61.5t-34.5 -51.5t-51.5 -34.5t-61.5 -12.5q-27 0 -52.5 18t-46.5 50.5t-35.5 77t-20.5 95.5q49 27 73 74zM880 500v80h-101q75 29 118 70.5t43 89.5q0 41 -15.5 77.5t-43 64t-64 43t-77.5 15.5q-48 0 -90 -43t-70 -117v100h-80h-80v-100q-27 74 -69.5 117t-90.5 43q-41 0 -77 -15.5t-64 -43t-43.5 -64t-15.5 -77.5q0 -48 43 -89.5t118 -70.5h-101v-80v-80h101q-75 -28 -118 -70t-43 -90q0 -41 15.5 -77t43.5 -64t64 -43.5t77 -15.5q48 0 90.5 43t69.5 117v-100h80h80v100q28 -74 70 -117t90 -43q41 0 77.5 15.5t64 43.5t43 64t15.5 77q0 48 -43 90t-118 70h101v80zM500 160h-40v124v40q26 -4 40 -4t40 4v-40v-124h-40zM680 500q0 18 -5 40h165v-40v-40h-165q5 22 5 40zM360 500q0 58 41 99t99 41t99 -41t41 -99t-41 -99t-99 -41t-99 41t-41 99zM500 840h40v-124v-40q-26 4 -40 4t-40 -4v40v124h40zM658 585q-24 47 -73 74q6 50 20.5 95t35.5 77.5t46.5 50.5t52.5 18q32 0 61.5 -12.5t51.5 -34.5t34.5 -51.5t12.5 -61.5q0 -55 -68 -98t-174 -57zM342 585q-105 14 -173.5 57t-68.5 98q0 32 12.5 61.5t34.5 51.5t51.5 34.5t61.5 12.5q27 0 52.5 -18t46.5 -50.5t35.5 -77t20.5 -95.5q-48 -27 -73 -74z")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-king-solid-line", (canvas: svg.Nested) => {
@@ -144,6 +155,7 @@ sheet.glyphs.set("chess-king-solid-line", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-king-solid-millenia", (canvas: svg.Nested) => {
@@ -156,6 +168,7 @@ sheet.glyphs.set("chess-king-solid-millenia", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-king-solid-montreal", (canvas: svg.Nested) => {
@@ -167,6 +180,7 @@ sheet.glyphs.set("chess-king-solid-montreal", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-knight-outline-line", (canvas: svg.Nested) => {
@@ -178,6 +192,7 @@ sheet.glyphs.set("chess-knight-outline-line", (canvas: svg.Nested) => {
         .rotate(180).flip("y")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-knight-outline-millenia", (canvas: svg.Nested) => {
@@ -189,6 +204,7 @@ sheet.glyphs.set("chess-knight-outline-millenia", (canvas: svg.Nested) => {
         .rotate(180).flip("y").dmove(0, -100)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-knight-outline-montreal", (canvas: svg.Nested) => {
@@ -199,6 +215,7 @@ sheet.glyphs.set("chess-knight-outline-montreal", (canvas: svg.Nested) => {
     group.path("M420 200q8 0 14 6t6 14t-6 14t-14 6t-14 -6t-6 -14t6 -14t14 -6zM580 800q-8 0 -14 -6t-6 -14t6 -14t14 -6t14 6t6 14t-6 14t-14 6zM468 440l32 32l32 -32h168l-104 -65q-34 16 -67 20.5t-49 4.5l-20 -40q10 0 32 -1.5t52.5 -9.5t53 -24.5t22.5 -44.5h60q45 -30 45 -60t-45 -60h-300v-60q-10 4 -32.5 16t-52.5 38.5t-52.5 68.5t-22.5 97q0 6 1 20.5t4.5 35t12 39t22.5 25.5h208zM532 560l-32 -32l-32 32h-168l104 65q34 -16 67 -20.5t49 -4.5l20 40q-10 0 -32 2t-52.5 9.5t-53 24.5t-22.5 44h-60q-45 30 -45 60t45 60h300v60q10 -4 32.5 -16t52.5 -38.5t52.5 -68.5t22.5 -97q0 -6 -1 -20.5t-4.5 -35t-12 -39t-22.5 -25.5h-208zM548 480l-20 20l20 20h212l20 -20l-20 -20h-212zM452 520l20 -20l-20 -20h-212l-20 20l20 20h212zM160 500l60 -60q-14 -7 -22.5 -25.5t-12 -39t-4.5 -35t-1 -20.5q0 -56 24.5 -104.5t62.5 -85t79 -59.5t74 -31v80h280q36 15 55.5 42t19.5 58t-19.5 58.5t-55.5 41.5h-60q0 14 -8 27l148 93l60 60l-60 60q14 7 22.5 25.5t12 39t4.5 35t1 20.5q0 56 -24.5 104.5t-62.5 85t-79 59.5t-74 31v-80h-280q-36 -14 -55.5 -41.5t-19.5 -58.5t19.5 -58t55.5 -42h60q0 -14 8 -27l-148 -93z")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-knight-solid-line", (canvas: svg.Nested) => {
@@ -211,6 +228,7 @@ sheet.glyphs.set("chess-knight-solid-line", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-knight-solid-millenia", (canvas: svg.Nested) => {
@@ -223,6 +241,7 @@ sheet.glyphs.set("chess-knight-solid-millenia", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-knight-solid-montreal", (canvas: svg.Nested) => {
@@ -234,6 +253,7 @@ sheet.glyphs.set("chess-knight-solid-montreal", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-pawn-outline-line", (canvas: svg.Nested) => {
@@ -246,6 +266,7 @@ sheet.glyphs.set("chess-pawn-outline-line", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-pawn-outline-millenia", (canvas: svg.Nested) => {
@@ -257,6 +278,7 @@ sheet.glyphs.set("chess-pawn-outline-millenia", (canvas: svg.Nested) => {
         .rotate(180).flip("y").dmove(0, -450)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-pawn-outline-montreal", (canvas: svg.Nested) => {
@@ -267,6 +289,7 @@ sheet.glyphs.set("chess-pawn-outline-montreal", (canvas: svg.Nested) => {
     group.path("M500 680q37 0 69.5 -14t57.5 -39t39 -57.5t14 -69.5t-14 -69.5t-39 -57.5t-57.5 -39t-69.5 -14t-69.5 14t-57.5 39t-39 57.5t-14 69.5t14 69.5t39 57.5t57.5 39t69.5 14zM500 600q41 0 70.5 -29.5t29.5 -70.5t-29.5 -70.5t-70.5 -29.5t-70.5 29.5t-29.5 70.5t29.5 70.5t70.5 29.5zM500 640q-58 0 -99 -41t-41 -99t41 -99t99 -41t99 41t41 99t-41 99t-99 41zM500 720q-45 0 -85 -17t-70.5 -47.5t-47.5 -70.5t-17 -85t17 -85t47.5 -70.5t70.5 -47.5t85 -17t85 17t70.5 47.5t47.5 70.5t17 85t-17 85t-47.5 70.5t-70.5 47.5t-85 17z")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-pawn-solid-line", (canvas: svg.Nested) => {
@@ -278,6 +301,7 @@ sheet.glyphs.set("chess-pawn-solid-line", (canvas: svg.Nested) => {
         .rotate(180).dmove(0, -1250)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-pawn-solid-millenia", (canvas: svg.Nested) => {
@@ -290,6 +314,7 @@ sheet.glyphs.set("chess-pawn-solid-millenia", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-pawn-solid-montreal", (canvas: svg.Nested) => {
@@ -301,6 +326,7 @@ sheet.glyphs.set("chess-pawn-solid-montreal", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-queen-outline-line", (canvas: svg.Nested) => {
@@ -312,6 +338,7 @@ sheet.glyphs.set("chess-queen-outline-line", (canvas: svg.Nested) => {
         .rotate(180)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-queen-outline-millenia", (canvas: svg.Nested) => {
@@ -323,6 +350,7 @@ sheet.glyphs.set("chess-queen-outline-millenia", (canvas: svg.Nested) => {
         .rotate(180).flip("y")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-queen-outline-montreal", (canvas: svg.Nested) => {
@@ -333,6 +361,7 @@ sheet.glyphs.set("chess-queen-outline-montreal", (canvas: svg.Nested) => {
     group.path("M500 520q8 0 14 -6t6 -14t-6 -14t-14 -6t-14 6t-6 14t6 14t14 6zM500 560q-25 0 -42.5 -17.5t-17.5 -42.5t17.5 -42.5t42.5 -17.5t42.5 17.5t17.5 42.5t-17.5 42.5t-42.5 17.5zM500 600q41 0 70.5 -29.5t29.5 -70.5t-29.5 -70.5t-70.5 -29.5t-70.5 29.5t-29.5 70.5t29.5 70.5t70.5 29.5zM500 640q-58 0 -99 -41t-41 -99t41 -99t99 -41t99 41t41 99t-41 99t-99 41zM273 710q-17 -10 -33 -10q-25 0 -42.5 17.5t-17.5 42.5t17.5 42.5t42.5 17.5t42.5 -17.5t17.5 -42.5q0 -16 -10 -33l140 -57l54 132q-19 5 -31.5 21t-12.5 37q0 25 17.5 42.5t42.5 17.5t42.5 -17.5t17.5 -42.5q0 -21 -12.5 -37t-31.5 -21l54 -132l140 57q-10 17 -10 33q0 25 17.5 42.5t42.5 17.5t42.5 -17.5t17.5 -42.5t-17.5 -42.5t-42.5 -17.5q-16 0 -33 10l-57 -139l132 -55q5 19 21 31.5t37 12.5q25 0 42.5 -17.5t17.5 -42.5t-17.5 -42.5t-42.5 -17.5q-21 0 -37 12.5t-21 31.5l-132 -55l57 -139q17 10 33 10q25 0 42.5 -17.5t17.5 -42.5t-17.5 -42.5t-42.5 -17.5t-42.5 17.5t-17.5 42.5q0 16 10 33l-140 57l-54 -132q19 -5 31.5 -21t12.5 -37q0 -25 -17.5 -42.5t-42.5 -17.5t-42.5 17.5t-17.5 42.5q0 21 12.5 37t31.5 21l-54 132l-103 -42l-37 -15q10 -17 10 -33q0 -25 -17.5 -42.5t-42.5 -17.5t-42.5 17.5t-17.5 42.5t17.5 42.5t42.5 17.5q16 0 33 -10l57 139l-132 55q-5 -19 -21 -31.5t-37 -12.5q-25 0 -42.5 17.5t-17.5 42.5t17.5 42.5t42.5 17.5q21 0 37 -12.5t21 -31.5l132 55zM960 500q0 41 -29.5 70.5t-70.5 29.5q-22 0 -42 -9.5t-34 -25.5l-62 26l30 69h8q41 0 70.5 29.5t29.5 70.5t-29.5 70.5t-70.5 29.5t-70.5 -29.5t-29.5 -70.5v-8l-70 -30l-26 62q17 14 26.5 34t9.5 42q0 41 -29.5 70.5t-70.5 29.5t-70.5 -29.5t-29.5 -70.5q0 -22 9.5 -42t26.5 -34l-26 -62l-70 30v8q0 41 -29.5 70.5t-70.5 29.5t-70.5 -29.5t-29.5 -70.5t29.5 -70.5t70.5 -29.5h8l30 -69l-62 -26q-14 16 -34 25.5t-42 9.5q-41 0 -70.5 -29.5t-29.5 -70.5t29.5 -70.5t70.5 -29.5q22 0 42 9.5t34 25.5l62 -26l-30 -69h-8q-41 0 -70.5 -29.5t-29.5 -70.5t29.5 -70.5t70.5 -29.5t70.5 29.5t29.5 70.5v8l70 30l26 -62q-17 -14 -26.5 -34t-9.5 -42q0 -41 29.5 -70.5t70.5 -29.5t70.5 29.5t29.5 70.5q0 22 -9.5 42t-26.5 34l26 62l70 -30v-8q0 -41 29.5 -70.5t70.5 -29.5t70.5 29.5t29.5 70.5t-29.5 70.5t-70.5 29.5h-8l-30 69l62 26q14 -16 34 -25.5t42 -9.5q41 0 70.5 29.5t29.5 70.5z")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-queen-solid-line", (canvas: svg.Nested) => {
@@ -345,6 +374,7 @@ sheet.glyphs.set("chess-queen-solid-line", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-queen-solid-millenia", (canvas: svg.Nested) => {
@@ -357,6 +387,7 @@ sheet.glyphs.set("chess-queen-solid-millenia", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-queen-solid-montreal", (canvas: svg.Nested) => {
@@ -368,6 +399,7 @@ sheet.glyphs.set("chess-queen-solid-montreal", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-rook-outline-line", (canvas: svg.Nested) => {
@@ -379,6 +411,7 @@ sheet.glyphs.set("chess-rook-outline-line", (canvas: svg.Nested) => {
         .rotate(180).dmove(0, -800)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-rook-outline-millenia", (canvas: svg.Nested) => {
@@ -390,6 +423,7 @@ sheet.glyphs.set("chess-rook-outline-millenia", (canvas: svg.Nested) => {
         .rotate(180).flip("y").dmove(0, -200)
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-rook-outline-montreal", (canvas: svg.Nested) => {
@@ -400,6 +434,7 @@ sheet.glyphs.set("chess-rook-outline-montreal", (canvas: svg.Nested) => {
     group.path("M274 580h-83q22 84 83.5 145.5t145.5 84.5v-83q-51 -18 -89.5 -57t-56.5 -90zM274 420q18 -51 56.5 -89.5t89.5 -56.5v-84q-84 23 -145.5 85t-83.5 145h83zM696 540h61q3 -19 3 -40q0 -20 -3 -40h-61q-12 -58 -55 -101t-101 -55v-61q-19 -3 -40 -3q-20 0 -40 3v61q-58 12 -101 55t-55 101h-61q-3 20 -3 40q0 21 3 40h61q12 58 55 101t101 55v61q20 3 40 3q21 0 40 -3v-61q58 -12 101 -55t55 -101zM858 540q-7 61 -34 116.5t-70 98.5t-98 69.5t-116 33.5v-61q-19 3 -40 3q-20 0 -40 -3v61q-61 -7 -116 -33.5t-98 -69.5t-70 -98t-34 -117h61q-3 -19 -3 -40q0 -20 3 -40h-61q7 -61 34 -116t70 -98t98 -70t116 -34v61q20 -3 40 -3q21 0 40 3v-61q61 7 116 34t98 70t70 98t34 116h-61q3 20 3 40q0 21 -3 40h61zM580 274q51 18 89.5 56.5t56.5 89.5h84q-22 -84 -84 -145.5t-146 -84.5v84zM580 727v83q84 -23 146 -84.5t84 -145.5h-84q-18 51 -56.5 90t-89.5 57z")
         .attr("data-playerfill", true)
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-rook-solid-line", (canvas: svg.Nested) => {
@@ -412,6 +447,7 @@ sheet.glyphs.set("chess-rook-solid-line", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-rook-solid-millenia", (canvas: svg.Nested) => {
@@ -424,6 +460,7 @@ sheet.glyphs.set("chess-rook-solid-millenia", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("chess-rook-solid-montreal", (canvas: svg.Nested) => {
@@ -435,6 +472,7 @@ sheet.glyphs.set("chess-rook-solid-montreal", (canvas: svg.Nested) => {
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 export { sheet as ChessSheet };

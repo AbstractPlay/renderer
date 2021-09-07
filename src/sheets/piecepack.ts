@@ -6,7 +6,7 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "Core Piecepack graphics set",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: svg.Nested) => void>(),
+    glyphs: new Map<string, (canvas: svg.Nested) => svg.Element | svg.Container>(),
 };
 
 // Alphabetize by glyph name, please!
@@ -23,6 +23,7 @@ sheet.glyphs.set("piecepack-misc-coin-back", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-misc-tile-back", (canvas: svg.Nested) => {
@@ -35,6 +36,7 @@ sheet.glyphs.set("piecepack-misc-tile-back", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-0", (canvas: svg.Nested) => {
@@ -47,6 +49,7 @@ sheet.glyphs.set("piecepack-number-0", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-1", (canvas: svg.Nested) => {
@@ -59,6 +62,7 @@ sheet.glyphs.set("piecepack-number-1", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-2", (canvas: svg.Nested) => {
@@ -71,6 +75,7 @@ sheet.glyphs.set("piecepack-number-2", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-3", (canvas: svg.Nested) => {
@@ -83,6 +88,7 @@ sheet.glyphs.set("piecepack-number-3", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-4", (canvas: svg.Nested) => {
@@ -95,6 +101,7 @@ sheet.glyphs.set("piecepack-number-4", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-5", (canvas: svg.Nested) => {
@@ -107,6 +114,7 @@ sheet.glyphs.set("piecepack-number-5", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-6", (canvas: svg.Nested) => {
@@ -119,6 +127,7 @@ sheet.glyphs.set("piecepack-number-6", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-7", (canvas: svg.Nested) => {
@@ -131,6 +140,7 @@ sheet.glyphs.set("piecepack-number-7", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-8", (canvas: svg.Nested) => {
@@ -143,6 +153,7 @@ sheet.glyphs.set("piecepack-number-8", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-9", (canvas: svg.Nested) => {
@@ -155,6 +166,7 @@ sheet.glyphs.set("piecepack-number-9", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-number-void", (canvas: svg.Nested) => {
@@ -167,6 +179,7 @@ sheet.glyphs.set("piecepack-number-void", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-anchors", (canvas: svg.Nested) => {
@@ -179,6 +192,7 @@ sheet.glyphs.set("piecepack-suit-anchors", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-clubs", (canvas: svg.Nested) => {
@@ -191,6 +205,7 @@ sheet.glyphs.set("piecepack-suit-clubs", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-crowns", (canvas: svg.Nested) => {
@@ -203,6 +218,7 @@ sheet.glyphs.set("piecepack-suit-crowns", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-diamonds", (canvas: svg.Nested) => {
@@ -215,6 +231,7 @@ sheet.glyphs.set("piecepack-suit-diamonds", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-fleurdelis", (canvas: svg.Nested) => {
@@ -228,6 +245,7 @@ sheet.glyphs.set("piecepack-suit-fleurdelis", (canvas: svg.Nested) => {
         .dmove(0, -226)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-hearts", (canvas: svg.Nested) => {
@@ -240,6 +258,7 @@ sheet.glyphs.set("piecepack-suit-hearts", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-moons", (canvas: svg.Nested) => {
@@ -252,6 +271,7 @@ sheet.glyphs.set("piecepack-suit-moons", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-spades", (canvas: svg.Nested) => {
@@ -264,6 +284,7 @@ sheet.glyphs.set("piecepack-suit-spades", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-stars", (canvas: svg.Nested) => {
@@ -276,6 +297,7 @@ sheet.glyphs.set("piecepack-suit-stars", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 sheet.glyphs.set("piecepack-suit-suns", (canvas: svg.Nested) => {
@@ -288,6 +310,7 @@ sheet.glyphs.set("piecepack-suit-suns", (canvas: svg.Nested) => {
         .flip("y")
         .stroke({width: 5, color: "#000"})
         .fill("#000");
+    return group;
 });
 
 export { sheet as PiecepackSheet };

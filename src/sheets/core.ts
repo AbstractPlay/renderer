@@ -6,7 +6,7 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "This is the base contact sheet containing the default versions of all graphics used by Abstract Play.",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: svg.Nested) => void>(),
+    glyphs: new Map<string, (canvas: svg.Nested) => svg.Element | svg.Container>(),
 };
 
 // Alphabetize by glyph name, please!
@@ -24,17 +24,18 @@ sheet.glyphs.set("piece", (canvas: svg.Nested) => {
         .fill("#fff")
         .stroke({width: 2, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    return group;
 });
 
 sheet.glyphs.set("tileDark", (canvas: svg.Nested) => {
-    canvas.rect(sheet.cellsize, sheet.cellsize)
+    return canvas.rect(sheet.cellsize, sheet.cellsize)
         .id("tileDark")
         .fill({color: "#000", opacity: 0.4});
         // .stroke({width: 1, color: "#000"});
 });
 
 sheet.glyphs.set("tileLight", (canvas: svg.Nested) => {
-    canvas.rect(sheet.cellsize, sheet.cellsize)
+    return canvas.rect(sheet.cellsize, sheet.cellsize)
         .id("tileLight")
         .fill({color: "#000", opacity: 0});
         // .stroke({width: 1, color: "#000"});

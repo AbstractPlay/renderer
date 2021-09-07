@@ -5,5 +5,5 @@ export interface ISheet {
     readonly name: string;
     readonly description: string;
     readonly cellsize: number;
-    readonly glyphs: Map<string, (svg: svg.Nested) => void>;
+    readonly glyphs: Map<string, (svg: svg.Nested) => svg.Element | svg.Container>;
 }
