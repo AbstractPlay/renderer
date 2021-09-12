@@ -73,7 +73,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     } else if ( ("divelem" in opts) && (opts.divelem != null) ) {
         draw = SVG(opts.divelem) as Svg;
     } else {
-        draw = SVG(opts.divid) as Svg;
+        draw = SVG().addTo("#" + opts.divid).size("100%", "100%");
     }
 
     // Pass the JSON and the SVG container to the appropriate renderer

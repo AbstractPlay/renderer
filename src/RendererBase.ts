@@ -1,5 +1,5 @@
 // import svg, { Nested } from "@svgdotjs/svg.js";
-import { Container as SVGContainer, Svg } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 // import { GridPoints } from "./GridGenerator";
 // import { rectOfSquares } from "./grids";
 import { APRenderRep } from "./schema";
@@ -141,7 +141,7 @@ export abstract class RendererBase {
         }
     }
 
-    protected loadGlyph(glyph: string, sheetList: string[], canvas: SVGContainer) {
+    protected loadGlyph(glyph: string, sheetList: string[], canvas: Svg) {
         let found: boolean = false;
         for (const s of sheetList) {
             const sheet = sheets.get(s);
@@ -149,7 +149,7 @@ export abstract class RendererBase {
                 const func = sheet.glyphs.get(glyph);
                 if (func !== undefined) {
                     found = true;
-                    func(canvas.root().defs());
+                    func(canvas.defs());
                 }
             } else {
                 throw new Error("Could not load the glyph sheet '" + s + "'");

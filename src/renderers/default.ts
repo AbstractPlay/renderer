@@ -97,22 +97,23 @@ export class DefaultRenderer extends RendererBase {
                     // Layer the glyphs, manipulating as you go
                     glyphs.forEach((glyph) => {
                         // Get the glyph from <defs>
-                        const got = SVG("#" + glyph.name);
+                        const got = SVG("#" + glyph.name) as SVGG;
                         const use = got.clone();
                         if ( (use === undefined) || (use === null) ) {
                             throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
                         }
 
                         // Scale it appropriately
-                        if (use.is(SVGG)) {
-                            const sheetCellSize = use.attr("data-cellsize");
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                            }
-                            use.scale(cellsize / sheetCellSize);
-                        } else {
-                            use.size(cellsize);
-                        }
+                        // if (use.is(SVGG)) {
+                        //     const sheetCellSize = use.attr("data-cellsize");
+                        //     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                        //         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        //     }
+                        //     use.scale(cellsize / sheetCellSize);
+                        // } else {
+                        //     use.size(cellsize);
+                        // }
+                        use.size(cellsize);
 
                         // Colourize (`player` first, then `colour` if defined)
                         if (glyph.player !== undefined) {
@@ -121,28 +122,31 @@ export class DefaultRenderer extends RendererBase {
                                     throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                                 }
                                 const fill = SVG("#" + opts.patternList[glyph.player - 1]);
-                                if (use.is(SVGG)) {
-                                    (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
-                                } else {
-                                    use.fill(fill);
-                                }
+                                // if (use.is(SVGG)) {
+                                //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
+                                // } else {
+                                //     use.fill(fill);
+                                // }
+                                use.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
                             } else {
                                 if (glyph.player > opts.colours.length) {
                                     throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                                 }
                                 const fill = opts.colours[glyph.player - 1];
-                                if (use.is(SVGG)) {
-                                    (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
-                                } else {
-                                    use.fill(fill);
-                                }
+                                // if (use.is(SVGG)) {
+                                //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
+                                // } else {
+                                //     use.fill(fill);
+                                // }
+                                use.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
                             }
                         } else if (glyph.colour !== undefined) {
-                            if (use.is(SVGG)) {
-                                (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
-                            } else {
-                                use.fill(glyph.colour);
-                            }
+                            // if (use.is(SVGG)) {
+                            //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
+                            // } else {
+                            //     use.fill(glyph.colour);
+                            // }
+                            use.find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
                         }
 
                         // Scale as requested
@@ -228,17 +232,22 @@ export class DefaultRenderer extends RendererBase {
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            const use = group.use(piece);
+                            const use = group.use(piece) as SVGG;
                             use.center(point.x, point.y);
-                            if (piece.is(SVGG)) {
-                                const sheetCellSize = piece.attr("data-cellsize");
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                                use.scale(this.cellsize / sheetCellSize);
-                            } else {
-                                use.size(this.cellsize);
+                            // if (piece.is(SVGG)) {
+                            //     const sheetCellSize = piece.attr("data-cellsize");
+                            //     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            //         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            //     }
+                            //     use.scale(this.cellsize / sheetCellSize);
+                            // } else {
+                            //     use.size(this.cellsize);
+                            // }
+                            const sheetCellSize = piece.attr("data-cellsize");
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
+                            use.scale(this.cellsize / sheetCellSize);
                         }
                     }
                 }
