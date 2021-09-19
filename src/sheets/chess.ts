@@ -1,4 +1,4 @@
-import { Container as SVGContainer } from "@svgdotjs/svg.js";
+import { Container as SVGContainer, G as SVGG } from "@svgdotjs/svg.js";
 import { ISheet } from "../ISheet";
 
 const sheet: ISheet = {
@@ -6,7 +6,7 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "Various chess sets based on freely available fonts",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: SVGContainer) => SVGContainer>(),
+    glyphs: new Map<string, (canvas: SVGContainer) => SVGG>(),
 };
 
 // Alphabetize by glyph name, please!
