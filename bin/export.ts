@@ -34,7 +34,7 @@ function exportGlyph(sheetName: string, glyphName: string): string {
     }
     const sheet = sheets.get(sheetName);
     if ( (sheet === undefined) || (glyphName === undefined) || (! sheet.glyphs.has(glyphName)) ) {
-        throw new Error("The glyph '" + glyphName + "' does not exist in the sheet '" + glyphName + ".'");
+        throw new Error("The glyph '" + glyphName + "' does not exist in the sheet '" + sheetName + ".'");
     }
     const glyph = sheet.glyphs.get(glyphName);
     if (glyph === undefined) {
@@ -52,18 +52,16 @@ function exportGlyph(sheetName: string, glyphName: string): string {
     // create canvas
     const canvas = SVG(document.documentElement) as Svg;
 
-    // add glyph to defs section
-    const defd = glyph(canvas.defs());
-    // get size of glyph
-    const tileSize = defd.attr("data-cellsize");
-    if ( (tileSize === null) || (tileSize === undefined) ) {
-        throw new Error("The glyph does not have appropriate size metadata. This should never happen.");
+    // add glyph directly to canvas
+    const placed = glyph(canvas);
+
+    // get sizing data and resize canvas
+    const size = placed.attr("data-cellsize");
+    if ( (size === null) || (size === undefined) ) {
+      throw new Error("Glyph does not have size metadata. This should never happen.");
     }
-    // resize SVG container
-    canvas.size(tileSize, tileSize);
-    // add glyph to canvas
-    const placed = canvas.use(defd);
-    placed.move(0, 0);
+    canvas.size(size, size);
+
     // return canvas SVG code
     return canvas.svg();
 }
