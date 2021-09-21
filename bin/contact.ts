@@ -74,6 +74,11 @@ nestedSheets.forEach((sheet) => {
     currY += sheet.height() + sheetPadding;
 });
 
+// Calculate total image size and resize the canvas
+const height = currY;
+const width = tileSizeOuter * numimgswide;
+canvas.size(width, height);
+
 const svgcode = canvas.svg();
 fs.writeFile("./build/contact.svg", svgcode, (err) => {
     if (err) { throw err; }
