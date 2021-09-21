@@ -156,7 +156,7 @@ export class DefaultRenderer extends RendererBase {
 
                         // Rotate if requested
                         if (glyph.rotate !== undefined) {
-                            use.rotate(glyph.rotate, use.attr("data-cellsize") / 2, use.attr("data-cellsize") / 2);
+                            use.rotate(glyph.rotate);
                         }
 
                         // Shift if requested
@@ -247,7 +247,7 @@ export class DefaultRenderer extends RendererBase {
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
-                            use.scale(this.cellsize / sheetCellSize);
+                            use.scale((this.cellsize / sheetCellSize) * 0.85);
                         }
                     }
                 }
