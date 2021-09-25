@@ -241,7 +241,7 @@ sheet.glyphs.set("piecepack-suit-diamonds", (canvas: SVGContainer) => {
     group.rect(698.14124, 698.14124).fill({opacity: 0});
     group.path("M349.5,800l264-343l-264-347l-273,347L349.5,800z M348.5,223l177,232l-178,234l-181-231L348.5,223z")
         .attr("data-playerfill", true)
-        .translate(4.091, -105.944)        
+        .translate(4.091, -105.944)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
     return group;
