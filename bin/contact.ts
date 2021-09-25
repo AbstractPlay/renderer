@@ -1,4 +1,3 @@
-import fs from "fs";
 import moment from "moment";
 import { sheets } from "../src/sheets";
 
@@ -79,9 +78,5 @@ const height = currY;
 const width = tileSizeOuter * numimgswide;
 canvas.size(width, height);
 
-const svgcode = canvas.svg();
-fs.writeFile("./build/contact.svg", svgcode, (err) => {
-    if (err) { throw err; }
-    // tslint:disable-next-line: no-console
-    console.log("Contact sheet saved");
-});
+// tslint:disable-next-line: no-console
+console.log(canvas.svg());
