@@ -21,6 +21,10 @@ export class DefaultRenderer extends RendererBase {
                 gridPoints = this.squaresCheckered(json, draw, opts);
                 break;
             }
+            case "squares": {
+                gridPoints = this.squaresBlank(json, draw, opts);
+                break;
+            }
             default: {
                 throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
                 break;
@@ -339,6 +343,70 @@ export class DefaultRenderer extends RendererBase {
                 const {x, y} = grid[row][col];
                 tiles.use(tile).center(x, y);
             }
+        }
+
+        // Draw grid lines
+        const gridlines = draw.group().id("gridlines");
+        // Horizontal, top of each row, then bottom line after loop
+        for (let row = 0; row < height; row++) {
+            const x1 = grid[row][0].x - (cellsize / 2);
+            const y1 = grid[row][0].y - (cellsize / 2);
+            const x2 = grid[row][width - 1].x + (cellsize / 2);
+            const y2 = grid[row][width - 1].y - (cellsize / 2);
+            gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+        }
+        let lastx1 = grid[height - 1][0].x - (cellsize / 2);
+        let lasty1 = grid[height - 1][0].y + (cellsize / 2);
+        let lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
+        let lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
+        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
+
+        // Vertical, left of each column, then right line after loop
+        for (let col = 0; col < width; col++) {
+            const x1 = grid[0][col].x - (cellsize / 2);
+            const y1 = grid[0][col].y - (cellsize / 2);
+            const x2 = grid[height - 1][col].x - (cellsize / 2);
+            const y2 = grid[height - 1][col].y + (cellsize / 2);
+            gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+        }
+        lastx1 = grid[0][width - 1].x + (cellsize / 2);
+        lasty1 = grid[0][width - 1].y - (cellsize / 2);
+        lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
+        lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
+        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
+
+        return grid;
+    }
+
+    private squaresBlank(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = json.board.width;
+        const height: number = json.board.height;
+        const cellsize = this.cellsize;
+
+        // Get a grid of points
+        const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const board = draw.group().id("board");
+
+        // Add board labels
+        const labels = board.group().id("labels");
+        // Columns (letters)
+        for (let col = 0; col < width; col++) {
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+            labels.text(this.columnLabels[col]).center(pointTop.x, pointTop.y);
+            labels.text(this.columnLabels[col]).center(pointBottom.x, pointBottom.y);
+        }
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+            labels.text(`${height - row}`).center(pointL.x, pointL.y);
+            labels.text(`${height - row}`).center(pointR.x, pointR.y);
         }
 
         // Draw grid lines
