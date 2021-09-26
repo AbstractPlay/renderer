@@ -1,4 +1,4 @@
-import { GridPoints, IGeneratorArgs, IPoint} from "../GridGenerator";
+import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "../GridGenerator";
 
 export function snubsquare(args: IGeneratorArgs): GridPoints {
     let cellSize: number = 50;
@@ -52,19 +52,5 @@ export function snubsquare(args: IGeneratorArgs): GridPoints {
     }
 
     // Shift entire grid so it fits in positive space
-    let minX: number = 0;
-    grid.forEach((row) => {
-        minX = Math.min(minX, row[0].x);
-    });
-    const newGrid: GridPoints = [];
-    for (const row of grid) {
-        const node: IPoint[] = [];
-        for (const p of row) {
-            const newp: IPoint = {x: p.x + Math.abs(minX), y: p.y};
-            node.push(newp);
-        }
-        newGrid.push(node);
-    }
-
-    return newGrid;
+    return normalizeX(grid);
 }

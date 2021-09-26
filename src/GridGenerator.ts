@@ -21,3 +21,21 @@ export interface IGeneratorArgs {
 export type GridPoints = Array<Array<IPoint>>;
 
 export type GridGenerator = (args: IGeneratorArgs) => GridPoints;
+
+export function normalizeX(inGrid: GridPoints): GridPoints {
+    let minX: number = 0;
+    inGrid.forEach((row) => {
+        minX = Math.min(minX, row[0].x);
+    });
+    const newGrid: GridPoints = [];
+    for (const row of inGrid) {
+        const node: IPoint[] = [];
+        for (const p of row) {
+            const newp: IPoint = {x: p.x + Math.abs(minX), y: p.y};
+            node.push(newp);
+        }
+        newGrid.push(node);
+    }
+
+    return newGrid;
+}

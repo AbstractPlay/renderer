@@ -1,6 +1,6 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../GridGenerator";
-import { rectOfSquares, snubsquare } from "../grids";
+import { hexOfTri, rectOfSquares, snubsquare } from "../grids";
 import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "../RendererBase";
 import { APRenderRep, Glyph } from "../schema";
 
@@ -27,6 +27,10 @@ export class DefaultRenderer extends RendererBase {
             }
             case "snubsquare": {
                 gridPoints = this.snubSquare(json, draw, opts);
+                break;
+            }
+            case "hex_of_tri": {
+                gridPoints = this.hexOfTri(json, draw, opts);
                 break;
             }
             default: {
@@ -445,6 +449,7 @@ export class DefaultRenderer extends RendererBase {
 
         return grid;
     }
+
     private snubSquare(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
@@ -524,4 +529,82 @@ export class DefaultRenderer extends RendererBase {
         return grid;
     }
 
+    private hexOfTri(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+            throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
+        }
+        const minWidth: number = json.board.minWidth;
+        const maxWidth: number = json.board.maxWidth;
+        const cellsize = this.cellsize;
+        const height = ((maxWidth - minWidth) * 2) + 1;
+
+        // Get a grid of points
+        const grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        const board = draw.group().id("board");
+
+        // Add board labels
+        const labels = board.group().id("labels");
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+            const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
+            labels.text(this.columnLabels[height - row - 1] + "1").center(pointL.x, pointL.y);
+            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).center(pointR.x, pointR.y);
+        }
+
+        // Draw grid lines
+        const gridlines = draw.group().id("gridlines");
+        const midrow = maxWidth - minWidth;
+
+        for (let row = 0; row < grid.length; row++) {
+            const currRow = grid[row];
+            for (let col = 0; col < grid[row].length; col++) {
+                const curr = currRow[col];
+
+                // always connect to cell to the left
+                if (col > 0) {
+                    const prev = currRow[col - 1];
+                    const x1 = curr.x;
+                    const y1 = curr.y;
+                    const x2 = prev.x;
+                    const y2 = prev.y;
+                    gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                }
+
+                // connections are build upward, so only continue with rows after the first
+                if (row > 0) {
+                    // always connect to the cell directly above, if one exists
+                    if (col <= grid[row - 1].length - 1) {
+                        const prev = grid[row - 1][col];
+                        const x1 = curr.x;
+                        const y1 = curr.y;
+                        const x2 = prev.x;
+                        const y2 = prev.y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    }
+                    // up to and including the midline, connect to the above-previous cell if there is one
+                    if ( (row <= midrow) && (col > 0) ) {
+                        const prev = grid[row - 1][col - 1];
+                        const x1 = curr.x;
+                        const y1 = curr.y;
+                        const x2 = prev.x;
+                        const y2 = prev.y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    }
+                    // after the midline, connect to the above-next cell instead
+                    if (row > midrow) {
+                        const prev = grid[row - 1][col + 1];
+                        const x1 = curr.x;
+                        const y1 = curr.y;
+                        const x2 = prev.x;
+                        const y2 = prev.y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    }
+                }
+            }
+        }
+        return grid;
+    }
 }
