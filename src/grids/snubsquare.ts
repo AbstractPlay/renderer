@@ -60,7 +60,7 @@ export function snubsquare(args: IGeneratorArgs): GridPoints {
     for (const row of grid) {
         const node: IPoint[] = [];
         for (const p of row) {
-            const newp: IPoint = {x: p.x + minX, y: p.y};
+            const newp: IPoint = {x: p.x + Math.abs(minX), y: p.y};
             node.push(newp);
         }
         newGrid.push(node);
