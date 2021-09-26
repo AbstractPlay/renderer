@@ -1,6 +1,6 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../GridGenerator";
-import { rectOfSquares } from "../grids";
+import { rectOfSquares, snubsquare } from "../grids";
 import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "../RendererBase";
 import { APRenderRep, Glyph } from "../schema";
 
@@ -23,6 +23,10 @@ export class DefaultRenderer extends RendererBase {
             }
             case "squares": {
                 gridPoints = this.squaresBlank(json, draw, opts);
+                break;
+            }
+            case "snubsquare": {
+                gridPoints = this.snubSquare(json, draw, opts);
                 break;
             }
             default: {
@@ -441,4 +445,83 @@ export class DefaultRenderer extends RendererBase {
 
         return grid;
     }
+    private snubSquare(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = json.board.width;
+        const height: number = json.board.height;
+        const cellsize = this.cellsize;
+
+        // Get a grid of points
+        const grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const board = draw.group().id("board");
+
+        // Add board labels
+        const labels = board.group().id("labels");
+        // Columns (letters)
+        for (let col = 0; col < width; col++) {
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+            labels.text(this.columnLabels[col]).center(pointTop.x, pointTop.y);
+            labels.text(this.columnLabels[col]).center(pointBottom.x, pointBottom.y);
+        }
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+            labels.text(`${height - row}`).center(pointL.x, pointL.y);
+            labels.text(`${height - row}`).center(pointR.x, pointR.y);
+        }
+
+        // Draw grid lines
+        const gridlines = draw.group().id("gridlines");
+        for (let row = 0; row < height; row++) {
+            for (let col = 0; col < width; col++) {
+                const curr = grid[row][col];
+
+                // always connect to previous cell
+                if (col > 0) {
+                    const prev = grid[row][col - 1];
+                    const x1 = curr.x;
+                    const y1 = curr.y;
+                    const x2 = prev.x;
+                    const y2 = prev.y;
+                    gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                }
+
+                if (row > 0) {
+                    // always connect to cell directly above
+                    let prev = grid[row - 1][col];
+                    let x1 = curr.x;
+                    let y1 = curr.y;
+                    let x2 = prev.x;
+                    let y2 = prev.y;
+                    gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    // even row, odd columns connect as well to previous-above cell
+                    if ( ( (row % 2) === 0) && ( (col % 2) !== 0) ) {
+                        prev = grid[row - 1][col - 1];
+                        x1 = curr.x;
+                        y1 = curr.y;
+                        x2 = prev.x;
+                        y2 = prev.y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    // odd row, odd columns connect as well to previous-next cell
+                    } else if (( (col % 2) !== 0) && (col < (width - 1)) ) {
+                        prev = grid[row - 1][col + 1];
+                        x1 = curr.x;
+                        y1 = curr.y;
+                        x2 = prev.x;
+                        y2 = prev.y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    }
+                }
+            }
+        }
+
+        return grid;
+    }
+
 }
