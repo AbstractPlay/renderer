@@ -1,6 +1,6 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../GridGenerator";
-import { hexOfTri, rectOfSquares, snubsquare } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, rectOfSquares, snubsquare } from "../grids";
 import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "../RendererBase";
 import { APRenderRep, Glyph } from "../schema";
 
@@ -29,8 +29,16 @@ export class DefaultRenderer extends RendererBase {
                 gridPoints = this.snubSquare(json, draw, opts);
                 break;
             }
+            case "hex_of_hex": {
+                gridPoints = this.hexOfHex(json, draw, opts);
+                break;
+            }
             case "hex_of_tri": {
                 gridPoints = this.hexOfTri(json, draw, opts);
+                break;
+            }
+            case "hex_of_cir": {
+                gridPoints = this.hexOfCir(json, draw, opts);
                 break;
             }
             default: {
@@ -605,6 +613,105 @@ export class DefaultRenderer extends RendererBase {
                 }
             }
         }
+        return grid;
+    }
+
+    private hexOfCir(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+            throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
+        }
+        const minWidth: number = json.board.minWidth;
+        const maxWidth: number = json.board.maxWidth;
+        const cellsize = this.cellsize;
+        const height = ((maxWidth - minWidth) * 2) + 1;
+
+        // Get a grid of points
+        const grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        const board = draw.group().id("board");
+
+        // Add board labels
+        const labels = board.group().id("labels");
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+            const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
+            labels.text(this.columnLabels[height - row - 1] + "1").center(pointL.x, pointL.y);
+            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).center(pointR.x, pointR.y);
+        }
+
+        // Draw circles
+        const gridlines = draw.group().id("circles");
+        for (const row of grid) {
+            for (const p of row) {
+                gridlines.circle(cellsize)
+                    .center(p.x, p.y)
+                    .fill("none")
+                    .stroke({color: "#000", width: 1});
+            }
+        }
+
+        return grid;
+    }
+
+    private hexOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+            throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
+        }
+        const minWidth: number = json.board.minWidth;
+        const maxWidth: number = json.board.maxWidth;
+        const cellsize = this.cellsize;
+        const height = ((maxWidth - minWidth) * 2) + 1;
+
+        // Get a grid of points
+        const grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        const board = draw.group().id("board");
+
+        // Add board labels
+        const labels = board.group().id("labels");
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+            const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
+            labels.text(this.columnLabels[height - row - 1] + "1").center(pointL.x, pointL.y);
+            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).center(pointR.x, pointR.y);
+        }
+
+        /*
+        Flat-topped hexes:
+            half, 0
+            (half+width), 0
+            (width*2), height
+            (half+width), (height*2)
+            half, (height*2)
+            0, height
+        Pointy-topped hexes:
+            height, 0
+            (height*2), half
+            (height*2), (half+width)
+            height, (width*2)
+            0, (half+width)
+            0 half
+        */
+
+        // Draw hexes
+        const triWidth = cellsize / 2;
+        const half = triWidth / 2;
+        const triHeight = (triWidth * Math.sqrt(3)) / 2;
+
+        const gridlines = draw.group().id("hexes");
+        for (const row of grid) {
+            for (const p of row) {
+                gridlines.polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
+                    .center(p.x, p.y)
+                    .fill("none")
+                    .stroke({color: "#000", width: 1});
+            }
+        }
+
         return grid;
     }
 }
