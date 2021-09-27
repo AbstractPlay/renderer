@@ -63,26 +63,4 @@ sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("tileDark", (canvas: SVGContainer) => {
-    const group = canvas.group()
-        .id("tileDark")
-        .attr("data-cellsize", sheet.cellsize);
-    group.rect(sheet.cellsize, sheet.cellsize)
-        .id("tileDark")
-        .fill({color: "#000", opacity: 0.4});
-        // .stroke({width: 1, color: "#000"});
-    return group;
-});
-
-sheet.glyphs.set("tileLight", (canvas: SVGContainer) => {
-    const group = canvas.group()
-        .id("tileLight")
-        .attr("data-cellsize", sheet.cellsize);
-    group.rect(sheet.cellsize, sheet.cellsize)
-        .id("tileLight")
-        .fill({color: "#000", opacity: 0});
-        // .stroke({width: 1, color: "#000"});
-    return group;
-});
-
 export { sheet as CoreSheet };

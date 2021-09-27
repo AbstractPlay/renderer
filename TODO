@@ -1,4 +1,5 @@
 
 Todo:
   ✔ Review and reconsider schema @done(19-01-27 13:50)
-  
+  ✔ Consolidate `squares` and `squares-checkered` @done(21-09-27 16:58)
+  ✔ Get rid of `tileLight` and `tileDark` and dynamically generat dark squares based on specified stroke colour @done(21-09-27 16:58)

@@ -18,11 +18,11 @@ export class DefaultRenderer extends RendererBase {
         }
         switch (json.board.style) {
             case "squares-checkered": {
-                gridPoints = this.squaresCheckered(json, draw, opts);
+                gridPoints = this.squares(json, draw, opts);
                 break;
             }
             case "squares": {
-                gridPoints = this.squaresBlank(json, draw, opts);
+                gridPoints = this.squares(json, draw, opts);
                 break;
             }
             case "snubsquare": {
@@ -300,7 +300,7 @@ export class DefaultRenderer extends RendererBase {
         }
     }
 
-    private squaresCheckered(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected squares(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -308,12 +308,20 @@ export class DefaultRenderer extends RendererBase {
         const width: number = json.board.width;
         const height: number = json.board.height;
         const cellsize = this.cellsize;
+        const style = json.board.style;
 
-        // Load glyphs for light and dark squares
-        this.loadGlyph("tileLight", opts.sheetList, draw);
-        this.loadGlyph("tileDark", opts.sheetList, draw);
-        const tileLight = SVG("#tileLight").size(cellsize, cellsize);
-        const tileDark = SVG("#tileDark").size(cellsize, cellsize);
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
+        }
 
         // Get a grid of points
         const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});
@@ -325,39 +333,46 @@ export class DefaultRenderer extends RendererBase {
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
             const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-            labels.text(this.columnLabels[col]).center(pointTop.x, pointTop.y);
-            labels.text(this.columnLabels[col]).center(pointBottom.x, pointBottom.y);
+            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-            labels.text(`${height - row}`).center(pointL.x, pointL.y);
-            labels.text(`${height - row}`).center(pointR.x, pointR.y);
+            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Now the tiles
-        const tiles = board.group().id("tiles");
-        // Determine whether the first row starts with a light or dark square
-        let startLight: number = 1;
-        if (height % 2 === 0) {
-            startLight = 0;
-        }
+        if (style === "squares-checkered") {
+            // Load glyphs for light and dark squares
+            const tileDark = draw.defs().rect(cellsize, cellsize)
+                .fill(baseColour)
+                .opacity(baseOpacity * 0.25)
+                .stroke({width: 0})
+                .id("tileDark");
 
-        // Place them
-        for (let row = 0; row < height; row++) {
-            let lightCol: number = 1;
-            if (row % 2 === startLight) {
-                lightCol = 0;
+            const tiles = board.group().id("tiles");
+            // Determine whether the first row starts with a light or dark square
+            let startLight: number = 1;
+            if (height % 2 === 0) {
+                startLight = 0;
             }
-            for (let col = 0; col < width; col++) {
-                let tile = tileDark;
-                if (col % 2 === lightCol) {
-                    tile = tileLight;
+
+            // Place them
+            for (let row = 0; row < height; row++) {
+                let lightCol: number = 1;
+                if (row % 2 === startLight) {
+                    lightCol = 0;
                 }
-                const {x, y} = grid[row][col];
-                tiles.use(tile).center(x, y);
+                for (let col = 0; col < width; col++) {
+                    if (col % 2 !== lightCol) {
+                        const {x, y} = grid[row][col];
+                        tiles.use(tileDark).center(x, y);
+                    }
+                }
             }
         }
 
@@ -369,13 +384,13 @@ export class DefaultRenderer extends RendererBase {
             const y1 = grid[row][0].y - (cellsize / 2);
             const x2 = grid[row][width - 1].x + (cellsize / 2);
             const y2 = grid[row][width - 1].y - (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
         }
         let lastx1 = grid[height - 1][0].x - (cellsize / 2);
         let lasty1 = grid[height - 1][0].y + (cellsize / 2);
         let lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
         let lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
+        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
 
         // Vertical, left of each column, then right line after loop
         for (let col = 0; col < width; col++) {
@@ -383,18 +398,18 @@ export class DefaultRenderer extends RendererBase {
             const y1 = grid[0][col].y - (cellsize / 2);
             const x2 = grid[height - 1][col].x - (cellsize / 2);
             const y2 = grid[height - 1][col].y + (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
         }
         lastx1 = grid[0][width - 1].x + (cellsize / 2);
         lasty1 = grid[0][width - 1].y - (cellsize / 2);
         lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
         lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
+        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
 
         return grid;
     }
 
-    private squaresBlank(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected snubSquare(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -403,69 +418,18 @@ export class DefaultRenderer extends RendererBase {
         const height: number = json.board.height;
         const cellsize = this.cellsize;
 
-        // Get a grid of points
-        const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});
-        const board = draw.group().id("board");
-
-        // Add board labels
-        const labels = board.group().id("labels");
-        // Columns (letters)
-        for (let col = 0; col < width; col++) {
-            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
-            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-            labels.text(this.columnLabels[col]).center(pointTop.x, pointTop.y);
-            labels.text(this.columnLabels[col]).center(pointBottom.x, pointBottom.y);
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
         }
-
-        // Rows (numbers)
-        for (let row = 0; row < height; row++) {
-            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
-            const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-            labels.text(`${height - row}`).center(pointL.x, pointL.y);
-            labels.text(`${height - row}`).center(pointR.x, pointR.y);
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
         }
-
-        // Draw grid lines
-        const gridlines = draw.group().id("gridlines");
-        // Horizontal, top of each row, then bottom line after loop
-        for (let row = 0; row < height; row++) {
-            const x1 = grid[row][0].x - (cellsize / 2);
-            const y1 = grid[row][0].y - (cellsize / 2);
-            const x2 = grid[row][width - 1].x + (cellsize / 2);
-            const y2 = grid[row][width - 1].y - (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
         }
-        let lastx1 = grid[height - 1][0].x - (cellsize / 2);
-        let lasty1 = grid[height - 1][0].y + (cellsize / 2);
-        let lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
-        let lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
-
-        // Vertical, left of each column, then right line after loop
-        for (let col = 0; col < width; col++) {
-            const x1 = grid[0][col].x - (cellsize / 2);
-            const y1 = grid[0][col].y - (cellsize / 2);
-            const x2 = grid[height - 1][col].x - (cellsize / 2);
-            const y2 = grid[height - 1][col].y + (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
-        }
-        lastx1 = grid[0][width - 1].x + (cellsize / 2);
-        lasty1 = grid[0][width - 1].y - (cellsize / 2);
-        lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
-        lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: 1, color: "#000"});
-
-        return grid;
-    }
-
-    private snubSquare(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
-        // Check required properites
-        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
-            throw new Error("Both the `width` and `height` properties are required for this board type.");
-        }
-        const width: number = json.board.width;
-        const height: number = json.board.height;
-        const cellsize = this.cellsize;
 
         // Get a grid of points
         const grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
@@ -477,16 +441,16 @@ export class DefaultRenderer extends RendererBase {
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
             const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-            labels.text(this.columnLabels[col]).center(pointTop.x, pointTop.y);
-            labels.text(this.columnLabels[col]).center(pointBottom.x, pointBottom.y);
+            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-            labels.text(`${height - row}`).center(pointL.x, pointL.y);
-            labels.text(`${height - row}`).center(pointR.x, pointR.y);
+            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Draw grid lines
@@ -502,7 +466,7 @@ export class DefaultRenderer extends RendererBase {
                     const y1 = curr.y;
                     const x2 = prev.x;
                     const y2 = prev.y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                 }
 
                 if (row > 0) {
@@ -512,7 +476,7 @@ export class DefaultRenderer extends RendererBase {
                     let y1 = curr.y;
                     let x2 = prev.x;
                     let y2 = prev.y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     // even row, odd columns connect as well to previous-above cell
                     if ( ( (row % 2) === 0) && ( (col % 2) !== 0) ) {
                         prev = grid[row - 1][col - 1];
@@ -520,7 +484,7 @@ export class DefaultRenderer extends RendererBase {
                         y1 = curr.y;
                         x2 = prev.x;
                         y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     // odd row, odd columns connect as well to previous-next cell
                     } else if (( (col % 2) !== 0) && (col < (width - 1)) ) {
                         prev = grid[row - 1][col + 1];
@@ -528,7 +492,7 @@ export class DefaultRenderer extends RendererBase {
                         y1 = curr.y;
                         x2 = prev.x;
                         y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     }
                 }
             }
@@ -537,7 +501,7 @@ export class DefaultRenderer extends RendererBase {
         return grid;
     }
 
-    private hexOfTri(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected hexOfTri(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
@@ -546,6 +510,19 @@ export class DefaultRenderer extends RendererBase {
         const maxWidth: number = json.board.maxWidth;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
+
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
+        }
 
         // Get a grid of points
         const grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
@@ -558,8 +535,8 @@ export class DefaultRenderer extends RendererBase {
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-            labels.text(this.columnLabels[height - row - 1] + "1").center(pointL.x, pointL.y);
-            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).center(pointR.x, pointR.y);
+            labels.text(this.columnLabels[height - row - 1] + "1").fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Draw grid lines
@@ -578,7 +555,7 @@ export class DefaultRenderer extends RendererBase {
                     const y1 = curr.y;
                     const x2 = prev.x;
                     const y2 = prev.y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                 }
 
                 // connections are build upward, so only continue with rows after the first
@@ -590,7 +567,7 @@ export class DefaultRenderer extends RendererBase {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     }
                     // up to and including the midline, connect to the above-previous cell if there is one
                     if ( (row <= midrow) && (col > 0) ) {
@@ -599,7 +576,7 @@ export class DefaultRenderer extends RendererBase {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     }
                     // after the midline, connect to the above-next cell instead
                     if (row > midrow) {
@@ -608,7 +585,7 @@ export class DefaultRenderer extends RendererBase {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: 1, color: "#000"});
+                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     }
                 }
             }
@@ -616,7 +593,7 @@ export class DefaultRenderer extends RendererBase {
         return grid;
     }
 
-    private hexOfCir(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected hexOfCir(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
@@ -625,6 +602,19 @@ export class DefaultRenderer extends RendererBase {
         const maxWidth: number = json.board.maxWidth;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
+
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
+        }
 
         // Get a grid of points
         const grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
@@ -637,8 +627,8 @@ export class DefaultRenderer extends RendererBase {
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-            labels.text(this.columnLabels[height - row - 1] + "1").center(pointL.x, pointL.y);
-            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).center(pointR.x, pointR.y);
+            labels.text(this.columnLabels[height - row - 1] + "1").fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Draw circles
@@ -646,7 +636,7 @@ export class DefaultRenderer extends RendererBase {
         const circle = draw.defs().circle(cellsize)
             .id("_circle")
             .fill("none")
-            .stroke({color: "#000", width: 1});
+            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         for (const row of grid) {
             for (const p of row) {
                 gridlines.use(circle).center(p.x, p.y);
@@ -656,7 +646,7 @@ export class DefaultRenderer extends RendererBase {
         return grid;
     }
 
-    private hexOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected hexOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
@@ -665,6 +655,19 @@ export class DefaultRenderer extends RendererBase {
         const maxWidth: number = json.board.maxWidth;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
+
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
+        }
 
         // Get a grid of points
         const grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
@@ -677,8 +680,8 @@ export class DefaultRenderer extends RendererBase {
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-            labels.text(this.columnLabels[height - row - 1] + "1").center(pointL.x, pointL.y);
-            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).center(pointR.x, pointR.y);
+            labels.text(this.columnLabels[height - row - 1] + "1").fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         /*
@@ -707,7 +710,7 @@ export class DefaultRenderer extends RendererBase {
         const hex = draw.defs().polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
             .id("_hex")
             .fill("none")
-            .stroke({color: "#000", width: 1});
+            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         for (const row of grid) {
             for (const p of row) {
                 gridlines.use(hex).center(p.x, p.y);

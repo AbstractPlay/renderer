@@ -34,14 +34,26 @@ export interface APRenderRep {
           | "squares-checkered"
           | "vertex"
           | "go"
-          | "hex_odd-r"
-          | "hex_even-r"
-          | "hex_odd-c"
-          | "hex_even-c"
+          | "hex_odd-p"
+          | "hex_even-p"
+          | "hex_odd-f"
+          | "hex_even-f"
           | "hex_of_hex"
           | "hex_of_tri"
           | "hex_of_cir"
           | "snubsquare";
+        /**
+         * The base stroke weight of lines drawn to construct the board.
+         */
+        strokeWeight?: number;
+        /**
+         * The colour for lines drawn to construct the board, includes the labels.
+         */
+        strokeColour?: string;
+        /**
+         * The opacity of lines drawn to construct the board, includes the labels.
+         */
+        strokeOpacity?: number;
         /**
          * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
          */
