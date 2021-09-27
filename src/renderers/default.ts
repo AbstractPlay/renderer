@@ -643,12 +643,13 @@ export class DefaultRenderer extends RendererBase {
 
         // Draw circles
         const gridlines = draw.group().id("circles");
+        const circle = draw.defs().circle(cellsize)
+            .id("_circle")
+            .fill("none")
+            .stroke({color: "#000", width: 1});
         for (const row of grid) {
             for (const p of row) {
-                gridlines.circle(cellsize)
-                    .center(p.x, p.y)
-                    .fill("none")
-                    .stroke({color: "#000", width: 1});
+                gridlines.use(circle).center(p.x, p.y);
             }
         }
 
@@ -703,12 +704,13 @@ export class DefaultRenderer extends RendererBase {
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
         const gridlines = draw.group().id("hexes");
+        const hex = draw.defs().polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
+            .id("_hex")
+            .fill("none")
+            .stroke({color: "#000", width: 1});
         for (const row of grid) {
             for (const p of row) {
-                gridlines.polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
-                    .center(p.x, p.y)
-                    .fill("none")
-                    .stroke({color: "#000", width: 1});
+                gridlines.use(hex).center(p.x, p.y);
             }
         }
 
