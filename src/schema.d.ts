@@ -33,6 +33,7 @@ export interface APRenderRep {
           | "squares"
           | "squares-checkered"
           | "vertex"
+          | "vertex-cross"
           | "go"
           | "hex_odd-p"
           | "hex_even-p"

@@ -25,6 +25,7 @@ export class DefaultRenderer extends RendererBase {
                 json.board.width = 19;
                 json.board.height = 19;
             case "vertex":
+            case "vertex-cross":
                 gridPoints = this.vertex(json, draw, opts);
                 break;
             case "snubsquare":
@@ -484,6 +485,25 @@ export class DefaultRenderer extends RendererBase {
         lastx2 = grid[height - 1][width - 1].x;
         lasty2 = grid[height - 1][width - 1].y;
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+
+        // If `-cross` board, add crosses
+        if (style === "vertex-cross") {
+            for (let row = 1; row < height; row++) {
+                for (let col = 0; col < width; col++) {
+                    const curr = grid[row][col];
+                    // if not last column, do next
+                    if (col < width - 1) {
+                        const next = grid[row - 1][col + 1];
+                        gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+                    }
+                    // if not first column, do previous
+                    if (col > 0) {
+                        const prev = grid[row - 1][col - 1];
+                        gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+                    }
+                }
+            }
+        }
 
         // If `go` board, add traditional nodes
         if (style === "go") {
