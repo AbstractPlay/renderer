@@ -17,34 +17,24 @@ export class DefaultRenderer extends RendererBase {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
         switch (json.board.style) {
-            case "squares-checkered": {
+            case "squares-checkered":
+            case "squares":
                 gridPoints = this.squares(json, draw, opts);
                 break;
-            }
-            case "squares": {
-                gridPoints = this.squares(json, draw, opts);
-                break;
-            }
-            case "snubsquare": {
+            case "snubsquare":
                 gridPoints = this.snubSquare(json, draw, opts);
                 break;
-            }
-            case "hex_of_hex": {
+            case "hex_of_hex":
                 gridPoints = this.hexOfHex(json, draw, opts);
                 break;
-            }
-            case "hex_of_tri": {
+            case "hex_of_tri":
                 gridPoints = this.hexOfTri(json, draw, opts);
                 break;
-            }
-            case "hex_of_cir": {
+            case "hex_of_cir":
                 gridPoints = this.hexOfCir(json, draw, opts);
                 break;
-            }
-            default: {
+            default:
                 throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
-                break;
-            }
         }
 
         // PIECES
@@ -297,6 +287,11 @@ export class DefaultRenderer extends RendererBase {
                     throw new Error(`The requested annotation type (${note.type}) is not implemented.`);
                 }
             }
+        }
+
+        // Rotate the board if requested
+        if (opts.rotate > 0) {
+            this.rotateBoard(draw);
         }
     }
 
@@ -718,5 +713,14 @@ export class DefaultRenderer extends RendererBase {
         }
 
         return grid;
+    }
+
+    protected rotateBoard(draw: Svg, groupID: string = "labels", degrees: number = 180) {
+        draw.rotate(degrees, draw.width() as number / 2, draw.height() as number / 2);
+        const g = SVG("#" + groupID);
+        const children = g.children();
+        children.each((x) => {
+            x.rotate(Math.abs(360 - degrees));
+        });
     }
 }

@@ -11,6 +11,7 @@ export interface IRendererOptionsIn {
     patterns?: boolean;
     patternList?: string[];
     colourBlind?: boolean;
+    rotate?: number;
 }
 
 export interface IRendererOptionsOut {
@@ -19,6 +20,7 @@ export interface IRendererOptionsOut {
     patterns: boolean;
     patternList: string[];
     colourBlind: boolean;
+    rotate: number;
 }
 
 export abstract class RendererBase {
@@ -50,7 +52,7 @@ export abstract class RendererBase {
     }
 
     protected optionsPrecheck(opts: IRendererOptionsIn): IRendererOptionsOut {
-        const newOpts: IRendererOptionsOut = {sheetList: ["core", "chess", "piecepack"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames};
+        const newOpts: IRendererOptionsOut = {sheetList: ["core", "chess", "piecepack"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, rotate: 0};
 
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
@@ -96,6 +98,11 @@ export abstract class RendererBase {
                 }
             }
             newOpts.colours = opts.colours;
+        }
+
+        // Validate rotation
+        if ( (opts.rotate !== undefined) && (opts.rotate > 0) ) {
+            newOpts.rotate = opts.rotate;
         }
 
         return newOpts;

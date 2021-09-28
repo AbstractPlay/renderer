@@ -18,6 +18,7 @@ interface IRenderOptions {
     patternList?: string[];
     colourBlind?: boolean;
     colourList?: string[];
+    rotate?: number;
 }
 
 interface IMyObject {
@@ -85,7 +86,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList});
+    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate});
     draw.viewbox(draw.bbox());
     return draw;
 }
