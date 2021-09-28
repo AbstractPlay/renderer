@@ -23,7 +23,8 @@ This section walks through each of the properties of the schema and explains wha
 This tells the renderer which engine to use. The following engines are available:
 
 default:: This is the renderer used by most games. It does not support stacked pieces.
-stacking:: This works almost identically to the `default` engine but supports stacking multiple pieces in a single space.
+stacking-offset:: This works almost identically to the `default` engine but stacks multiple defined pieces on top of each other, slightly offset. Depending on the size of the board and pieces, excessive stack sizes will become problematic.
+stacking-tiles:: This generates a side view of a stack of pieces defined only by their colour (player number). There is no legend of pieces, just the player colour. This is designed to deal with very tall stacks by using a multiplier tile.
 homeworlds:: This engine generates Homeworlds boards only.
 
 === `legend`

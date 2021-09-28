@@ -17,7 +17,7 @@ export interface APRenderRep {
   /**
    * The rendering engine the game wants to use.
    */
-  renderer?: "default" | "stacking" | "homeworlds";
+  renderer?: "default" | "stacking-offset" | "stacking-tiles" | "homeworlds";
   /**
    * Map each `piece` to an actual glyph with possible options.
    */

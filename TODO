@@ -4,4 +4,5 @@ Todo:
   ✔ Consolidate `squares` and `squares-checkered` @done(21-09-27 16:58)
   ✔ Get rid of `tileLight` and `tileDark` and dynamically generat dark squares based on specified stroke colour @done(21-09-27 16:58)
   - Figure out why patterns sometimes break
+  - Make `stacking-offset` renderer rotate properly
   
