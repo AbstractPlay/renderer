@@ -40,7 +40,7 @@ function formatAJVErrors(errors: AJVError[]): string {
 */
 export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): string {
     const node = document.createElement("div");
-    const uuidv4 = require("uuid/v4");
+    const {v4: uuidv4} = require("uuid");
     const uid = uuidv4();
     node.setAttribute("id", uid);
     opts.divelem = node;

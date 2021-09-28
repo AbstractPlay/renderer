@@ -21,6 +21,12 @@ export class DefaultRenderer extends RendererBase {
             case "squares":
                 gridPoints = this.squares(json, draw, opts);
                 break;
+            case "go":
+                json.board.width = 19;
+                json.board.height = 19;
+            case "vertex":
+                gridPoints = this.vertex(json, draw, opts);
+                break;
             case "snubsquare":
                 gridPoints = this.snubSquare(json, draw, opts);
                 break;
@@ -400,6 +406,101 @@ export class DefaultRenderer extends RendererBase {
         lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
         lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+
+        return grid;
+    }
+
+    protected vertex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = json.board.width;
+        const height: number = json.board.height;
+        const cellsize = this.cellsize;
+        const style = json.board.style;
+
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const board = draw.group().id("board");
+
+        // Add board labels
+        const labels = board.group().id("labels");
+        // Columns (letters)
+        for (let col = 0; col < width; col++) {
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+        }
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+        }
+
+        // Draw grid lines
+        const gridlines = draw.group().id("gridlines");
+        // Horizontal, top of each row, then bottom line after loop
+        for (let row = 0; row < height; row++) {
+            const x1 = grid[row][0].x;
+            const y1 = grid[row][0].y;
+            const x2 = grid[row][width - 1].x;
+            const y2 = grid[row][width - 1].y;
+            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        }
+        let lastx1 = grid[height - 1][0].x;
+        let lasty1 = grid[height - 1][0].y;
+        let lastx2 = grid[height - 1][width - 1].x;
+        let lasty2 = grid[height - 1][width - 1].y;
+        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+
+        // Vertical, left of each column, then right line after loop
+        for (let col = 0; col < width; col++) {
+            const x1 = grid[0][col].x;
+            const y1 = grid[0][col].y;
+            const x2 = grid[height - 1][col].x;
+            const y2 = grid[height - 1][col].y;
+            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        }
+        lastx1 = grid[0][width - 1].x;
+        lasty1 = grid[0][width - 1].y;
+        lastx2 = grid[height - 1][width - 1].x;
+        lasty2 = grid[height - 1][width - 1].y;
+        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+
+        // If `go` board, add traditional nodes
+        if (style === "go") {
+            const pts: number[][] = [
+                [3, 3], [3, 9], [3, 15],
+                [9, 3], [9, 9], [9, 15],
+                [15, 3], [15, 9], [15, 15],
+            ];
+            pts.forEach((p) => {
+                const pt = grid[p[0]][p[1]];
+                gridlines.circle(baseStroke * 10)
+                    .fill(baseColour)
+                    .opacity(baseOpacity)
+                    .stroke({width: 0})
+                    .center(pt.x, pt.y);
+            });
+        }
 
         return grid;
     }

@@ -49,7 +49,7 @@ Now for the game board itself. This is rendered first, followed by the pieces. T
   squares:: A grid of squares, all of the same colour.
   squares-checkered:: Same as `squares` but alternating dark and light colours. The bottom-left cell is always dark.
   vertex:: Pieces are placed on the intersections of a grid of squares.
-  go:: Same as `vertex` but with small nodes at the traditional points, if the board is one of the traditional sizes. Otherwise it renders exactly like `vertex`.
+  go:: A special case of `vertex`. Always 19x19 with small nodes at the traditional points.
   hex_odd-p:: A pointy-topped hex grid where the odd-numbered rows are indented.
   hex_even-p:: A pointy-topped hex grid where the even-numbered rows are indented.
   hex_odd-f:: A flat-topped hex grid where the odd-numbered rows are indented.

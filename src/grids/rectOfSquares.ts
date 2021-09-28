@@ -9,7 +9,6 @@ export function rectOfSquares(args: IGeneratorArgs): GridPoints {
     } else if (args.cellWidth !== undefined) {
         cellSize = args.cellWidth;
     }
-    const halfCell = cellSize / 2;
 
     let gridHeight: number = 8;
     let gridWidth: number = 8;
@@ -24,7 +23,7 @@ export function rectOfSquares(args: IGeneratorArgs): GridPoints {
     for (let row = 0; row < gridHeight; row++) {
         const node: IPoint[] = [];
         for (let col = 0; col < gridWidth; col++) {
-            const point: IPoint = {x: halfCell + (cellSize * col), y: halfCell + (cellSize * row)};
+            const point: IPoint = {x: (cellSize * col), y: (cellSize * row)};
             node.push(point);
         }
         grid.push(node);

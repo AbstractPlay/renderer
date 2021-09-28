@@ -28,7 +28,7 @@ export abstract class RendererBase {
     public readonly coloursBasic = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
     public readonly coloursBlind = ["#a6611a", "#80cdc1", "#dfc27d", "#018571"];
     public readonly patternNames = ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"];
-    protected readonly columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
+    protected readonly columnLabels = "abcdefghjklmnopqrstuvwxyz".split("");
     protected readonly cellsize = 50;
 
     constructor(name = "default") {
