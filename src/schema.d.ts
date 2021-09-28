@@ -98,7 +98,7 @@ export interface APRenderRep {
     G: Stashstrings;
     B: Stashstrings;
     Y: Stashstrings;
-    [k: string]: any;
+    [k: string]: unknown;
   }[];
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details.
@@ -112,7 +112,7 @@ export interface APRenderRep {
      * A sequence of points representing the beginning, any middle, and finally end points. Used by the `mvmtX` types for drawing lines.
      */
     points?: [string, string, ...string[]];
-    [k: string]: any;
+    [k: string]: unknown;
   }[];
   /**
    * Player-specific data that the front end can use to render a helpful sidebar (identifying the pieces a player controls, running score, etc.).
@@ -126,9 +126,9 @@ export interface APRenderRep {
      * Represent a numeric score.
      */
     score?: number;
-    [k: string]: any;
+    [k: string]: unknown;
   }[];
-  [k: string]: any;
+  [k: string]: unknown;
 }
 /**
  * An individual glyph with options, used in the `legend` property.

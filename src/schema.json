@@ -228,12 +228,12 @@
                 {
                     "description": "One character per cell. Commas and whitespace are not permitted. Use a newline (\\n) to separate rows (the first row is the far row). Hyphens and underscores are reserved for representing blank spaces. Hyphens represent a single blank space. A line containing only an underscore will be interpreted as meaning the entire row is empty. (This only works for symmetrical boards. The row will be the width of the `board.width` property.)",
                     "type": "string",
-                    "pattern": "^[^,\\r\\t\\f\\ ]+$"
+                    "pattern": "^[^,\\r\\t\\f ]+$"
                 },
                 {
                     "description": "Comma-delimited string, allowing for multiple characters per cell. How multiple characters are handled depends on the renderer. The default renderer just assumes the character string matches a legend. Other renderers may assume the pieces are stacking. Use newlines to delimit rows (the first row is the far row). No other whitespace is permitted. Hyphens are *not* reserved here. Just put nothing between commas to indicate an empty cell. Underscores *are* still reserved, though. A line containing only an underscore will be interpreted as meaning the entire row is empty. (This only works for symmetrical boards. The row will be the width of the `board.width` property.)",
                     "type": "string",
-                    "pattern": "^[^\\r\\t\\f\\ ]+$"
+                    "pattern": "^[^\\r\\t\\f ]+$"
                 },
                 {
                     "description": "Nested arrays. This level is the row (0 index being the top row).",

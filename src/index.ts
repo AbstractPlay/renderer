@@ -1,6 +1,6 @@
 // import SVG from "@svgdotjs/svg.js";
 import { extend as SVGExtend, SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
-import Ajv from "ajv";
+import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 import { APRenderRep } from "./schema";
 import schema from "./schema.json";
@@ -25,10 +25,10 @@ interface IMyObject {
     bbox(): any;
 }
 
-function formatAJVErrors(errors: Ajv.ErrorObject[]): string {
+function formatAJVErrors(errors: AJVError[]): string {
     let retstr = "";
     for (const error of errors) {
-        retstr += `\nKeyword: ${error.keyword}, dataPath: ${error.dataPath}, schemaPath: ${error.schemaPath}`;
+        retstr += `\nKeyword: ${error.keyword}, instancePath: ${error.instancePath}, schemaPath: ${error.schemaPath}`;
     }
     return retstr;
 }
@@ -52,7 +52,7 @@ export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): st
 export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     // Validate the JSON
     if (! validate(json)) {
-        throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as Ajv.ErrorObject[])}`);
+        throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as AJVError[])}`);
     }
 
     // Kludge to fix fact that `Use` type doesn't have `width` and `height` properties
