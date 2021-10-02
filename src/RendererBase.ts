@@ -1,4 +1,4 @@
-import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
+import { G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "./GridGenerator";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfSquares, snubsquare } from "./grids";
 import { APRenderRep, Glyph } from "./schema";
@@ -864,5 +864,52 @@ export abstract class RendererBase {
         children.each((x) => {
             x.rotate(Math.abs(360 - degrees));
         });
+    }
+
+    protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints) {
+        if ( ("annotations" in json) && (json.annotations !== undefined) ) {
+            const notes = draw.group().id("annotations");
+            for (const note of json.annotations) {
+                if (note.hasOwnProperty("waypoints")) {
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour;
+                    }
+                    let style = "solid";
+                    if ( ("style" in note) && (note.style !== undefined) ) {
+                        style = note.style;
+                    }
+                    let arrow = true;
+                    if ( ("arrow" in note) && (note.arrow !== undefined)) {
+                        arrow = note.arrow;
+                    }
+
+                    // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const points: string[] = [];
+                    for (const node of note.waypoints) {
+                        const pt = grid[node.row][node.col];
+                        points.push(`${pt.x},${pt.y}`);
+                    }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        width: this.cellsize * 0.03,
+                    };
+                    if (style === "dashed") {
+                        stroke.dasharray = "4";
+                    }
+                    const line = notes.polyline(points.join(" ")).stroke(stroke).fill("none");
+                    line.marker("start", markerCircle);
+                    if (arrow) {
+                        line.marker("end", markerArrow);
+                    } else {
+                        line.marker("end", markerCircle);
+                    }
+                } else {
+                    throw new Error(`The requested annotation is unrecognized.`);
+                }
+            }
+        }
     }
 }

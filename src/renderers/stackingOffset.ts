@@ -34,13 +34,13 @@ export class StackingOffsetRenderer extends RendererBase {
             case "snubsquare":
                 gridPoints = this.snubSquare(json, draw, opts);
                 break;
-            case "hex_of_hex":
+            case "hex-of-hex":
                 gridPoints = this.hexOfHex(json, draw, opts);
                 break;
-            case "hex_of_tri":
+            case "hex-of-tri":
                 gridPoints = this.hexOfTri(json, draw, opts);
                 break;
-            case "hex_of_cir":
+            case "hex-of-cir":
                 gridPoints = this.hexOfCir(json, draw, opts);
                 break;
             default:
@@ -108,29 +108,7 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // Finally, annotations
-        if ( ("annotations" in json) && (json.annotations !== undefined) ) {
-            const notes = draw.group().id("annotations");
-            // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-            const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4"));
-            const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill("black"));
-            for (const note of json.annotations) {
-                if (note.type === "mvmtMain") {
-                    if ( (! ("points" in note)) || (note.points === undefined) || (! (note.points instanceof Array)) || (note.points.length < 2) ) {
-                        throw new Error("The annotation `mvmtMain` requries that at least two points be defined.");
-                    }
-                    const points: string[] = [];
-                    for (const point of note.points) {
-                        const [x, y] = point.split(",");
-                        points.push(`${gridPoints[+y][+x].x},${gridPoints[+y][+x].y}`);
-                    }
-                    const line = notes.polyline(points.join(" ")).stroke({width: 1.5, color: "black"});
-                    line.marker("end", markerArrow);
-                    line.marker("start", markerCircle);
-                } else {
-                    throw new Error(`The requested annotation type (${note.type}) is not implemented.`);
-                }
-            }
-        }
+        this.annotateBoard(json, draw, gridPoints);
 
         // Rotate the board if requested
         if (opts.rotate > 0) {

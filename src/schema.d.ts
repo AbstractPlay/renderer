@@ -104,31 +104,66 @@ export interface APRenderRep {
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details.
    */
-  annotations?: {
-    /**
-     * The type of change being annotated
-     */
-    type: "mvmtMain" | "mvmtSub";
-    /**
-     * A sequence of points representing the beginning, any middle, and finally end points. Used by the `mvmtX` types for drawing lines.
-     */
-    points?: [string, string, ...string[]];
-    [k: string]: unknown;
-  }[];
-  /**
-   * Player-specific data that the front end can use to render a helpful sidebar (identifying the pieces a player controls, running score, etc.).
-   */
-  metadata?: {
-    /**
-     * If a simple boolean, the system will derive the player's colour based on user settings. If a string, it will try to match that string against the `legend` and render that specific glyph.
-     */
-    pieces?: boolean | string;
-    /**
-     * Represent a numeric score.
-     */
-    score?: number;
-    [k: string]: unknown;
-  }[];
+  annotations?: [
+    {
+      /**
+       * List of movement waypoints.
+       */
+      waypoints: [
+        {
+          row: number;
+          col: number;
+          [k: string]: unknown;
+        },
+        {
+          row: number;
+          col: number;
+          [k: string]: unknown;
+        },
+        ...{
+          row: number;
+          col: number;
+          [k: string]: unknown;
+        }[]
+      ];
+      style?: "solid" | "dashed";
+      /**
+       * Pattern for hex colour strings
+       */
+      colour?: string;
+      arrow?: boolean;
+      [k: string]: unknown;
+    },
+    ...{
+      /**
+       * List of movement waypoints.
+       */
+      waypoints: [
+        {
+          row: number;
+          col: number;
+          [k: string]: unknown;
+        },
+        {
+          row: number;
+          col: number;
+          [k: string]: unknown;
+        },
+        ...{
+          row: number;
+          col: number;
+          [k: string]: unknown;
+        }[]
+      ];
+      style?: "solid" | "dashed";
+      /**
+       * Pattern for hex colour strings
+       */
+      colour?: string;
+      arrow?: boolean;
+      [k: string]: unknown;
+    }[]
+  ];
   [k: string]: unknown;
 }
 /**

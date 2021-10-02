@@ -306,47 +306,52 @@
         "annotations": {
             "description": "Instruct the renderer how to show any changes to the game state. See the docs for details.",
             "type": "array",
+            "minItems": 1,
             "items": {
-                "description": "One step in the state change",
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "description": "The type of change being annotated",
-                        "enum": ["mvmtMain", "mvmtSub"]
-                    },
-                    "points": {
-                        "description": "A sequence of points representing the beginning, any middle, and finally end points. Used by the `mvmtX` types for drawing lines.",
-                        "type": "array",
-                        "items": {
-                            "description": "Coordinates based on the renderer's system: 0,0 is the top left corner of the board.",
-                            "type": "string",
-                            "pattern": "\\d+,\\d+"
+                "anyOf": [
+                    {
+                        "description": "A movement action",
+                        "type": "object",
+                        "properties": {
+                            "waypoints": {
+                                "description": "List of movement waypoints.",
+                                "type": "array",
+                                "minItems": 2,
+                                "items": {
+                                    "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.",
+                                    "type": "object",
+                                    "properties": {
+                                        "row": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "col": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": ["row", "col"]
+                                }
+                            },
+                            "style": {
+                                "enum": [
+                                    "solid",
+                                    "dashed"
+                                ],
+                                "default": "solid"
+                            },
+                            "colour": {
+                                "$ref": "#/definitions/colourstrings",
+                                "default": "#000"
+                            },
+                            "arrow": {
+                                "type": "boolean",
+                                "default": true
+                            }
                         },
-                        "minItems": 2
+                        "required": ["type", "waypoints"]
                     }
-                },
-                "required": ["type"]
-            }
-        },
-        "metadata": {
-            "description": "Player-specific data that the front end can use to render a helpful sidebar (identifying the pieces a player controls, running score, etc.).",
-            "type": "array",
-            "items": {
-                "description": "Definition of a metadata object used in the 'metadata' property array. The properties 'pieces' and 'score' are predefined. Additional properties can also be provided, but if the render doesn't know what to do with them, they won't be displayed.",
-                "type": "object",
-                "properties": {
-                    "pieces": {
-                        "description": "If a simple boolean, the system will derive the player's colour based on user settings. If a string, it will try to match that string against the `legend` and render that specific glyph.",
-                        "oneOf": [
-                            {"type": "boolean"},
-                            {"type": "string"}
-                        ]
-                    },
-                    "score": {
-                        "description": "Represent a numeric score.",
-                        "type": "number"
-                    }
-                }
+                ]
             }
         }
     },
