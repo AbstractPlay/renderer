@@ -1,12 +1,12 @@
-import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../GridGenerator";
 import { IRendererOptionsIn, RendererBase } from "../RendererBase";
 import { APRenderRep } from "../schema";
 
-export class StackingOffsetRenderer extends RendererBase {
+export class StackingTilesRenderer extends RendererBase {
 
     constructor() {
-        super("stacking-offset");
+        super("stacking-tiles");
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
@@ -19,37 +19,33 @@ export class StackingOffsetRenderer extends RendererBase {
         if (! ("style" in json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
+        /*
+            This renderer needs a little more information than just the grid points themselves.
+
+            `offsetY` determines the base of the first piece in the stack.
+            `tileWidth` is the width of the stacking tiles.
+            `tileHeight` is the height of the stacking tiles.
+        */
+        const effWidth: number = this.cellsize * 0.9;
+        const offsetX: number = effWidth / 2;
+        const offsetY: number = effWidth / 2;
+        const tileWidth: number = effWidth;
+        const tileHeight: number = Math.floor(effWidth / 8);
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
                 gridPoints = this.squares(json, draw, opts);
                 break;
-            case "go":
-                json.board.width = 19;
-                json.board.height = 19;
-            case "vertex":
-            case "vertex-cross":
-                gridPoints = this.vertex(json, draw, opts);
-                break;
-            case "snubsquare":
-                gridPoints = this.snubSquare(json, draw, opts);
-                break;
-            case "hex_of_hex":
-                gridPoints = this.hexOfHex(json, draw, opts);
-                break;
-            case "hex_of_tri":
-                gridPoints = this.hexOfTri(json, draw, opts);
-                break;
-            case "hex_of_cir":
-                gridPoints = this.hexOfCir(json, draw, opts);
-                break;
+            // case "hex_of_hex":
+            //     gridPoints = this.hexOfHex(json, draw, opts);
+            //     offsetX = this.cellsize / 4;
+            //     offsetY = (this.cellsize * Math.sqrt(3)) / 2;
+            //     tileWidth = this.cellsize / 2;
+            //     tileHeight = Math.floor((this.cellsize * Math.sqrt(3)) / 8);
+            //     break;
             default:
                 throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
         }
-
-        // PIECES
-        // Load all the pieces in the legend
-        this.loadLegend(json, draw, opts);
 
         // Now place the pieces
         const group = draw.group().id("pieces");
@@ -85,21 +81,32 @@ export class StackingOffsetRenderer extends RendererBase {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
-                            const parts = key.split("");
+                            let parts = key.split("");
+                            if (parts.length > 7) {
+                                parts = parts.slice(parts.length - 8);
+                                parts[0] = "0";
+                            }
                             const point = gridPoints[row][col];
-                            const offset = this.cellsize / 8;
                             for (let i = 0; i < parts.length; i++) {
-                                const piece = SVG("#" + parts[i]);
-                                if ( (piece === null) || (piece === undefined) ) {
-                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                                const idx = parseInt(parts[i], 10);
+                                if ( (idx === undefined) && (isNaN(idx)) ) {
+                                    throw new Error(`The '${this.name}' renderer expects that each piece in the stack be a single digit between 1 and 9.`);
                                 }
-                                const use = group.use(piece) as SVGG;
-                                use.center(point.x, point.y - (offset * i));
-                                const sheetCellSize = piece.attr("data-cellsize");
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                const x = point.x - offsetX;
+                                const y = point.y + offsetY - (tileHeight * (i + 1));
+                                // regular piece
+                                if (idx > 0) {
+                                    const color = opts.colours[idx];
+                                    group.rect(tileWidth, tileHeight)
+                                        .move(x, y)
+                                        .fill(color)
+                                        .stroke({width: tileHeight * 0.2, color: "#fff"});
+                                // overflow piece (there should only be one)
+                                } else {
+                                    group.line(x, y + (tileHeight / 2), x + tileWidth, y + (tileHeight / 2))
+                                        .fill("#000")
+                                        .stroke({width: tileHeight, color: "#000", dasharray: "4"});
                                 }
-                                use.scale((this.cellsize / sheetCellSize) * 0.85);
                             }
                         }
                     }

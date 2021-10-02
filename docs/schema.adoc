@@ -24,7 +24,7 @@ This tells the renderer which engine to use. The following engines are available
 
 default:: This is the renderer used by most games. It does not support stacked pieces.
 stacking-offset:: This works almost identically to the `default` engine but stacks multiple defined pieces on top of each other, slightly offset. Depending on the size of the board and pieces, excessive stack sizes will become problematic.
-stacking-tiles:: This generates a side view of a stack of pieces defined only by their colour (player number). There is no legend of pieces, just the player colour. This is designed to deal with very tall stacks by using a multiplier tile.
+stacking-tiles:: This generates a side view of a stack of pieces defined only by their colour (player number). There is no legend of pieces, just the player colour. This is designed to be used with cells of fixed size and not vertex boards. It can show up to eight tiles, or, if there are nine or more tiles, seven will be visible with an "etc." tile on the bottom. This renderer doesn't support player counts greater than nine.
 homeworlds:: This engine generates Homeworlds boards only.
 
 === `legend`
