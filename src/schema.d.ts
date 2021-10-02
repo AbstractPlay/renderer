@@ -35,13 +35,13 @@ export interface APRenderRep {
           | "vertex"
           | "vertex-cross"
           | "go"
-          | "hex_odd-p"
-          | "hex_even-p"
-          | "hex_odd-f"
-          | "hex_even-f"
-          | "hex_of_hex"
-          | "hex_of_tri"
-          | "hex_of_cir"
+          | "hex-odd-p"
+          | "hex-even-p"
+          | "hex-odd-f"
+          | "hex-even-f"
+          | "hex-of-hex"
+          | "hex-of-tri"
+          | "hex-of-cir"
           | "snubsquare";
         /**
          * The base stroke weight of lines drawn to construct the board.
