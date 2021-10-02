@@ -870,7 +870,11 @@ export abstract class RendererBase {
         if ( ("annotations" in json) && (json.annotations !== undefined) ) {
             const notes = draw.group().id("annotations");
             for (const note of json.annotations) {
-                if (note.hasOwnProperty("waypoints")) {
+                if ( (note.type !== undefined) && (note.type === "move") ) {
+                    if (note.targets.length < 2) {
+                        throw new Error("Move annotations require at least two 'targets'.");
+                    }
+
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour;
@@ -888,7 +892,7 @@ export abstract class RendererBase {
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
                     const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
                     const points: string[] = [];
-                    for (const node of note.waypoints) {
+                    for (const node of note.targets) {
                         const pt = grid[node.row][node.col];
                         points.push(`${pt.x},${pt.y}`);
                     }
@@ -906,8 +910,32 @@ export abstract class RendererBase {
                     } else {
                         line.marker("end", markerCircle);
                     }
+                } else if ( (note.type !== undefined) && (note.type === "enter") ) {
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour;
+                    }
+                    for (const node of note.targets) {
+                        const pt = grid[node.row][node.col];
+                        notes.rect(this.cellsize, this.cellsize)
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
+                            .center(pt.x, pt.y);
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "exit") ) {
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour;
+                    }
+                    for (const node of note.targets) {
+                        const pt = grid[node.row][node.col];
+                        notes.rect(this.cellsize, this.cellsize)
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
+                            .center(pt.x, pt.y);
+                    }
                 } else {
-                    throw new Error(`The requested annotation is unrecognized.`);
+                    throw new Error(`The requested annotation (${ note.type }) is not supported.`);
                 }
             }
         }

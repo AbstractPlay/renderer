@@ -107,14 +107,13 @@ export interface APRenderRep {
   annotations?: [
     {
       /**
-       * List of movement waypoints.
+       * The type of annotation
        */
-      waypoints: [
-        {
-          row: number;
-          col: number;
-          [k: string]: unknown;
-        },
+      type: "move" | "enter" | "exit";
+      /**
+       * The cells involved in the annotation
+       */
+      targets: [
         {
           row: number;
           col: number;
@@ -136,14 +135,13 @@ export interface APRenderRep {
     },
     ...{
       /**
-       * List of movement waypoints.
+       * The type of annotation
        */
-      waypoints: [
-        {
-          row: number;
-          col: number;
-          [k: string]: unknown;
-        },
+      type: "move" | "enter" | "exit";
+      /**
+       * The cells involved in the annotation
+       */
+      targets: [
         {
           row: number;
           col: number;
