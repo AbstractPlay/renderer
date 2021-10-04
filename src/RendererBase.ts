@@ -51,7 +51,7 @@ export abstract class RendererBase {
     }
 
     protected optionsPrecheck(opts: IRendererOptionsIn): IRendererOptionsOut {
-        const newOpts: IRendererOptionsOut = {sheetList: ["core", "chess", "piecepack"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, rotate: 0};
+        const newOpts: IRendererOptionsOut = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, rotate: 0};
 
         // Check colour blindness
         if (opts.colourBlind !== undefined) {

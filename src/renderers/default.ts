@@ -95,12 +95,12 @@ export class DefaultRenderer extends RendererBase {
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            const use = group.use(piece) as SVGG;
-                            use.center(point.x, point.y);
                             const sheetCellSize = piece.attr("data-cellsize");
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
+                            const use = group.use(piece) as SVGG;
+                            use.center(point.x, point.y);
                             use.scale((this.cellsize / sheetCellSize) * 0.85);
                         }
                     }

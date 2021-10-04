@@ -57,7 +57,6 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
 
     // Kludge to fix fact that `Use` type doesn't have `width` and `height` properties
     SVGExtend(SVGUse, {
-// tslint:disable-next-line: space-before-function-paren
 // tslint:disable-next-line: object-literal-shorthand
         width: function() {
             return (this as IMyObject).bbox().width;
