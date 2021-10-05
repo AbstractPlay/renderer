@@ -12,6 +12,7 @@ registerWindow(window, document);
 
 // create canvas
 const canvas = SVG(document.documentElement) as Svg;
+canvas.fill("#fff");
 
 const tileSizeOuter = 200;
 const tileSizeInner = 150;
