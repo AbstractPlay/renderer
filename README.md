@@ -15,6 +15,8 @@ Detailed instructions will appear here once the API is stable. For now, here's j
 - The size of SVG you return is irrelevant. It will be scaled by the renderer as appropriate. Use whatever size is convenient for you.
 - The renderer will check each figure for an element with the `id` `playerfill` and `fill` that element with the colour for the given player based on the options passed to the renderer (e.g., colour-blind palette).
 
+![Contact sheet](./contact.svg "Rudimentary contact sheet")
+
 ## Contact
 
 The [main website](https://www.abstractplay.com) houses the development blog and wiki.

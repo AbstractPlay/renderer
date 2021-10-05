@@ -1,6 +1,6 @@
 = Render Schema Documentation
 :toc:
-:schemaver: 1.0.0
+:schemaver: 0.2.0
 
 Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. The `description` fields in the schema itself are rather curt because JSON doesn't allow niceties like multi-line strings. So this file is intended to give you complete instructions on how to build an instance of this schema.
 
@@ -24,7 +24,7 @@ This tells the renderer which engine to use. The following engines are available
 
 default:: This is the renderer used by most games. It does not support stacked pieces.
 stacking-offset:: This works almost identically to the `default` engine but stacks multiple defined pieces on top of each other, slightly offset. Depending on the size of the board and pieces, excessive stack sizes will become problematic.
-stacking-tiles:: This generates a side view of a stack of pieces defined only by their colour (player number). There is no legend of pieces, just the player colour. This is designed to be used with cells of fixed size and not vertex boards. It can show up to eight tiles, or, if there are nine or more tiles, seven will be visible with an "etc." tile on the bottom. This renderer doesn't support player counts greater than nine.
+stacking-tiles:: This generates a side view of a stack of pieces defined only by their colour (player number). There is no legend of pieces, just the player colour. This is designed to be used with cells of fixed size and not vertex boards. It can show up to eight tiles, or, if there are nine or more tiles, seven will be visible with an "etc." tile on the bottom.
 homeworlds:: This engine generates Homeworlds boards only.
 
 === `legend`
@@ -44,7 +44,7 @@ nudge:: A way of nudging a glyph off mathematical centre. Negative values nudge 
 
 === `board`
 
-Now for the game board itself. This is rendered first, followed by the pieces. There are only two options currently.
+Now for the game board itself. This is rendered first, followed by the pieces.
 
 * The first is a set of preset boards, which includes the following:
   squares:: A grid of squares, all of the same colour.
@@ -71,7 +71,7 @@ Now that the board has been rendered, and there are spaces for the pieces, here'
 
 * This option is also a simple string but it uses commas to separate cells. This allows you to use multiple characters per cell. How multi-character cells are handled depends on the renderer. The default renderer just looks for a matching `legend` entry. But a stacking renderer will assume each character is a piece in a stack.
 +
-You still use `\n` to separate rows (the first row is the top row), and whitespace is still forbidden. Hyphens are _not_ reserved (just don't put anything after the comma to represent blankk spaces), but underscores still represent blank rows.
+You still use `\n` to separate rows (the first row is the top row), and whitespace is still forbidden. Hyphens are _not_ reserved (just don't put anything after the comma to represent blank spaces), but underscores still represent blank rows.
 
 * This nested-array approach is more explicit but also more verbose. Each top-level array is a row (the first row is the top row). Each row is itself an array of cells in that row (from left to right). And each cell is itself an array of pieces in that cell.
 +
@@ -85,10 +85,8 @@ This section is unique to different renderers. The default renderer ignores it. 
 
 === `annotations`
 
-This is how a game tells the renderer how illustrate state changes. Most commonly it's a simple arrow showing where a piece moved from and to. But more complex ones will be made available as needed.
+This is how a game tells the renderer how to illustrate state changes. The following annotations are available:
 
-=== `metadata`
-
-This property is an array of each player in player order. The front end can use this information to render a helpful sidebar identifying pieces a player controls, running scores, etc.
-
-The default renderer will only process `pieces` and `score`. Any additional properties will need to be handled by a specific renderer.
+- `move`: Draws a line to each cell.
+- `enter`: Draws a dashed line around the new piece.
+- `exit`: Draws a dashed line around the now-missing piece.

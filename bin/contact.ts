@@ -16,7 +16,7 @@ const canvas = SVG(document.documentElement) as Svg;
 const tileSizeOuter = 200;
 const tileSizeInner = 150;
 const innerTL = (tileSizeOuter - tileSizeInner) / 2;
-const numimgswide = 4;
+const numimgswide = 6;
 const rowPadding = 5;
 const sheetPadding = 40;
 

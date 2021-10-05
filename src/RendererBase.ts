@@ -113,7 +113,7 @@ export abstract class RendererBase {
 
         switch (name) {
             case "chevrons":
-                canvas.defs().svg("<pattern id='chevrons' patternUnits='userSpaceOnUse' width='30' height='15' viewbox='0 0 60 30'><svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='60' height='30'><defs><rect id='r' width='30' height='15' fill='#fff' stroke-width='2.5' stroke='#000'/><g id='p'><use xlink:href='#r'/><use y='15' xlink:href='#r'/><use y='30' xlink:href='#r'/><use y='45' xlink:href='#r'/></g></defs><use xlink:href='#p' transform='translate(0 -25) skewY(40)'/><use xlink:href='#p' transform='translate(30 0) skewY(-40)'/></svg></pattern>");
+                canvas.defs().svg("<pattern id='chevrons' patternUnits='userSpaceOnUse' width='30' height='15' viewbox='0 0 60 30'><svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='60' height='30'><defs><rect id='_r' width='30' height='15' fill='#fff' stroke-width='2.5' stroke='#000'/><g id='_p'><use xlink:href='#_r'/><use y='15' xlink:href='#_r'/><use y='30' xlink:href='#_r'/><use y='45' xlink:href='#_r'/></g></defs><use xlink:href='#_p' transform='translate(0 -25) skewY(40)'/><use xlink:href='#_p' transform='translate(30 0) skewY(-40)'/></svg></pattern>");
                 break;
             case "cross":
                 canvas.defs().svg("<pattern id='cross' patternUnits='userSpaceOnUse' width='8' height='8'><svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><rect width='8' height='8' fill='#fff'/><path d='M0 0L8 8ZM8 0L0 8Z' stroke-width='0.5' stroke='#000'/></svg></pattern>");
@@ -230,15 +230,23 @@ export abstract class RendererBase {
 
                     // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                     const cellsize = 500;
-                    const nested = draw.defs().group().id(key).size(cellsize, cellsize).attr("data-cellsize", cellsize);
+                    const nested = draw.defs().nested().id(key).size(cellsize, cellsize).attr("data-cellsize", cellsize);
 
                     // Layer the glyphs, manipulating as you go
                     glyphs.forEach((glyph) => {
                         // Get the glyph from <defs>
                         const got = SVG("#" + glyph.name) as SVGG;
+                        if ( (got === undefined) || (got === null) ) {
+                            throw new Error(`Could not load the requested glyph: ${glyph.name}.`);
+                        }
                         const use = got.clone();
                         if ( (use === undefined) || (use === null) ) {
                             throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
+                        }
+
+                        const sheetCellSize = use.attr("data-cellsize");
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                         }
 
                         // Scale it appropriately
@@ -251,7 +259,28 @@ export abstract class RendererBase {
                         // } else {
                         //     use.size(cellsize);
                         // }
+                        // use.scale(cellsize / sheetCellSize);
                         use.size(cellsize);
+
+                        // Further scale if requested
+                        if (glyph.scale !== undefined) {
+                            use.transform({scale: glyph.scale}, true);
+                        // } else {
+                        //     use.transform({scale: 1}, true);
+                        }
+
+                        // Shift if requested
+                        if (glyph.nudge !== undefined) {
+                            let dx = 0;
+                            let dy = 0;
+                            if (glyph.nudge.dx !== undefined) {
+                                dx = glyph.nudge.dx;
+                            }
+                            if (glyph.nudge.dy !== undefined) {
+                                dy = glyph.nudge.dy;
+                            }
+                            use.dmove(dx, dy);
+                        }
 
                         // Colourize (`player` first, then `colour` if defined)
                         if (glyph.player !== undefined) {
@@ -287,32 +316,14 @@ export abstract class RendererBase {
                             use.find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
                         }
 
-                        // Scale as requested
-                        if (glyph.scale !== undefined) {
-                            use.transform({scale: glyph.scale}, true);
+                        // Apply requested opacity
+                        if (glyph.opacity !== undefined) {
+                            use.fill({opacity: glyph.opacity});
                         }
 
                         // Rotate if requested
                         if (glyph.rotate !== undefined) {
                             use.rotate(glyph.rotate);
-                        }
-
-                        // Shift if requested
-                        let dx = 0;
-                        let dy = 0;
-                        if (glyph.nudge !== undefined) {
-                            if (glyph.nudge.dx !== undefined) {
-                                dx = glyph.nudge.dx;
-                            }
-                            if (glyph.nudge.dy !== undefined) {
-                                dy = glyph.nudge.dy;
-                            }
-                        }
-                        use.dmove(dx, dy);
-
-                        // Apply requested opacity
-                        if (glyph.opacity !== undefined) {
-                            use.fill({opacity: glyph.opacity});
                         }
 
                         // Add to the nested figure
