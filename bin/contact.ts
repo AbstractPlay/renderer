@@ -12,7 +12,6 @@ registerWindow(window, document);
 
 // create canvas
 const canvas = SVG(document.documentElement) as Svg;
-canvas.fill("#fff");
 
 const tileSizeOuter = 200;
 const tileSizeInner = 150;
@@ -78,6 +77,7 @@ nestedSheets.forEach((sheet) => {
 const height = currY;
 const width = tileSizeOuter * numimgswide;
 canvas.size(width, height);
+canvas.rect(width, height).fill("#fff").back();
 
 // tslint:disable-next-line: no-console
 console.log(canvas.svg());
