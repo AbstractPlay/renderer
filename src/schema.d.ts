@@ -72,9 +72,13 @@ export interface APRenderRep {
          */
         height?: number;
         /**
-         * Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids by X grids square.
+         * Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.
          */
-        tiling?: number;
+        tileWidth?: number;
+        /**
+         * Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.
+         */
+        tileHeight?: number;
       }
     | {
         /**

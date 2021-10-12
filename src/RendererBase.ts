@@ -27,7 +27,7 @@ export abstract class RendererBase {
     public readonly coloursBasic = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
     public readonly coloursBlind = ["#a6611a", "#80cdc1", "#dfc27d", "#018571"];
     public readonly patternNames = ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"];
-    protected readonly columnLabels = "abcdefghjklmnopqrstuvwxyz".split("");
+    protected readonly columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     protected readonly cellsize = 50;
 
     constructor(name = "default") {
@@ -412,13 +412,28 @@ export abstract class RendererBase {
 
         // Draw grid lines
         const gridlines = draw.group().id("gridlines");
+
+        // Check for tiling
+        let tilex: number = 0;
+        let tiley: number = 0;
+        if (json.board.tileWidth !== undefined) {
+            tilex = json.board.tileWidth;
+        }
+        if (json.board.tileHeight !== undefined) {
+            tiley = json.board.tileHeight;
+        }
+
         // Horizontal, top of each row, then bottom line after loop
         for (let row = 0; row < height; row++) {
+            let thisStroke = baseStroke;
+            if ( (tiley > 0) && (row > 0) && (row % tiley === 0) ) {
+                thisStroke = baseStroke * 3;
+            }
             const x1 = grid[row][0].x - (cellsize / 2);
             const y1 = grid[row][0].y - (cellsize / 2);
             const x2 = grid[row][width - 1].x + (cellsize / 2);
             const y2 = grid[row][width - 1].y - (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
         }
         let lastx1 = grid[height - 1][0].x - (cellsize / 2);
         let lasty1 = grid[height - 1][0].y + (cellsize / 2);
@@ -428,11 +443,15 @@ export abstract class RendererBase {
 
         // Vertical, left of each column, then right line after loop
         for (let col = 0; col < width; col++) {
+            let thisStroke = baseStroke;
+            if ( (tilex > 0) && (col > 0) && (col % tilex === 0) ) {
+                thisStroke = baseStroke * 3;
+            }
             const x1 = grid[0][col].x - (cellsize / 2);
             const y1 = grid[0][col].y - (cellsize / 2);
             const x2 = grid[height - 1][col].x - (cellsize / 2);
             const y2 = grid[height - 1][col].y + (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
         }
         lastx1 = grid[0][width - 1].x + (cellsize / 2);
         lasty1 = grid[0][width - 1].y - (cellsize / 2);
@@ -490,13 +509,28 @@ export abstract class RendererBase {
 
         // Draw grid lines
         const gridlines = draw.group().id("gridlines");
+
+        // Check for tiling
+        let tilex: number = 0;
+        let tiley: number = 0;
+        if (json.board.tileWidth !== undefined) {
+            tilex = json.board.tileWidth;
+        }
+        if (json.board.tileHeight !== undefined) {
+            tiley = json.board.tileHeight;
+        }
+
         // Horizontal, top of each row, then bottom line after loop
         for (let row = 0; row < height; row++) {
+            let thisStroke = baseStroke;
+            if ( (tiley > 0) && (row > 0) && (row % tiley === 0) ) {
+                thisStroke = baseStroke * 3;
+            }
             const x1 = grid[row][0].x;
             const y1 = grid[row][0].y;
             const x2 = grid[row][width - 1].x;
             const y2 = grid[row][width - 1].y;
-            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
         }
         let lastx1 = grid[height - 1][0].x;
         let lasty1 = grid[height - 1][0].y;
@@ -506,11 +540,15 @@ export abstract class RendererBase {
 
         // Vertical, left of each column, then right line after loop
         for (let col = 0; col < width; col++) {
+            let thisStroke = baseStroke;
+            if ( (tilex > 0) && (col > 0) && (col % tilex === 0) ) {
+                thisStroke = baseStroke * 3;
+            }
             const x1 = grid[0][col].x;
             const y1 = grid[0][col].y;
             const x2 = grid[height - 1][col].x;
             const y2 = grid[height - 1][col].y;
-            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
         }
         lastx1 = grid[0][width - 1].x;
         lasty1 = grid[0][width - 1].y;

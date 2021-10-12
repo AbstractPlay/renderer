@@ -169,8 +169,12 @@
                             "description": "Required for the `squares*`, `vertex`, and `go` styles.",
                             "$ref": "#/definitions/positiveInteger"
                         },
-                        "tiling": {
-                            "description": "Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids by X grids square.",
+                        "tileWidth": {
+                            "description": "Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.",
+                            "$ref": "#/definitions/positiveInteger"
+                        },
+                        "tileHeight": {
+                            "description": "Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.",
                             "$ref": "#/definitions/positiveInteger"
                         }
                     },

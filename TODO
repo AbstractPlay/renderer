@@ -6,4 +6,5 @@ Todo:
   ✔ Figure out why patterns sometimes break @done(21-10-05 11:29)
   - Make `stacking-offset` renderer rotate properly
   - Write proper tests
+  - Legend signifiers do not appear to be case sensitive (e.g., Cannon board tried to use "R" and "r" for soldiers and towns)
   
