@@ -100,7 +100,8 @@ export class DefaultRenderer extends RendererBase {
                                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
                             const use = group.use(piece) as SVGG;
-                            use.center(point.x, point.y);
+                            // use.center(point.x, point.y);
+                            use.dmove(point.x - sheetCellSize / 2, point.y - sheetCellSize / 2);
                             use.scale((this.cellsize / sheetCellSize) * 0.85);
                         }
                     }
