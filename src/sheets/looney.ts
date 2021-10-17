@@ -38,7 +38,7 @@ sheet.glyphs.set("pyramid-flat-large", (canvas: SVGContainer) => {
         .id("pyramid-flat-large")
         .attr("data-cellsize", cellsize);
     group.rect(cellsize, cellsize).fill("none");
-    group.polygon(`${halfcell},${halfcell - height/2} ${(halfcell) - (base / 2)},${halfcell + height/2} ${(halfcell) + (base / 2)},${halfcell + height/2}`)
+    group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
         .fill("#fff");
@@ -78,11 +78,10 @@ sheet.glyphs.set("pyramid-flat-medium", (canvas: SVGContainer) => {
         .id("pyramid-flat-medium")
         .attr("data-cellsize", cellsize);
     group.rect(cellsize, cellsize).fill("none");
-    group.polygon(`${halfcell},${halfcell - height/2} ${(halfcell) - (base / 2)},${halfcell + height/2} ${(halfcell) + (base / 2)},${halfcell + height/2}`)
+    group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
-        .fill("#fff")
-        .center(halfcell, halfcell);
+        .fill("#fff");
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
     const xOffset = pipWidth * 1.5;
     const y = halfcell + (height / 2) - (pipHeight / 2);
@@ -92,7 +91,8 @@ sheet.glyphs.set("pyramid-flat-medium", (canvas: SVGContainer) => {
         .center(xStart, y);
     group.circle(pipWidth, pipHeight)
         .fill("#000")
-        .opacity(pipOpacity);
+        .opacity(pipOpacity)
+        .center(xStart + xOffset, y);
     return group;
 });
 
@@ -103,7 +103,7 @@ sheet.glyphs.set("pyramid-flat-small", (canvas: SVGContainer) => {
         .id("pyramid-flat-small")
         .attr("data-cellsize", cellsize);
     group.rect(cellsize, cellsize).fill("none");
-    group.polygon(`${halfcell},${halfcell - height/2} ${(halfcell) - (base / 2)},${halfcell + height/2} ${(halfcell) + (base / 2)},${halfcell + height/2}`)
+    group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
         .fill("#fff");
