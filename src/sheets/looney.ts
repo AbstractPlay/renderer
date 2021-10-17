@@ -83,7 +83,6 @@ sheet.glyphs.set("pyramid-flat-medium", (canvas: SVGContainer) => {
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
         .fill("#fff");
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
-    const xOffset = pipWidth * 1.5;
     const y = halfcell + (height / 2) - (pipHeight / 2);
     group.circle(pipWidth, pipHeight)
         .fill("#000")
