@@ -31,8 +31,9 @@
                 } else if (radio === "patterns") {
                     options.patterns = true;
                 }
-                if (document.getElementById("rot180").checked) {
-                    options.rotate = 180;
+                var rotval = parseInt(document.getElementById("rotation").value, 10);
+                if ( (rotval !== undefined) && (rotval !== null) && (!isNaN(rotval)) && (rotval !== 0) ) {
+                    options.rotate = rotval;
                 }
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
@@ -64,8 +65,8 @@
                     <label for="fillPatterns">Black-and-white patterns (10 max)</label>
                 </div>
                 <div>
-                    <input type="checkbox" id="rot180" name="rotate">
-                    <label for="rot180">Rotate 180&deg;</label>
+                    <label for="rotation">Rotate map (&deg;)</label>
+                    <input type="number" id="rotation" name="rotate">
                 </div>
                 <button id="submit" name="submit" type="button">Generate SVG</button>
             </form>

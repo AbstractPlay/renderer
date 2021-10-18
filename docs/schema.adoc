@@ -69,6 +69,12 @@ strokeOpacity:: Adjusts the opacity of the drawn lines.
 tileWidth:: Draws a thicker line every X columns. Used to simulate tiles on a standard board.
 tileHeight:: Draws a thicker line every X rows. Used to simulate tiles on a standard board.
 
+For the Homeworlds renderer, this is instead an array of objects that include the following properties:
+
+name:: The characters A-Za-z0-9 and the hyphen and underscore (but not starting with a hyphen or underscore). Maximum length of 25.
+stars:: An array of stars.
+seat:: The value "N", "E", "S", or "W". Only defined if this is a home system
+
 === `pieces`
 
 Now that the board has been rendered, and there are spaces for the pieces, here's where you define where those pieces go. There are a few different ways of approaching this.
@@ -85,9 +91,13 @@ Different renderers will handle this differently. The default renderer will simp
 
 * Finally is the Homeworlds schema. This is also an array of arrays. Each top-level array is a system, and each of those contains an array of ships. The systems must be declared in the same order as in the `board` property. The renderer will deal with positioning the systems on the playing surface.
 
+For the Homeworlds renderer, this is an array of arrays of ships. Ships must designate their owner. Ships are added to the systems by order of declaration.
+
 === `areas`
 
-This section is unique to different renderers. The default renderer ignores it. The Homewords renderer uses it for the global stash. Each area is rendered vertically below the game board.
+This section is unique to different renderers. The default renderer ignores it. 
+
+The Homewords renderer uses this for the global stash. Provide the stash contents of each of the four colours.
 
 === `annotations`
 

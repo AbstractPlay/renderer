@@ -1,13 +1,15 @@
 import { GridPoints, IGeneratorArgs, IPoint} from "../GridGenerator";
 
-export function rectOfSquares(args: IGeneratorArgs): GridPoints {
-    let cellSize: number = 50;
+export function rectOfRects(args: IGeneratorArgs): GridPoints {
+    let cellWidth: number = 50;
+    let cellHeight: number = 50;
     if (args.cellSize !== undefined) {
-        cellSize = args.cellSize;
+        cellWidth = args.cellSize;
+        cellHeight = args.cellSize;
     } else if (args.cellHeight !== undefined) {
-        cellSize = args.cellHeight;
+        cellHeight = args.cellHeight;
     } else if (args.cellWidth !== undefined) {
-        cellSize = args.cellWidth;
+        cellWidth = args.cellWidth;
     }
 
     let gridHeight: number = 8;
@@ -23,7 +25,7 @@ export function rectOfSquares(args: IGeneratorArgs): GridPoints {
     for (let row = 0; row < gridHeight; row++) {
         const node: IPoint[] = [];
         for (let col = 0; col < gridWidth; col++) {
-            const point: IPoint = {x: (cellSize * col), y: (cellSize * row)};
+            const point: IPoint = {x: (cellWidth * col), y: (cellHeight * row)};
             node.push(point);
         }
         grid.push(node);
