@@ -5,7 +5,8 @@ import { APRenderRep } from "../schema";
 
 export class DefaultRenderer extends RendererBase {
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
+                  options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
@@ -18,7 +19,7 @@ export class DefaultRenderer extends RendererBase {
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw, opts);
+                gridPoints = this.squares(json, draw, boardClick, opts);
                 break;
             case "go":
                 json.board.width = 19;
@@ -103,6 +104,7 @@ export class DefaultRenderer extends RendererBase {
                             // use.center(point.x, point.y);
                             use.dmove(point.x - sheetCellSize / 2, point.y - sheetCellSize / 2);
                             use.scale((this.cellsize / sheetCellSize) * 0.85);
+                            use.click(() => boardClick(row, col, key));
                         }
                     }
                 }

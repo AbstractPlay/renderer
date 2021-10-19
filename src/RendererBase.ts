@@ -34,7 +34,8 @@ export abstract class RendererBase {
         this.name = name;
     }
 
-    public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
+    public abstract render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
+                           opts: IRendererOptionsIn): void;
 
     protected jsonPrechecks(json: APRenderRep): APRenderRep {
         // Check for missing renderer
@@ -334,7 +335,7 @@ export abstract class RendererBase {
         }
     }
 
-    protected squares(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected squares(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -387,6 +388,10 @@ export abstract class RendererBase {
                 .opacity(baseOpacity * 0.25)
                 .stroke({width: 0})
                 .id("tileDark");
+            const tileLight = draw.defs().rect(cellsize, cellsize)
+                .fill("#ffffff")
+                .stroke({width: 0})
+                .id("tileLight");
 
             const tiles = board.group().id("tiles");
             // Determine whether the first row starts with a light or dark square
@@ -402,9 +407,11 @@ export abstract class RendererBase {
                     lightCol = 0;
                 }
                 for (let col = 0; col < width; col++) {
+                    const {x, y} = grid[row][col];
                     if (col % 2 !== lightCol) {
-                        const {x, y} = grid[row][col];
-                        tiles.use(tileDark).center(x, y);
+                        tiles.use(tileDark).center(x, y).click(() => boardClick(row, col, ""));
+                    } else {
+                        tiles.use(tileLight).center(x, y).click(() => boardClick(row, col, ""));
                     }
                 }
             }

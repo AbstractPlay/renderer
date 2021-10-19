@@ -11,6 +11,7 @@ const validate = ajv.compile(schema);
 interface IRenderOptions {
     divid: string;
     divelem?: HTMLElement;
+    boardClick?: (row: number, col: number, piece: string) => void;
     sheets?: string[];
     gamename?: string;
     target?: Svg;
@@ -76,6 +77,11 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
         draw = SVG().addTo("#" + opts.divid).size("100%", "100%");
     }
 
+    let boardClick: (row: number, col: number, piece: string) => void = (row, col, piece) => undefined;
+    if (("boardClick" in opts) && (opts.boardClick != null) ) {
+        boardClick = opts.boardClick;
+    }
+
     // Pass the JSON and the SVG container to the appropriate renderer
     if ( (json.renderer === undefined) || (json.renderer === null) ) {
         json.renderer = "default";
@@ -85,7 +91,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate});
+    renderer.render(json, draw, boardClick, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate});
     draw.viewbox(draw.bbox());
     return draw;
 }
