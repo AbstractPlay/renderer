@@ -1,6 +1,6 @@
 import { G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "./GridGenerator";
-import { hexOfCir, hexOfHex, hexOfTri, rectOfSquares, snubsquare } from "./grids";
+import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "./grids";
 import { APRenderRep, Glyph } from "./schema";
 import { sheets } from "./sheets";
 
@@ -101,8 +101,12 @@ export abstract class RendererBase {
         }
 
         // Validate rotation
-        if ( (opts.rotate !== undefined) && (opts.rotate > 0) ) {
-            newOpts.rotate = opts.rotate;
+        if ( (opts.rotate !== undefined) && (opts.rotate !== 0) ) {
+            let normalized = opts.rotate;
+            while (normalized < 0) {
+                normalized += 360;
+            }
+            newOpts.rotate = normalized;
         }
 
         return newOpts;
@@ -359,7 +363,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
@@ -493,7 +497,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = rectOfSquares({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
