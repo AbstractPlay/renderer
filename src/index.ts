@@ -1,5 +1,5 @@
 // import SVG from "@svgdotjs/svg.js";
-import { extend as SVGExtend, SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
+import { extend as SVGExtend, NumberAlias, SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 import { APRenderRep } from "./schema";
@@ -19,6 +19,8 @@ interface IRenderOptions {
     colourBlind?: boolean;
     colourList?: string[];
     rotate?: number;
+    width?: NumberAlias;
+    height?: NumberAlias
 }
 
 interface IMyObject {
@@ -73,7 +75,15 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     } else if ( ("divelem" in opts) && (opts.divelem != null) ) {
         draw = SVG(opts.divelem) as Svg;
     } else {
-        draw = SVG().addTo("#" + opts.divid).size("100%", "100%");
+        let height: NumberAlias = "100%";
+        let width: NumberAlias = "100%";
+        if ( ("height" in opts) && (opts.height !== null) && (opts.height !== undefined) ) {
+            height = opts.height;
+        }
+        if ( ("width" in opts) && (opts.width !== null) && (opts.width !== undefined) ) {
+            width = opts.width;
+        }
+        draw = SVG().addTo("#" + opts.divid).size(width, height);
     }
 
     // Pass the JSON and the SVG container to the appropriate renderer
