@@ -26,7 +26,8 @@ export class HomeworldsRenderer extends RendererBase {
         super("homeworlds");
     }
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
+                  options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
