@@ -8,11 +8,10 @@ import schema from "./schema.json";
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
-interface IRenderOptions {
+export interface IRenderOptions {
     divid: string;
     divelem?: HTMLElement;
     sheets?: string[];
-    gamename?: string;
     target?: Svg;
     patterns?: boolean;
     patternList?: string[];
@@ -20,7 +19,7 @@ interface IRenderOptions {
     colourList?: string[];
     rotate?: number;
     width?: NumberAlias;
-    height?: NumberAlias
+    height?: NumberAlias;
 }
 
 interface IMyObject {
