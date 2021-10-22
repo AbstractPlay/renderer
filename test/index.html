@@ -35,6 +35,7 @@
                 if ( (rotval !== undefined) && (rotval !== null) && (!isNaN(rotval)) && (rotval !== 0) ) {
                     options.rotate = rotval;
                 }
+                options.boardClick = (row, col, piece) => {console.log(`Row: ${row}, Col: ${col}, Piece: ${piece}`); };
                 // options.height = "50%";
                 // options.width = "50%";
                 var data = JSON.parse(document.getElementById("jsonIn").value);

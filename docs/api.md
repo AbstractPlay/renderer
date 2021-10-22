@@ -31,6 +31,7 @@ Here are the currently supported `IRenderOptions`:
 * **rotate?: number**: Instructs the renderer to rotate the rendered image a certain number of degrees. Currently only supports 90-degree increments. Negative numbers turn in a counter-clockwise direction. May not always work as expected for certain games.
 * **width?: NumberAlias**: The width of the rendered image. Can be provided in any units supported by CSS. By default it is `100%`.
 * **height?: NumberAlias**: The height of the rendered image. Can be provided in any units supported by CSS. By default it is `100%`.
+* **boardClick (row: number, col: number, piece: string) => void**: A callback that will get attached to the board and pieces placed on it.
 
 ### Error Handling
 
