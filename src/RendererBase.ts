@@ -931,28 +931,28 @@ export abstract class RendererBase {
             const notes = draw.group().id("annotations");
             for (const note of json.annotations) {
                 if ( (note.type !== undefined) && (note.type === "move") ) {
-                    if (note.targets.length < 2) {
+                    if ((note.targets as any[]).length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");
                     }
 
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour;
+                        colour = note.colour as string;
                     }
                     let style = "solid";
                     if ( ("style" in note) && (note.style !== undefined) ) {
-                        style = note.style;
+                        style = note.style as string;
                     }
                     let arrow = true;
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
-                        arrow = note.arrow;
+                        arrow = note.arrow as boolean;
                     }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
                     const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
                     const points: string[] = [];
-                    for (const node of note.targets) {
+                    for (const node of (note.targets as any[])) {
                         const pt = grid[node.row][node.col];
                         points.push(`${pt.x},${pt.y}`);
                     }
@@ -973,9 +973,9 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour;
+                        colour = note.colour as string;
                     }
-                    for (const node of note.targets) {
+                    for (const node of (note.targets as any[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")
@@ -985,9 +985,9 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour;
+                        colour = note.colour as string;
                     }
-                    for (const node of note.targets) {
+                    for (const node of (note.targets as any[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")

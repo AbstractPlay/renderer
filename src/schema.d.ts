@@ -341,62 +341,88 @@ export interface APRenderRep {
    * Instruct the renderer how to show any changes to the game state. See the docs for details.
    */
   annotations?: [
-    {
-      /**
-       * The type of annotation
-       */
-      type: "move" | "enter" | "exit";
-      /**
-       * The cells involved in the annotation
-       */
-      targets: [
-        {
-          row: number;
-          col: number;
+    (
+      | {
+          /**
+           * The type of annotation
+           */
+          type: "move" | "enter" | "exit";
+          /**
+           * The cells involved in the annotation
+           */
+          targets: [
+            {
+              row: number;
+              col: number;
+              [k: string]: unknown;
+            },
+            ...{
+              row: number;
+              col: number;
+              [k: string]: unknown;
+            }[]
+          ];
+          style?: "solid" | "dashed";
+          /**
+           * Pattern for hex colour strings
+           */
+          colour?: string;
+          arrow?: boolean;
           [k: string]: unknown;
-        },
-        ...{
-          row: number;
-          col: number;
+        }
+      | {
+          /**
+           * Name of the system
+           */
+          system: string;
+          /**
+           * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
+           */
+          action: number;
           [k: string]: unknown;
-        }[]
-      ];
-      style?: "solid" | "dashed";
-      /**
-       * Pattern for hex colour strings
-       */
-      colour?: string;
-      arrow?: boolean;
-      [k: string]: unknown;
-    },
-    ...{
-      /**
-       * The type of annotation
-       */
-      type: "move" | "enter" | "exit";
-      /**
-       * The cells involved in the annotation
-       */
-      targets: [
-        {
-          row: number;
-          col: number;
+        }
+    ),
+    ...(
+      | {
+          /**
+           * The type of annotation
+           */
+          type: "move" | "enter" | "exit";
+          /**
+           * The cells involved in the annotation
+           */
+          targets: [
+            {
+              row: number;
+              col: number;
+              [k: string]: unknown;
+            },
+            ...{
+              row: number;
+              col: number;
+              [k: string]: unknown;
+            }[]
+          ];
+          style?: "solid" | "dashed";
+          /**
+           * Pattern for hex colour strings
+           */
+          colour?: string;
+          arrow?: boolean;
           [k: string]: unknown;
-        },
-        ...{
-          row: number;
-          col: number;
+        }
+      | {
+          /**
+           * Name of the system
+           */
+          system: string;
+          /**
+           * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
+           */
+          action: number;
           [k: string]: unknown;
-        }[]
-      ];
-      style?: "solid" | "dashed";
-      /**
-       * Pattern for hex colour strings
-       */
-      colour?: string;
-      arrow?: boolean;
-      [k: string]: unknown;
-    }[]
+        }
+    )[]
   ];
   [k: string]: unknown;
 }

@@ -4,49 +4,91 @@
         {
             "name": "Alice",
             "seat": "N",
-            "stars": ["R3", "G2"]
+            "stars": [
+                "R3",
+                "G2"
+            ]
         },
         {
             "name": "Bob",
             "seat": "S",
-            "stars": ["B2", "Y3"]
+            "stars": [
+                "B2",
+                "Y3"
+            ]
         },
         {
             "name": "Charley",
             "seat": "E",
-            "stars": ["R3", "G2"]
+            "stars": [
+                "R3",
+                "G2"
+            ]
         },
         {
             "name": "David",
             "seat": "W",
-            "stars": ["B2", "Y3"]
+            "stars": [
+                "B2",
+                "Y3"
+            ]
         },
         {
             "name": "Perl",
-            "stars": ["B1"]
+            "stars": [
+                "B1"
+            ]
         },
         {
             "name": "Ruby",
-            "stars": ["Y2"]
+            "stars": [
+                "Y2"
+            ]
         },
         {
             "name": "Python",
-            "stars": ["R3"]
+            "stars": [
+                "R3"
+            ]
         },
         {
             "name": "CSharp",
-            "stars": ["G2"]
-        }        
+            "stars": [
+                "G2"
+            ]
+        }
     ],
     "pieces": [
-        ["Y3N"],
-        ["R3S"],
-        ["B3N"],
-        ["G3S"],
-        ["R1N", "B2E", "G3S", "G1W", "R2S", "B3N"],
-        ["B2N"],
-        ["R1E"],
-        ["G2W", "Y1S"]
+        [
+            "Y3N"
+        ],
+        [
+            "R3S"
+        ],
+        [
+            "B3N"
+        ],
+        [
+            "G3S"
+        ],
+        [
+            "R1N",
+            "B2E",
+            "G3S",
+            "G1W",
+            "R2S",
+            "B3N"
+        ],
+        [
+            "B2N"
+        ],
+        [
+            "R1E"
+        ],
+        [
+            "G2W",
+            "Y1S"
+        ]
     ],
     "areas": [
         {
@@ -333,5 +375,11 @@
             "player": 4,
             "rotate": 90
         }
-    }
+    },
+    "annotations": [
+        {
+            "system": "Perl",
+            "action": 4
+        }
+    ]
 }

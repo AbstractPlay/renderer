@@ -18,6 +18,7 @@ interface ISystem {
     seat?: Seat;
     stars: string[];
     ships: string[];
+    highlight?: number;
 }
 
 export class HomeworldsRenderer extends RendererBase {
@@ -61,6 +62,12 @@ export class HomeworldsRenderer extends RendererBase {
                 // tslint:disable-next-line: object-literal-sort-keys
                 ships: [...shps],
             };
+            if ( ("annotations" in json) && (json.annotations !== undefined) ) {
+                const note = json.annotations.find((n) => n.system === node.name);
+                if (note !== undefined) {
+                    node.highlight = note.action as number;
+                }
+            }
             if (node.seat !== undefined) {
                 if (node.ships.length > 16) {
                     throw new Error("Too many ships. This renderer can only accommodate 16 ships per home system.");
@@ -125,8 +132,12 @@ export class HomeworldsRenderer extends RendererBase {
                     }
                 }
             });
+            let bordercolour: string | undefined;
+            if (sys.highlight !== undefined) {
+                bordercolour = opts.colours[sys.highlight - 1];
+            }
 
-            this.genSystem(draw, `_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, opts.rotate);
+            this.genSystem(draw, `_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, bordercolour, opts.rotate);
         });
 
         // Peripheral systems
@@ -154,8 +165,12 @@ export class HomeworldsRenderer extends RendererBase {
                     }
                 }
             });
+            let bordercolour: string | undefined;
+            if (sys.highlight !== undefined) {
+                bordercolour = opts.colours[sys.highlight - 1];
+            }
 
-            this.genSystem(draw, `_sysPeriph_${sys.name}`, sys.name, ports, opts.rotate);
+            this.genSystem(draw, `_sysPeriph_${sys.name}`, sys.name, ports, bordercolour, opts.rotate);
         });
 
         // Now plot those systems on the game board
@@ -299,7 +314,7 @@ export class HomeworldsRenderer extends RendererBase {
                 use.scale(factor);
             }
         }
-        sgroup.move((250 + (sgroup.width() as number) + 10) * -1, 0);
+        sgroup.move((250 + (sgroup.width() as number) + 10) * -1, -250);
 
         // Rotate the board if requested
         // if (opts.rotate > 0) {
@@ -325,7 +340,7 @@ export class HomeworldsRenderer extends RendererBase {
         return effSeat;
     }
 
-    private genSystem(draw: Svg, id: string, name: string, ports: (string|undefined)[][], rotation?: number): SVGG {
+    private genSystem(draw: Svg, id: string, name: string, ports: (string|undefined)[][], highlight?: string, rotation?: number): SVGG {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
         const nested = draw.defs().group().id(id).size(250, 250);
 
@@ -343,7 +358,11 @@ export class HomeworldsRenderer extends RendererBase {
                 add.circle(Math.random() + 1).center(x, y).fill("white");
             }
         });
-        nested.rect(250, 250).fill(pattern).stroke({width: 2, color: "#fff"});
+        let stroke: any = {width: 2, color: "#fff"};
+        if (highlight !== undefined) {
+            stroke = {width: 5, color: highlight, dasharray: "4"};
+        }
+        nested.rect(250, 250).fill(pattern).stroke(stroke);
 
         // Add the stars and ships
         for (let row = 0; row < 5; row++) {
