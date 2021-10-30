@@ -43,10 +43,12 @@ sheet.glyphs.set("piece", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piece")
         .attr("data-cellsize", sheet.cellsize);
-    group.circle(sheet.cellsize)
+    const border = 5;
+    group.rect(sheet.cellsize, sheet.cellsize).fill({opacity: 0});
+    group.circle(sheet.cellsize - border)
         .attr("data-playerfill", true)
         .fill("#fff")
-        .stroke({width: 2, color: "#000"})
+        .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     return group;
 });
