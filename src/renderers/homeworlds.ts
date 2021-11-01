@@ -1,8 +1,8 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import {applyToPoint, compose, scale} from "transformation-matrix";
 import { rectOfRects } from "../grids";
-import { IRendererOptionsIn, RendererBase } from "../RendererBase";
 import { APRenderRep } from "../schema";
+import { IRendererOptionsIn, RendererBase } from "./_base";
 
 type Seat = "N" | "E" | "S" | "W";
 

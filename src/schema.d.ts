@@ -17,7 +17,7 @@ export interface APRenderRep {
   /**
    * The rendering engine the game wants to use.
    */
-  renderer?: "default" | "stacking-offset" | "stacking-tiles" | "homeworlds";
+  renderer?: "default" | "stacking-offset" | "stacking-tiles" | "homeworlds" | "entropy";
   /**
    * Map each `piece` to an actual glyph with possible options.
    */
@@ -93,7 +93,50 @@ export interface APRenderRep {
          * Describes the system's stars.
          */
         stars: [string] | [string, string];
-      }[];
+      }[]
+    | {
+        style: "entropy";
+        /**
+         * Describes the left-hand or top board
+         */
+        boardOne?: {
+          label?: string;
+          /**
+           * Used as an aid to the player by occluding one of the boards
+           */
+          occluded?: boolean;
+        };
+        /**
+         * Describes the right-hand or bottom board
+         */
+        boardTwo?: {
+          label?: string;
+          /**
+           * Used as an aid to the player by occluding one of the boards
+           */
+          occluded?: boolean;
+        };
+        /**
+         * Whether the two boards should be arranged horizontally or vertically
+         */
+        orientation?: "horizontal" | "vertical";
+        /**
+         * The base stroke weight of lines drawn to construct the board.
+         */
+        strokeWeight?: number;
+        /**
+         * The colour for lines drawn to construct the board, includes the labels.
+         */
+        strokeColour?: string;
+        /**
+         * The opacity of lines drawn to construct the board, includes the labels.
+         */
+        strokeOpacity?: number;
+        [k: string]: unknown;
+      };
+  /**
+   * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards.
+   */
   pieces:
     | null
     | string
@@ -338,7 +381,7 @@ export interface APRenderRep {
     [k: string]: unknown;
   }[];
   /**
-   * Instruct the renderer how to show any changes to the game state. See the docs for details.
+   * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
   annotations?: [
     (

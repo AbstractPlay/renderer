@@ -10,12 +10,14 @@ export interface IGeneratorArgs {
     readonly cellWidth?: number;
     readonly cellHeight?: number;
     readonly cellSize?: number;
+    readonly startx?: number;       // Used for translating the whole grid
+    readonly starty?: number;       // Used for translating the whole grid
     readonly gridWidth?: number;
     readonly gridHeight?: number;
     readonly gridWidthMin?: number;
     readonly gridWidthMax?: number;
-    readonly offsetX?: number;
-    readonly offsetY?: number;
+    readonly offsetX?: number;      // Used for stacking renderer only
+    readonly offsetY?: number;      // Used for stacking renderer only
 }
 
 export type GridPoints = Array<Array<IPoint>>;

@@ -1,8 +1,8 @@
 import { G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
-import { GridPoints } from "./GridGenerator";
-import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "./grids";
-import { APRenderRep, Glyph } from "./schema";
-import { sheets } from "./sheets";
+import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
+import { GridPoints } from "../grids/_base";
+import { APRenderRep, Glyph } from "../schema";
+import { sheets } from "../sheets";
 
 export interface IRendererOptionsIn {
     sheetList?: string[];
@@ -344,8 +344,8 @@ export abstract class RendererBase {
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = json.board.width;
-        const height: number = json.board.height;
+        const width: number = json.board.width as number;
+        const height: number = json.board.height as number;
         const cellsize = this.cellsize;
         const style = json.board.style;
 
@@ -428,10 +428,10 @@ export abstract class RendererBase {
         let tilex: number = 0;
         let tiley: number = 0;
         if (json.board.tileWidth !== undefined) {
-            tilex = json.board.tileWidth;
+            tilex = json.board.tileWidth as number;
         }
         if (json.board.tileHeight !== undefined) {
-            tiley = json.board.tileHeight;
+            tiley = json.board.tileHeight as number;
         }
 
         // Horizontal, top of each row, then bottom line after loop
@@ -478,8 +478,8 @@ export abstract class RendererBase {
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = json.board.width;
-        const height: number = json.board.height;
+        const width: number = json.board.width as number;
+        const height: number = json.board.height as number;
         const cellsize = this.cellsize;
         const style = json.board.style;
 
@@ -525,10 +525,10 @@ export abstract class RendererBase {
         let tilex: number = 0;
         let tiley: number = 0;
         if (json.board.tileWidth !== undefined) {
-            tilex = json.board.tileWidth;
+            tilex = json.board.tileWidth as number;
         }
         if (json.board.tileHeight !== undefined) {
-            tiley = json.board.tileHeight;
+            tiley = json.board.tileHeight as number;
         }
 
         // Horizontal, top of each row, then bottom line after loop
@@ -611,8 +611,8 @@ export abstract class RendererBase {
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = json.board.width;
-        const height: number = json.board.height;
+        const width: number = json.board.width as number;
+        const height: number = json.board.height as number;
         const cellsize = this.cellsize;
 
         let baseStroke: number = 1;
@@ -703,8 +703,8 @@ export abstract class RendererBase {
         if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = json.board.minWidth;
-        const maxWidth: number = json.board.maxWidth;
+        const minWidth: number = json.board.minWidth as number;
+        const maxWidth: number = json.board.maxWidth as number;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
@@ -795,8 +795,8 @@ export abstract class RendererBase {
         if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = json.board.minWidth;
-        const maxWidth: number = json.board.maxWidth;
+        const minWidth: number = json.board.minWidth as number;
+        const maxWidth: number = json.board.maxWidth as number;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
@@ -848,8 +848,8 @@ export abstract class RendererBase {
         if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = json.board.minWidth;
-        const maxWidth: number = json.board.maxWidth;
+        const minWidth: number = json.board.minWidth as number;
+        const maxWidth: number = json.board.maxWidth as number;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 

@@ -1,4 +1,4 @@
-import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "../GridGenerator";
+import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
 
 export function snubsquare(args: IGeneratorArgs): GridPoints {
     let cellSize: number = 50;

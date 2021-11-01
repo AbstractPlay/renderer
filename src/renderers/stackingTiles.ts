@@ -1,7 +1,7 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { GridPoints } from "../GridGenerator";
-import { IRendererOptionsIn, RendererBase } from "../RendererBase";
+import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
+import { IRendererOptionsIn, RendererBase } from "./_base";
 
 export class StackingTilesRenderer extends RendererBase {
 
