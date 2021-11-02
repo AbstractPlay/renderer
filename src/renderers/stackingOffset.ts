@@ -9,8 +9,7 @@ export class StackingOffsetRenderer extends RendererBase {
         super("stacking-offset");
     }
 
-    public render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
-                  options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
@@ -23,7 +22,7 @@ export class StackingOffsetRenderer extends RendererBase {
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw, boardClick, opts);
+                gridPoints = this.squares(json, draw, opts);
                 break;
             case "go":
                 json.board.width = 19;

@@ -21,6 +21,7 @@ export interface IRenderOptions {
     rotate?: number;
     width?: NumberAlias;
     height?: NumberAlias;
+    svgid?: string;
 }
 
 interface IMyObject {
@@ -59,7 +60,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
 
     // Kludge to fix fact that `Use` type doesn't have `width` and `height` properties
     SVGExtend(SVGUse, {
-// tslint:disable-next-line: object-literal-shorthand
+        // tslint:disable-next-line: object-literal-shorthand
         width: function() {
             return (this as IMyObject).bbox().width;
         },
@@ -83,7 +84,11 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
         if ( ("width" in opts) && (opts.width !== null) && (opts.width !== undefined) ) {
             width = opts.width;
         }
-        draw = SVG().addTo("#" + opts.divid).size(width, height);
+        let svgid = "_aprender";
+        if ( ("svgid" in opts) && (opts.svgid !== undefined) && (opts.svgid.length > 0) ) {
+            svgid = opts.svgid;
+        }
+        draw = SVG().addTo("#" + opts.divid).size(width, height).id(svgid);
     }
 
     let boardClick: (row: number, col: number, piece: string) => void = (row, col, piece) => undefined;
@@ -100,7 +105,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, boardClick, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate});
+    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, boardClick});
     draw.viewbox(draw.bbox());
     return draw;
 }

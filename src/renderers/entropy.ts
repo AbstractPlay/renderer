@@ -10,8 +10,7 @@ export class EntropyRenderer extends RendererBase {
         super("entropy");
     }
 
-    public render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
-                  options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
@@ -213,6 +212,9 @@ export class EntropyRenderer extends RendererBase {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                                 use.scale((this.cellsize / sheetCellSize) * 0.85);
+                                if (opts.boardClick !== undefined) {
+                                    use.click(() => opts.boardClick!(row, col, key));
+                                }
                             }
                         }
                     }

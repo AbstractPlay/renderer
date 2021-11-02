@@ -11,6 +11,7 @@ export interface IRendererOptionsIn {
     patternList?: string[];
     colourBlind?: boolean;
     rotate?: number;
+    boardClick?: (row: number, col: number, piece: string) => void;
 }
 
 export interface IRendererOptionsOut {
@@ -20,6 +21,7 @@ export interface IRendererOptionsOut {
     patternList: string[];
     colourBlind: boolean;
     rotate: number;
+    boardClick?: (row: number, col: number, piece: string) => void;
 }
 
 export abstract class RendererBase {
@@ -34,8 +36,7 @@ export abstract class RendererBase {
         this.name = name;
     }
 
-    public abstract render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
-                           opts: IRendererOptionsIn): void;
+    public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
 
     protected jsonPrechecks(json: APRenderRep): APRenderRep {
         // Check for missing renderer
@@ -107,6 +108,10 @@ export abstract class RendererBase {
                 normalized += 360;
             }
             newOpts.rotate = normalized;
+        }
+
+        if (opts.boardClick !== undefined) {
+            newOpts.boardClick = opts.boardClick;
         }
 
         return newOpts;
@@ -339,7 +344,7 @@ export abstract class RendererBase {
         }
     }
 
-    protected squares(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void, opts: IRendererOptionsOut): GridPoints {
+    protected squares(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -413,9 +418,15 @@ export abstract class RendererBase {
                 for (let col = 0; col < width; col++) {
                     const {x, y} = grid[row][col];
                     if (col % 2 !== lightCol) {
-                        tiles.use(tileDark).center(x, y).click(() => boardClick(row, col, ""));
+                        const t = tiles.use(tileDark).center(x, y);
+                        if (opts.boardClick !== undefined) {
+                            t.click(() => opts.boardClick!(row, col, ""));
+                        }
                     } else {
-                        tiles.use(tileLight).center(x, y).click(() => boardClick(row, col, ""));
+                        const t = tiles.use(tileLight).center(x, y);
+                        if (opts.boardClick !== undefined) {
+                            t.click(() => opts.boardClick!(row, col, ""));
+                        }
                     }
                 }
             }

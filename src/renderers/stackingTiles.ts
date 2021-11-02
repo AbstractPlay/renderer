@@ -9,8 +9,7 @@ export class StackingTilesRenderer extends RendererBase {
         super("stacking-tiles");
     }
 
-    public render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
-                  options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
@@ -35,7 +34,7 @@ export class StackingTilesRenderer extends RendererBase {
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw, boardClick, opts);
+                gridPoints = this.squares(json, draw, opts);
                 break;
             // case "hex_of_hex":
             //     gridPoints = this.hexOfHex(json, draw, opts);

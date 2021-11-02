@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Entropy board added as a special renderer. I want to minimize the number of special renderers, but there may end up being a few.
+- Added an `svgid` option to the main option set, letting you assign an `id` to the containing `svg` element. By default it is `_aprender`.
+
+### Changed
+
+- **Breaking Change**: `boardClick` handler now moved into the options object for consistency. All that's changing is how you pass it to the library. It should only require a single change to client code, but let me know if the impact is much larger.
 
 ## [0.3.0] - 2021-10-21
 

@@ -2,7 +2,7 @@ import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import {applyToPoint, compose, scale} from "transformation-matrix";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
+import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "./_base";
 
 type Seat = "N" | "E" | "S" | "W";
 
@@ -27,8 +27,7 @@ export class HomeworldsRenderer extends RendererBase {
         super("homeworlds");
     }
 
-    public render(json: APRenderRep, draw: Svg, boardClick: (row: number, col: number, piece: string) => void,
-                  options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
@@ -137,7 +136,7 @@ export class HomeworldsRenderer extends RendererBase {
                 bordercolour = opts.colours[sys.highlight - 1];
             }
 
-            this.genSystem(draw, `_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, bordercolour, opts.rotate);
+            this.genSystem(draw, opts, `_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, bordercolour);
         });
 
         // Peripheral systems
@@ -170,7 +169,7 @@ export class HomeworldsRenderer extends RendererBase {
                 bordercolour = opts.colours[sys.highlight - 1];
             }
 
-            this.genSystem(draw, `_sysPeriph_${sys.name}`, sys.name, ports, bordercolour, opts.rotate);
+            this.genSystem(draw, opts, `_sysPeriph_${sys.name}`, sys.name, ports, bordercolour);
         });
 
         // Now plot those systems on the game board
@@ -340,9 +339,12 @@ export class HomeworldsRenderer extends RendererBase {
         return effSeat;
     }
 
-    private genSystem(draw: Svg, id: string, name: string, ports: (string|undefined)[][], highlight?: string, rotation?: number): SVGG {
+    private genSystem(draw: Svg, opts: IRendererOptionsOut, id: string, name: string, ports: (string|undefined)[][], highlight?: string): SVGG {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
         const nested = draw.defs().group().id(id).size(250, 250);
+        if (opts.boardClick !== undefined) {
+            nested.click(() => opts.boardClick!(0, 0, name));
+        }
 
         // Add fill and border
         // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).
@@ -363,6 +365,11 @@ export class HomeworldsRenderer extends RendererBase {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
         nested.rect(250, 250).fill(pattern).stroke(stroke);
+
+        let rotation: number | undefined;
+        if ( ("rotate" in opts) && (opts.rotate !== undefined) ) {
+            rotation = opts.rotate;
+        }
 
         // Add the stars and ships
         for (let row = 0; row < 5; row++) {
@@ -394,6 +401,9 @@ export class HomeworldsRenderer extends RendererBase {
                     const dy = 0 - newpt.y;
                     use.dmove(point.x + dx, point.y + dy);
                     use.scale(factor * 0.95);
+                    if ( (opts.boardClick !== undefined) && (cell.length === 3) ) {
+                        use.click(() => opts.boardClick!(0, 0, cell));
+                    }
                 }
             }
         }
