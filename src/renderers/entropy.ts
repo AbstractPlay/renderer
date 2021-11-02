@@ -237,8 +237,6 @@ export class EntropyRenderer extends RendererBase {
         for (let i = 0; i < grid1.length; i++) {
             gridPoints[i].push(...grid2[i]);
         }
-        // tslint:disable-next-line: no-console
-        console.log(gridPoints);
         this.annotateBoard(json, draw, gridPoints);
     }
 }
