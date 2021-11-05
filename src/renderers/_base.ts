@@ -1,4 +1,5 @@
-import { G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
+import { applyToPoint, compose, scale } from "transformation-matrix";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schema";
@@ -1009,6 +1010,100 @@ export abstract class RendererBase {
                     throw new Error(`The requested annotation (${ note.type }) is not supported.`);
                 }
             }
+        }
+    }
+
+    protected buildKey(json: APRenderRep, draw: Svg, orientation?: "H"|"V", textPos?: "I"|"O"): SVGG | undefined {
+        if ( (! ("key" in json)) || (json.key === undefined) ) {
+            return;
+        }
+        if (orientation === undefined) {
+            orientation = "V";
+            if ( ("placement" in json.key) && (json.key.placement !== undefined) && ( (json.key.placement === "top") || (json.key.placement === "bottom") ) ) {
+                orientation = "H";
+            }
+        }
+        if (textPos === undefined) {
+            textPos = "O";
+            if ( ("textPosition" in json.key) && (json.key.textPosition !== undefined) && (json.key.textPosition === "inside") ) {
+                textPos = "I";
+            }
+        }
+        const unitSize = this.cellsize / 2;
+        const maxlen = Math.max(...json.key.list.map((e) => e.name.length));
+
+        // Load all the pieces
+        const pieces: Map<string, [SVGElement, number, string]> = new Map();
+        for (const p of json.key.list) {
+            const piece = SVG("#" + p.piece);
+            if ( (piece === null) || (piece === undefined) ) {
+                throw new Error(`Could not find the requested piece (${p.piece}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+            }
+            const sheetCellSize = piece.attr("data-cellsize");
+            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                throw new Error(`The glyph you requested (${p.piece}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+            }
+            pieces.set(p.piece, [piece, sheetCellSize, p.name]);
+        }
+
+        if (orientation === "V") {
+            const height = unitSize;
+            const width = ((maxlen / 2) + 1) * unitSize;
+            // tslint:disable-next-line: no-console
+            console.log(`Height: ${height}, Width: ${width}`);
+            const entries: SVGG[] = [];
+            for (const [key, [glyph, glyphSize, label]] of pieces.entries()) {
+                const entry = draw.defs().group().id(`_key_entry_${key}`).size(width, height);
+                const usedGlyph = entry.use(glyph);
+                // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                const factor = (unitSize / glyphSize);
+                const matrix = compose(scale(factor, factor, glyphSize / 2, glyphSize / 2));
+                const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                usedGlyph.dmove(newpt.x * -1, newpt.y * -1);
+                usedGlyph.scale(factor);
+                const text = entry.text(label).move(0, 0);
+                if (textPos === "O") {
+                    text.dx(unitSize);
+                } else {
+                    // text.dmove((text.width() as number + unitSize) * -1, 0);
+                    usedGlyph.dx(width - unitSize);
+                }
+                entries.push(entry);
+            }
+            const fullHeight = (height * entries.length) + ((height / 2) * (entries.length - 1));
+            const g = draw.defs().group().id("_key").size(width, fullHeight);
+            for (let i = 0; i < entries.length; i++) {
+                g.use(entries[i]).dmove(0, (height * 1.5) * i);
+            }
+            return g;
+        } else {
+            const height = unitSize * 2;
+            const width = (maxlen / 2) * unitSize;
+            const entries: SVGG[] = [];
+            for (const [key, [glyph, glyphSize, label]] of pieces.entries()) {
+                const entry = draw.defs().group().id(`_key_entry_${key}`).size(width, height);
+                const usedGlyph = entry.use(glyph);
+                // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                const factor = (unitSize / glyphSize);
+                const matrix = compose(scale(factor, factor, glyphSize / 2, glyphSize / 2));
+                const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                usedGlyph.dmove(newpt.x * -1, newpt.y * -1);
+                usedGlyph.scale(factor);
+                const text = entry.text(label).move(0, 0);
+                if (textPos === "O") {
+                    usedGlyph.dmove((text.width() as number / 2) - (unitSize / 2), unitSize);
+                } else {
+                    usedGlyph.dmove((text.width() as number / 2) - (unitSize / 2), 0);
+                    text.dmove(0, unitSize);
+                }
+                entries.push(entry);
+            }
+            const fullWidth = (width * entries.length) + ((width / 2) * (entries.length - 1));
+            const g = draw.defs().group().id("_key").size(fullWidth, height);
+            for (let i = 0; i < entries.length; i++) {
+                g.use(entries[i]).dmove((height * 1.5) * i, 0);
+            }
+            return g;
         }
     }
 }

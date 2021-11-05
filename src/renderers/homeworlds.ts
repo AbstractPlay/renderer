@@ -254,7 +254,13 @@ export class HomeworldsRenderer extends RendererBase {
         if ( (json.areas === undefined) || (! Array.isArray(json.areas)) || (json.areas.length !== 1) ) {
             throw new Error("One `area` must be defined.");
         }
+        if (Array.isArray(json.areas[0])) {
+            throw new Error("Malformed `areas` definition");
+        }
         const stash = json.areas[0];
+        if ("stack" in stash) {
+            throw new Error("Malformed stash. The properties 'R', 'B', 'G', and 'Y' are required.");
+        }
         if ( (! stash.hasOwnProperty("R")) || (! stash.hasOwnProperty("B")) || (! stash.hasOwnProperty("G")) || (! stash.hasOwnProperty("Y"))) {
             throw new Error("Malformed stash. The properties 'R', 'B', 'G', and 'Y' are required.");
         }

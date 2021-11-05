@@ -17,7 +17,7 @@ export interface APRenderRep {
   /**
    * The rendering engine the game wants to use.
    */
-  renderer?: "default" | "stacking-offset" | "stacking-tiles" | "homeworlds" | "entropy";
+  renderer?: "default" | "stacking-offset" | "stacking-tiles" | "stacking-expanding" | "homeworlds" | "entropy";
   /**
    * Map each `piece` to an actual glyph with possible options.
    */
@@ -371,15 +371,47 @@ export interface APRenderRep {
         string
       ][];
   /**
+   * The list of pieces in the `legend` the players need identifiers for. Usually needed for games with many colours or just indicating who controls what.
+   */
+  key?: {
+    /**
+     * The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.
+     */
+    list: {
+      piece: string;
+      name: string;
+    }[];
+    /**
+     * Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.
+     */
+    placement?: "top" | "bottom" | "left" | "right";
+    /**
+     * Where you prefer the text be placed relative to the glyph. 'Inside' will place the text between the game board and the glyph. 'Outside' will place it on the outside. Specific renderers may override your preference.
+     */
+    textPosition?: "inside" | "outside";
+  };
+  /**
    * Areas are placed vertically under the game board. There's no default way of handling this. Each renderer will need to know what to do with it.
    */
-  areas?: {
-    R: Stashstrings;
-    G: Stashstrings;
-    B: Stashstrings;
-    Y: Stashstrings;
-    [k: string]: unknown;
-  }[];
+  areas?: (
+    | {
+        R: Stashstrings;
+        G: Stashstrings;
+        B: Stashstrings;
+        Y: Stashstrings;
+        [k: string]: unknown;
+      }
+    | {
+        /**
+         * The coordinates of the cell being expanded (optional).
+         */
+        cell?: string;
+        /**
+         * List of pieces (each must appear in the `legend`) to display alongside the board. The first piece in the array is the bottom of the stack.
+         */
+        stack: string[];
+      }
+  )[];
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
@@ -474,7 +506,7 @@ export interface APRenderRep {
  */
 export interface Glyph {
   /**
-   * The name of the actual glyph.
+   * The name of the actual glyph. It may not contain any whitespace.
    */
   name: string;
   /**

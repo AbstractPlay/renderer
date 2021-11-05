@@ -7,4 +7,5 @@ Todo:
   - Make `stacking-offset` renderer rotate properly
   - Write proper tests
   - Legend signifiers do not appear to be case sensitive (e.g., Cannon board tried to use "R" and "r" for soldiers and towns)
+  - Does the click handler need more granularity? Homeworlds is a good example. Is it ok if one click triggers multiple events?
   

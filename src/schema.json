@@ -23,8 +23,9 @@
             "type": "object",
             "properties": {
                 "name": {
-                    "description": "The name of the actual glyph.",
-                    "type": "string"
+                    "description": "The name of the actual glyph. It may not contain any whitespace.",
+                    "type": "string",
+                    "pattern": "^\\S+$"
                 },
                 "player": {
                     "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
@@ -85,6 +86,7 @@
                 "default",
                 "stacking-offset",
                 "stacking-tiles",
+                "stacking-expanding",
                 "homeworlds",
                 "entropy"
             ],
@@ -342,6 +344,41 @@
                 }
             ]
         },
+        "key": {
+            "description": "The list of pieces in the `legend` the players need identifiers for. Usually needed for games with many colours or just indicating who controls what.",
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "piece": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["piece", "name"],
+                        "additionalProperties": false
+                    }
+                },
+                "placement": {
+                    "description": "Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.",
+                    "enum": ["top", "bottom", "left", "right"],
+                    "default": "right"
+                },
+                "textPosition": {
+                    "description": "Where you prefer the text be placed relative to the glyph. 'Inside' will place the text between the game board and the glyph. 'Outside' will place it on the outside. Specific renderers may override your preference.",
+                    "enum": ["inside", "outside"],
+                    "default": "outside"
+                }
+            },
+            "required": ["list"],
+            "additionalProperties": false
+        },
         "areas": {
             "description": "Areas are placed vertically under the game board. There's no default way of handling this. Each renderer will need to know what to do with it.",
             "type": "array",
@@ -370,6 +407,25 @@
                             "B",
                             "Y"
                         ]
+                    },
+                    {
+                        "description": "Used by the `stacking-expanding` renderer.",
+                        "type": "object",
+                        "properties": {
+                            "cell": {
+                                "description": "The coordinates of the cell being expanded (optional).",
+                                "type": "string"
+                            },
+                            "stack": {
+                                "description": "List of pieces (each must appear in the `legend`) to display alongside the board. The first piece in the array is the bottom of the stack.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["stack"],
+                        "additionalProperties": false
                     }
                 ]
             }

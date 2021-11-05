@@ -25,7 +25,9 @@ This tells the renderer which engine to use. The following engines are available
 default:: This is the renderer used by most games. It does not support stacked pieces.
 stacking-offset:: This works almost identically to the `default` engine but stacks multiple defined pieces on top of each other, slightly offset. Depending on the size of the board and pieces, excessive stack sizes will become problematic.
 stacking-tiles:: This generates a side view of a stack of pieces defined only by their colour (player number). There is no legend of pieces, just the player colour. This is designed to be used with cells of fixed size and not vertex boards. It can show up to eight tiles, or, if there are nine or more tiles, seven will be visible with an "etc." tile on the bottom.
+stacking-expanding:: This is a direct top-down view of stacked pieces. Larger pieces fully occlude smaller pieces beneath them. But the first `areas` definition can include a list of pieces, from bottom to top, that can be displayed vertically next to the board. This lets you fully inspect the contents of the stack, usually triggered by a click. This renderer requires `pieces` be specified using the nested-array approach described further below.
 homeworlds:: This engine generates Homeworlds boards only.
+entropy:: This is a game-specific renderer for laying out the side-by-side boards used in the game. This may be generalized at some point.
 
 === `legend`
 
@@ -88,6 +90,8 @@ You still use `\n` to separate rows (the first row is the top row), and whitespa
 * This nested-array approach is more explicit but also more verbose. Each top-level array is a row (the first row is the top row). Each row is itself an array of cells in that row (from left to right). And each cell is itself an array of pieces in that cell.
 +
 Different renderers will handle this differently. The default renderer will simply layer the glyphs on top of each other. A stacking renderer will try to stack the pieces.
++
+The nested-array approach is the only acceptable way to layout pieces for the `stacking-expanding` renderer.
 
 * Finally is the Homeworlds schema. This is also an array of arrays. Each top-level array is a system, and each of those contains an array of ships. The systems must be declared in the same order as in the `board` property. The renderer will deal with positioning the systems on the playing surface.
 
@@ -98,6 +102,8 @@ For the Homeworlds renderer, this is an array of arrays of ships. Ships must des
 This section is unique to different renderers. The default renderer ignores it. 
 
 The Homewords renderer uses this for the global stash. Provide the stash contents of each of the four colours.
+
+The `stacking-expanding` renderer uses this to display an expanded column of pieces in a stack when requested.
 
 === `annotations`
 
