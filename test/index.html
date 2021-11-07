@@ -31,6 +31,11 @@
                 } else if (radio === "patterns") {
                     options.patterns = true;
                 }
+                if (document.getElementById("annotate").checked) {
+                    options.showAnnotations = true;
+                } else {
+                    options.showAnnotations = false;
+                }
                 var rotval = parseInt(document.getElementById("rotation").value, 10);
                 if ( (rotval !== undefined) && (rotval !== null) && (!isNaN(rotval)) && (rotval !== 0) ) {
                     options.rotate = rotval;
@@ -39,6 +44,7 @@
                 // options.height = "50%";
                 // options.width = "50%";
                 var data = JSON.parse(document.getElementById("jsonIn").value);
+                console.log(options);
                 var canvas = APRender.render(data, options);
                 //document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(canvas.svg()) + "</p>"
                 //var svgcode = APRender.renderStatic(data, options);
@@ -66,6 +72,10 @@
 
                     <input type="radio" id="fillPatterns" name="playerfill" value="patterns">
                     <label for="fillPatterns">Black-and-white patterns (10 max)</label>
+                </div>
+                <div>
+                    <label for="annotate">Show annotations?</label>
+                    <input type="checkbox" id="annotate" name="annotate" checked>
                 </div>
                 <div>
                     <label for="rotation">Rotate map (&deg;)</label>

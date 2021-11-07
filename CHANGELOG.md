@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Entropy board added as a special renderer. I want to minimize the number of special renderers, but there may end up being a few.
 - `stacking-expanding` renderer added. It's the same as the default renderer but supports displaying an expanded column of pieces in a stack alongside the board.
 - Added an `svgid` option to the main option set, letting you assign an `id` to the containing `svg` element. By default it is `_aprender`.
+- Added a `showAnnotations` option to the main options set. When `false`, last-move indicators will be hidden.
 - Added a `key` attribute that you can use to give players a key to the colours and pieces on the board. This is sometimes necessary if there are a lot of colours on the board and you want to make move entry simpler. Or if you want to indicate which player owns which colour.
+- Added an `eject` annotation meant to show consequential movement (like eruptions in Volcano).
 
 ### Known Issues
 

@@ -108,7 +108,9 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // Finally, annotations
-        this.annotateBoard(json, draw, gridPoints);
+        if (opts.showAnnotations) {
+            this.annotateBoard(json, draw, gridPoints);
+        }
 
         // Rotate the board if requested
         if (opts.rotate > 0) {

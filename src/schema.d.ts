@@ -421,7 +421,7 @@ export interface APRenderRep {
           /**
            * The type of annotation
            */
-          type: "move" | "enter" | "exit";
+          type: "move" | "eject" | "enter" | "exit";
           /**
            * The cells involved in the annotation
            */
@@ -438,6 +438,7 @@ export interface APRenderRep {
             }[]
           ];
           style?: "solid" | "dashed";
+          opacity?: number;
           /**
            * Pattern for hex colour strings
            */
@@ -462,7 +463,7 @@ export interface APRenderRep {
           /**
            * The type of annotation
            */
-          type: "move" | "enter" | "exit";
+          type: "move" | "eject" | "enter" | "exit";
           /**
            * The cells involved in the annotation
            */
@@ -479,6 +480,7 @@ export interface APRenderRep {
             }[]
           ];
           style?: "solid" | "dashed";
+          opacity?: number;
           /**
            * Pattern for hex colour strings
            */

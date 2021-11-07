@@ -18,6 +18,7 @@ export interface IRenderOptions {
     patternList?: string[];
     colourBlind?: boolean;
     colourList?: string[];
+    showAnnotations?: boolean;
     rotate?: number;
     width?: NumberAlias;
     height?: NumberAlias;
@@ -105,7 +106,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, boardClick});
+    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick});
     draw.viewbox(draw.bbox());
     return draw;
 }

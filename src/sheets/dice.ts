@@ -1,5 +1,5 @@
 import { Container as SVGContainer, G as SVGG } from "@svgdotjs/svg.js";
-import { ISheet } from "../ISheet";
+import { ISheet } from "./ISheet";
 
 const sheet: ISheet = {
     name: "dice",

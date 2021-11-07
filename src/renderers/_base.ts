@@ -1,7 +1,7 @@
 import { Element as SVGElement, G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
 import { applyToPoint, compose, scale } from "transformation-matrix";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
-import { GridPoints } from "../grids/_base";
+import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schema";
 import { sheets } from "../sheets";
 
@@ -12,6 +12,7 @@ export interface IRendererOptionsIn {
     patternList?: string[];
     colourBlind?: boolean;
     rotate?: number;
+    showAnnotations?: boolean;
     boardClick?: (row: number, col: number, piece: string) => void;
 }
 
@@ -22,6 +23,7 @@ export interface IRendererOptionsOut {
     patternList: string[];
     colourBlind: boolean;
     rotate: number;
+    showAnnotations: boolean;
     boardClick?: (row: number, col: number, piece: string) => void;
 }
 
@@ -54,7 +56,7 @@ export abstract class RendererBase {
     }
 
     protected optionsPrecheck(opts: IRendererOptionsIn): IRendererOptionsOut {
-        const newOpts: IRendererOptionsOut = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, rotate: 0};
+        const newOpts: IRendererOptionsOut = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0};
 
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
@@ -100,6 +102,11 @@ export abstract class RendererBase {
                 }
             }
             newOpts.colours = opts.colours;
+        }
+
+        // Check for annotation screening
+        if (opts.showAnnotations !== undefined) {
+            newOpts.showAnnotations = opts.showAnnotations;
         }
 
         // Validate rotation
@@ -941,6 +948,9 @@ export abstract class RendererBase {
     protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints) {
         if ( ("annotations" in json) && (json.annotations !== undefined) ) {
             const notes = draw.group().id("annotations");
+            const rIncrement = this.cellsize / 2;
+            let radius = rIncrement;
+            let direction = 1;
             for (const note of json.annotations) {
                 if ( (note.type !== undefined) && (note.type === "move") ) {
                     if ((note.targets as any[]).length < 2) {
@@ -959,6 +969,10 @@ export abstract class RendererBase {
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
                         arrow = note.arrow as boolean;
                     }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity as number;
+                    }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
@@ -970,6 +984,7 @@ export abstract class RendererBase {
                     }
                     const stroke: StrokeData = {
                         color: colour,
+                        opacity,
                         width: this.cellsize * 0.03,
                     };
                     if (style === "dashed") {
@@ -981,6 +996,54 @@ export abstract class RendererBase {
                         line.marker("end", markerArrow);
                     } else {
                         line.marker("end", markerCircle);
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "eject") ) {
+                    if ((note.targets as any[]).length !== 2) {
+                        throw new Error("Eject annotations require exactly two 'targets'.");
+                    }
+
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour as string;
+                    }
+                    let style = "dashed";
+                    if ( ("style" in note) && (note.style !== undefined) ) {
+                        style = note.style as string;
+                    }
+                    let arrow = false;
+                    if ( ("arrow" in note) && (note.arrow !== undefined)) {
+                        arrow = note.arrow as boolean;
+                    }
+                    let opacity = 0.5;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity as number;
+                    }
+
+                    // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const [from, to] = note.targets as any[];
+                    const ptFrom = grid[from.row][from.col];
+                    const ptTo = grid[to.row][to.col];
+                    const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width: this.cellsize * 0.03,
+                    };
+                    if (style === "dashed") {
+                        stroke.dasharray = "4";
+                    }
+                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none");
+                    line.marker("start", markerCircle);
+                    if (arrow) {
+                        line.marker("end", markerArrow);
+                    } else {
+                        line.marker("end", markerCircle);
+                    }
+                    direction *= -1;
+                    if (direction > 0) {
+                        radius += rIncrement;
                     }
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
                     let colour = "#000";
@@ -1029,7 +1092,7 @@ export abstract class RendererBase {
                 textPos = "I";
             }
         }
-        const unitSize = this.cellsize / 2;
+        const unitSize = this.cellsize / 4;
         const maxlen = Math.max(...json.key.list.map((e) => e.name.length));
 
         // Load all the pieces
@@ -1049,8 +1112,6 @@ export abstract class RendererBase {
         if (orientation === "V") {
             const height = unitSize;
             const width = ((maxlen / 2) + 1) * unitSize;
-            // tslint:disable-next-line: no-console
-            console.log(`Height: ${height}, Width: ${width}`);
             const entries: SVGG[] = [];
             for (const [key, [glyph, glyphSize, label]] of pieces.entries()) {
                 const entry = draw.defs().group().id(`_key_entry_${key}`).size(width, height);
@@ -1061,7 +1122,7 @@ export abstract class RendererBase {
                 const newpt = applyToPoint(matrix, {x: 0, y: 0});
                 usedGlyph.dmove(newpt.x * -1, newpt.y * -1);
                 usedGlyph.scale(factor);
-                const text = entry.text(label).move(0, 0);
+                const text = entry.text(label).font("size", height).move(0, 0);
                 if (textPos === "O") {
                     text.dx(unitSize);
                 } else {
@@ -1104,6 +1165,36 @@ export abstract class RendererBase {
                 g.use(entries[i]).dmove((height * 1.5) * i, 0);
             }
             return g;
+        }
+    }
+
+    // NOT GENERAL. Assumes we are only drawing in increments of 45 degrees
+    private getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
+        const m: IPoint = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
+        let dir = "";
+        if (to.y < from.y) {
+            dir = "N";
+        } else if (to.y > from.y) {
+            dir = "S";
+        }
+        if (to.x < from.x) {
+            dir += "W";
+        } else if (to.x > from.x) {
+            dir += "E";
+        }
+        switch (dir) {
+            case "N":
+            case "S":
+            case "NE":
+            case "SW":
+                return {x: m.x + delta, y: m.y};
+            case "E":
+            case "W":
+            case "NW":
+            case "SE":
+                return {x: m.x, y: m.y + delta};
+            default:
+                throw new Error(`Unrecognized direction ${dir}`);
         }
     }
 }

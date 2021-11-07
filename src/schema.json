@@ -443,6 +443,7 @@
                                 "description": "The type of annotation",
                                 "enum": [
                                     "move",
+                                    "eject",
                                     "enter",
                                     "exit"
                                 ]
@@ -473,6 +474,12 @@
                                     "dashed"
                                 ],
                                 "default": "solid"
+                            },
+                            "opacity": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "default": 1
                             },
                             "colour": {
                                 "$ref": "#/definitions/colourstrings",

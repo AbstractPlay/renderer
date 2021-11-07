@@ -235,10 +235,12 @@ export class EntropyRenderer extends RendererBase {
         }
 
         // Finally, annotations
-        const gridPoints: IPoint[][] = [...grid1];
-        for (let i = 0; i < grid1.length; i++) {
-            gridPoints[i].push(...grid2[i]);
+        if (opts.showAnnotations) {
+            const gridPoints: IPoint[][] = [...grid1];
+            for (let i = 0; i < grid1.length; i++) {
+                gridPoints[i].push(...grid2[i]);
+            }
+            this.annotateBoard(json, draw, gridPoints);
         }
-        this.annotateBoard(json, draw, gridPoints);
     }
 }
