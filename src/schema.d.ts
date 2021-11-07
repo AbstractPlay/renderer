@@ -391,10 +391,11 @@ export interface APRenderRep {
     textPosition?: "inside" | "outside";
   };
   /**
-   * Areas are placed vertically under the game board. There's no default way of handling this. Each renderer will need to know what to do with it.
+   * Areas are renderer-specific elements that are used and rendered in various ways.
    */
   areas?: (
     | {
+        type: "globalStash";
         R: Stashstrings;
         G: Stashstrings;
         B: Stashstrings;
@@ -402,6 +403,7 @@ export interface APRenderRep {
         [k: string]: unknown;
       }
     | {
+        type: "expandedColumn";
         /**
          * The coordinates of the cell being expanded (optional).
          */
@@ -410,6 +412,15 @@ export interface APRenderRep {
          * List of pieces (each must appear in the `legend`) to display alongside the board. The first piece in the array is the bottom of the stack.
          */
         stack: string[];
+      }
+    | {
+        type: "localStash";
+        label: string;
+        /**
+         * This is an array of stacks of pieces (themselves an array).
+         */
+        stash: string[][];
+        [k: string]: unknown;
       }
   )[];
   /**

@@ -4,6 +4,13 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
+interface ILocalStash {
+    [k: string]: unknown;
+    type: "localStash";
+    label: string;
+    stash: string[][];
+}
+
 export class StackingExpandingRenderer extends RendererBase {
 
     constructor() {
@@ -102,52 +109,51 @@ export class StackingExpandingRenderer extends RendererBase {
 
         // Add expanded column, if requested
         if ( (json.areas !== undefined) && (Array.isArray(json.areas)) && (json.areas.length > 0) ) {
-            const area = json.areas.find((x) => x.hasOwnProperty("stack") && x.stack !== undefined && Array.isArray(x.stack));
-            if (area === undefined) {
-                throw new Error("Malformed `areas` definition");
-            }
-            // Create a group to store the column and place all the pieces at 0,0 within it
-            const boardHeight = gridPoints[gridPoints.length - 1][0].x - gridPoints[0][0].x + (this.cellsize * 2);
-            const columnWidth = this.cellsize * 1;
-            const used: SVGUse[] = [];
-            const nested = draw.defs().group().id("_expansion").size(columnWidth, boardHeight);
-            for (const p of (area.stack as string[]).reverse()) {
-                const piece = SVG("#" + p);
-                if ( (piece === null) || (piece === undefined) ) {
-                    throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
+            const area = json.areas.find((x) => x.type === "expandedColumn");
+            if (area !== undefined) {
+                // Create a group to store the column and place all the pieces at 0,0 within it
+                const boardHeight = gridPoints[gridPoints.length - 1][0].x - gridPoints[0][0].x + (this.cellsize * 2);
+                const columnWidth = this.cellsize * 1;
+                const used: SVGUse[] = [];
+                const nested = draw.defs().group().id("_expansion").size(columnWidth, boardHeight);
+                for (const p of (area.stack as string[]).reverse()) {
+                    const piece = SVG("#" + p);
+                    if ( (piece === null) || (piece === undefined) ) {
+                        throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
+                    }
+                    const sheetCellSize = piece.attr("data-cellsize");
+                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                        throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                    }
+                    const use = nested.use(piece);
+                    used.push(use);
+                    // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                    const factor = (columnWidth / sheetCellSize);
+                    const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
+                    const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                    use.dmove(newpt.x * -1, newpt.y * -1);
+                    use.scale(factor * 0.95);
                 }
-                const sheetCellSize = piece.attr("data-cellsize");
-                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                    throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+
+                // Now go through each piece and shift them down
+                let dy: number = 0;
+                for (const piece of used) {
+                    piece.dmove(0, dy);
+                    dy += piece.height() as number;
                 }
-                const use = nested.use(piece);
-                used.push(use);
-                // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                const factor = (columnWidth / sheetCellSize);
-                const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                use.dmove(newpt.x * -1, newpt.y * -1);
-                use.scale(factor * 0.95);
-            }
 
-            // Now go through each piece and shift them down
-            let dy: number = 0;
-            for (const piece of used) {
-                piece.dmove(0, dy);
-                dy += piece.height() as number;
-            }
+                // Add cell name
+                if ( ("cell" in area) && (area.cell !== undefined) ) {
+                    const txt = nested.text(`Cell ${area.cell}`);
+                    txt.font("size", "50%");
+                    txt.move(0, (this.cellsize / 4) * -1).fill("#000");
+                }
 
-            // Add cell name
-            if ( ("cell" in area) && (area.cell !== undefined) ) {
-                const txt = nested.text(`Cell ${area.cell}`);
-                txt.font("size", "50%");
-                txt.move(0, (this.cellsize / 4) * -1).fill("#000");
+                // Now place the whole group to the left-hand side of the board
+                draw.use(nested)
+                    .move(gridPoints[0][0].x - (this.cellsize * 1.5) - columnWidth, gridPoints[0][0].y - this.cellsize);
+                    // .center(gridPoints[0][0].x - this.cellsize - columnWidth, gridPoints[0][0].y - this.cellsize + (boardHeight / 2));
             }
-
-            // Now place the whole group to the left-hand side of the board
-            draw.use(nested)
-                .move(gridPoints[0][0].x - (this.cellsize * 1.5) - columnWidth, gridPoints[0][0].y - this.cellsize);
-                // .center(gridPoints[0][0].x - this.cellsize - columnWidth, gridPoints[0][0].y - this.cellsize + (boardHeight / 2));
         }
 
         // Add key
@@ -186,9 +192,64 @@ export class StackingExpandingRenderer extends RendererBase {
             draw.use(img).move(keyX, keyY);
         }
 
-        // Finally, annotations
+        // Annotations
         if (opts.showAnnotations) {
             this.annotateBoard(json, draw, gridPoints);
+        }
+
+        // Look for local stashes
+        // This code is optimized for pyramids
+        if ( (json.areas !== undefined) && (Array.isArray(json.areas)) && (json.areas.length > 0) ) {
+            const areas = json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
+            const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
+            let placeY = boardBottom + (this.cellsize / 2);
+            for (let iArea = 0; iArea < areas.length; iArea++) {
+                const area = areas[iArea];
+                const numStacks = area.stash.length;
+                const maxHeight = Math.max(...area.stash.map((s) => s.length));
+                const textHeight = 10; // the allowance for the label
+                const cellsize = this.cellsize * 0.75;
+                const offset = cellsize * 3.5;
+                const areaWidth = cellsize * numStacks;
+                const areaHeight = textHeight + cellsize + (offset * (maxHeight - 1));
+                const nested = draw.defs().group().id(`_stash${iArea}`).size(areaWidth, areaHeight);
+                for (let iStack = 0; iStack < area.stash.length; iStack++) {
+                    const stack = area.stash[iStack];
+                    const used: SVGUse[] = [];
+                    for (const p of stack) {
+                        const piece = SVG("#" + p);
+                        if ( (piece === null) || (piece === undefined) ) {
+                            throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
+                        }
+                        const sheetCellSize = piece.attr("data-cellsize");
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        }
+                        const use = nested.use(piece);
+                        used.push(use);
+                        // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                        const factor = (cellsize / sheetCellSize);
+                        const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
+                        const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                        use.dmove((newpt.x * -1) + (iStack * cellsize), (newpt.y * -1) + textHeight);
+                        use.scale(factor * 0.95);
+                    }
+                    // Now go through each piece and shift them down
+                    let dy: number = 0;
+                    for (const piece of used) {
+                        piece.dmove(0, dy);
+                        dy -= offset;
+                    }
+                }
+
+                // Add area label
+                const txt = nested.text(area.label);
+                txt.font("size", "50%").move(0, 0).fill("#000");
+
+                // Now place the whole group below the board
+                draw.use(nested).move(gridPoints[0][0].x - this.cellsize, placeY);
+                placeY += nested.height() as number;
+            }
         }
 
         // Rotate the board if requested

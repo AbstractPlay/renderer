@@ -116,6 +116,87 @@ sheet.glyphs.set("pyramid-flat-small", (canvas: SVGContainer) => {
     return group;
 });
 
+// "Flattened" pyramids are simply aligned with the bottom of the sheet instead of the centre
+sheet.glyphs.set("pyramid-flattened-large", (canvas: SVGContainer) => {
+    const height = 175;
+    const base = 100;
+    const group = canvas.group()
+        .id("pyramid-flattened-large")
+        .attr("data-cellsize", cellsize);
+    group.rect(cellsize, cellsize).fill("none");
+    const tri = group.group();
+    tri.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
+        .attr("data-playerfill", true)
+        .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
+        .fill("#fff");
+    const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
+    const xOffset = pipWidth * 1.5;
+    const y = halfcell + (height / 2) - (pipHeight / 2);
+    tri.circle(pipWidth, pipHeight)
+        .fill("#000")
+        .opacity(pipOpacity)
+        .center(xStart, y);
+    tri.circle(pipWidth, pipHeight)
+        .fill("#000")
+        .opacity(pipOpacity)
+        .center(xStart + xOffset, y);
+    tri.circle(pipWidth, pipHeight)
+        .fill("#000")
+        .opacity(pipOpacity)
+        .center(xStart + (xOffset * 2), y);
+    tri.translate(0, cellsize - (halfcell + height / 2));
+    return group;
+});
+
+sheet.glyphs.set("pyramid-flattened-medium", (canvas: SVGContainer) => {
+    const height = 137.5;
+    const base = 78.125;
+    const group = canvas.group()
+        .id("pyramid-flattened-medium")
+        .attr("data-cellsize", cellsize);
+    group.rect(cellsize, cellsize).fill("none");
+    const tri = group.group();
+    tri.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
+        .attr("data-playerfill", true)
+        .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
+        .fill("#fff");
+    const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
+    const xOffset = pipWidth * 1.5;
+    const y = halfcell + (height / 2) - (pipHeight / 2);
+    tri.circle(pipWidth, pipHeight)
+        .fill("#000")
+        .opacity(pipOpacity)
+        .center(xStart, y);
+    tri.circle(pipWidth, pipHeight)
+        .fill("#000")
+        .opacity(pipOpacity)
+        .center(xStart + xOffset, y);
+    tri.translate(0, cellsize - (halfcell + height / 2));
+    return group;
+});
+
+sheet.glyphs.set("pyramid-flattened-small", (canvas: SVGContainer) => {
+    const height = 100;
+    const base = 56.25;
+    const group = canvas.group()
+        .id("pyramid-flattened-small")
+        .attr("data-cellsize", cellsize);
+    group.rect(cellsize, cellsize).fill("none");
+    const tri = group.group();
+    tri.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
+        .attr("data-playerfill", true)
+        .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
+        .fill("#fff");
+    const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
+    const y = halfcell + (height / 2) - (pipHeight / 2);
+    tri.circle(pipWidth, pipHeight)
+        .fill("#000")
+        .opacity(pipOpacity)
+        .center(xStart, y);
+    tri.translate(0, cellsize - (halfcell + height / 2));
+    return group;
+});
+
 sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     const base = 100;
     const halfbase = base / 2;

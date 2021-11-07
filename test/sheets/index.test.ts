@@ -11,7 +11,7 @@ describe("Glyph sheets", () => {
             .filter((file: string) => (file.indexOf(".") !== 0) && (! file.startsWith("index")) && (file.slice(-3) === ".ts"))
             .forEach((file: string) => {
                 const root = file.slice(0, -3);
-                if (! sheets.has(root)) {
+                if ( (root !== "ISheet") && (! sheets.has(root)) ) {
                     throw new Error("There is not a parsed sheet with the same name as '" + root + "'");
                 }
             });

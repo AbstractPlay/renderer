@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `showAnnotations` option to the main options set. When `false`, last-move indicators will be hidden.
 - Added a `key` attribute that you can use to give players a key to the colours and pieces on the board. This is sometimes necessary if there are a lot of colours on the board and you want to make move entry simpler. Or if you want to indicate which player owns which colour.
 - Added an `eject` annotation meant to show consequential movement (like eruptions in Volcano).
+- Added `localStash` areas for rendering things liked captured pyramid pieces in Volcano.
+- Added `flattened` versions of the Looney pyramids. They all share a baseline instead of a centre.
+
+### Changed
+
+- `area` definitions changed to include a `type` field to simplify coding.
 
 ### Known Issues
 

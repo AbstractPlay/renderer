@@ -380,7 +380,7 @@
             "additionalProperties": false
         },
         "areas": {
-            "description": "Areas are placed vertically under the game board. There's no default way of handling this. Each renderer will need to know what to do with it.",
+            "description": "Areas are renderer-specific elements that are used and rendered in various ways.",
             "type": "array",
             "items": {
                 "oneOf": [
@@ -388,6 +388,9 @@
                         "description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
                         "type": "object",
                         "properties": {
+                            "type": {
+                                "enum": ["globalStash"]
+                            },
                             "R": {
                                 "$ref": "#/definitions/stashstrings"
                             },
@@ -402,6 +405,7 @@
                             }
                         },
                         "required": [
+                            "type",
                             "R",
                             "G",
                             "B",
@@ -409,9 +413,12 @@
                         ]
                     },
                     {
-                        "description": "Used by the `stacking-expanding` renderer.",
+                        "description": "Used by the `stacking-expanding` renderer to display the expanded contents of a cell.",
                         "type": "object",
                         "properties": {
+                            "type": {
+                                "enum": ["expandedColumn"]
+                            },
                             "cell": {
                                 "description": "The coordinates of the cell being expanded (optional).",
                                 "type": "string"
@@ -424,8 +431,33 @@
                                 }
                             }
                         },
-                        "required": ["stack"],
+                        "required": ["type", "stack"],
                         "additionalProperties": false
+                    },
+                    {
+                        "description": "Used by the `stacking-expanding` renderer for displaying stashes of pyramids (e.g., captured pieces in a Volcano game).",
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "enum": ["localStash"]
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "stash": {
+                                "description": "This is an array of stacks of pieces (themselves an array).",
+                                "type": "array",
+                                "items": {
+                                    "description": "The stack of pieces is displayed from the bottom to the top, read left to right.",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "The pieces to be placed. Must exist in the `legend`.",
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "required": ["type", "label", "stash"]
                     }
                 ]
             }
