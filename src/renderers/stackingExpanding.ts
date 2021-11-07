@@ -87,6 +87,19 @@ export class StackingExpandingRenderer extends RendererBase {
             }
         }
 
+        // Now add transparent tiles over each cell for the click handler
+        const tile = draw.defs().rect(this.cellsize, this.cellsize).fill("#fff").opacity(0).id("_clickCatcher");
+        const tiles = group.group().id("tiles");
+        for (let row = 0; row < gridPoints.length; row++) {
+            for (let col = 0; col < gridPoints[row].length; col++) {
+                const {x, y} = gridPoints[row][col];
+                const t = tiles.use(tile).center(x, y);
+                if (opts.boardClick !== undefined) {
+                    t.click(() => opts.boardClick!(row, col, ""));
+                }
+            }
+        }
+
         // Add expanded column, if requested
         if ( (json.areas !== undefined) && (Array.isArray(json.areas)) && (json.areas.length > 0) ) {
             const area = json.areas.find((x) => x.hasOwnProperty("stack") && x.stack !== undefined && Array.isArray(x.stack));
@@ -128,7 +141,7 @@ export class StackingExpandingRenderer extends RendererBase {
             if ( ("cell" in area) && (area.cell !== undefined) ) {
                 const txt = nested.text(`Cell ${area.cell}`);
                 txt.font("size", "50%");
-                txt.move(0, 0).fill("#000");
+                txt.move(0, (this.cellsize / 4) * -1).fill("#000");
             }
 
             // Now place the whole group to the left-hand side of the board
