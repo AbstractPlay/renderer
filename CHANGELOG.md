@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an `eject` annotation meant to show consequential movement (like eruptions in Volcano).
 - Added `localStash` areas for rendering things liked captured pyramid pieces in Volcano.
 - Added `flattened` versions of the Looney pyramids. They all share a baseline instead of a centre.
+- Added basic hex maps. Right now the labels are designed for pointy-topped grids. As more games get added, some convenience options will be added to the schema and implementation adjusted.
 
 ### Changed
 
@@ -25,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Known Issues
 
 - The key still needs positioning code tweaked for top and bottom, and for some reason I cannot move the glyph within each entry. I can move the text, but not the glyph. That will need to be sorted before a new release.
-- The key also needs to be build and placed for all renderers. Right now it's only rendered by the `stacking-expanding` renderer.
+- The key also needs to be built and placed for all renderers. Right now it's only rendered by the `stacking-expanding` renderer.
 
 ### Changed
 

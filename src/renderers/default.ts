@@ -39,6 +39,12 @@ export class DefaultRenderer extends RendererBase {
             case "hex-of-cir":
                 gridPoints = this.hexOfCir(json, draw, opts);
                 break;
+            case "hex-odd-p":
+            case "hex-even-p":
+            case "hex-odd-f":
+            case "hex-even-f":
+                gridPoints = this.rectOfHex(json, draw, opts);
+                break;
             default:
                 throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
         }

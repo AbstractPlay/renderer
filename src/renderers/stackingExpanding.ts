@@ -173,6 +173,10 @@ export class StackingExpandingRenderer extends RendererBase {
             if ( ("key" in json) && (json.key !== undefined) && ("placement" in json.key) && (json.key.placement !== undefined) ) {
                 placement = json.key.placement;
             }
+            let position = "outside";
+            if ( ("key" in json) && (json.key !== undefined) && ("textPosition" in json.key) && (json.key.textPosition !== undefined) ) {
+                position = json.key.textPosition;
+            }
             switch (placement) {
                 case "right":
                     keyX = gridPoints[0][gridPoints[0].length - 1].x + (this.cellsize * 2);
@@ -180,16 +184,24 @@ export class StackingExpandingRenderer extends RendererBase {
                     break;
                 case "top":
                     keyX = gridPoints[0][0].x - this.cellsize;
-                    keyY = gridPoints[0][0].y - (this.cellsize * 2) - (keyImg.height() as number);
+                    if (position === "outside") {
+                        keyY = gridPoints[0][0].y - (this.cellsize * 1.5) - (keyImg.height() as number);
+                    } else {
+                        keyY = gridPoints[0][0].y - (this.cellsize * 2) - (keyImg.height() as number);
+                    }
                     break;
                 case "bottom":
                     keyX = gridPoints[0][0].x - this.cellsize;
-                    keyY = gridPoints[gridPoints.length - 1][0].y + (this.cellsize * 2);
+                    if (position === "outside") {
+                        keyY = gridPoints[gridPoints.length - 1][0].y + (this.cellsize * 1.5);
+                    } else {
+                        keyY = gridPoints[gridPoints.length - 1][0].y + (this.cellsize * 2);
+                    }
                     break;
                 default:
                     throw new Error("Unrecognized placement. This should never happen.");
             }
-            draw.use(img).move(keyX, keyY);
+            draw.use(img).dmove(keyX, keyY);
         }
 
         // Annotations

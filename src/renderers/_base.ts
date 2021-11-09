@@ -1,4 +1,5 @@
 import { Element as SVGElement, G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
+import { defineGrid, extendHex } from "honeycomb-grid";
 import { applyToPoint, compose, scale } from "transformation-matrix";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
@@ -25,6 +26,11 @@ export interface IRendererOptionsOut {
     rotate: number;
     showAnnotations: boolean;
     boardClick?: (row: number, col: number, piece: string) => void;
+}
+
+function coords2algebraic(x: number, y: number, height: number): string {
+    const columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
+    return columnLabels[height - y - 1] + (x + 1).toString();
 }
 
 export abstract class RendererBase {
@@ -278,14 +284,20 @@ export abstract class RendererBase {
                         //     use.size(cellsize);
                         // }
                         // use.scale(cellsize / sheetCellSize);
-                        use.size(cellsize);
 
-                        // Further scale if requested
+                        // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                        // It also incorporates any requested custom scaling into one transform
+                        let factor = (cellsize / sheetCellSize);
                         if (glyph.scale !== undefined) {
-                            use.transform({scale: glyph.scale}, true);
-                        // } else {
-                        //     use.transform({scale: 1}, true);
+                            factor *= glyph.scale;
                         }
+                        const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
+                        const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                        const scaledx = 0 - newpt.x;
+                        const scaledy = 0 - newpt.y;
+                        use.dmove(scaledx, scaledy);
+                        use.scale(factor);
+                        // use.size(cellsize);
 
                         // Shift if requested
                         if (glyph.nudge !== undefined) {
@@ -490,6 +502,89 @@ export abstract class RendererBase {
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
 
         return grid;
+    }
+
+    protected rectOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = json.board.width as number;
+        const height: number = json.board.height as number;
+        const cellsize = this.cellsize * 0.8;
+        const style = json.board.style;
+
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        let orientation = "pointy";
+        if (style.endsWith("f")) {
+            orientation = "flat";
+        }
+        let offset = -1;
+        if (style.includes("-even")) {
+            offset = 1;
+        }
+        const Hex = extendHex({
+            offset,
+            orientation,
+            size: cellsize,
+        });
+        const grid = defineGrid(Hex);
+        const corners = Hex().corners();
+        const hexSymbol = draw.symbol()
+            .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+            .fill("white").opacity(1)
+            .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
+
+        const board = draw.group().id("board");
+        const labels = draw.group().id("labels");
+        const rect = grid.rectangle({width, height});
+        const fontSize = this.cellsize / 5;
+        for (const hex of rect) {
+            const { x, y } = hex.toPoint();
+            const used = board.use(hexSymbol).translate(x, y);
+            labels.text(coords2algebraic(hex.x, hex.y, height))
+            .font({
+                anchor: "middle",
+                fill: baseStroke,
+                size: fontSize,
+            })
+            // .center(cx, cy);
+            .center(corners[5].x, corners[5].y)
+            .translate(x, y + fontSize);
+            if (opts.boardClick !== undefined) {
+                used.click(() => opts.boardClick!(hex.y, hex.x, ""));
+            }
+        }
+
+        const gridPoints: GridPoints = [];
+        const {x: cx, y: cy} = Hex().center();
+        for (let y = 0; y < 9; y++) {
+            const node: IPoint[] = [];
+            for (let x = 0; x < 9; x++) {
+                const hex = rect.get({x, y});
+                if (hex === undefined) {
+                    throw new Error();
+                }
+                const pt = hex.toPoint();
+                node.push({x: pt.x + cx, y: pt.y + cy} as IPoint);
+            }
+            gridPoints.push(node);
+        }
+
+        return gridPoints;
     }
 
     protected vertex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
@@ -1080,6 +1175,10 @@ export abstract class RendererBase {
         if ( (! ("key" in json)) || (json.key === undefined) ) {
             return;
         }
+        let placement = "right";
+        if ( ("key" in json) && (json.key !== undefined) && ("placement" in json.key) && (json.key.placement !== undefined) ) {
+            placement = json.key.placement;
+        }
         if (orientation === undefined) {
             orientation = "V";
             if ( ("placement" in json.key) && (json.key.placement !== undefined) && ( (json.key.placement === "top") || (json.key.placement === "bottom") ) ) {
@@ -1124,10 +1223,17 @@ export abstract class RendererBase {
                 usedGlyph.scale(factor);
                 const text = entry.text(label).font("size", height).move(0, 0);
                 if (textPos === "O") {
-                    text.dx(unitSize);
+                    if (placement === "right") {
+                        text.dx(unitSize);
+                    } else {
+                        text.dx(text.bbox().width * -1);
+                    }
                 } else {
-                    // text.dmove((text.width() as number + unitSize) * -1, 0);
-                    usedGlyph.dx(width - unitSize);
+                    if (placement === "right") {
+                        text.dx((text.bbox().width + unitSize) * -1);
+                    } else {
+                        text.dx(unitSize);
+                    }
                 }
                 entries.push(entry);
             }
@@ -1150,19 +1256,28 @@ export abstract class RendererBase {
                 const newpt = applyToPoint(matrix, {x: 0, y: 0});
                 usedGlyph.dmove(newpt.x * -1, newpt.y * -1);
                 usedGlyph.scale(factor);
-                const text = entry.text(label).move(0, 0);
+                const text = entry.text(label).font("size", height / 2).move(0, 0);
                 if (textPos === "O") {
-                    usedGlyph.dmove((text.width() as number / 2) - (unitSize / 2), unitSize);
+                    // usedGlyph.dmove((text.bbox().width / 2) - (unitSize / 2), unitSize);
+                    if (placement === "top") {
+                        text.dmove(0, unitSize * -1);
+                    } else {
+                        text.dmove(0, unitSize);
+                    }
                 } else {
-                    usedGlyph.dmove((text.width() as number / 2) - (unitSize / 2), 0);
-                    text.dmove(0, unitSize);
+                    // usedGlyph.dmove((text.bbox().width / 2) - (unitSize / 2), 0);
+                    if (placement === "top") {
+                        text.dmove(0, unitSize);
+                    } else {
+                        text.dmove(0, unitSize * -1);
+                    }
                 }
                 entries.push(entry);
             }
             const fullWidth = (width * entries.length) + ((width / 2) * (entries.length - 1));
             const g = draw.defs().group().id("_key").size(fullWidth, height);
             for (let i = 0; i < entries.length; i++) {
-                g.use(entries[i]).dmove((height * 1.5) * i, 0);
+                g.use(entries[i]).dmove(((height * 1.5) * i), 0);
             }
             return g;
         }
