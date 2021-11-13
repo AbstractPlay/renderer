@@ -366,7 +366,7 @@ export abstract class RendererBase {
 
     protected squares(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
-        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
         const width: number = json.board.width as number;
@@ -506,7 +506,7 @@ export abstract class RendererBase {
 
     protected rectOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
-        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
         const width: number = json.board.width as number;
@@ -589,7 +589,7 @@ export abstract class RendererBase {
 
     protected vertex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
-        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
         const width: number = json.board.width as number;
@@ -737,7 +737,7 @@ export abstract class RendererBase {
 
     protected snubSquare(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
-        if ( (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
         const width: number = json.board.width as number;
@@ -844,7 +844,7 @@ export abstract class RendererBase {
 
     protected hexOfTri(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
-        if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+        if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
         const minWidth: number = json.board.minWidth as number;
@@ -952,7 +952,7 @@ export abstract class RendererBase {
 
     protected hexOfCir(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
-        if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+        if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
         const minWidth: number = json.board.minWidth as number;
@@ -1008,7 +1008,7 @@ export abstract class RendererBase {
 
     protected hexOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
-        if ( (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+        if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
         const minWidth: number = json.board.minWidth as number;

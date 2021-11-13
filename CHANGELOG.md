@@ -20,10 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added basic hex maps. Right now the labels are designed for pointy-topped grids. As more games get added, some convenience options will be added to the schema and implementation adjusted.
 - Added click handlers to the rest of the boards.
 - Added better board rotation (180 degrees only) to all except the `stackingExpanding` renderer.
+- You can now render individual glyphs using all user settings by setting `board` to `null`. See the docs for details.
 
 ### Changed
 
 - `area` definitions changed to include a `type` field to simplify coding.
+
+### Fixed
+
+- Fixed `renderStatic()` to work properly now under SVG.js 3.x and respect the size and id options.
 
 ### Known Issues
 

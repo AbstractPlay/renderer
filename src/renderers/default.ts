@@ -1,7 +1,7 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
+import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "./_base";
 
 export class DefaultRenderer extends RendererBase {
 
@@ -11,6 +11,10 @@ export class DefaultRenderer extends RendererBase {
 
         // BOARD
         // Delegate to style-specific renderer
+        if (json.board === null) {
+            return this.renderGlyph(json, draw, opts);
+        }
+
         let gridPoints: GridPoints;
         if (! ("style" in json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
@@ -128,5 +132,23 @@ export class DefaultRenderer extends RendererBase {
         if (opts.showAnnotations) {
             this.annotateBoard(json, draw, gridPoints);
         }
+    }
+
+    private renderGlyph(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): void {
+        // Load all the pieces in the legend
+        this.loadLegend(json, draw, opts);
+        if (json.pieces === null) {
+            throw new Error("There must be a piece given in the `pieces` property.");
+        }
+        const key = json.pieces;
+        const piece = SVG("#" + key);
+        if ( (piece === null) || (piece === undefined) ) {
+            throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+        }
+        const sheetCellSize = piece.attr("data-cellsize");
+        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+        }
+        draw.use(piece);
     }
 }

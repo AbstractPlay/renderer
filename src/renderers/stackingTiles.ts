@@ -13,6 +13,10 @@ export class StackingTilesRenderer extends RendererBase {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
 
+        if (json.board === null) {
+            throw new Error("This renderer requires that `board` be defined.");
+        }
+
         // BOARD
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;

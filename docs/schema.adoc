@@ -77,6 +77,8 @@ name:: The characters A-Za-z0-9 and the hyphen and underscore (but not starting 
 stars:: An array of stars.
 seat:: The value "N", "E", "S", or "W". Only defined if this is a home system
 
+To render individual glyphs (e.g., for inclusion into running HTML), set `board` to `null`. Populate the `legend` as usual (but usually just for the one piece you need so as to minimize code size), and then just put the single piece in the `pieces` field. Render that with `renderStatic()` to get the raw code you can insert wherever you like. This will respect all colours, patterns, and glyph sheets as customized by the user.
+
 === `pieces`
 
 Now that the board has been rendered, and there are spaces for the pieces, here's where you define where those pieces go. There are a few different ways of approaching this.

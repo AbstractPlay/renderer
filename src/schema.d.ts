@@ -28,6 +28,7 @@ export interface APRenderRep {
    * This is the game board itself.
    */
   board:
+    | null
     | {
         style:
           | "squares"

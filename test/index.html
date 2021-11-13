@@ -46,8 +46,8 @@
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
                 //document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(canvas.svg()) + "</p>"
-                //var svgcode = APRender.renderStatic(data, options);
-                //document.getElementById("staticsvgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
+                var svgcode = APRender.renderStatic(data, options);
+                document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
                 return false;
             }
 
@@ -87,6 +87,10 @@
         <section>
             <h1>SVG Output</h1>
             <div id="drawing" style="width: 100%; height: 50em; border: 1px solid black; padding: 0.5em"></div>
+        </section>
+        <section>
+            <h1>Static SVG Generation</h1>
+            <div id="svgcode"></div>
         </section>
     </body>
 </html>

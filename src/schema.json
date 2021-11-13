@@ -119,6 +119,10 @@
             "description": "This is the game board itself.",
             "oneOf": [
                 {
+                    "description": "Used to render a single glyph",
+                    "type": "null"
+                },
+                {
                     "description": "One of the preset boards.",
                     "type": "object",
                     "properties": {

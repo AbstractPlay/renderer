@@ -15,7 +15,7 @@ export class EntropyRenderer extends RendererBase {
         const opts = this.optionsPrecheck(options);
 
         // BOARD
-        if ( (! ("style" in json.board)) || (json.board.style !== "entropy") ) {
+        if ( (json.board === null) || (! ("style" in json.board)) || (json.board.style !== "entropy") ) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
 

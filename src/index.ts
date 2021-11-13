@@ -52,6 +52,10 @@ export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): st
     return canvas.svg();
 }
 
+export function renderglyph(glyphid: string, opts = {} as IRenderOptions): void {
+    // This is for inserting just a single glyph into running HTML.
+}
+
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
 export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     // Validate the JSON
@@ -75,7 +79,20 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     if ( ("target" in opts) && (opts.target != null) ) {
         draw = opts.target;
     } else if ( ("divelem" in opts) && (opts.divelem != null) ) {
-        draw = SVG(opts.divelem) as Svg;
+        let height: NumberAlias = "100%";
+        let width: NumberAlias = "100%";
+        if ( ("height" in opts) && (opts.height !== null) && (opts.height !== undefined) ) {
+            height = opts.height;
+        }
+        if ( ("width" in opts) && (opts.width !== null) && (opts.width !== undefined) ) {
+            width = opts.width;
+        }
+        let svgid = "_apstatic";
+        if ( ("svgid" in opts) && (opts.svgid !== undefined) && (opts.svgid.length > 0) ) {
+            svgid = opts.svgid;
+        }
+        // draw = SVG(opts.divelem) as Svg;
+        draw = SVG().addTo(opts.divelem).size(width, height).id(svgid);
     } else {
         let height: NumberAlias = "100%";
         let width: NumberAlias = "100%";
@@ -109,8 +126,4 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick});
     draw.viewbox(draw.bbox());
     return draw;
-}
-
-export function renderglyph(glyphid: string, opts = {} as IRenderOptions): void {
-    // This is for inserting just a single glyph in running HTML.
 }
