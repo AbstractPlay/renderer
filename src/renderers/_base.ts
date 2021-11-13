@@ -28,7 +28,7 @@ export interface IRendererOptionsOut {
     boardClick?: (row: number, col: number, piece: string) => void;
 }
 
-function coords2algebraic(x: number, y: number, height: number): string {
+function coords2algebraicHex(x: number, y: number, height: number): string {
     const columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     return columnLabels[height - y - 1] + (x + 1).toString();
 }
@@ -555,7 +555,7 @@ export abstract class RendererBase {
         for (const hex of rect) {
             const { x, y } = hex.toPoint();
             const used = board.use(hexSymbol).translate(x, y);
-            labels.text(coords2algebraic(hex.x, hex.y, height))
+            labels.text(coords2algebraicHex(hex.x, hex.y, height))
             .font({
                 anchor: "middle",
                 fill: baseStroke,
@@ -717,6 +717,21 @@ export abstract class RendererBase {
             });
         }
 
+        // If click handler is present, add transparent "click catcher" tiles over the points
+        if (opts.boardClick !== undefined) {
+            const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+            const tiles = draw.group().id("tiles");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(tile).center(x, y);
+                    if (opts.boardClick !== undefined) {
+                        t.click(() => opts.boardClick!(row, col, ""));
+                    }
+                }
+            }
+        }
+
         return grid;
     }
 
@@ -797,13 +812,28 @@ export abstract class RendererBase {
                         y2 = prev.y;
                         gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     // odd row, odd columns connect as well to previous-next cell
-                    } else if (( (col % 2) !== 0) && (col < (width - 1)) ) {
+                    } else if ( ((row % 2) !== 0) && ((col % 2) !== 0) && (col < (width - 1)) ) {
                         prev = grid[row - 1][col + 1];
                         x1 = curr.x;
                         y1 = curr.y;
                         x2 = prev.x;
                         y2 = prev.y;
                         gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                    }
+                }
+            }
+        }
+
+        // If click handler is present, add transparent "click catcher" tiles over the points
+        if (opts.boardClick !== undefined) {
+            const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+            const tiles = draw.group().id("tiles");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(tile).center(x, y);
+                    if (opts.boardClick !== undefined) {
+                        t.click(() => opts.boardClick!(row, col, ""));
                     }
                 }
             }
@@ -901,6 +931,22 @@ export abstract class RendererBase {
                 }
             }
         }
+
+        // If click handler is present, add transparent "click catcher" tiles over the points
+        if (opts.boardClick !== undefined) {
+            const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+            const tiles = draw.group().id("tiles");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(tile).center(x, y);
+                    if (opts.boardClick !== undefined) {
+                        t.click(() => opts.boardClick!(row, col, ""));
+                    }
+                }
+            }
+        }
+
         return grid;
     }
 
@@ -950,8 +996,11 @@ export abstract class RendererBase {
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         for (const row of grid) {
             for (const p of row) {
-                gridlines.use(circle).center(p.x, p.y);
-            }
+                const c = gridlines.use(circle).center(p.x, p.y);
+                if (opts.boardClick !== undefined) {
+                    c.click(() => opts.boardClick!(p.y, p.x, ""));
+                }
+}
         }
 
         return grid;
@@ -1024,16 +1073,20 @@ export abstract class RendererBase {
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         for (const row of grid) {
             for (const p of row) {
-                gridlines.use(hex).center(p.x, p.y);
-            }
+                const c = gridlines.use(hex).center(p.x, p.y);
+                if (opts.boardClick !== undefined) {
+                    c.click(() => opts.boardClick!(p.y, p.x, ""));
+                }
+}
         }
 
         return grid;
     }
 
-    protected rotateBoard(draw: Svg, groupID: string = "labels", degrees: number = 180) {
-        draw.rotate(degrees, draw.width() as number / 2, draw.height() as number / 2);
-        const g = SVG("#" + groupID);
+    protected rotateBoard(draw: Svg, degrees: number = 180, boardID: string = "board", labelID: string = "labels") {
+        const board = SVG("#" + boardID);
+        board.rotate(degrees);
+        const g = SVG("#" + labelID);
         const children = g.children();
         children.each((x) => {
             x.rotate(Math.abs(360 - degrees));

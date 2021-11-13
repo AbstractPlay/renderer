@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `localStash` areas for rendering things liked captured pyramid pieces in Volcano.
 - Added `flattened` versions of the Looney pyramids. They all share a baseline instead of a centre.
 - Added basic hex maps. Right now the labels are designed for pointy-topped grids. As more games get added, some convenience options will be added to the schema and implementation adjusted.
+- Added click handlers to the rest of the boards.
+- Added better board rotation (180 degrees only) to all except the `stackingExpanding` renderer.
 
 ### Changed
 

@@ -47,6 +47,12 @@ export class StackingTilesRenderer extends RendererBase {
                 throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
         }
 
+        // Rotate the board if requested
+        if (opts.rotate === 180) {
+            this.rotateBoard(draw);
+            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
+        }
+
         // Now place the pieces
         const group = draw.group().id("pieces");
         if (json.pieces !== null) {

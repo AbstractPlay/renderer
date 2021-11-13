@@ -49,6 +49,12 @@ export class DefaultRenderer extends RendererBase {
                 throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
         }
 
+        // Rotate the board if requested
+        if (opts.rotate === 180) {
+            this.rotateBoard(draw);
+            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
+        }
+
         // PIECES
         // Load all the pieces in the legend
         this.loadLegend(json, draw, opts);
@@ -121,11 +127,6 @@ export class DefaultRenderer extends RendererBase {
         // Finally, annotations
         if (opts.showAnnotations) {
             this.annotateBoard(json, draw, gridPoints);
-        }
-
-        // Rotate the board if requested
-        if (opts.rotate > 0) {
-            this.rotateBoard(draw);
         }
     }
 }
