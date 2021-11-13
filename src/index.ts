@@ -52,8 +52,35 @@ export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): st
     return canvas.svg();
 }
 
-export function renderglyph(glyphid: string, opts = {} as IRenderOptions): void {
+export function renderglyph(glyphid: string, colour: number | string, opts = {} as IRenderOptions): string {
     // This is for inserting just a single glyph into running HTML.
+    let obj: APRenderRep;
+    if (typeof colour === "number") {
+        obj = {
+            board: null,
+            legend: {
+                A: {
+                    name: glyphid,
+                    player: colour,
+                },
+            },
+            pieces: "A",
+        };
+    } else {
+        obj = {
+            board: null,
+            legend: {
+                A: {
+                    name: glyphid,
+                    // tslint:disable-next-line: object-literal-sort-keys
+                    colour,
+                },
+            },
+            pieces: "A",
+        };
+
+    }
+    return renderStatic(obj, opts);
 }
 
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
