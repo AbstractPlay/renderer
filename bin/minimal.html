@@ -1,0 +1,44 @@
+<!-- 
+    To use this in your own environment, build the `APRender.js` bundle and 
+    put it and this HTML file somewhere a browser can see it. You can then
+    render arbitrary JSON for testing.
+ -->
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Static Render Test</title>
+        <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
+        <script type="text/javascript">
+            function escapeHtml(html) {
+                var text = document.createTextNode(html);
+                var p = document.createElement('p');
+                p.appendChild(text);
+                return p.innerHTML;
+            }
+
+            document.addEventListener("DOMContentLoaded", function(event) {
+                const node = document.createElement("div");
+                node.setAttribute("id", "_testing");
+                var draw = SVG().addTo(node).size("100%", "100%").id("_static");
+                draw.defs().circle(20, 20).fill("red").id("_template");
+                var template = SVG("#_template");
+                draw.use(template);
+                document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(draw.svg()) + "</p>"
+
+                //var draw = SVG().addTo("#svgcode").size("100%", "100%");
+                //draw.defs().circle(20, 20).fill("red").id("_template");
+                //var template = SVG("#_template");
+                //draw.use(template);
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Render Glyph Tester</h1>
+        <section>
+        <hr>
+        <section>
+            <h1>Static SVG Generation</h1>
+            <div id="svgcode"></div>
+        </section>
+    </body>
+</html>

@@ -1,0 +1,35 @@
+<!-- 
+    To use this in your own environment, build the `APRender.js` bundle and 
+    put it and this HTML file somewhere a browser can see it. You can then
+    render arbitrary JSON for testing.
+ -->
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Render Tester</title>
+        <script src="../dist/APRender.js"></script>
+        <script type="text/javascript">
+            function escapeHtml(html) {
+                var text = document.createTextNode(html);
+                var p = document.createElement('p');
+                p.appendChild(text);
+                return p.innerHTML;
+            }
+
+            document.addEventListener("DOMContentLoaded", function(event) {
+                //var svgcode = APRender.renderglyph("pyramid-flat-small", 1);
+                var svgcode = APRender.renderStatic(JSON.parse('{"board":null,"legend":{"A":{"name":"pyramid-flat-small","player":1}},"pieces":"A"}'));
+                document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Render Glyph Tester</h1>
+        <section>
+        <hr>
+        <section>
+            <h1>Static SVG Generation</h1>
+            <div id="svgcode"></div>
+        </section>
+    </body>
+</html>
