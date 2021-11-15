@@ -111,7 +111,7 @@ export class StackingOffsetRenderer extends RendererBase {
                                 }
                                 use.scale((this.cellsize / sheetCellSize) * 0.85);
                                 if (opts.boardClick !== undefined) {
-                                    use.click(() => opts.boardClick!(row, col, key));
+                                    use.click(() => opts.boardClick!(row, col, i.toString()));
                                 }
                             }
                         }
