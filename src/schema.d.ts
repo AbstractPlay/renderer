@@ -80,6 +80,13 @@ export interface APRenderRep {
          * Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.
          */
         tileHeight?: number;
+        /**
+         * A way of placing small marker dots at certain points of the board. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+         */
+        markers?: {
+          row: number;
+          col: number;
+        }[];
       }
     | {
         /**

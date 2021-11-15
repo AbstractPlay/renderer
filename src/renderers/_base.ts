@@ -501,6 +501,21 @@ export abstract class RendererBase {
         lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
 
+        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            const pts: [number, number][] = [];
+            for (const mark of json.board.markers) {
+                pts.push([mark.row, mark.col]);
+                pts.forEach((p) => {
+                    const pt = grid[p[0]][p[1]];
+                    gridlines.circle(baseStroke * 10)
+                        .fill(baseColour)
+                        .opacity(baseOpacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y);
+                });
+            }
+        }
+
         return grid;
     }
 
@@ -582,6 +597,21 @@ export abstract class RendererBase {
                 node.push({x: pt.x + cx, y: pt.y + cy} as IPoint);
             }
             gridPoints.push(node);
+        }
+
+        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            const pts: [number, number][] = [];
+            for (const mark of json.board.markers) {
+                pts.push([mark.row, mark.col]);
+                pts.forEach((p) => {
+                    const pt = gridPoints[p[0]][p[1]];
+                    board.circle(baseStroke * 10)
+                        .fill(baseColour)
+                        .opacity(baseOpacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y);
+                });
+            }
         }
 
         return gridPoints;
@@ -717,6 +747,21 @@ export abstract class RendererBase {
             });
         }
 
+        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            const pts: [number, number][] = [];
+            for (const mark of json.board.markers) {
+                pts.push([mark.row, mark.col]);
+                pts.forEach((p) => {
+                    const pt = grid[p[0]][p[1]];
+                    gridlines.circle(baseStroke * 10)
+                        .fill(baseColour)
+                        .opacity(baseOpacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y);
+                });
+            }
+        }
+
         // If click handler is present, add transparent "click catcher" tiles over the points
         if (opts.boardClick !== undefined) {
             const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
@@ -839,6 +884,21 @@ export abstract class RendererBase {
             }
         }
 
+        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            const pts: [number, number][] = [];
+            for (const mark of json.board.markers) {
+                pts.push([mark.row, mark.col]);
+                pts.forEach((p) => {
+                    const pt = grid[p[0]][p[1]];
+                    gridlines.circle(baseStroke * 10)
+                        .fill(baseColour)
+                        .opacity(baseOpacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y);
+                });
+            }
+        }
+
         return grid;
     }
 
@@ -932,6 +992,24 @@ export abstract class RendererBase {
             }
         }
 
+        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            const pts: [number, number][] = [];
+            for (const mark of json.board.markers) {
+                pts.push([mark.row, mark.col]);
+                pts.forEach((p) => {
+                    const pt = grid[p[0]][p[1]];
+                    if (pt === undefined) {
+                        throw new Error(`Invalid marker point submitted: ${p}`);
+                    }
+                    gridlines.circle(baseStroke * 10)
+                        .fill(baseColour)
+                        .opacity(baseOpacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y);
+                });
+            }
+        }
+
         // If click handler is present, add transparent "click catcher" tiles over the points
         if (opts.boardClick !== undefined) {
             const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
@@ -1001,6 +1079,21 @@ export abstract class RendererBase {
                     c.click(() => opts.boardClick!(p.y, p.x, ""));
                 }
 }
+        }
+
+        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            const pts: [number, number][] = [];
+            for (const mark of json.board.markers) {
+                pts.push([mark.row, mark.col]);
+                pts.forEach((p) => {
+                    const pt = grid[p[0]][p[1]];
+                    gridlines.circle(baseStroke * 10)
+                        .fill(baseColour)
+                        .opacity(baseOpacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y);
+                });
+            }
         }
 
         return grid;
@@ -1078,6 +1171,21 @@ export abstract class RendererBase {
                     c.click(() => opts.boardClick!(p.y, p.x, ""));
                 }
 }
+        }
+
+        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            const pts: [number, number][] = [];
+            for (const mark of json.board.markers) {
+                pts.push([mark.row, mark.col]);
+                pts.forEach((p) => {
+                    const pt = grid[p[0]][p[1]];
+                    gridlines.circle(baseStroke * 10)
+                        .fill(baseColour)
+                        .opacity(baseOpacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y);
+                });
+            }
         }
 
         return grid;

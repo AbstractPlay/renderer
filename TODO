@@ -10,4 +10,5 @@ Todo:
   - Does the click handler need more granularity? Homeworlds is a good example. Is it ok if one click triggers multiple events?
   - Make it possible to disable expanding `eject` annotations.
   - Make `stacking-expanding` renderer rotate properly, including keys and captured pieces.
-  
+  - Figure out what's up with the renderer occasionally expanding piece names like "B3E" into hexadecimal colour strings (e.g., Pikemen with AB player names).
+  - Pyramid rotation at odd angles clips a little (e.g., Pikemen).

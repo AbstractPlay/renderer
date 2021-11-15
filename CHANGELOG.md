@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added click handlers to the rest of the boards.
 - Added better board rotation (180 degrees only) to all except the `stackingExpanding` renderer.
 - You can now render individual glyphs using all user settings by setting `board` to `null`. See the docs for details.
+- Added `markers` attribute to schema for adding small circles at given points on the board.
 
 ### Changed
 

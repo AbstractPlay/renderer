@@ -183,6 +183,25 @@
                         "tileHeight": {
                             "description": "Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.",
                             "$ref": "#/definitions/positiveInteger"
+                        },
+                        "markers": {
+                            "description": "A way of placing small marker dots at certain points of the board. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "row": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                    },
+                                    "col": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                    }
+                                },
+                                "required": ["row", "col"],
+                                "additionalProperties": false
+                            }
                         }
                     },
                     "required": [
