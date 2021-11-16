@@ -185,28 +185,113 @@
                             "$ref": "#/definitions/positiveInteger"
                         },
                         "markers": {
-                            "description": "A way of placing small marker dots at certain points of the board. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
+                            "description": "Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.",
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "properties": {
-                                    "row": {
-                                        "type": "integer",
-                                        "minimum": 0
+                                "oneOf": [
+                                    {
+                                        "properties": {
+                                            "type": {
+                                                "description": "A way of placing small marker dots at certain points of the board.",
+                                                "enum": ["dots"]
+                                            },
+                                            "points": {
+                                                "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "row": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        },
+                                                        "col": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": ["row", "col"],
+                                                    "additionalProperties": false
+                                                },
+                                                "minItems": 1
+                                            }
+                                        },
+                                        "required": ["type", "points"],
+                                        "additionalProperties": false
+
                                     },
-                                    "col": {
-                                        "type": "integer",
-                                        "minimum": 0
+                                    {
+                                        "properties": {
+                                            "type": {
+                                                "description": "This is for shading spaces or areas on the board.",
+                                                "enum": ["shading"]
+                                            },
+                                            "points": {
+                                                "description": "It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "row": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        },
+                                                        "col": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": ["row", "col"],
+                                                    "additionalProperties": false
+                                                },
+                                                "minItems": 3
+                                            },
+                                            "colour": {
+                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                                "oneOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ],
+                                                "default": "#000"
+                                            },
+                                            "opacity": {
+                                                "description": "1 is fully opaque. 0 is fully transparent.",
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 1,
+                                                "default": 0.25
+                                            }
+                                        },
+                                        "required": ["type", "points"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "properties": {
+                                            "type": {
+                                                "description": "This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.",
+                                                "enum": ["edge"]
+                                            },
+                                            "edge": {
+                                                "description": "An invalid edge designator (NE on a square map, for example) will just be ignored.",
+                                                "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                                            },
+                                            "colour": {
+                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                                "oneOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ]
+                                            }
+                                        },
+                                        "required": ["type", "edge", "colour"],
+                                        "additionalProperties": false
                                     }
-                                },
-                                "required": ["row", "col"],
-                                "additionalProperties": false
+                                ]
                             }
                         }
                     },
-                    "required": [
-                        "style"
-                    ],
+                    "required": ["style"],
                     "additionalProperties": false
                 },
                 {

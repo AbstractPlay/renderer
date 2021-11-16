@@ -5,6 +5,11 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type PositiveInteger = number;
+/**
+ * Pattern for hex colour strings
+ */
+export type Colourstrings = string;
 /**
  * Pattern for the global stash definitions for the `homeworlds` renderer.
  */
@@ -81,12 +86,78 @@ export interface APRenderRep {
          */
         tileHeight?: number;
         /**
-         * A way of placing small marker dots at certain points of the board. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+         * Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.
          */
-        markers?: {
-          row: number;
-          col: number;
-        }[];
+        markers?: (
+          | {
+              /**
+               * A way of placing small marker dots at certain points of the board.
+               */
+              type: "dots";
+              /**
+               * Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+               */
+              points: [
+                {
+                  row: number;
+                  col: number;
+                },
+                ...{
+                  row: number;
+                  col: number;
+                }[]
+              ];
+            }
+          | {
+              /**
+               * This is for shading spaces or areas on the board.
+               */
+              type: "shading";
+              /**
+               * It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.
+               */
+              points: [
+                {
+                  row: number;
+                  col: number;
+                },
+                {
+                  row: number;
+                  col: number;
+                },
+                {
+                  row: number;
+                  col: number;
+                },
+                ...{
+                  row: number;
+                  col: number;
+                }[]
+              ];
+              /**
+               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour?: PositiveInteger | Colourstrings;
+              /**
+               * 1 is fully opaque. 0 is fully transparent.
+               */
+              opacity?: number;
+            }
+          | {
+              /**
+               * This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.
+               */
+              type: "edge";
+              /**
+               * An invalid edge designator (NE on a square map, for example) will just be ignored.
+               */
+              edge: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+              /**
+               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour: PositiveInteger | Colourstrings;
+            }
+        )[];
       }
     | {
         /**
@@ -133,7 +204,7 @@ export interface APRenderRep {
          */
         strokeWeight?: number;
         /**
-         * The colour for lines drawn to construct the board, includes the labels.
+         * Pattern for hex colour strings
          */
         strokeColour?: string;
         /**

@@ -501,20 +501,12 @@ export abstract class RendererBase {
         lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
 
-        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
-            const pts: [number, number][] = [];
-            for (const mark of json.board.markers) {
-                pts.push([mark.row, mark.col]);
-                pts.forEach((p) => {
-                    const pt = grid[p[0]][p[1]];
-                    gridlines.circle(baseStroke * 10)
-                        .fill(baseColour)
-                        .opacity(baseOpacity)
-                        .stroke({width: 0})
-                        .center(pt.x, pt.y);
-                });
-            }
-        }
+        // Make an expanded grid for markers, to accommodate edge marking and shading
+        // Add one row and one column and shift all points up and to the left by half a cell size
+        let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
+        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
+
+        this.markBoard(json, gridlines, grid, opts, gridExpanded);
 
         return grid;
     }
@@ -599,20 +591,7 @@ export abstract class RendererBase {
             gridPoints.push(node);
         }
 
-        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
-            const pts: [number, number][] = [];
-            for (const mark of json.board.markers) {
-                pts.push([mark.row, mark.col]);
-                pts.forEach((p) => {
-                    const pt = gridPoints[p[0]][p[1]];
-                    board.circle(baseStroke * 10)
-                        .fill(baseColour)
-                        .opacity(baseOpacity)
-                        .stroke({width: 0})
-                        .center(pt.x, pt.y);
-                });
-            }
-        }
+        this.markBoard(json, board, gridPoints, opts);
 
         return gridPoints;
     }
@@ -747,20 +726,7 @@ export abstract class RendererBase {
             });
         }
 
-        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
-            const pts: [number, number][] = [];
-            for (const mark of json.board.markers) {
-                pts.push([mark.row, mark.col]);
-                pts.forEach((p) => {
-                    const pt = grid[p[0]][p[1]];
-                    gridlines.circle(baseStroke * 10)
-                        .fill(baseColour)
-                        .opacity(baseOpacity)
-                        .stroke({width: 0})
-                        .center(pt.x, pt.y);
-                });
-            }
-        }
+        this.markBoard(json, gridlines, grid, opts);
 
         // If click handler is present, add transparent "click catcher" tiles over the points
         if (opts.boardClick !== undefined) {
@@ -884,20 +850,7 @@ export abstract class RendererBase {
             }
         }
 
-        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
-            const pts: [number, number][] = [];
-            for (const mark of json.board.markers) {
-                pts.push([mark.row, mark.col]);
-                pts.forEach((p) => {
-                    const pt = grid[p[0]][p[1]];
-                    gridlines.circle(baseStroke * 10)
-                        .fill(baseColour)
-                        .opacity(baseOpacity)
-                        .stroke({width: 0})
-                        .center(pt.x, pt.y);
-                });
-            }
-        }
+        this.markBoard(json, gridlines, grid, opts);
 
         return grid;
     }
@@ -992,23 +945,7 @@ export abstract class RendererBase {
             }
         }
 
-        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
-            const pts: [number, number][] = [];
-            for (const mark of json.board.markers) {
-                pts.push([mark.row, mark.col]);
-                pts.forEach((p) => {
-                    const pt = grid[p[0]][p[1]];
-                    if (pt === undefined) {
-                        throw new Error(`Invalid marker point submitted: ${p}`);
-                    }
-                    gridlines.circle(baseStroke * 10)
-                        .fill(baseColour)
-                        .opacity(baseOpacity)
-                        .stroke({width: 0})
-                        .center(pt.x, pt.y);
-                });
-            }
-        }
+        this.markBoard(json, gridlines, grid, opts);
 
         // If click handler is present, add transparent "click catcher" tiles over the points
         if (opts.boardClick !== undefined) {
@@ -1081,20 +1018,7 @@ export abstract class RendererBase {
 }
         }
 
-        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
-            const pts: [number, number][] = [];
-            for (const mark of json.board.markers) {
-                pts.push([mark.row, mark.col]);
-                pts.forEach((p) => {
-                    const pt = grid[p[0]][p[1]];
-                    gridlines.circle(baseStroke * 10)
-                        .fill(baseColour)
-                        .opacity(baseOpacity)
-                        .stroke({width: 0})
-                        .center(pt.x, pt.y);
-                });
-            }
-        }
+        this.markBoard(json, gridlines, grid, opts);
 
         return grid;
     }
@@ -1173,20 +1097,7 @@ export abstract class RendererBase {
 }
         }
 
-        if ( ("markers" in json.board) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
-            const pts: [number, number][] = [];
-            for (const mark of json.board.markers) {
-                pts.push([mark.row, mark.col]);
-                pts.forEach((p) => {
-                    const pt = grid[p[0]][p[1]];
-                    gridlines.circle(baseStroke * 10)
-                        .fill(baseColour)
-                        .opacity(baseOpacity)
-                        .stroke({width: 0})
-                        .center(pt.x, pt.y);
-                });
-            }
-        }
+        this.markBoard(json, gridlines, grid, opts);
 
         return grid;
     }
@@ -1327,6 +1238,181 @@ export abstract class RendererBase {
                     }
                 } else {
                     throw new Error(`The requested annotation (${ note.type }) is not supported.`);
+                }
+            }
+        }
+    }
+
+    protected markBoard(json: APRenderRep, svgGroup: SVGG, grid: GridPoints, opts: IRendererOptionsOut, gridExpanded?: GridPoints): void {
+        if ( ("board" in json) && (json.board !== undefined) && ("markers" in json.board!) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+            let baseStroke: number = 1;
+            let baseColour: string = "#000";
+            let baseOpacity: number = 1;
+            if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+                baseStroke = json.board.strokeWeight;
+            }
+            if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+                baseColour = json.board.strokeColour;
+            }
+            if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+                baseOpacity = json.board.strokeOpacity;
+            }
+
+            for (const marker of json.board.markers) {
+                if (marker.type === "dots") {
+                    const pts: [number, number][] = [];
+                    for (const point of marker.points) {
+                        pts.push([point.row, point.col]);
+                        pts.forEach((p) => {
+                            const pt = grid[p[0]][p[1]];
+                            svgGroup.circle(baseStroke * 10)
+                                .fill(baseColour)
+                                .opacity(baseOpacity)
+                                .stroke({width: 0})
+                                .center(pt.x, pt.y);
+                        });
+                    }
+                } else if (marker.type === "shading") {
+                    let colour = "#000";
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "number") {
+                            colour = opts.colours[marker.colour - 1];
+                        } else {
+                            colour = marker.colour;
+                        }
+                    }
+                    let opacity = 0.25;
+                    if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                        opacity = marker.opacity;
+                    }
+                    const points: [number, number][] = [];
+                    if ( (json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                        for (const point of marker.points) {
+                            points.push([gridExpanded[point.row][point.col].x, gridExpanded[point.row][point.col].y]);
+                        }
+                    } else {
+                        for (const point of marker.points) {
+                            points.push([grid[point.row][point.col].x, grid[point.row][point.col].y]);
+                        }
+                    }
+                    const ptstr = points.map((p) => p.join(",")).join(" ");
+                    svgGroup.polygon(ptstr).fill(colour).opacity(opacity);
+                } else if (marker.type === "edge") {
+                    let colour = "#000";
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "number") {
+                            colour = opts.colours[marker.colour - 1];
+                        } else {
+                            colour = marker.colour;
+                        }
+                    }
+                    const opacity = baseOpacity + ((1 - baseOpacity) / 2);
+                    const style = json.board.style;
+                    if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") ) {
+                        let xFrom = 0; let yFrom = 0;
+                        let xTo = 0; let yTo = 0;
+                        switch (marker.edge) {
+                            case "N":
+                                xFrom = grid[0][0].x;
+                                yFrom = grid[0][0].y;
+                                xTo = grid[0][grid[0].length - 1].x;
+                                yTo = grid[0][grid[0].length - 1].y;
+                                break;
+                            case "E":
+                                xFrom = grid[0][grid[0].length - 1].x;
+                                yFrom = grid[0][grid[0].length - 1].y;
+                                xTo = grid[grid.length - 1][grid[0].length - 1].x;
+                                yTo = grid[grid.length - 1][grid[0].length - 1].y;
+                                break;
+                            case "S":
+                                xFrom = grid[grid.length - 1][0].x;
+                                yFrom = grid[grid.length - 1][0].y;
+                                xTo = grid[grid.length - 1][grid[0].length - 1].x;
+                                yTo = grid[grid.length - 1][grid[0].length - 1].y;
+                                break;
+                            case "W":
+                                xFrom = grid[0][0].x;
+                                yFrom = grid[0][0].y;
+                                xTo = grid[grid.length - 1][0].x;
+                                yTo = grid[grid.length - 1][0].y;
+                                break;
+                        }
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
+                    } else if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                        let xFrom = 0; let yFrom = 0;
+                        let xTo = 0; let yTo = 0;
+                        switch (marker.edge) {
+                            case "N":
+                                xFrom = gridExpanded[0][0].x;
+                                yFrom = gridExpanded[0][0].y;
+                                xTo = gridExpanded[0][gridExpanded[0].length - 1].x;
+                                yTo = gridExpanded[0][gridExpanded[0].length - 1].y;
+                                break;
+                            case "E":
+                                xFrom = gridExpanded[0][gridExpanded[0].length - 1].x;
+                                yFrom = gridExpanded[0][gridExpanded[0].length - 1].y;
+                                xTo = gridExpanded[gridExpanded.length - 1][gridExpanded[0].length - 1].x;
+                                yTo = gridExpanded[gridExpanded.length - 1][gridExpanded[0].length - 1].y;
+                                break;
+                            case "S":
+                                xFrom = gridExpanded[gridExpanded.length - 1][0].x;
+                                yFrom = gridExpanded[gridExpanded.length - 1][0].y;
+                                xTo = gridExpanded[gridExpanded.length - 1][gridExpanded[0].length - 1].x;
+                                yTo = gridExpanded[gridExpanded.length - 1][gridExpanded[0].length - 1].y;
+                                break;
+                            case "W":
+                                xFrom = gridExpanded[0][0].x;
+                                yFrom = gridExpanded[0][0].y;
+                                xTo = gridExpanded[gridExpanded.length - 1][0].x;
+                                yTo = gridExpanded[gridExpanded.length - 1][0].y;
+                                break;
+                        }
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
+                    } else if (style === "hex-of-tri") {
+                        const midrow = Math.floor(grid.length / 2);
+                        let xFrom = 0; let yFrom = 0;
+                        let xTo = 0; let yTo = 0;
+                        switch (marker.edge) {
+                            case "N":
+                                xFrom = grid[0][0].x;
+                                yFrom = grid[0][0].y;
+                                xTo = grid[0][grid[0].length - 1].x;
+                                yTo = grid[0][grid[0].length - 1].y;
+                                break;
+                            case "NE":
+                                xFrom = grid[0][grid[0].length - 1].x;
+                                yFrom = grid[0][grid[0].length - 1].y;
+                                xTo = grid[midrow][grid[midrow].length - 1].x;
+                                yTo = grid[midrow][grid[midrow].length - 1].y;
+                                break;
+                            case "SE":
+                                xFrom = grid[midrow][grid[midrow].length - 1].x;
+                                yFrom = grid[midrow][grid[midrow].length - 1].y;
+                                xTo = grid[grid.length - 1][grid[grid.length - 1].length - 1].x;
+                                yTo = grid[grid.length - 1][grid[grid.length - 1].length - 1].y;
+                                break;
+                            case "S":
+                                xFrom = grid[grid.length - 1][0].x;
+                                yFrom = grid[grid.length - 1][0].y;
+                                xTo = grid[grid.length - 1][grid[grid.length - 1].length - 1].x;
+                                yTo = grid[grid.length - 1][grid[grid.length - 1].length - 1].y;
+                                break;
+                            case "SW":
+                                xFrom = grid[grid.length - 1][0].x;
+                                yFrom = grid[grid.length - 1][0].y;
+                                xTo = grid[midrow][0].x;
+                                yTo = grid[midrow][0].y;
+                                break;
+                            case "NW":
+                                xFrom = grid[midrow][0].x;
+                                yFrom = grid[midrow][0].y;
+                                xTo = grid[0][0].x;
+                                yTo = grid[0][0].y;
+                                break;
+                        }
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
+                    }
+                    // Adjust square grids to point to top-left corner before passing to this function
                 }
             }
         }
