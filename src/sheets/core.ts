@@ -53,6 +53,46 @@ sheet.glyphs.set("piece", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("piece-chariot", (canvas: SVGContainer) => {
+    const group = canvas.group()
+        .id("piece-chariot")
+        .attr("data-cellsize", sheet.cellsize);
+    const border = 5;
+    group.rect(sheet.cellsize, sheet.cellsize).fill({opacity: 0});
+    group.circle(sheet.cellsize - border)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.circle(sheet.cellsize * 0.7)
+        .fill("none")
+        .stroke({width: border * 2, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.circle (border * 2)
+        .fill("none")
+        .stroke({width: border / 4, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    return group;
+});
+
+sheet.glyphs.set("piece-horse", (canvas: SVGContainer) => {
+    const group = canvas.group()
+        .id("piece-horse")
+        .attr("data-cellsize", sheet.cellsize);
+    const border = 5;
+    group.rect(sheet.cellsize, sheet.cellsize).fill({opacity: 0});
+    group.circle(sheet.cellsize - border)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.circle(sheet.cellsize * 0.7)
+        .fill("none")
+        .stroke({width: border * 2, color: "#000", dasharray: "10"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    return group;
+});
+
 sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
     const group = canvas.group()
         .id("piece-square")

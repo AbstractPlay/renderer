@@ -71,13 +71,18 @@ export class StackingOffsetRenderer extends RendererBase {
                 // Does it contain commas
                 if (json.pieces.indexOf(",") >= 0) {
                     for (const row of json.pieces.split("\n")) {
-                        let node: string[][];
+                        let node: string[][] = [];
                         if (row === "_") {
                             node = new Array(json.board.width).fill([]);
                         } else {
-                            let cells = row.split(",");
-                            cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
-                            node = cells.map((x) => [x]);
+                            const cells = row.split(",");
+                            for (const cell of cells) {
+                                if (cell === "") {
+                                    node.push([]);
+                                } else {
+                                    node.push([...cell]);
+                                }
+                            }
                         }
                         pieces.push(node);
                     }
@@ -93,26 +98,24 @@ export class StackingOffsetRenderer extends RendererBase {
             // Place the pieces according to the grid
             for (let row = 0; row < pieces.length; row++) {
                 for (let col = 0; col < pieces[row].length; col++) {
-                    for (const key of pieces[row][col]) {
+                    for (let i = 0; i < pieces[row][col].length; i++) {
+                        const key = pieces[row][col][i];
                         if ( (key !== null) && (key !== "-") ) {
-                            const parts = key.split("");
                             const point = gridPoints[row][col];
                             const offset = this.cellsize / 8;
-                            for (let i = 0; i < parts.length; i++) {
-                                const piece = SVG("#" + parts[i]);
-                                if ( (piece === null) || (piece === undefined) ) {
-                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                                }
-                                const use = group.use(piece) as SVGG;
-                                use.center(point.x, point.y - (offset * i));
-                                const sheetCellSize = piece.attr("data-cellsize");
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                                use.scale((this.cellsize / sheetCellSize) * 0.85);
-                                if (opts.boardClick !== undefined) {
-                                    use.click(() => opts.boardClick!(row, col, i.toString()));
-                                }
+                            const piece = SVG("#" + key);
+                            if ( (piece === null) || (piece === undefined) ) {
+                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                            }
+                            const use = group.use(piece) as SVGG;
+                            use.center(point.x, point.y - (offset * i));
+                            const sheetCellSize = piece.attr("data-cellsize");
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            }
+                            use.scale((this.cellsize / sheetCellSize) * 0.85);
+                            if (opts.boardClick !== undefined) {
+                                use.click(() => opts.boardClick!(row, col, i.toString()));
                             }
                         }
                     }
