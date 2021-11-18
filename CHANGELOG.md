@@ -9,36 +9,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Entropy board added as a special renderer. I want to minimize the number of special renderers, but there may end up being a few.
-- `stacking-expanding` renderer added. It's the same as the default renderer but supports displaying an expanded column of pieces in a stack alongside the board.
-- Added an `svgid` option to the main option set, letting you assign an `id` to the containing `svg` element. By default it is `_aprender`.
-- Added a `showAnnotations` option to the main options set. When `false`, last-move indicators will be hidden.
-- Added a `key` attribute that you can use to give players a key to the colours and pieces on the board. This is sometimes necessary if there are a lot of colours on the board and you want to make move entry simpler. Or if you want to indicate which player owns which colour.
-- Added an `eject` annotation meant to show consequential movement (like eruptions in Volcano).
-- Added `localStash` areas for rendering things liked captured pyramid pieces in Volcano.
-- Added `flattened` versions of the Looney pyramids. They all share a baseline instead of a centre.
-- Added basic hex maps. Right now the labels are designed for pointy-topped grids. As more games get added, some convenience options will be added to the schema and implementation adjusted.
-- Added click handlers to the rest of the boards.
-- Added better board rotation (180 degrees only) to all except the `stackingExpanding` renderer.
 - You can now render individual glyphs using all user settings by setting `board` to `null`. See the docs for details.
-- Added `markers` attribute to schema for adding small circles at given points on the board.
-
-### Changed
-
-- `area` definitions changed to include a `type` field to simplify coding.
 
 ### Fixed
 
 - Fixed `renderStatic()` to work properly now under SVG.js 3.x and respect the size and id options.
 
-### Known Issues
+## [0.4.0] - 2021-11-17
 
-- The key still needs positioning code tweaked for top and bottom, and for some reason I cannot move the glyph within each entry. I can move the text, but not the glyph. That will need to be sorted before a new release.
-- The key also needs to be built and placed for all renderers. Right now it's only rendered by the `stacking-expanding` renderer.
+### Added
+
+#### Boards
+
+- Entropy board added as a special renderer. I want to minimize the number of special renderers, but there may end up being a few.
+- Added basic hex maps. Right now the labels are designed for pointy-topped grids. As more games get added, some convenience options will be added to the schema and implementation adjusted.
+- Added click handlers to the rest of the boards.
+- Added better board rotation (180 degrees only) to all except the `stackingExpanding` renderer.
+
+#### Schema
+
+- `stacking-expanding` renderer added. It's the same as the default renderer but supports displaying an expanded column of pieces in a stack alongside the board.
+- Added an `svgid` option to the main option set, letting you assign an `id` to the containing `svg` element. By default it is `_aprender`.
+- Added a `showAnnotations` option to the main options set. When `false`, last-move indicators will be hidden.
+- Added a `key` attribute that you can use to give players a key to the colours and pieces on the board. This is sometimes necessary if there are a lot of colours on the board and you want to make move entry simpler. Or if you want to indicate which player owns which colour. This is still in development. See "Known Issues" section.
+- Added an `eject` annotation meant to show consequential movement (like eruptions in Volcano).
+- Added `localStash` areas for rendering things liked captured pyramid pieces in Volcano.
+- Added `markers` attribute to schema for adding three things:
+  - small circles at given points
+  - shaded polygons directly on the board (showing ownership, perhaps)
+  - highlighted board edges (showing goals or ownership)
+
+#### Glyphs
+
+- Added `flattened` versions of the Looney pyramids. They all share a baseline instead of a centre.
+- Added glyphs for Accasta. The horse is "wrong," but it's the closest I could get for now. Will adjust later.
 
 ### Changed
 
 - **Breaking Change**: `boardClick` handler now moved into the options object for consistency. All that's changing is how you pass it to the library. It should only require a single change to client code, but let me know if the impact is much larger.
+- `area` definitions changed to include a `type` field to simplify coding.
+
+### Known Issues
+
+- The key still needs positioning code tweaked for top and bottom, and for some reason I cannot move the glyph within each entry. I can move the text, but not the glyph. That will need to be sorted before a new release.
+- The key also needs to be built and placed for all renderers. Right now it's only rendered by the `stacking-expanding` renderer.
 
 ## [0.3.0] - 2021-10-21
 
