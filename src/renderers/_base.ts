@@ -293,8 +293,12 @@ export abstract class RendererBase {
                         }
                         const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
                         const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                        const scaledx = 0 - newpt.x;
-                        const scaledy = 0 - newpt.y;
+                        let scaledx = 0 - newpt.x;
+                        let scaledy = 0 - newpt.y;
+                        if (sheetCellSize * factor < cellsize) {
+                           scaledx += (cellsize - (sheetCellSize * factor)) / 2;
+                           scaledy += (cellsize - (sheetCellSize * factor)) / 2;
+                        }
                         use.dmove(scaledx, scaledy);
                         use.scale(factor);
                         // use.size(cellsize);
