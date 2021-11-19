@@ -130,7 +130,7 @@ export class DefaultRenderer extends RendererBase {
 
         // Finally, annotations
         if (opts.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints);
+            this.annotateBoard(json, draw, gridPoints, opts);
         }
     }
 

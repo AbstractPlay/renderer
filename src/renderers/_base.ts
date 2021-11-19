@@ -1116,7 +1116,7 @@ export abstract class RendererBase {
         });
     }
 
-    protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints) {
+    protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints, opts: IRendererOptionsOut) {
         if ( ("annotations" in json) && (json.annotations !== undefined) ) {
             const notes = draw.group().id("annotations");
             const rIncrement = this.cellsize / 2;
@@ -1131,6 +1131,8 @@ export abstract class RendererBase {
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = opts.colours[(note.player as number) - 1];
                     }
                     let style = "solid";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -1176,6 +1178,8 @@ export abstract class RendererBase {
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = opts.colours[(note.player as number) - 1];
                     }
                     let style = "dashed";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -1220,6 +1224,8 @@ export abstract class RendererBase {
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = opts.colours[(note.player as number) - 1];
                     }
                     for (const node of (note.targets as any[])) {
                         const pt = grid[node.row][node.col];
@@ -1232,6 +1238,8 @@ export abstract class RendererBase {
                     let colour = "#000";
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = opts.colours[(note.player as number) - 1];
                     }
                     for (const node of (note.targets as any[])) {
                         const pt = grid[node.row][node.col];

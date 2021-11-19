@@ -240,7 +240,7 @@ export class EntropyRenderer extends RendererBase {
             for (let i = 0; i < grid1.length; i++) {
                 gridPoints[i].push(...grid2[i]);
             }
-            this.annotateBoard(json, draw, gridPoints);
+            this.annotateBoard(json, draw, gridPoints, opts);
         }
     }
 }

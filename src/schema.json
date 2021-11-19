@@ -625,6 +625,10 @@
                                 "$ref": "#/definitions/colourstrings",
                                 "default": "#000"
                             },
+                            "player": {
+                                "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
+                                "$ref": "#/definitions/positiveInteger"
+                            },
                             "arrow": {
                                 "type": "boolean",
                                 "default": true

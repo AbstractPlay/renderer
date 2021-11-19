@@ -210,7 +210,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
         // Annotations
         if (opts.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints);
+            this.annotateBoard(json, draw, gridPoints, opts);
         }
 
         // Look for local stashes

@@ -533,6 +533,10 @@ export interface APRenderRep {
            * Pattern for hex colour strings
            */
           colour?: string;
+          /**
+           * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
+           */
+          player?: number;
           arrow?: boolean;
           [k: string]: unknown;
         }
@@ -575,6 +579,10 @@ export interface APRenderRep {
            * Pattern for hex colour strings
            */
           colour?: string;
+          /**
+           * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
+           */
+          player?: number;
           arrow?: boolean;
           [k: string]: unknown;
         }
