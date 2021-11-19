@@ -291,6 +291,9 @@ export abstract class RendererBase {
                         if (glyph.scale !== undefined) {
                             factor *= glyph.scale;
                         }
+                        if ( ("board" in json) && (json.board !== undefined) && (json.board !== null) && ("style" in json.board) && (json.board.style !== undefined) && (json.board.style === "hex-of-hex") ) {
+                            factor *= 0.85;
+                        }
                         const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
                         const newpt = applyToPoint(matrix, {x: 0, y: 0});
                         let scaledx = 0 - newpt.x;
