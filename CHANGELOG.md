@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - You can now render individual glyphs using all user settings by setting `board` to `null`. See the docs for details.
 - Added `player` as a colour option in annotations.
 - The pieces fit too snugly in the `hex-of-hex` board style. A 15% reduction has been baked in.
+- Added `house`, `palace`, and `tower` glyphs to the `core` sheet for Urbino.
 
 ### Fixed
 
