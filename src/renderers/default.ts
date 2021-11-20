@@ -120,9 +120,6 @@ export class DefaultRenderer extends RendererBase {
                             // use.center(point.x, point.y);
                             use.dmove(point.x - sheetCellSize / 2, point.y - sheetCellSize / 2);
                             use.scale((this.cellsize / sheetCellSize) * 0.85);
-                            if (opts.boardClick !== undefined) {
-                                use.click(() => opts.boardClick!(row, col, key));
-                            }
                         }
                     }
                 }
