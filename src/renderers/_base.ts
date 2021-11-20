@@ -460,7 +460,7 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = draw.group().id("gridlines");
+        const gridlines = board.group().id("gridlines");
 
         // Check for tiling
         let tilex: number = 0;
@@ -652,7 +652,7 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = draw.group().id("gridlines");
+        const gridlines = board.group().id("gridlines");
 
         // Check for tiling
         let tilex: number = 0;
@@ -801,7 +801,7 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = draw.group().id("gridlines");
+        const gridlines = board.group().id("gridlines");
         for (let row = 0; row < height; row++) {
             for (let col = 0; col < width; col++) {
                 const curr = grid[row][col];
@@ -904,7 +904,7 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = draw.group().id("gridlines");
+        const gridlines = board.group().id("gridlines");
         const midrow = maxWidth - minWidth;
 
         for (let row = 0; row < grid.length; row++) {
@@ -1014,7 +1014,7 @@ export abstract class RendererBase {
         }
 
         // Draw circles
-        const gridlines = draw.group().id("circles");
+        const gridlines = board.group().id("circles");
         const circle = draw.defs().circle(cellsize)
             .id("_circle")
             .fill("none")
@@ -1093,7 +1093,7 @@ export abstract class RendererBase {
         const half = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
-        const gridlines = draw.group().id("hexes");
+        const gridlines = board.group().id("hexes");
         const hex = draw.defs().polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
             .id("_hex")
             .fill("none")
