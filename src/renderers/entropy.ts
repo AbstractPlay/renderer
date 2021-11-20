@@ -145,6 +145,17 @@ export class EntropyRenderer extends RendererBase {
             lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
             lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
             gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+
+            if (opts.boardClick !== undefined) {
+                draw.click((e: { clientX: number; clientY: number; }) => {
+                    const point = draw.point(e.clientX, e.clientY);
+                    const x = Math.floor((point.x - (grid[0][0].x - (cellsize / 2))) / cellsize);
+                    const y = Math.floor((point.y - (grid[0][0].y - (cellsize / 2))) / cellsize);
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                        opts.boardClick!(y, x, "");
+                    }
+                });
+            }
         }
 
         // PIECES
@@ -212,9 +223,6 @@ export class EntropyRenderer extends RendererBase {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                                 use.scale((this.cellsize / sheetCellSize) * 0.85);
-                                if (opts.boardClick !== undefined) {
-                                    use.click(() => opts.boardClick!(row, col, key));
-                                }
                             }
                         }
                     }
