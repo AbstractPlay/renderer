@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `player` as a colour option in annotations.
 - The pieces fit too snugly in the `hex-of-hex` board style. A 15% reduction has been baked in.
 - Added `house`, `palace`, and `tower` glyphs to the `core` sheet for Urbino.
+- Added a `fence` marker for drawing thick lines between cells. Only works for `squares*` board styles.
+- Added a `squares-beveled` style that simply draws very faint gridlines, for use with fences. Will make this nicer later.
 
 ### Fixed
 

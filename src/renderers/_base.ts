@@ -472,6 +472,9 @@ export abstract class RendererBase {
             tiley = json.board.tileHeight as number;
         }
 
+        if (style === "squares-beveled") {
+            baseOpacity *= 0.15;
+        }
         // Horizontal, top of each row, then bottom line after loop
         for (let row = 0; row < height; row++) {
             let thisStroke = baseStroke;
@@ -1427,7 +1430,53 @@ export abstract class RendererBase {
                         }
                         svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
                     }
-                    // Adjust square grids to point to top-left corner before passing to this function
+                } else if (marker.type === "fence") {
+                    let colour = "#000";
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "number") {
+                            colour = opts.colours[marker.colour - 1];
+                        } else {
+                            colour = marker.colour;
+                        }
+                    }
+                    const style = json.board.style;
+                    if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                        const row: number = marker.cell.row;
+                        const col: number = marker.cell.col;
+                        let xFrom = 0; let yFrom = 0;
+                        let xTo = 0; let yTo = 0;
+                        const cell = gridExpanded[row][col];
+                        const east = gridExpanded[row][col + 1];
+                        const southeast = gridExpanded[row + 1][col + 1];
+                        const south = gridExpanded[row + 1][col];
+                        switch (marker.side) {
+                            case "N":
+                                xFrom = cell.x;
+                                yFrom = cell.y;
+                                xTo = east.x;
+                                yTo = east.y;
+                                break;
+                            case "E":
+                                xFrom = east.x;
+                                yFrom = east.y;
+                                xTo = southeast.x;
+                                yTo = southeast.y;
+                                break;
+                            case "S":
+                                xFrom = south.x;
+                                yFrom = south.y;
+                                xTo = southeast.x;
+                                yTo = southeast.y;
+                                break;
+                            case "W":
+                                xFrom = cell.x;
+                                yFrom = cell.y;
+                                xTo = south.x;
+                                yTo = south.y;
+                                break;
+                        }
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 6, color: colour});
+                    }
                 }
             }
         }

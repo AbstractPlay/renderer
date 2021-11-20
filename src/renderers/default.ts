@@ -20,6 +20,7 @@ export class DefaultRenderer extends RendererBase {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
         switch (json.board.style) {
+            case "squares-beveled":
             case "squares-checkered":
             case "squares":
                 gridPoints = this.squares(json, draw, opts);

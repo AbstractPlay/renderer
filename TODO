@@ -12,3 +12,4 @@ Todo:
   - Make `stacking-expanding` renderer rotate properly, including keys and captured pieces.
   - Figure out what's up with the renderer occasionally expanding piece names like "B3E" into hexadecimal colour strings (e.g., Pikemen with AB player names).
   - Pyramid rotation at odd angles clips a little (e.g., Pikemen).
+  - Make the `squares-beveled` style actually look chiseled (drop shadow effects)

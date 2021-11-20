@@ -38,6 +38,7 @@ export interface APRenderRep {
         style:
           | "squares"
           | "squares-checkered"
+          | "squares-beveled"
           | "vertex"
           | "vertex-cross"
           | "go"
@@ -156,6 +157,21 @@ export interface APRenderRep {
                * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
                */
               colour: PositiveInteger | Colourstrings;
+            }
+          | {
+              /**
+               * Only works for the `squares*` board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
+               */
+              type: "fence";
+              cell: {
+                row: number;
+                col: number;
+              };
+              side: "N" | "E" | "S" | "W";
+              /**
+               * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour?: PositiveInteger | Colourstrings;
             }
         )[];
       }
