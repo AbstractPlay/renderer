@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `house`, `palace`, and `tower` glyphs to the `core` sheet for Urbino.
 - Added a `fence` marker for drawing thick lines between cells. Only works for `squares*` board styles.
 - Added a `squares-beveled` style that simply draws very faint gridlines, for use with fences. Will make this nicer later.
+- Added a `stackOffset` property to the schema for manual adjustment of stack offsets in the `stacking-offset` renderer.
 
 ### Fixed
 

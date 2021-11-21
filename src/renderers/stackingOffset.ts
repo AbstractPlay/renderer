@@ -96,13 +96,17 @@ export class StackingOffsetRenderer extends RendererBase {
             }
 
             // Place the pieces according to the grid
+            let offsetPercent = 0.13;
+            if ( ("stackOffset" in json.board) && (json.board.stackOffset !== undefined) ) {
+                offsetPercent = json.board.stackOffset;
+            }
+            const offset = this.cellsize * offsetPercent;
             for (let row = 0; row < pieces.length; row++) {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (let i = 0; i < pieces[row][col].length; i++) {
                         const key = pieces[row][col][i];
                         if ( (key !== null) && (key !== "-") ) {
                             const point = gridPoints[row][col];
-                            const offset = this.cellsize / 8;
                             const piece = SVG("#" + key);
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
