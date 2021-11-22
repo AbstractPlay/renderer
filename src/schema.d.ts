@@ -525,100 +525,52 @@ export interface APRenderRep {
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
-  annotations?: [
-    (
-      | {
-          /**
-           * The type of annotation
-           */
-          type: "move" | "eject" | "enter" | "exit";
-          /**
-           * The cells involved in the annotation
-           */
-          targets: [
-            {
-              row: number;
-              col: number;
-              [k: string]: unknown;
-            },
-            ...{
-              row: number;
-              col: number;
-              [k: string]: unknown;
-            }[]
-          ];
-          style?: "solid" | "dashed";
-          opacity?: number;
-          /**
-           * Pattern for hex colour strings
-           */
-          colour?: string;
-          /**
-           * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
-           */
-          player?: number;
-          arrow?: boolean;
-          [k: string]: unknown;
-        }
-      | {
-          /**
-           * Name of the system
-           */
-          system: string;
-          /**
-           * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
-           */
-          action: number;
-          [k: string]: unknown;
-        }
-    ),
-    ...(
-      | {
-          /**
-           * The type of annotation
-           */
-          type: "move" | "eject" | "enter" | "exit";
-          /**
-           * The cells involved in the annotation
-           */
-          targets: [
-            {
-              row: number;
-              col: number;
-              [k: string]: unknown;
-            },
-            ...{
-              row: number;
-              col: number;
-              [k: string]: unknown;
-            }[]
-          ];
-          style?: "solid" | "dashed";
-          opacity?: number;
-          /**
-           * Pattern for hex colour strings
-           */
-          colour?: string;
-          /**
-           * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
-           */
-          player?: number;
-          arrow?: boolean;
-          [k: string]: unknown;
-        }
-      | {
-          /**
-           * Name of the system
-           */
-          system: string;
-          /**
-           * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
-           */
-          action: number;
-          [k: string]: unknown;
-        }
-    )[]
-  ];
+  annotations?: (
+    | {
+        /**
+         * The type of annotation
+         */
+        type: "move" | "eject" | "enter" | "exit";
+        /**
+         * The cells involved in the annotation
+         */
+        targets: [
+          {
+            row: number;
+            col: number;
+            [k: string]: unknown;
+          },
+          ...{
+            row: number;
+            col: number;
+            [k: string]: unknown;
+          }[]
+        ];
+        style?: "solid" | "dashed";
+        opacity?: number;
+        /**
+         * Pattern for hex colour strings
+         */
+        colour?: string;
+        /**
+         * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
+         */
+        player?: number;
+        arrow?: boolean;
+        [k: string]: unknown;
+      }
+    | {
+        /**
+         * Name of the system
+         */
+        system: string;
+        /**
+         * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
+         */
+        action: number;
+        [k: string]: unknown;
+      }
+  )[];
   [k: string]: unknown;
 }
 /**

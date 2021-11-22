@@ -617,7 +617,6 @@
         "annotations": {
             "description": "Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.",
             "type": "array",
-            "minItems": 1,
             "items": {
                 "type": "object",
                 "oneOf": [
