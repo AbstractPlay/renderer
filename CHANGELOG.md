@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed `renderStatic()` to work properly now under SVG.js 3.x and respect the size and id options.
+- Fixed bug in `entropy` renderer that caused only the first character of pieces to be recognized.
 
 ## [0.4.0] - 2021-11-17
 
