@@ -19,7 +19,9 @@
         "full-dev": "npm run test && npm run build && npm run dist-dev",
         "full-prod": "npm run test && npm run build && npm run dist-prod",
         "distribute": "copy .\\test\\index.html D:\\xampp\\htdocs\\renderer && copy .\\test\\playground.html D:\\xampp\\htdocs\\renderer && copy .\\dist\\APRender.js D:\\xampp\\htdocs\\renderer && copy .\\dist\\APRender.js D:\\xampp\\htdocs\\games",
-        "quick": "npm run build-ts && npm run dist-dev && npm run distribute"
+        "distribute2": "copy .\\dist\\APRender.js C:\\Projects\\AbstractPlay\\playground\\games",
+        "quick": "npm run build-ts && npm run dist-dev && npm run distribute",
+        "quick2": "npm run build-ts && npm run dist-dev && npm run distribute2"
     },
     "author": "Aaron Dalton <aaron@daltons.ca> (https://www.perlkonig.com)",
     "license": "MIT",

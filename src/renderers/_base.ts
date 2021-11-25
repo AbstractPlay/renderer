@@ -259,7 +259,7 @@ export abstract class RendererBase {
                     // Layer the glyphs, manipulating as you go
                     glyphs.forEach((glyph) => {
                         // Get the glyph from <defs>
-                        const got = SVG("#" + glyph.name) as SVGG;
+                        const got = draw.findOne("#" + glyph.name) as SVGG;
                         if ( (got === undefined) || (got === null) ) {
                             throw new Error(`Could not load the requested glyph: ${glyph.name}.`);
                         }

@@ -1,5 +1,5 @@
 // import SVG from "@svgdotjs/svg.js";
-import { extend as SVGExtend, NumberAlias, SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
+import { extend as SVGExtend, G as SVGG, NumberAlias, SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 import { APRenderRep } from "./schema";
@@ -78,9 +78,16 @@ export function renderglyph(glyphid: string, colour: number | string, opts = {} 
             },
             pieces: "A",
         };
-
     }
-    return renderStatic(obj, opts);
+    const node = document.createElement("div");
+    const {v4: uuidv4} = require("uuid");
+    const uid = uuidv4();
+    node.setAttribute("id", uid);
+    opts.divelem = node;
+    const canvas = render(obj, opts);
+    const a = canvas.findOne("#A") as SVGG;
+    canvas.viewbox(`0 0 ${a.width()} ${a.height()}`);
+    return canvas.svg();
 }
 
 // `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
@@ -151,6 +158,11 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
     renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick});
-    draw.viewbox(draw.bbox());
+    if (draw.bbox().h !== 0) {
+        draw.viewbox(draw.bbox());
+    }
+    // else {
+    //    draw.viewbox("0 0 500 500"); // fix me!
+    // }
     return draw;
 }

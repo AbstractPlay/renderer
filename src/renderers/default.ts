@@ -144,7 +144,7 @@ export class DefaultRenderer extends RendererBase {
             throw new Error("There must be a piece given in the `pieces` property.");
         }
         const key = json.pieces;
-        const piece = SVG("#" + key);
+        const piece = draw.findOne("#" + key) as SVGG;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
