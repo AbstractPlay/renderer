@@ -1031,15 +1031,17 @@ export abstract class RendererBase {
         const gridlines = board.group().id("circles");
         const circle = draw.defs().circle(cellsize)
             .id("_circle")
-            .fill("none")
+            .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
-        for (const row of grid) {
-            for (const p of row) {
+        for (let iRow = 0; iRow < grid.length; iRow++) {
+            const row = grid[iRow];
+            for (let iCol = 0; iCol < row.length; iCol++) {
+                const p = row[iCol];
                 const c = gridlines.use(circle).center(p.x, p.y);
                 if (opts.boardClick !== undefined) {
-                    c.click(() => opts.boardClick!(p.y, p.x, ""));
+                    c.click(() => opts.boardClick!(iRow, iCol, ""));
                 }
-}
+            }
         }
 
         this.markBoard(json, gridlines, grid, opts);
@@ -1110,15 +1112,17 @@ export abstract class RendererBase {
         const gridlines = board.group().id("hexes");
         const hex = draw.defs().polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
             .id("_hex")
-            .fill("none")
+            .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
-        for (const row of grid) {
-            for (const p of row) {
+        for (let iRow = 0; iRow < grid.length; iRow++) {
+            const row = grid[iRow];
+            for (let iCol = 0; iCol < row.length; iCol++) {
+                const p = row[iCol];
                 const c = gridlines.use(hex).center(p.x, p.y);
                 if (opts.boardClick !== undefined) {
-                    c.click(() => opts.boardClick!(p.y, p.x, ""));
+                    c.click(() => opts.boardClick!(iRow, iCol, ""));
                 }
-}
+            }
         }
 
         this.markBoard(json, gridlines, grid, opts);
