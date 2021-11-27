@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `squares-beveled` style that simply draws very faint gridlines, for use with fences. Will make this nicer later.
 - Added a `stackOffset` property to the schema for manual adjustment of stack offsets in the `stacking-offset` renderer.
 - Changed `annotations` to allow an empty list. There's really no reason to disallow it, other than to minimize JSON size. Still a good practice to cull it from the output if there aren't any.
+- Added a `dots` annotation so you can add dots on top of pieces as well as just on the board itself.
 
 ### Fixed
 

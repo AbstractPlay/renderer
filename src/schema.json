@@ -227,7 +227,6 @@
                                         },
                                         "required": ["type", "points"],
                                         "additionalProperties": false
-
                                     },
                                     {
                                         "properties": {
@@ -628,7 +627,8 @@
                                     "move",
                                     "eject",
                                     "enter",
-                                    "exit"
+                                    "exit",
+                                    "dots"
                                 ]
                             },
                             "targets": {

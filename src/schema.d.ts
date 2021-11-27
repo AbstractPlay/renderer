@@ -530,7 +530,7 @@ export interface APRenderRep {
         /**
          * The type of annotation
          */
-        type: "move" | "eject" | "enter" | "exit";
+        type: "move" | "eject" | "enter" | "exit" | "dot";
         /**
          * The cells involved in the annotation
          */

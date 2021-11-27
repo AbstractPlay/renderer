@@ -1268,6 +1268,25 @@ export abstract class RendererBase {
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
                             .center(pt.x, pt.y);
                     }
+                } else if ( (note.type !== undefined) && (note.type === "dots") ) {
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = opts.colours[(note.player as number) - 1];
+                    }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity as number;
+                    }
+                    for (const node of (note.targets as any[])) {
+                        const pt = grid[node.row][node.col];
+                        notes.circle(this.cellsize * 0.2)
+                            .fill(colour)
+                            .opacity(opacity)
+                            .stroke({width: 0})
+                            .center(pt.x, pt.y);
+                    }
                 } else {
                     throw new Error(`The requested annotation (${ note.type }) is not supported.`);
                 }
