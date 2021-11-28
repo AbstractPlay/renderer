@@ -15,6 +15,7 @@ export interface IRendererOptionsIn {
     rotate?: number;
     showAnnotations?: boolean;
     boardClick?: (row: number, col: number, piece: string) => void;
+    boardHover?: (row: number, col: number, piece: string) => void;
 }
 
 export interface IRendererOptionsOut {
@@ -26,6 +27,7 @@ export interface IRendererOptionsOut {
     rotate: number;
     showAnnotations: boolean;
     boardClick?: (row: number, col: number, piece: string) => void;
+    boardHover?: (row: number, col: number, piece: string) => void;
 }
 
 function coords2algebraicHex(x: number, y: number, height: number): string {
@@ -126,6 +128,9 @@ export abstract class RendererBase {
 
         if (opts.boardClick !== undefined) {
             newOpts.boardClick = opts.boardClick;
+        }
+        if (opts.boardHover !== undefined) {
+            newOpts.boardHover = opts.boardHover;
         }
 
         return newOpts;

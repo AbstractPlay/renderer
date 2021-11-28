@@ -12,6 +12,7 @@ export interface IRenderOptions {
     divid: string;
     divelem?: HTMLElement;
     boardClick?: (row: number, col: number, piece: string) => void;
+    boardHover?: (row: number, col: number, piece: string) => void;
     sheets?: string[];
     target?: Svg;
     patterns?: boolean;
@@ -148,6 +149,11 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
         boardClick = opts.boardClick;
     }
 
+    let boardHover: (row: number, col: number, piece: string) => void = (row, col, piece) => undefined;
+    if (("boardHover" in opts) && (opts.boardHover != null) ) {
+        boardHover = opts.boardHover;
+    }
+
     // Pass the JSON and the SVG container to the appropriate renderer
     if ( (json.renderer === undefined) || (json.renderer === null) ) {
         json.renderer = "default";
@@ -157,7 +163,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick});
+    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover});
     if (draw.bbox().h !== 0) {
         draw.viewbox(draw.bbox());
     }

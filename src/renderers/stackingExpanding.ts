@@ -108,6 +108,9 @@ export class StackingExpandingRenderer extends RendererBase {
                 if (opts.boardClick !== undefined) {
                     t.click(() => opts.boardClick!(row, col, ""));
                 }
+                if (opts.boardHover !== undefined) {
+                    t.mousemove(() => opts.boardHover!(row, col, ""));
+                }
             }
         }
 
