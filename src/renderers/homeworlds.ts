@@ -292,6 +292,9 @@ export class HomeworldsRenderer extends RendererBase {
                     throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                 }
                 const use = sgroup.use(piece);
+                if (opts.boardClick !== undefined) {
+                    use.click(() => opts.boardClick!(-1, -1, `${colour}${size}`));
+                }
                 // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
                 const factor = (stashCellSize / sheetCellSize);
                 const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));

@@ -245,6 +245,9 @@ export class StackingExpandingRenderer extends RendererBase {
                             throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                         }
                         const use = nested.use(piece);
+                        if (opts.boardClick !== undefined) {
+                            use.click(() => opts.boardClick!(-1, -1, p));
+                        }
                         used.push(use);
                         // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
                         const factor = (cellsize / sheetCellSize);
