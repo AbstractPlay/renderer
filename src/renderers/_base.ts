@@ -330,7 +330,8 @@ export abstract class RendererBase {
                                 if (glyph.player > opts.patternList.length) {
                                     throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                                 }
-                                const fill = SVG("#" + opts.patternList[glyph.player - 1]);
+                                const fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
+                                fill.scale(use.attr("data-cellsize") / 100);
                                 // if (use.is(SVGG)) {
                                 //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
                                 // } else {
