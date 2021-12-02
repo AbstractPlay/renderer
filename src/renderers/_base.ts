@@ -330,7 +330,13 @@ export abstract class RendererBase {
                                 if (glyph.player > opts.patternList.length) {
                                     throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                                 }
-                                const fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
+                                const useSize = use.attr("data-cellsize");
+                                let fill = draw.findOne("#" + opts.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
+                                if (fill === null) {
+                                    fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
+                                    fill = fill.clone().id(opts.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
+                                    draw.defs().add(fill);
+                                }
                                 // if (use.is(SVGG)) {
                                 //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
                                 // } else {
