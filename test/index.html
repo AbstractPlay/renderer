@@ -1,5 +1,5 @@
-<!-- 
-    To use this in your own environment, build the `APRender.js` bundle and 
+<!--
+    To use this in your own environment, build the `APRender.js` bundle and
     put it and this HTML file somewhere a browser can see it. You can then
     render arbitrary JSON for testing.
  -->
@@ -20,7 +20,7 @@
                 var myNode = document.getElementById("drawing");
                 while (myNode.lastChild) {
                     myNode.removeChild(myNode.lastChild);
-                }                
+                }
                 // var options = {divid: "drawing", colourList: ["#ff0000", "#00ff00", "#0000ff", "#ffff00"]};
                 // var options = {divid: "drawing", patterns: true};
                 // var options = {divid: "drawing", colourBlind: true};
@@ -46,8 +46,8 @@
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
                 //document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(canvas.svg()) + "</p>"
-                var svgcode = APRender.renderStatic(data, options);
-                document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
+                //var svgcode = APRender.renderStatic(data, options);
+                //document.getElementById("svgcode").innerHTML = '<p>' + escapeHtml(svgcode) + "</p>"
                 return false;
             }
 

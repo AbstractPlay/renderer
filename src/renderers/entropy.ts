@@ -145,17 +145,6 @@ export class EntropyRenderer extends RendererBase {
             lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
             lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
             gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
-
-            if (opts.boardClick !== undefined) {
-                draw.click((e: { clientX: number; clientY: number; }) => {
-                    const point = draw.point(e.clientX, e.clientY);
-                    const x = Math.floor((point.x - (grid[0][0].x - (cellsize / 2))) / cellsize);
-                    const y = Math.floor((point.y - (grid[0][0].y - (cellsize / 2))) / cellsize);
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
-                        opts.boardClick!(y, x, "");
-                    }
-                });
-            }
         }
 
         // PIECES
@@ -221,6 +210,20 @@ export class EntropyRenderer extends RendererBase {
                             }
                             use.scale((this.cellsize / sheetCellSize) * 0.85);
                         }
+                    }
+                }
+            }
+        }
+
+        for (const grid of [grid1, grid2]) {
+            const tile = draw.defs().rect(this.cellsize * 0.95, this.cellsize * 0.95).fill("#fff").opacity(0).id("_clickCatcher");
+            const tiles = draw.group().id("tiles");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(tile).center(x, y);
+                    if (opts.boardClick !== undefined) {
+                        t.click(() => opts.boardClick!(row, col, ""));
                     }
                 }
             }
