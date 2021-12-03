@@ -351,9 +351,6 @@ export class HomeworldsRenderer extends RendererBase {
     private genSystem(draw: Svg, opts: IRendererOptionsOut, id: string, name: string, ports: (string|undefined)[][], highlight?: string): SVGG {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
         const nested = draw.defs().group().id(id).size(250, 250);
-        if (opts.boardClick !== undefined) {
-            nested.click(() => opts.boardClick!(0, 0, name));
-        }
 
         // Add fill and border
         // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).
@@ -374,6 +371,9 @@ export class HomeworldsRenderer extends RendererBase {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
         nested.rect(250, 250).fill(pattern).stroke(stroke);
+        if (opts.boardClick !== undefined) {
+            nested.rect(250, 250).fill("#fff").opacity(0).click(() => opts.boardClick!(0, 0, name));
+        }
 
         let rotation: number | undefined;
         if ( ("rotate" in opts) && (opts.rotate !== undefined) ) {
@@ -410,7 +410,7 @@ export class HomeworldsRenderer extends RendererBase {
                     const dy = 0 - newpt.y;
                     use.dmove(point.x + dx, point.y + dy);
                     use.scale(factor * 0.95);
-                    if ( (opts.boardClick !== undefined) && (cell.length === 3) ) {
+                    if (opts.boardClick !== undefined) {
                         use.click(() => opts.boardClick!(0, 0, cell));
                     }
                 }
