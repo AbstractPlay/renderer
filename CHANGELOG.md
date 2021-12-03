@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `dots` annotation so you can add dots on top of pieces as well as just on the board itself.
 - Added `boardHover` callback that triggers on `mousemove`. It is only applied to `stacking-expanding` boards and is intended to trigger the cell expansion feature.
 - Attached `boardClick` handler to pieces in `localStash` areas and the Homeworlds global stash. It returns coordinates of `-1,-1` and the name of the piece.
+- Adjusted `stacking-expanding` renderer to allow for the `board` and `pieces` attributes to be `null` to render *just* an `expandedColumn` area. This is an attempt and improving performance of `stacking-expanding` games in live use.
 
 ### Fixed
 
