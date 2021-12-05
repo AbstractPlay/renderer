@@ -351,11 +351,6 @@ export class HomeworldsRenderer extends RendererBase {
             passrect.dy(stashCellSize * 9);
         }
         sgroup.move((250 + (sgroup.width() as number) + 10) * -1, -250);
-
-        // Rotate the board if requested
-        // if (opts.rotate > 0) {
-        //     this.rotateBoard(draw);
-        // }
     }
 
     private effectiveSeat(seat: Seat, deg?: number): Seat {

@@ -406,25 +406,39 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
+        let columnLabels = this.columnLabels.slice(0, width);
+        if (opts.rotate === 180) {
+            columnLabels = columnLabels.reverse();
+        }
         // Columns (letters)
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
             const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+            labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
+        const rowLabels: string[] = [];
+        if (opts.rotate === 180) {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((row + 1).toString());
+            }
+        } else {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
+            }
+        }
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Now the tiles
@@ -462,16 +476,6 @@ export abstract class RendererBase {
                     }
                 }
             }
-        }
-        if (opts.boardClick !== undefined) {
-            draw.click((e: { clientX: number; clientY: number; }) => {
-                const point = draw.point(e.clientX, e.clientY);
-                const x = Math.floor((point.x - (grid[0][0].x - (cellsize / 2))) / cellsize);
-                const y = Math.floor((point.y - (grid[0][0].y - (cellsize / 2))) / cellsize);
-                if (x >= 0 && x < width && y >= 0 && y < height) {
-                    opts.boardClick!(y, x, "");
-                }
-            });
         }
 
         // Draw grid lines
@@ -530,9 +534,39 @@ export abstract class RendererBase {
         // Add one row and one column and shift all points up and to the left by half a cell size
         let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
         gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
+        if (opts.rotate === 180) {
+            gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+        }
 
         this.markBoard(json, gridlines, grid, opts, gridExpanded);
 
+        if (opts.boardClick !== undefined) {
+            const originX = grid[0][0].x;
+            const originY = grid[0][0].y;
+            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const point = draw.point(e.clientX, e.clientY);
+                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
+                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
+                if (x >= 0 && x < width && y >= 0 && y < height) {
+                    opts.boardClick!(y, x, "");
+                }
+            });
+            if (opts.rotate === 180) {
+                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                    const point = draw.point(e.clientX, e.clientY);
+                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
+                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                        opts.boardClick!(y, x, "");
+                    }
+                });
+            }
+            draw.click(genericCatcher);
+        }
+
+        if (opts.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
         return grid;
     }
 
@@ -1139,16 +1173,6 @@ export abstract class RendererBase {
         this.markBoard(json, gridlines, grid, opts);
 
         return grid;
-    }
-
-    protected rotateBoard(draw: Svg, degrees: number = 180, boardID: string = "board", labelID: string = "labels") {
-        const board = SVG("#" + boardID);
-        board.rotate(degrees);
-        const g = SVG("#" + labelID);
-        const children = g.children();
-        children.each((x) => {
-            x.rotate(Math.abs(360 - degrees));
-        });
     }
 
     protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints, opts: IRendererOptionsOut) {

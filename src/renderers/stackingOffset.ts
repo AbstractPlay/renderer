@@ -51,12 +51,6 @@ export class StackingOffsetRenderer extends RendererBase {
                 throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
         }
 
-        // Rotate the board if requested
-        if (opts.rotate === 180) {
-            this.rotateBoard(draw);
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
-        }
-
         // PIECES
         // Load all the pieces in the legend
         this.loadLegend(json, draw, opts);
@@ -130,11 +124,6 @@ export class StackingOffsetRenderer extends RendererBase {
         // Finally, annotations
         if (opts.showAnnotations) {
             this.annotateBoard(json, draw, gridPoints, opts);
-        }
-
-        // Rotate the board if requested
-        if (opts.rotate > 0) {
-            this.rotateBoard(draw);
         }
     }
 }
