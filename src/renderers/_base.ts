@@ -530,16 +530,6 @@ export abstract class RendererBase {
         lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
         gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
 
-        // Make an expanded grid for markers, to accommodate edge marking and shading
-        // Add one row and one column and shift all points up and to the left by half a cell size
-        let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
-        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
-        if (opts.rotate === 180) {
-            gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
-        }
-
-        this.markBoard(json, gridlines, grid, opts, gridExpanded);
-
         if (opts.boardClick !== undefined) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
@@ -564,9 +554,17 @@ export abstract class RendererBase {
             draw.click(genericCatcher);
         }
 
+        // Make an expanded grid for markers, to accommodate edge marking and shading
+        // Add one row and one column and shift all points up and to the left by half a cell size
+        let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
+        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
         if (opts.rotate === 180) {
+            gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
             grid = grid.map((r) => r.reverse()).reverse();
         }
+
+        this.markBoard(json, gridlines, grid, opts, gridExpanded);
+
         return grid;
     }
 
@@ -602,6 +600,9 @@ export abstract class RendererBase {
         if (style.includes("-even")) {
             offset = 1;
         }
+        if (opts.rotate === 180) {
+            offset *= -1;
+        }
         const Hex = extendHex({
             offset,
             orientation,
@@ -621,7 +622,11 @@ export abstract class RendererBase {
         for (const hex of rect) {
             const { x, y } = hex.toPoint();
             const used = board.use(hexSymbol).translate(x, y);
-            labels.text(coords2algebraicHex(hex.x, hex.y, height))
+            let label = coords2algebraicHex(hex.x, hex.y, height);
+            if (opts.rotate === 180) {
+                label = coords2algebraicHex(width - hex.x - 1, height - hex.y - 1, height);
+            }
+            labels.text(label)
             .font({
                 anchor: "middle",
                 fill: baseStroke,
@@ -631,11 +636,15 @@ export abstract class RendererBase {
             .center(corners[5].x, corners[5].y)
             .translate(x, y + fontSize);
             if (opts.boardClick !== undefined) {
-                used.click(() => opts.boardClick!(hex.y, hex.x, ""));
+                if (opts.rotate === 180) {
+                    used.click(() => opts.boardClick!(height - hex.y - 1, width - hex.x - 1, ""));
+                } else {
+                    used.click(() => opts.boardClick!(hex.y, hex.x, ""));
+                }
             }
         }
 
-        const gridPoints: GridPoints = [];
+        let gridPoints: GridPoints = [];
         const {x: cx, y: cy} = Hex().center();
         for (let y = 0; y < 9; y++) {
             const node: IPoint[] = [];
@@ -652,6 +661,9 @@ export abstract class RendererBase {
 
         this.markBoard(json, board, gridPoints, opts);
 
+        if (opts.rotate === 180) {
+            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
+        }
         return gridPoints;
     }
 
@@ -679,25 +691,39 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
+        let columnLabels = this.columnLabels.slice(0, width);
+        if (opts.rotate === 180) {
+            columnLabels = columnLabels.reverse();
+        }
         // Columns (letters)
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
             const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+            labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
+        const rowLabels: string[] = [];
+        if (opts.rotate === 180) {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((row + 1).toString());
+            }
+        } else {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
+            }
+        }
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Draw grid lines
@@ -768,6 +794,49 @@ export abstract class RendererBase {
             }
         }
 
+        if (opts.boardClick !== undefined) {
+            if (json.renderer !== "stacking-offset") {
+                const originX = grid[0][0].x;
+                const originY = grid[0][0].y;
+                let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                    const point = draw.point(e.clientX, e.clientY);
+                    const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
+                    const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                        opts.boardClick!(y, x, "");
+                    }
+                });
+                if (opts.rotate === 180) {
+                    genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                        const point = draw.point(e.clientX, e.clientY);
+                        const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
+                        const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
+                        if (x >= 0 && x < width && y >= 0 && y < height) {
+                            opts.boardClick!(y, x, "");
+                        }
+                    });
+                }
+                draw.click(genericCatcher);
+            } else {
+                const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+                const tiles = draw.group().id("tiles");
+                for (let row = 0; row < grid.length; row++) {
+                    for (let col = 0; col < grid[row].length; col++) {
+                        const {x, y} = grid[row][col];
+                        const t = tiles.use(tile).center(x, y);
+                        if (opts.rotate === 180) {
+                            t.click(() => opts.boardClick!(height - row - 1, width - col - 1, ""));
+                        } else {
+                            t.click(() => opts.boardClick!(row, col, ""));
+                        }
+                    }
+                }
+            }
+        }
+        if (opts.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
+
         // If `go` board, add traditional nodes
         if (style === "go") {
             const pts: number[][] = [
@@ -786,31 +855,6 @@ export abstract class RendererBase {
         }
 
         this.markBoard(json, gridlines, grid, opts);
-
-        if (opts.boardClick !== undefined) {
-            if (json.renderer !== "stacking-offset") {
-                draw.click((e: { clientX: number; clientY: number; }) => {
-                    const point = draw.point(e.clientX, e.clientY);
-                    const x = Math.floor((point.x - (grid[0][0].x - (cellsize / 2))) / cellsize);
-                    const y = Math.floor((point.y - (grid[0][0].y - (cellsize / 2))) / cellsize);
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
-                        opts.boardClick!(y, x, "");
-                    }
-                });
-            } else {
-                const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
-                const tiles = draw.group().id("tiles");
-                for (let row = 0; row < grid.length; row++) {
-                    for (let col = 0; col < grid[row].length; col++) {
-                        const {x, y} = grid[row][col];
-                        const t = tiles.use(tile).center(x, y);
-                        if (opts.boardClick !== undefined) {
-                            t.click(() => opts.boardClick!(row, col, ""));
-                        }
-                    }
-                }
-            }
-        }
 
         return grid;
     }

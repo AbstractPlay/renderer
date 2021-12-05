@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Rotation is disabled for the `stacking-expanding` renderer.
   - For the default renderer, the following board styles are now fully supported, including click handlers, annotations, and markers:
     - `squares*`
+    - `hex-odd/even*`
+    - `vertex*` and `go`
 
 ## [0.4.0] - 2021-11-17
 
