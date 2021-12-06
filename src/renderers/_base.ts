@@ -659,11 +659,11 @@ export abstract class RendererBase {
             gridPoints.push(node);
         }
 
-        this.markBoard(json, board, gridPoints, opts);
-
         if (opts.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
+        this.markBoard(json, board, gridPoints, opts);
+
         return gridPoints;
     }
 
@@ -882,25 +882,39 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        let grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
+        let columnLabels = this.columnLabels.slice(0, width);
+        if (opts.rotate === 180) {
+            columnLabels = columnLabels.reverse();
+        }
         // Columns (letters)
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
             const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-            labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+            labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
+        const rowLabels: string[] = [];
+        if (opts.rotate === 180) {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((row + 1).toString());
+            }
+        } else {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
+            }
+        }
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-            labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Draw grid lines
@@ -957,12 +971,19 @@ export abstract class RendererBase {
                     const {x, y} = grid[row][col];
                     const t = tiles.use(tile).center(x, y);
                     if (opts.boardClick !== undefined) {
-                        t.click(() => opts.boardClick!(row, col, ""));
+                        if (opts.rotate === 180) {
+                            t.click(() => opts.boardClick!(height - row - 1, width - col - 1, ""));
+                        } else {
+                            t.click(() => opts.boardClick!(row, col, ""));
+                        }
                     }
                 }
             }
         }
 
+        if (opts.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
         this.markBoard(json, gridlines, grid, opts);
 
         return grid;
@@ -992,18 +1013,29 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
 
         // Rows (numbers)
+        let columnLabels = this.columnLabels.slice(0, maxWidth);
+        if (opts.rotate === 180) {
+            columnLabels = columnLabels.reverse();
+        }
+
         for (let row = 0; row < height; row++) {
+            let leftNum = "1";
+            let rightNum = grid[row].length.toString();
+            if (opts.rotate === 180) {
+                leftNum = rightNum;
+                rightNum = "1";
+            }
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-            labels.text(this.columnLabels[height - row - 1] + "1").fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(columnLabels[height - row - 1] + rightNum).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Draw grid lines
@@ -1058,8 +1090,6 @@ export abstract class RendererBase {
             }
         }
 
-        this.markBoard(json, gridlines, grid, opts);
-
         // If click handler is present, add transparent "click catcher" tiles over the points
         if (opts.boardClick !== undefined) {
             const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
@@ -1069,11 +1099,20 @@ export abstract class RendererBase {
                     const {x, y} = grid[row][col];
                     const t = tiles.use(tile).center(x, y);
                     if (opts.boardClick !== undefined) {
-                        t.click(() => opts.boardClick!(row, col, ""));
+                        if (opts.rotate === 180) {
+                            t.click(() => opts.boardClick!(height - row - 1, grid[row].length - col - 1, ""));
+                        } else {
+                            t.click(() => opts.boardClick!(row, col, ""));
+                        }
                     }
                 }
             }
         }
+
+        if (opts.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
+        this.markBoard(json, gridlines, grid, opts);
 
         return grid;
     }
@@ -1102,18 +1141,28 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
 
         // Rows (numbers)
+        let columnLabels = this.columnLabels.slice(0, maxWidth);
+        if (opts.rotate === 180) {
+            columnLabels = columnLabels.reverse();
+        }
         for (let row = 0; row < height; row++) {
+            let leftNum = "1";
+            let rightNum = grid[row].length.toString();
+            if (opts.rotate === 180) {
+                leftNum = rightNum;
+                rightNum = "1";
+            }
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-            labels.text(this.columnLabels[height - row - 1] + "1").fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(columnLabels[height - row - 1] + rightNum).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         // Draw circles
@@ -1128,11 +1177,18 @@ export abstract class RendererBase {
                 const p = row[iCol];
                 const c = gridlines.use(circle).center(p.x, p.y);
                 if (opts.boardClick !== undefined) {
-                    c.click(() => opts.boardClick!(iRow, iCol, ""));
+                    if (opts.rotate === 180) {
+                        c.click(() => opts.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                    } else {
+                        c.click(() => opts.boardClick!(iRow, iCol, ""));
+                    }
                 }
             }
         }
 
+        if (opts.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
         this.markBoard(json, gridlines, grid, opts);
 
         return grid;
@@ -1162,18 +1218,28 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        const grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
         const board = draw.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
 
         // Rows (numbers)
+        let columnLabels = this.columnLabels.slice(0, maxWidth);
+        if (opts.rotate === 180) {
+            columnLabels = columnLabels.reverse();
+        }
         for (let row = 0; row < height; row++) {
+            let leftNum = "1";
+            let rightNum = grid[row].length.toString();
+            if (opts.rotate === 180) {
+                leftNum = rightNum;
+                rightNum = "1";
+            }
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-            labels.text(this.columnLabels[height - row - 1] + "1").fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-            labels.text(this.columnLabels[height - row - 1] + `${grid[row].length}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+            labels.text(columnLabels[height - row - 1] + rightNum).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
 
         /*
@@ -1209,11 +1275,17 @@ export abstract class RendererBase {
                 const p = row[iCol];
                 const c = gridlines.use(hex).center(p.x, p.y);
                 if (opts.boardClick !== undefined) {
-                    c.click(() => opts.boardClick!(iRow, iCol, ""));
+                    if (opts.rotate === 180) {
+                        c.click(() => opts.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                    } else {
+                        c.click(() => opts.boardClick!(iRow, iCol, ""));
+                    }
                 }
             }
         }
-
+        if (opts.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
         this.markBoard(json, gridlines, grid, opts);
 
         return grid;

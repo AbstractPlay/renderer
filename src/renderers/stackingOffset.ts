@@ -95,25 +95,55 @@ export class StackingOffsetRenderer extends RendererBase {
                 offsetPercent = json.board.stackOffset;
             }
             const offset = this.cellsize * offsetPercent;
-            for (let row = 0; row < pieces.length; row++) {
-                for (let col = 0; col < pieces[row].length; col++) {
-                    for (let i = 0; i < pieces[row][col].length; i++) {
-                        const key = pieces[row][col][i];
-                        if ( (key !== null) && (key !== "-") ) {
-                            const point = gridPoints[row][col];
-                            const piece = SVG("#" + key);
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+            // if the board is rotated, you have to place the pieces in reverse row order
+            // for now the code is duplicated
+            if (opts.rotate === 180) {
+                // for (let row = 0; row < pieces.length; row++) {
+                for (let row = pieces.length - 1; row >= 0; row--) {
+                    for (let col = 0; col < pieces[row].length; col++) {
+                        for (let i = 0; i < pieces[row][col].length; i++) {
+                            const key = pieces[row][col][i];
+                            if ( (key !== null) && (key !== "-") ) {
+                                const point = gridPoints[row][col];
+                                const piece = SVG("#" + key);
+                                if ( (piece === null) || (piece === undefined) ) {
+                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                                }
+                                const use = group.use(piece) as SVGG;
+                                use.center(point.x, point.y - (offset * i));
+                                const sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
+                                use.scale((this.cellsize / sheetCellSize) * 0.85);
+                                if (opts.boardClick !== undefined) {
+                                    use.click(() => opts.boardClick!(row, col, i.toString()));
+                                }
                             }
-                            const use = group.use(piece) as SVGG;
-                            use.center(point.x, point.y - (offset * i));
-                            const sheetCellSize = piece.attr("data-cellsize");
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                            }
-                            use.scale((this.cellsize / sheetCellSize) * 0.85);
-                            if (opts.boardClick !== undefined) {
-                                use.click(() => opts.boardClick!(row, col, i.toString()));
+                        }
+                    }
+                }
+            } else {
+                for (let row = 0; row < pieces.length; row++) {
+                    for (let col = 0; col < pieces[row].length; col++) {
+                        for (let i = 0; i < pieces[row][col].length; i++) {
+                            const key = pieces[row][col][i];
+                            if ( (key !== null) && (key !== "-") ) {
+                                const point = gridPoints[row][col];
+                                const piece = SVG("#" + key);
+                                if ( (piece === null) || (piece === undefined) ) {
+                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                                }
+                                const use = group.use(piece) as SVGG;
+                                use.center(point.x, point.y - (offset * i));
+                                const sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
+                                use.scale((this.cellsize / sheetCellSize) * 0.85);
+                                if (opts.boardClick !== undefined) {
+                                    use.click(() => opts.boardClick!(row, col, i.toString()));
+                                }
                             }
                         }
                     }

@@ -27,14 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `renderStatic()` to work properly now under SVG.js 3.x and respect the size and id options.
 - Fixed bug in `entropy` renderer that caused only the first character of pieces to be recognized.
 - Fixed `renderglyph()`.
-- Working on proper rotation.
+- Boards now finally rotate properly.
   - Homeworlds rotation has always worked and supports rotating in increments of 90 degrees, allowing players to see the board from their own perspective.
-  - For all other renderers, rotation by 180 degrees is all that will ever be supported.
+  - For the default renderer, rotation by 180 degrees is all that will ever be supported.
   - Rotation is disabled for the `stacking-expanding` renderer.
-  - For the default renderer, the following board styles are now fully supported, including click handlers, annotations, and markers:
-    - `squares*`
-    - `hex-odd/even*`
-    - `vertex*` and `go`
+  - For the default renderer, all board styles are now fully supported, including click handlers, annotations, and markers.
+  - The `stacking-offset` renderer also appears to work correctly.
 
 ## [0.4.0] - 2021-11-17
 
