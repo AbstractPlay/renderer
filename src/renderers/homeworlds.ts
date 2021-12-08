@@ -1,4 +1,4 @@
-import { G as SVGG, SVG, Svg, find as SVGFind } from "@svgdotjs/svg.js";
+import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import {applyToPoint, compose, scale} from "transformation-matrix";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schema";
@@ -46,7 +46,7 @@ export class HomeworldsRenderer extends RendererBase {
 
         // PIECES
         // Load all the pieces in the legend
-        json.legend!["_dragon"] = {name: "dragon", colour: "#2C4D69", opacity: 0.5};
+        // json.legend!["_dragon"] = {name: "dragon", colour: "#2C4D69", opacity: 0.5};
         this.loadLegend(json, draw, opts);
 
         // Extract the systems and ships and compose them into two groups: home and peripheral
@@ -172,13 +172,13 @@ export class HomeworldsRenderer extends RendererBase {
 
             this.genSystem(draw, opts, `_sysPeriph_${sys.name}`, sys.name, ports, bordercolour);
         });
-        this.genUncharted(draw, opts);
+        // this.genUncharted(draw, opts);
 
         // Now plot those systems on the game board
         // Calc number of peripheral rows and columns
         let pcols: number;
         let prows: number;
-        const numPeriph = sysPeriph.length + 1;
+        const numPeriph = sysPeriph.length; // + 1;
         if (numPeriph === 1) {
             pcols = 1;
             prows = 1;
@@ -205,18 +205,20 @@ export class HomeworldsRenderer extends RendererBase {
             for (let col = 0; col < pcols; col++) {
                 const idx = (pcols * row) + col;
                 if (idx >= sysPeriph.length) {
-                    const id = `#_sysPeriph__dragons`;
-                    const point = grid[row][col];
-                    const system = SVG(id);
-                    if ( (system === null) || (system === undefined) ) {
-                        throw new Error(`Could not find the requested system (#_sysPeriph__dragons). This should never happen`);
-                    }
-                    if (SVGFind('#__no_double_dragons').length === 0) {
-                        const use = group.use(system) as SVGG;
-                        use.id("__no_double_dragons");
-                        use.dmove(point.x, point.y);
-                    }
-                } else {
+                    continue;
+                }
+                //     const id = `#_sysPeriph__dragons`;
+                //     const point = grid[row][col];
+                //     const system = SVG(id);
+                //     if ( (system === null) || (system === undefined) ) {
+                //         throw new Error(`Could not find the requested system (#_sysPeriph__dragons). This should never happen`);
+                //     }
+                //     if (SVGFind('#__no_double_dragons').length === 0) {
+                //         const use = group.use(system) as SVGG;
+                //         use.id("__no_double_dragons");
+                //         use.dmove(point.x, point.y);
+                //     }
+                // } else {
                     const sys = sysPeriph[idx];
                     const point = grid[row][col];
                     const id = `#_sysPeriph_${sys.name}`;
@@ -226,7 +228,7 @@ export class HomeworldsRenderer extends RendererBase {
                     }
                     const use = group.use(system) as SVGG;
                     use.dmove(point.x, point.y);
-                }
+                // }
             }
         }
 
@@ -446,54 +448,54 @@ export class HomeworldsRenderer extends RendererBase {
         return nested;
     }
 
-    private genUncharted(draw: Svg, opts: IRendererOptionsOut): SVGG {
-        const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
-        const nested = draw.defs().group().id("_sysPeriph__dragons").size(250, 250);
+    // private genUncharted(draw: Svg, opts: IRendererOptionsOut): SVGG {
+    //     const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
+    //     const nested = draw.defs().group().id("_sysPeriph__dragons").size(250, 250);
 
-        // Add fill and border
-        // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).
-        // If size is a problem, this could be deleted and just fill the nested `rect` with `black` instead of `pattern`.
-        const pattern = draw.pattern(250, 250, (add) => {
-            add.rect(250, 250).fill("black");
-            // Add 250 stars
-            const n = Math.floor(Math.random() * 100) + 150;
-            for (let i = 0; i < n; i++) {
-                const r = Math.floor(Math.random() * (250 * 250));
-                const y = Math.floor(r / 250);
-                const x = r % 250;
-                add.circle(Math.random() + 1).center(x, y).fill("white");
-            }
-        });
-        let stroke: any = {width: 2, color: "#fff"};
-        nested.rect(250, 250).fill(pattern).stroke(stroke);
+    //     // Add fill and border
+    //     // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).
+    //     // If size is a problem, this could be deleted and just fill the nested `rect` with `black` instead of `pattern`.
+    //     const pattern = draw.pattern(250, 250, (add) => {
+    //         add.rect(250, 250).fill("black");
+    //         // Add 250 stars
+    //         const n = Math.floor(Math.random() * 100) + 150;
+    //         for (let i = 0; i < n; i++) {
+    //             const r = Math.floor(Math.random() * (250 * 250));
+    //             const y = Math.floor(r / 250);
+    //             const x = r % 250;
+    //             add.circle(Math.random() + 1).center(x, y).fill("white");
+    //         }
+    //     });
+    //     let stroke: any = {width: 2, color: "#fff"};
+    //     nested.rect(250, 250).fill(pattern).stroke(stroke);
 
-        // Add the dragon
-        const piece = SVG("#_dragon")
-        if ( (piece === null) || (piece === undefined) ) {
-            throw new Error(`Could not find the DRAGON picture. This should never happen..`);
-        }
-        const sheetCellSize = piece.attr("data-cellsize");
-        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-            throw new Error(`The glyph you requested (DRAGON) does not contain the necessary information for scaling. This should never happen.`);
-        }
-        const use = nested.use(piece);
-        // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-        const factor = (250 / sheetCellSize);
-        const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-        const newpt = applyToPoint(matrix, {x: 0, y: 0});
-        const dx = 0 - newpt.x;
-        const dy = 0 - newpt.y;
-        use.dmove(dx, dy);
-        use.scale(factor * 0.95);
+    //     // Add the dragon
+    //     const piece = SVG("#_dragon")
+    //     if ( (piece === null) || (piece === undefined) ) {
+    //         throw new Error(`Could not find the DRAGON picture. This should never happen..`);
+    //     }
+    //     const sheetCellSize = piece.attr("data-cellsize");
+    //     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+    //         throw new Error(`The glyph you requested (DRAGON) does not contain the necessary information for scaling. This should never happen.`);
+    //     }
+    //     const use = nested.use(piece);
+    //     // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+    //     const factor = (250 / sheetCellSize);
+    //     const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
+    //     const newpt = applyToPoint(matrix, {x: 0, y: 0});
+    //     const dx = 0 - newpt.x;
+    //     const dy = 0 - newpt.y;
+    //     use.dmove(dx, dy);
+    //     use.scale(factor * 0.95);
 
-        if (opts.boardClick !== undefined) {
-            nested.rect(250, 250).fill("#fff").opacity(0).click(() => opts.boardClick!(-1, -1, "_uncharted"));
-        }
+    //     if (opts.boardClick !== undefined) {
+    //         nested.rect(250, 250).fill("#fff").opacity(0).click(() => opts.boardClick!(-1, -1, "_uncharted"));
+    //     }
 
-        // Add name
-        nested.text("\"Here be dragons\"").move(grid[0][0].x, grid[0][0].y).fill("#fff");
-        nested.opacity(0.5);
+    //     // Add name
+    //     nested.text("\"Here be dragons\"").move(grid[0][0].x, grid[0][0].y).fill("#fff");
+    //     nested.opacity(0.5);
 
-        return nested;
-    }
+    //     return nested;
+    // }
 }
