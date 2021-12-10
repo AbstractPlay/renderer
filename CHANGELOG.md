@@ -5,22 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2021-12-10
 
 ### Added
 
 - You can now render individual glyphs using all user settings by setting `board` to `null`. See the docs for details.
 - Added `player` as a colour option in annotations.
 - The pieces fit too snugly in the `hex-of-hex` board style. A 15% reduction has been baked in.
-- Added `house`, `palace`, and `tower` glyphs to the `core` sheet for Urbino.
 - Added a `fence` marker for drawing thick lines between cells. Only works for `squares*` board styles.
+- Added a `dots` annotation so you can add dots on top of pieces as well as just on the board itself.
 - Added a `squares-beveled` style that simply draws very faint gridlines, for use with fences. Will make this nicer later.
 - Added a `stackOffset` property to the schema for manual adjustment of stack offsets in the `stacking-offset` renderer.
 - Changed `annotations` to allow an empty list. There's really no reason to disallow it, other than to minimize JSON size. Still a good practice to cull it from the output if there aren't any.
-- Added a `dots` annotation so you can add dots on top of pieces as well as just on the board itself.
 - Added `boardHover` callback that triggers on `mousemove`. It is only applied to `stacking-expanding` boards and is intended to trigger the cell expansion feature.
 - Attached `boardClick` handler to pieces in `localStash` areas and the Homeworlds global stash. It returns coordinates of `-1,-1` and the name of the piece.
 - Adjusted `stacking-expanding` renderer to allow for the `board` and `pieces` attributes to be `null` to render *just* an `expandedColumn` area. This is an attempt and improving performance of `stacking-expanding` games in live use.
+- Added `house`, `palace`, and `tower` glyphs to the `core` sheet for Urbino. Also added a dragon glyph that ended up not being used, but there it is.
 
 ### Fixed
 
