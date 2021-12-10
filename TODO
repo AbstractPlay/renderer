@@ -5,11 +5,11 @@ Todo:
   ✔ Get rid of `tileLight` and `tileDark` and dynamically generat dark squares based on specified stroke colour @done(21-09-27 16:58)
   ✔ Figure out why patterns sometimes break @done(21-10-05 11:29)
   ✔ Make `stacking-offset` renderer rotate properly @done(21-11-13 09:14)
+  ✔ Does the click handler need more granularity? Homeworlds is a good example. Is it ok if one click triggers multiple events? @done(21-12-10 09:03)
+  ✘ Make `stacking-expanding` renderer rotate properly, including keys and captured pieces. @cancelled(21-12-10 09:03)
   - Write proper tests
   - Legend signifiers do not appear to be case sensitive (e.g., Cannon board tried to use "R" and "r" for soldiers and towns)
-  - Does the click handler need more granularity? Homeworlds is a good example. Is it ok if one click triggers multiple events?
   - Make it possible to disable expanding `eject` annotations.
-  - Make `stacking-expanding` renderer rotate properly, including keys and captured pieces.
   - Figure out what's up with the renderer occasionally expanding piece names like "B3E" into hexadecimal colour strings (e.g., Pikemen with AB player names).
   - Pyramid rotation at odd angles clips a little (e.g., Pikemen).
   - Make the `squares-beveled` style actually look chiseled (drop shadow effects)

@@ -23,6 +23,10 @@ export class StackingOffsetRenderer extends RendererBase {
         if (! ("style" in json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
+
+        // Load all the pieces in the legend (have to do this early so the glyphs are available for marking the board)
+        this.loadLegend(json, draw, opts);
+
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
@@ -52,10 +56,6 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // PIECES
-        // Load all the pieces in the legend
-        this.loadLegend(json, draw, opts);
-
-        // Now place the pieces
         const group = draw.group().id("pieces");
         if (json.pieces !== null) {
             // Generate pieces array

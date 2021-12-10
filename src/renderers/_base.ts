@@ -1665,6 +1665,22 @@ export abstract class RendererBase {
                         }
                         svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 6, color: colour});
                     }
+                } else if (marker.type === "glyph") {
+                    const key = marker.glyph;
+                    const piece = svgGroup.root().findOne("#" + key) as SVGG;
+                    if ( (piece === null) || (piece === undefined) ) {
+                        throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                    }
+                    const sheetCellSize = piece.attr("data-cellsize");
+                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                    }
+                    for (const pt of marker.points) {
+                        const point = grid[pt.row][pt.col];
+                        const use = svgGroup.use(piece) as SVGG;
+                        use.dmove(point.x - sheetCellSize / 2, point.y - sheetCellSize / 2);
+                        use.scale((this.cellsize / sheetCellSize) * 0.85);
+                    }
                 }
             }
         }
