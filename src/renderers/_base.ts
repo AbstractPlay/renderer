@@ -1679,7 +1679,7 @@ export abstract class RendererBase {
                         const point = grid[pt.row][pt.col];
                         const use = svgGroup.use(piece) as SVGG;
                         use.dmove(point.x - sheetCellSize / 2, point.y - sheetCellSize / 2);
-                        use.scale((this.cellsize / sheetCellSize) * 0.85);
+                        use.scale(this.cellsize / sheetCellSize);
                     }
                 }
             }

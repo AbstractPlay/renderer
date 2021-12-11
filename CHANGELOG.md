@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added a new `glyph` marker for incorporating glyphs defined in the `legend` into the board itself. Only works in the `default` and `stacking-offset` renderers.
+- Added a new `glyph` marker for incorporating glyphs defined in the `legend` into the board itself. Only works in the `default` and `stacking-offset` renderers. This marker applies no extra padding around the glyph like it does for pieces. That would have to be added in the legend.
 
 ## [0.5.0] - 2021-12-10
 
