@@ -19,7 +19,7 @@ sheet.glyphs.set("chess-bishop-outline-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3544);
     group.rect(3544, 3544).fill({opacity: 0});
     group.path("M1756 3140l291 -290l291 291l-290 291zM1374 3141l673 673l674 -674l-673 -673zM1436 1980v-1432h1223v1432h-1223zM1159 2252h1777v-1982h-1777v1982z")
-        .rotate(180)
+        .rotate(180, 2047.5, 2042)
         .translate(-275, -270)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -32,7 +32,7 @@ sheet.glyphs.set("chess-bishop-outline-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1525);
     group.rect(1525, 1525).fill({opacity: 0});
     group.path("M1639 922v354l-120 64l-174 -93l124 -66v-259l-1 -512h-888v511v253l630 333l-186 99l-615 -332v-353v-682h1230v683zM341 921v410l684 365l347 -185l-725 -383v-207v-263v-180h754v184v259v207l-222 117l345 185l182 -99v-409v-262v-489h-1365v487v263z")
-        .rotate(180)
+        .rotate(180, 1023.5, 933.5)
         .translate(-261, -171)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -57,7 +57,7 @@ sheet.glyphs.set("chess-bishop-solid-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3550.03564);
     group.rect(3550.03564, 3550.03564).fill({opacity: 0});
     group.path("M1159 2252h1777v-1982h-1777v1982zM1374 3141l673 673l674 -674l-673 -673z")
-        .rotate(180)
+        .rotate(180, 2047.5, 2042)
         .translate(-272.482, -266.464)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -71,7 +71,7 @@ sheet.glyphs.set("chess-bishop-solid-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1530.33337);
     group.rect(1530.33337, 1530.33337).fill({opacity: 0});
     group.path("M341 921v410l684 365l347 -185l-725 -383v-207v-263v-180h754v184v259v207l-222 117l345 185l182 -99v-409v-262v-489h-1365v487v263z")
-        .rotate(180)
+        .rotate(180, 1023.5, 933.5)
         .translate(-258.333, -168.5)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -124,7 +124,7 @@ sheet.glyphs.set("chess-king-outline-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3710);
     group.rect(3710, 3710).fill({opacity: 0});
     group.path("M2048 3348h-612v271h477v207h270v-207h476v-271h-611zM2773 1844l622 954h-2698l626 -954h1450zM2936 1570h-1777l-966 1499h3710zM1913 2591h270v-471h-270v471zM1792 2120l-324 -1l-333 470h330zM2304 2120l330 471l327 -1l-323 -470h-334zM1436 1027v-479h1223v479 h-1223zM1159 1298h1777v-1028h-1777v1028z")
-        .rotate(180)
+        .rotate(180, 2048, 2048)
         .translate(-193, -193)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -137,7 +137,7 @@ sheet.glyphs.set("chess-king-outline-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1706);
     group.rect(1706, 1706).fill({opacity: 0});
     group.path("M1470 855l-2 -445h-888v450l445 232zM1178 1399v-93l528 -282v-853h-1365v853l530 280v95h-291v307h291v171h307v-171h290v-307h-290zM1401 820l-374 199l-380 -199v-342h754v342zM1110 1264l-1 203h292v171h-292v171h-170v-171h-292v-171h292l-1 -205l-529 -284v-739 h1230v744z")
-        .rotate(180)
+        .rotate(180, 1023.5, 1024)
         .translate(-170.5, -171)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -162,7 +162,7 @@ sheet.glyphs.set("chess-king-solid-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3719.17310);
     group.rect(3719.17310, 3719.17310).fill({opacity: 0});
     group.path("M2048 3348h-612v271h477v207h270v-207h476v-271h-611zM1159 1298h1777v-1028h-1777v1028zM2392 2096h369l356 518l-360 2zM1703 2096l-361 518h-363l367 -518h357zM1900 2616v-520h297v520h-297zM2936 1570h-1777l-966 1499h3710z")
-        .rotate(180)
+        .rotate(180, 2048, 2048)
         .translate(-188.412, -188.413)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -176,7 +176,7 @@ sheet.glyphs.set("chess-king-solid-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1711);
     group.rect(1711, 1711).fill({opacity: 0});
     group.path("M1178 1399v-93l528 -282v-853h-1365v853l530 280v95h-291v307h291v171h307v-171h290v-307h-290zM1401 820l-374 199l-380 -199v-342h754v342z")
-        .rotate(180)
+        .rotate(180, 1023.5, 1024)
         .translate(-168, -168.5)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -203,7 +203,7 @@ sheet.glyphs.set("chess-knight-outline-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3550);
     group.rect(3550, 3550).fill({opacity: 0});
     group.path("M2014 2867q185 0 185 -185t-185 -185q-184 0 -184 185t184 185zM3031 1155h-271v734l-394 395l268 120l398 -399zM3562 549v-279h-2384l-2 278l549 1174l-767 -280l-431 924l1488 1042l-214 216l196 196l1565 -1576v-1695zM2095 1860l-612 -1312h1809l1 1587l-1075 1075 l-1341 -938l223 -479l1059 386l95 -260z")
-        .rotate(180)
+        .rotate(180, 2044.5, 2045)
         .translate(-269.5, -270)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -216,7 +216,7 @@ sheet.glyphs.set("chess-knight-outline-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1535);
     group.rect(1535, 1535).fill({opacity: 0});
     group.path("M1639 1422v216h-1230v-171h911l-911 -485v-743h1230v748l-410 215zM1706 1706v-323l-334 -180l334 -179v-853h-1365v853l708 375h-708v307h1365zM1470 855l-2 -445h-888v450l445 232zM1024 1020l-377 -200v-342h754v342z")
-        .rotate(180)
+        .rotate(180, 1023.5, 938.5)
         .translate(-256, -171)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -241,7 +241,7 @@ sheet.glyphs.set("chess-knight-solid-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3556.04053);
     group.rect(3556.04053, 3556.04053).fill({opacity: 0});
     group.path("M3113 1196l1 850l-398 398l-268 -119l394 -395v-734h271zM1953 2914q-170 0 -170 -170t170 -170q171 0 171 170t-171 170zM1627 3137q42 10 96 47q49 34 77 73l215 151l-214 216l196 196l1565 -1572v-1978l-2385 1v289l548 1162l-767 -280l-431 924z")
-        .rotate(180)
+        .rotate(180, 2044.5, 2045)
         .translate(-266.806, -267.499)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -255,7 +255,7 @@ sheet.glyphs.set("chess-knight-solid-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1540);
     group.rect(1540, 1540).fill({opacity: 0});
     group.path("M1024 1020l-377 -200v-342h754v342zM1706 1706v-323l-334 -180l334 -179v-853h-1365v853l708 375h-708v307h1365z")
-        .rotate(180)
+        .rotate(180, 1023.5, 938.5)
         .translate(-253.5, -168.500)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -282,7 +282,7 @@ sheet.glyphs.set("chess-pawn-outline-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 2261);
     group.rect(2261, 2261).fill({opacity: 0});
     group.path("M1159 1298h1777v-1028h-1777v1028zM1436 1027v-479h1223v479h-1223zM1842 2255v-414h412v414h-412zM1572 2526h952v-956h-952v956z")
-        .rotate(180)
+        .rotate(180, 2047.5, 1398)
         .translate(-917, -267.500)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -296,7 +296,7 @@ sheet.glyphs.set("chess-pawn-outline-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1365);
     group.rect(1365, 1365).fill({opacity: 0});
     group.path("M1470 855q-1 -111 -1.5 -222.5t-0.5 -222.5h-444h-444v224.5v225.5q111 57 222.5 115.5t222.5 116.5q111 -60 222 -119t223 -118zM1639 983l-612 326l-618 -331v-739h1230v744zM341 1024l686 364l679 -364v-853h-1365v853zM1025 1020q-95 -50 -189.5 -100t-188.5 -100 v-171.5v-170.5h376.5h377.5v170.5v171.5q-95 50 -189 100t-187 100z")
-        .rotate(180)
+        .rotate(180, 1023.5, 779.5)
         .translate(-341, -97)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -321,7 +321,7 @@ sheet.glyphs.set("chess-pawn-solid-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 2256);
     group.rect(2256, 2256).fill({opacity: 0});
     group.path("M1159 1298h1777v-1028h-1777v1028zM1572 2526h952v-956h-952v956z")
-        .rotate(180)
+        .rotate(180, 2047.5, 1398)
         .translate(-919.5, -270)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -334,7 +334,7 @@ sheet.glyphs.set("chess-pawn-solid-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1370);
     group.rect(1370, 1370).fill({opacity: 0});
     group.path("M341 1024l686 364l679 -364v-853h-1365v853zM1025 1020l-378 -200v-342h754v342z")
-        .rotate(180)
+        .rotate(180, 1023.5, 779.5)
         .translate(-338.5, -94.667)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -361,7 +361,7 @@ sheet.glyphs.set("chess-queen-outline-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3711);
     group.rect(3711, 3711).fill({opacity: 0});
     group.path("M2048 2120h-285l285 488l281 -488h-281zM3282 2622l-802 -218l-432 749l-431 -747l-802 214l508 -776h1450zM3905 3068l-969 -1498h-1777l-965 1498l1291 -349l563 975l564 -973zM1436 1027v-479h1223v479h-1223zM1159 1298h1777v-1028h-1777v1028z")
-        .rotate(180)
+        .rotate(180, 2049.5, 1982)
         .translate(-194, -126.5)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -374,7 +374,7 @@ sheet.glyphs.set("chess-queen-outline-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1706);
     group.rect(1706, 1706).fill({opacity: 0});
     group.path("M1470 855l-2 -445h-888v450l445 232zM1176 1467l225 121v289h305v-494l-336 -179l336 -180v-853h-1365v853l339 178l-339 181v494h306v-289l225 -119l-1 408h306zM1401 820l-376 200l-378 -200v-342h754v342zM1639 987l-410 215l410 222v385h-171v-260l-359 -193v453 h-170v-453l-359 193v260h-171l1 -385l409 -222l-409 -215l-1 -748h1230v748z")
-        .rotate(180)
+        .rotate(180, 1023.5, 1024)
         .translate(-170.5, -171)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -399,7 +399,7 @@ sheet.glyphs.set("chess-queen-solid-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3722.25);
     group.rect(3722.25, 3722.25).fill({opacity: 0});
     group.path("M1159 1298h1777v-1028h-1777v1028zM3905 3068l-969 -1498h-1777l-965 1498l1291 -349l563 975l564 -973zM2048 2120h281l-281 488l-285 -488h285z")
-        .rotate(180)
+        .rotate(180, 2049.5, 1982)
         .translate(-188.371, -119.629)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -413,7 +413,7 @@ sheet.glyphs.set("chess-queen-solid-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1711);
     group.rect(1711, 1711).fill({opacity: 0});
     group.path("M1176 1467l225 121v289h305v-494l-336 -179l336 -180v-853h-1365v853l339 178l-339 181v494h306v-289l225 -119l-1 408h306zM1401 820l-376 200l-378 -200v-342h754v342z")
-        .rotate(180)
+        .rotate(180, 1023.5, 1024)
         .translate(-168, -168.5)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -440,7 +440,7 @@ sheet.glyphs.set("chess-rook-outline-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3277);
     group.rect(3277, 3277).fill({opacity: 0});
     group.path("M1436 1027v-479h1223v479h-1223zM1159 1298h1777v-1028h-1777v1028zM2048 2255h-135v543h-477v-543h-277v543h-476v-957h2729v957h-476v-543h-277v543h-476v-543h-135zM406 3076h3277v-1506h-3277v1506z")
-        .rotate(180)
+        .rotate(180, 2044.5, 1673)
         .translate(-406, -34.5)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -453,7 +453,7 @@ sheet.glyphs.set("chess-rook-outline-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1535);
     group.rect(1535, 1535).fill({opacity: 0});
     group.path("M341 1024l339 179l-339 180v323h306v-118l381 -200l373 200v118h305v-323l-334 -180l334 -179v-853h-1365v853zM1024 1020l-377 -200v-342h754v342zM1470 855l-2 -445h-888v450l445 232zM580 1549v89h-171l1 -214l409 -222l-409 -215l-1 -748h1230v748l-410 215l410 222 v214h-171v-89l-444 -238l-440 236z")
-        .rotate(180)
+        .rotate(180, 1023.5, 938.5)
         .translate(-256, -171)
         .attr("data-playerfill", true)
         .fill("#000");
@@ -478,7 +478,7 @@ sheet.glyphs.set("chess-rook-solid-line", (canvas: SVGContainer) => {
         .attr("data-cellsize", 3282);
     group.rect(3282, 3282).fill({opacity: 0});
     group.path("M2762 2798v-678h345v678h-345zM1877 2798v-678h341v678h-341zM988 2798v-678h345v678h-345zM406 3076h3277v-1506h-3277v1506zM1159 1298h1777v-1028h-1777v1028z")
-        .rotate(180)
+        .rotate(180, 2044.5, 1673)
         .translate(-403.5, -32)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -492,7 +492,7 @@ sheet.glyphs.set("chess-rook-solid-millenia", (canvas: SVGContainer) => {
         .attr("data-cellsize", 1540);
     group.rect(1540, 1540).fill({opacity: 0});
     group.path("M1024 1020l-377 -200v-342h754v342zM341 1024l339 179l-339 180v323h306v-118l381 -200l373 200v118h305v-323l-334 -180l334 -179v-853h-1365v853z")
-        .rotate(180)
+        .rotate(180, 1023.5, 938.5)
         .translate(-253.5, -168.5)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})

@@ -308,8 +308,7 @@ export abstract class RendererBase {
                            scaledy += (cellsize - (sheetCellSize * factor)) / 2;
                         }
                         use.dmove(scaledx, scaledy);
-                        use.scale(factor);
-                        // use.size(cellsize);
+                        use.scale(factor, cellsize / 2, cellsize / 2);
 
                         // Shift if requested
                         if (glyph.nudge !== undefined) {
