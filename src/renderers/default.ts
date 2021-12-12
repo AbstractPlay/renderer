@@ -15,6 +15,9 @@ export class DefaultRenderer extends RendererBase {
             return this.renderGlyph(json, draw, opts);
         }
 
+        // Load all the pieces in the legend (have to do this first so the glyphs are available for marking the board)
+        this.loadLegend(json, draw, opts);
+
         let gridPoints: GridPoints;
         if (! ("style" in json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
@@ -54,17 +57,7 @@ export class DefaultRenderer extends RendererBase {
                 throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
         }
 
-        // Rotate the board if requested
-        if (opts.rotate === 180) {
-            this.rotateBoard(draw);
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
-        }
-
         // PIECES
-        // Load all the pieces in the legend
-        this.loadLegend(json, draw, opts);
-
-        // Now place the pieces
         const group = draw.group().id("pieces");
         if (json.pieces !== null) {
             // Generate pieces array

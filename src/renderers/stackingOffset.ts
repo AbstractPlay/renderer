@@ -23,6 +23,10 @@ export class StackingOffsetRenderer extends RendererBase {
         if (! ("style" in json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
+
+        // Load all the pieces in the legend (have to do this early so the glyphs are available for marking the board)
+        this.loadLegend(json, draw, opts);
+
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
@@ -51,17 +55,7 @@ export class StackingOffsetRenderer extends RendererBase {
                 throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
         }
 
-        // Rotate the board if requested
-        if (opts.rotate === 180) {
-            this.rotateBoard(draw);
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
-        }
-
         // PIECES
-        // Load all the pieces in the legend
-        this.loadLegend(json, draw, opts);
-
-        // Now place the pieces
         const group = draw.group().id("pieces");
         if (json.pieces !== null) {
             // Generate pieces array
@@ -101,25 +95,55 @@ export class StackingOffsetRenderer extends RendererBase {
                 offsetPercent = json.board.stackOffset;
             }
             const offset = this.cellsize * offsetPercent;
-            for (let row = 0; row < pieces.length; row++) {
-                for (let col = 0; col < pieces[row].length; col++) {
-                    for (let i = 0; i < pieces[row][col].length; i++) {
-                        const key = pieces[row][col][i];
-                        if ( (key !== null) && (key !== "-") ) {
-                            const point = gridPoints[row][col];
-                            const piece = SVG("#" + key);
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+            // if the board is rotated, you have to place the pieces in reverse row order
+            // for now the code is duplicated
+            if (opts.rotate === 180) {
+                // for (let row = 0; row < pieces.length; row++) {
+                for (let row = pieces.length - 1; row >= 0; row--) {
+                    for (let col = 0; col < pieces[row].length; col++) {
+                        for (let i = 0; i < pieces[row][col].length; i++) {
+                            const key = pieces[row][col][i];
+                            if ( (key !== null) && (key !== "-") ) {
+                                const point = gridPoints[row][col];
+                                const piece = SVG("#" + key);
+                                if ( (piece === null) || (piece === undefined) ) {
+                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                                }
+                                const use = group.use(piece) as SVGG;
+                                use.center(point.x, point.y - (offset * i));
+                                const sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
+                                use.scale((this.cellsize / sheetCellSize) * 0.85);
+                                if (opts.boardClick !== undefined) {
+                                    use.click(() => opts.boardClick!(row, col, i.toString()));
+                                }
                             }
-                            const use = group.use(piece) as SVGG;
-                            use.center(point.x, point.y - (offset * i));
-                            const sheetCellSize = piece.attr("data-cellsize");
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                            }
-                            use.scale((this.cellsize / sheetCellSize) * 0.85);
-                            if (opts.boardClick !== undefined) {
-                                use.click(() => opts.boardClick!(row, col, i.toString()));
+                        }
+                    }
+                }
+            } else {
+                for (let row = 0; row < pieces.length; row++) {
+                    for (let col = 0; col < pieces[row].length; col++) {
+                        for (let i = 0; i < pieces[row][col].length; i++) {
+                            const key = pieces[row][col][i];
+                            if ( (key !== null) && (key !== "-") ) {
+                                const point = gridPoints[row][col];
+                                const piece = SVG("#" + key);
+                                if ( (piece === null) || (piece === undefined) ) {
+                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                                }
+                                const use = group.use(piece) as SVGG;
+                                use.center(point.x, point.y - (offset * i));
+                                const sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
+                                use.scale((this.cellsize / sheetCellSize) * 0.85);
+                                if (opts.boardClick !== undefined) {
+                                    use.click(() => opts.boardClick!(row, col, i.toString()));
+                                }
                             }
                         }
                     }
@@ -130,11 +154,6 @@ export class StackingOffsetRenderer extends RendererBase {
         // Finally, annotations
         if (opts.showAnnotations) {
             this.annotateBoard(json, draw, gridPoints, opts);
-        }
-
-        // Rotate the board if requested
-        if (opts.rotate > 0) {
-            this.rotateBoard(draw);
         }
     }
 }

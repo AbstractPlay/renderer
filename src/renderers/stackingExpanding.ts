@@ -20,6 +20,7 @@ export class StackingExpandingRenderer extends RendererBase {
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
         const opts = this.optionsPrecheck(options);
+        opts.rotate = 0;
 
         if (json.board === null) {
             // Load all the pieces in the legend
@@ -313,11 +314,6 @@ export class StackingExpandingRenderer extends RendererBase {
                     draw.use(nested).move(gridPoints[0][0].x - this.cellsize, placeY);
                     placeY += nested.height() as number;
                 }
-            }
-
-            // Rotate the board if requested
-            if (opts.rotate > 0) {
-                this.rotateBoard(draw);
             }
         }
     }

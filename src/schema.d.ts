@@ -177,6 +177,29 @@ export interface APRenderRep {
                */
               colour?: PositiveInteger | Colourstrings;
             }
+          | {
+              /**
+               * A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.
+               */
+              type: "glyph";
+              /**
+               * The name of the glyph in the `legend`.
+               */
+              glyph: string;
+              /**
+               * Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+               */
+              points: [
+                {
+                  row: number;
+                  col: number;
+                },
+                ...{
+                  row: number;
+                  col: number;
+                }[]
+              ];
+            }
         )[];
       }
     | {

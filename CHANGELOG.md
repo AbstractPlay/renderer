@@ -9,24 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a new `glyph` marker for incorporating glyphs defined in the `legend` into the board itself. Only works in the `default` and `stacking-offset` renderers. This marker applies no extra padding around the glyph like it does for pieces. That would have to be added in the legend.
+
+## [0.5.0] - 2021-12-10
+
+### Added
+
 - You can now render individual glyphs using all user settings by setting `board` to `null`. See the docs for details.
 - Added `player` as a colour option in annotations.
 - The pieces fit too snugly in the `hex-of-hex` board style. A 15% reduction has been baked in.
-- Added `house`, `palace`, and `tower` glyphs to the `core` sheet for Urbino.
 - Added a `fence` marker for drawing thick lines between cells. Only works for `squares*` board styles.
+- Added a `dots` annotation so you can add dots on top of pieces as well as just on the board itself.
 - Added a `squares-beveled` style that simply draws very faint gridlines, for use with fences. Will make this nicer later.
 - Added a `stackOffset` property to the schema for manual adjustment of stack offsets in the `stacking-offset` renderer.
 - Changed `annotations` to allow an empty list. There's really no reason to disallow it, other than to minimize JSON size. Still a good practice to cull it from the output if there aren't any.
-- Added a `dots` annotation so you can add dots on top of pieces as well as just on the board itself.
 - Added `boardHover` callback that triggers on `mousemove`. It is only applied to `stacking-expanding` boards and is intended to trigger the cell expansion feature.
 - Attached `boardClick` handler to pieces in `localStash` areas and the Homeworlds global stash. It returns coordinates of `-1,-1` and the name of the piece.
 - Adjusted `stacking-expanding` renderer to allow for the `board` and `pieces` attributes to be `null` to render *just* an `expandedColumn` area. This is an attempt and improving performance of `stacking-expanding` games in live use.
+- Added `house`, `palace`, and `tower` glyphs to the `core` sheet for Urbino. Also added a dragon glyph that ended up not being used, but there it is.
 
 ### Fixed
 
 - Fixed `renderStatic()` to work properly now under SVG.js 3.x and respect the size and id options.
 - Fixed bug in `entropy` renderer that caused only the first character of pieces to be recognized.
 - Fixed `renderglyph()`.
+- Boards now finally rotate properly.
+  - Homeworlds rotation has always worked and supports rotating in increments of 90 degrees, allowing players to see the board from their own perspective.
+  - For the default renderer, rotation by 180 degrees is all that will ever be supported.
+  - Rotation is disabled for the `stacking-expanding` renderer.
+  - For the default renderer, all board styles are now fully supported, including click handlers, annotations, and markers.
+  - The `stacking-offset` renderer also appears to work correctly.
 
 ## [0.4.0] - 2021-11-17
 
