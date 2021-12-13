@@ -91,6 +91,23 @@ export interface APRenderRep {
          */
         stackOffset?: number;
         /**
+         * Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.
+         */
+        buffer?: {
+          /**
+           * The width of the zone expressed as a percentage of the cell size. If zero, the zone is omitted.
+           */
+          width: number;
+          /**
+           * The name of one of the built-in patterns for fill.
+           */
+          pattern?: string;
+          /**
+           * Choose which of the four sides you want displayed. By default, it's all four.
+           */
+          show?: ("N" | "E" | "S" | "W")[];
+        };
+        /**
          * Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.
          */
         markers?: (

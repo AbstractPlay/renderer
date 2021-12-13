@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a new `glyph` marker for incorporating glyphs defined in the `legend` into the board itself. Only works in the `default` and `stacking-offset` renderers. This marker applies no extra padding around the glyph like it does for pieces. That would have to be added in the legend.
 - Added a new `text` property to glyph definitions. This allows you to create arbitrary text glyphs using all the standard colour and layout options. It is mutually exclusive with the `name` property. Because not all implementations of JSON schema handle this sort of validation equally, validation is not handled at that level. If `name` is present, it will override the `text` property. If neither are present, a runtime error is thrown.
+- Added a new `buffer` property to the `board` schema to create adjustable buffer zones on given edges of the board. The intent is that these would be used by the click handlers to do things like bear pieces off the board or other such interactions. Only works for `square*`, `vertex*`, and `go` boards. If a click handler is attached, they will all return the coordinates `-1, -1` and the label `_buffer_[DIR]`, either `N`, `E`, `S`, or `W`. Rotates correctly.
+
+  **Note:** To avoid the buffer click handlers from interfering with the generic click handler on `vertex` boards, if a buffer is present at all (regardless of whether it is shown), the generic handler ignores clicks outside of the board's outer edge. This reduces the sensitivity of clicks along the edge, but it's still quite functional.
 
 ## [0.5.0] - 2021-12-10
 

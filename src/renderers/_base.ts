@@ -1,4 +1,4 @@
-import { Element as SVGElement, G as SVGG, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
+import { Element, Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
 import { defineGrid, extendHex } from "honeycomb-grid";
 import { applyToPoint, compose, scale } from "transformation-matrix";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
@@ -34,6 +34,12 @@ function coords2algebraicHex(x: number, y: number, height: number): string {
     const columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     return columnLabels[height - y - 1] + (x + 1).toString();
 }
+
+interface IBuffer {
+    width?: number;
+    pattern?: string;
+    show?: ("N"|"E"|"S"|"W")[];
+};
 
 export abstract class RendererBase {
     public readonly name: string;
@@ -440,6 +446,113 @@ export abstract class RendererBase {
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = draw.group().id("board");
 
+        // create buffer zone first if requested
+        let bufferwidth = 0;
+        let show: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
+        // @ts-expect-error
+        if ( ("buffer" in json.board) && (json.board.buffer !== undefined) && ("width" in json.board.buffer) && (json.board.buffer.width !== undefined) && (json.board.buffer.width > 0) ) {
+            bufferwidth = cellsize * (json.board.buffer as IBuffer).width!;
+            // @ts-expect-error
+            if ( ("show" in json.board.buffer) && (json.board.buffer.show !== undefined) && (Array.isArray(json.board.buffer.show)) && (json.board.buffer.show.length > 0) ) {
+                show = [...(json.board.buffer as IBuffer).show!];
+            }
+            // adjust `show` to account for rotation
+            const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
+            if (opts.rotate === 180) {
+                const newshow: ("N"|"E"|"S"|"W")[] = [];
+                for (const dir of show) {
+                    newshow.push(oppDir.get(dir)!);
+                }
+                show = [...newshow];
+            }
+            let pattern: string | undefined;
+            // @ts-expect-error
+            if ( ("pattern" in json.board.buffer) && (json.board.buffer.pattern !== undefined) && (json.board.buffer.pattern.length > 0) ) {
+                pattern = (json.board.buffer as IBuffer).pattern;
+            }
+            if (pattern !== undefined) {
+                this.loadPattern(pattern, draw);
+            }
+            let fill: Element | undefined;
+            if (pattern !== undefined) {
+                fill = draw.findOne(`#${pattern}`) as Element;
+                if (fill === undefined) {
+                    throw new Error("Could not load the fill for the buffer zone.");
+                }
+            }
+            const offset = cellsize * 0.1;
+            // top
+            let height = bufferwidth;
+            let width = (grid[0][grid[0].length - 1].x + cellsize) - grid[0][0].x;
+            let x = grid[0][0].x - (cellsize / 2);
+            let y = grid[0][0].y - (cellsize / 2) - (height + offset);
+            let buffN: SVGRect | undefined;
+            if (show.includes("N")) {
+                let key = "_buffer_N";
+                if (opts.rotate === 180) {
+                    key = "_buffer_S";
+                }
+                buffN = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+            // bottom
+            x = grid[grid.length - 1][0].x - (cellsize / 2);
+            y = grid[grid.length - 1][0].y + (cellsize / 2) + offset;
+            let buffS: SVGRect | undefined;
+            if (show.includes("S")) {
+                let key = "_buffer_S";
+                if (opts.rotate === 180) {
+                    key = "_buffer_N";
+                }
+                buffS = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+            // left
+            width = bufferwidth;
+            height = (grid[grid.length - 1][0].y + cellsize) - grid[0][0].y;
+            x = grid[0][0].x - (cellsize / 2) - (width + offset);
+            y = grid[0][0].y - (cellsize / 2);
+            let buffW: SVGRect | undefined;
+            if (show.includes("W")) {
+                let key = "_buffer_W";
+                if (opts.rotate === 180) {
+                    key = "_buffer_E";
+                }
+                buffW = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+            // right
+            x = grid[0][grid[0].length - 1].x + (cellsize / 2) + offset;
+            y = grid[0][0].y - (cellsize / 2);
+            let buffE: SVGRect | undefined;
+            if (show.includes("E")) {
+                let key = "_buffer_E";
+                if (opts.rotate === 180) {
+                    key = "_buffer_W";
+                }
+                buffE = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+
+            // Fill and add click handlers to all four zones at once
+            for (const buff of [buffN, buffS, buffW, buffE]) {
+                if (buff === undefined) { continue; }
+                if (fill !== undefined) {
+                    buff.fill(fill);
+                } else {
+                    buff.fill({color: "white", opacity: 0})
+                }
+                if (opts.boardClick !== undefined) {
+                    buff.click(() => opts.boardClick!(-1, -1, buff.id()));
+                }
+            }
+            bufferwidth += offset;
+        }
+
         // Add board labels
         const labels = board.group().id("labels");
         let columnLabels = this.columnLabels.slice(0, width);
@@ -448,8 +561,8 @@ export abstract class RendererBase {
         }
         // Columns (letters)
         for (let col = 0; col < width; col++) {
-            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
-            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize - (show.includes("N") ? bufferwidth : 0)};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize + (show.includes("S") ? bufferwidth : 0)};
             labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
             labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
@@ -466,8 +579,8 @@ export abstract class RendererBase {
             }
         }
         for (let row = 0; row < height; row++) {
-            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
-            const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+            const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
             labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
             labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
@@ -725,6 +838,113 @@ export abstract class RendererBase {
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = draw.group().id("board");
 
+        // create buffer zone first if requested
+        let bufferwidth = 0;
+        let show: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
+        // @ts-expect-error
+        if ( ("buffer" in json.board) && (json.board.buffer !== undefined) && ("width" in json.board.buffer) && (json.board.buffer.width !== undefined) && (json.board.buffer.width > 0) ) {
+            bufferwidth = cellsize * (json.board.buffer as IBuffer).width!;
+            // @ts-expect-error
+            if ( ("show" in json.board.buffer) && (json.board.buffer.show !== undefined) && (Array.isArray(json.board.buffer.show)) && (json.board.buffer.show.length > 0) ) {
+                show = [...(json.board.buffer as IBuffer).show!];
+            }
+            // adjust `show` to account for rotation
+            const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
+            if (opts.rotate === 180) {
+                const newshow: ("N"|"E"|"S"|"W")[] = [];
+                for (const dir of show) {
+                    newshow.push(oppDir.get(dir)!);
+                }
+                show = [...newshow];
+            }
+            let pattern: string | undefined;
+            // @ts-expect-error
+            if ( ("pattern" in json.board.buffer) && (json.board.buffer.pattern !== undefined) && (json.board.buffer.pattern.length > 0) ) {
+                pattern = (json.board.buffer as IBuffer).pattern;
+            }
+            if (pattern !== undefined) {
+                this.loadPattern(pattern, draw);
+            }
+            let fill: Element | undefined;
+            if (pattern !== undefined) {
+                fill = draw.findOne(`#${pattern}`) as Element;
+                if (fill === undefined) {
+                    throw new Error("Could not load the fill for the buffer zone.");
+                }
+            }
+            const offset = cellsize * 0.2;
+            // top
+            let height = bufferwidth;
+            let width = (grid[0][grid[0].length - 1].x) - grid[0][0].x;
+            let x = grid[0][0].x;
+            let y = grid[0][0].y - (height + offset);
+            let buffN: SVGRect | undefined;
+            if (show.includes("N")) {
+                let key = "_buffer_N";
+                if (opts.rotate === 180) {
+                    key = "_buffer_S";
+                }
+                buffN = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+            // bottom
+            x = grid[grid.length - 1][0].x;
+            y = grid[grid.length - 1][0].y + offset;
+            let buffS: SVGRect | undefined;
+            if (show.includes("S")) {
+                let key = "_buffer_S";
+                if (opts.rotate === 180) {
+                    key = "_buffer_N";
+                }
+                buffS = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+            // left
+            width = bufferwidth;
+            height = (grid[grid.length - 1][0].y) - grid[0][0].y;
+            x = grid[0][0].x- (width + offset);
+            y = grid[0][0].y;
+            let buffW: SVGRect | undefined;
+            if (show.includes("W")) {
+                let key = "_buffer_W";
+                if (opts.rotate === 180) {
+                    key = "_buffer_E";
+                }
+                buffW = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+            // right
+            x = grid[0][grid[0].length - 1].x + offset;
+            y = grid[0][0].y;
+            let buffE: SVGRect | undefined;
+            if (show.includes("E")) {
+                let key = "_buffer_E";
+                if (opts.rotate === 180) {
+                    key = "_buffer_W";
+                }
+                buffE = board.rect(width, height).id(key)
+                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                .move(x, y);
+            }
+
+            // Fill and add click handlers to all four zones at once
+            for (const buff of [buffN, buffS, buffW, buffE]) {
+                if (buff === undefined) { continue; }
+                if (fill !== undefined) {
+                    buff.fill(fill);
+                } else {
+                    buff.fill({color: "white", opacity: 0})
+                }
+                if (opts.boardClick !== undefined) {
+                    buff.click(() => opts.boardClick!(-1, -1, buff.id()));
+                }
+            }
+            bufferwidth += offset;
+        }
+
         // Add board labels
         const labels = board.group().id("labels");
         let columnLabels = this.columnLabels.slice(0, width);
@@ -733,8 +953,8 @@ export abstract class RendererBase {
         }
         // Columns (letters)
         for (let col = 0; col < width; col++) {
-            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
-            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize / 2) - (show.includes("N") ? bufferwidth : 0)};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize / 2) + (show.includes("S") ? bufferwidth : 0)};
             labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
             labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
@@ -751,8 +971,8 @@ export abstract class RendererBase {
             }
         }
         for (let row = 0; row < height; row++) {
-            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
-            const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+            const pointL = {x: grid[row][0].x - (cellsize / 2) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + (cellsize / 2) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
             labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
             labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }
@@ -829,12 +1049,17 @@ export abstract class RendererBase {
             if (json.renderer !== "stacking-offset") {
                 const originX = grid[0][0].x;
                 const originY = grid[0][0].y;
+                const maxX = grid[0][grid[0].length - 1].x;
+                const maxY = grid[grid.length - 1][0].y;
                 let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                     const point = draw.point(e.clientX, e.clientY);
                     const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                     const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                     if (x >= 0 && x < width && y >= 0 && y < height) {
-                        opts.boardClick!(y, x, "");
+                        // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                        if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                            opts.boardClick!(y, x, "");
+                        }
                     }
                 });
                 if (opts.rotate === 180) {
@@ -843,7 +1068,10 @@ export abstract class RendererBase {
                         const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                         const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                         if (x >= 0 && x < width && y >= 0 && y < height) {
-                            opts.boardClick!(y, x, "");
+                            // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                            if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                                opts.boardClick!(y, x, "");
+                            }
                         }
                     });
                 }
