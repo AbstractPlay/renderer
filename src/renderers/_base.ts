@@ -198,6 +198,7 @@ export abstract class RendererBase {
     protected loadLegend(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut) {
         if ( ("legend" in json) && (json.legend !== undefined) ) {
             const glyphSet: Set<string> = new Set();
+            const textSet: Set<string> = new Set();
             // tslint:disable-next-line: forin
             for (const key in json.legend) {
                 const node = json.legend[key];
@@ -205,15 +206,39 @@ export abstract class RendererBase {
                     glyphSet.add(node);
                 } else if (Array.isArray(node)) {
                     node.forEach((e) => {
-                        glyphSet.add(e.name);
+                        if ( ("name" in e) && (e.name !== undefined) ) {
+                            glyphSet.add(e.name);
+                        } else if ( ("text" in e) && (e.text !== undefined) && (e.text.length > 0) ) {
+                            textSet.add(e.text);
+                        }
                     });
                 } else {
-                    glyphSet.add(node.name);
+                    if ( ("name" in node) && (node.name !== undefined) ) {
+                        glyphSet.add(node.name);
+                    } else if ( ("text" in node) && (node.text !== undefined) && (node.text.length > 0) ) {
+                        textSet.add(node.text);
+                    }
                 }
             }
             for (const glyph of glyphSet) {
                 this.loadGlyph(glyph, opts.sheetList, draw);
             }
+
+            // create text glyphs
+            textSet.forEach((v) => {
+                const key = `_text_${v}`;
+                const group = draw.defs().group().id(key);
+                const fontsize = 17;
+                const text = group.text(v).font({
+                    anchor: "start",
+                    fill: "#000",
+                    size: fontsize,
+                });
+                text.attr("data-playerfill", true);
+                const squaresize = Math.max(text.bbox().height, text.bbox().width);
+                text.center(squaresize / 2, squaresize / 2);
+                group.attr("data-cellsize", squaresize);
+            });
 
             // Load any requested patterns
             if (opts.patterns) {
@@ -264,7 +289,14 @@ export abstract class RendererBase {
                     // Layer the glyphs, manipulating as you go
                     glyphs.forEach((glyph) => {
                         // Get the glyph from <defs>
-                        const got = draw.findOne("#" + glyph.name) as SVGG;
+                        let got: SVGG;
+                        if ( ("name" in glyph) && (glyph.name !== undefined) && (glyph.name.length > 0) ) {
+                            got = draw.findOne("#" + glyph.name) as SVGG;
+                        } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
+                            got = draw.findOne("#_text_" + glyph.text) as SVGG;
+                        } else {
+                            throw new Error("Either `name` or `text` must be supplied for each glyph.");
+                        }
                         if ( (got === undefined) || (got === null) ) {
                             throw new Error(`Could not load the requested glyph: ${glyph.name}.`);
                         }

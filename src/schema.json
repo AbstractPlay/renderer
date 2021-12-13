@@ -27,6 +27,10 @@
                     "type": "string",
                     "pattern": "^\\S+$"
                 },
+                "text": {
+                    "description": "Mutually exclusive with `name`. In this case, the glyph is plain text, shrunk down to the appropriate size to fit in a cell. This is intended for very short strings, like numbers.",
+                    "type": "string"
+                },
                 "player": {
                     "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
                     "$ref": "#/definitions/positiveInteger"
@@ -72,9 +76,6 @@
                     "additionalProperties": false
                 }
             },
-            "required": [
-                "name"
-            ],
             "additionalProperties": false
         }
     },

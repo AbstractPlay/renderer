@@ -603,7 +603,11 @@ export interface Glyph {
   /**
    * The name of the actual glyph. It may not contain any whitespace.
    */
-  name: string;
+  name?: string;
+  /**
+   * Mutually exclusive with `name`. In this case, the glyph is plain text, shrunk down to the appropriate size to fit in a cell. This is intended for very short strings, like numbers.
+   */
+  text?: string;
   /**
    * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
    */
