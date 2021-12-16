@@ -260,13 +260,10 @@ export class StackingExpandingRenderer extends RendererBase {
                             }
                             used.push([use, piece.viewbox().h]);
                             const factor = (cellsize / sheetCellSize);
-                            use.scale(factor, 0, 0);
-                            // // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                            // const factor = (cellsize / sheetCellSize);
-                            // const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                            // const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                            // use.dmove((newpt.x * -1) + (iStack * cellsize), (newpt.y * -1) + textHeight);
-                            // use.scale(factor * 0.95);
+                            const newx = iStack * cellsize;
+                            const newy = textHeight;
+                            use.dmove(newx, newy);
+                            use.scale(factor, newx, newy);
                         }
                         // Now go through each piece and shift them down
                         let dy: number = 0;
@@ -278,7 +275,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
                     // Add area label
                     const txt = nested.text(area.label);
-                    txt.font("size", "50%").move(0, 0).fill("#000");
+                    txt.font({size: textHeight}).move(0, 0).fill("#000");
 
                     // Now place the whole group below the board
                     draw.use(nested).move(gridPoints[0][0].x - this.cellsize, placeY);

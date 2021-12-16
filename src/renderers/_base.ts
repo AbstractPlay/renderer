@@ -929,8 +929,8 @@ export abstract class RendererBase {
         }
         // Columns (letters)
         for (let col = 0; col < width; col++) {
-            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize / 2) - (show.includes("N") ? bufferwidth : 0)};
-            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize / 2) + (show.includes("S") ? bufferwidth : 0)};
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
             labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
             labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
         }
@@ -947,8 +947,8 @@ export abstract class RendererBase {
             }
         }
         for (let row = 0; row < height; row++) {
-            const pointL = {x: grid[row][0].x - (cellsize / 2) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
-            const pointR = {x: grid[row][width - 1].x + (cellsize / 2) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
+            const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
             labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
             labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
         }

@@ -41,8 +41,8 @@ Array.from(sheets.values()).forEach((sheet) => {
         const name = names[idx];
         const glyph = glyphs[idx];
         const tile = nstSheet.nested().size(tileSizeOuter, tileSizeOuter);
-        const symbol = glyph(tile);
-        const used = tile.use(tile.findOne("#" + symbol.id()) as SVGSymbol);
+        const symbol = glyph(canvas.defs());
+        const used = tile.use(canvas.findOne("#" + symbol.id()) as SVGSymbol);
         // Scale it appropriately
         used.dmove(innerTL, innerTL);
         used.scale(factor, innerTL, innerTL);
