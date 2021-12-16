@@ -432,7 +432,7 @@ export class HomeworldsRenderer extends RendererBase {
             })
             .attr("alignment-baseline", "hanging")
             .attr("dominant-baseline", "hanging")
-            .move(1, 0);
+            .move(5, 5);
 
         return nested;
     }
