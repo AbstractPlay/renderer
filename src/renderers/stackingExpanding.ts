@@ -238,7 +238,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const offset = cellsize * 3.5;
                     const areaWidth = cellsize * numStacks;
                     const areaHeight = textHeight + cellsize + (offset * (maxHeight - 1));
-                    const nested = draw.defs().group().id(`_stash${iArea}`).size(areaWidth, areaHeight);
+                    const nested = draw.defs().nested().id(`_stash${iArea}`).size(areaWidth, areaHeight);
                     for (let iStack = 0; iStack < area.stash.length; iStack++) {
                         const stack = area.stash[iStack];
                         const used: [SVGUse, number][] = [];
@@ -275,7 +275,10 @@ export class StackingExpandingRenderer extends RendererBase {
 
                     // Add area label
                     const txt = nested.text(area.label);
-                    txt.font({size: textHeight}).move(0, 0).fill("#000");
+                    txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                        .attr("alignment-baseline", "hanging")
+                        .attr("dominant-baseline", "hanging")
+                        .move(0, 0);
 
                     // Now place the whole group below the board
                     draw.use(nested).move(gridPoints[0][0].x - this.cellsize, placeY);
