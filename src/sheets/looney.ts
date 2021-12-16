@@ -1,4 +1,4 @@
-import { Container as SVGContainer, G as SVGG } from "@svgdotjs/svg.js";
+import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import { ISheet } from "./ISheet";
 
 const sheet: ISheet = {
@@ -6,7 +6,7 @@ const sheet: ISheet = {
     // tslint:disable-next-line:object-literal-sort-keys
     description: "This sheet contains Looney pyramids of different sizes and orientations.",
     cellsize: 100,
-    glyphs: new Map<string, (canvas: SVGContainer) => SVGG>(),
+    glyphs: new Map<string, (canvas: SVGContainer) => SVGSymbol>(),
 };
 
 // Alphabetize by glyph name, please!
@@ -34,10 +34,8 @@ const upHalfcell = upCellsize / 2;
 sheet.glyphs.set("pyramid-flat-large", (canvas: SVGContainer) => {
     const height = 175;
     const base = 100;
-    const group = canvas.group()
-        .id("pyramid-flat-large")
-        .attr("data-cellsize", cellsize);
-    group.rect(cellsize, cellsize).fill("none");
+    const group = canvas.symbol()
+        .id("pyramid-flat-large");
     group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
@@ -57,27 +55,15 @@ sheet.glyphs.set("pyramid-flat-large", (canvas: SVGContainer) => {
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + (xOffset * 2), y);
+    group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
-
-// sheet.glyphs.set("pyramid-flat-large-ne", (canvas: SVGContainer) => {
-//     const glyph = sheet.glyphs.get("pyramid-flat-large");
-//     if (glyph === undefined) {
-//         throw new Error("Glyph could not be built. This should never happen.");
-//     }
-//     const group = glyph(canvas);
-//     group.id("pyramid-flat-large-ne");
-//     group.rotate(45).translate(15, -15);
-//     return group;
-// });
 
 sheet.glyphs.set("pyramid-flat-medium", (canvas: SVGContainer) => {
     const height = 137.5;
     const base = 78.125;
-    const group = canvas.group()
-        .id("pyramid-flat-medium")
-        .attr("data-cellsize", cellsize);
-    group.rect(cellsize, cellsize).fill("none");
+    const group = canvas.symbol()
+        .id("pyramid-flat-medium");
     group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
@@ -93,16 +79,15 @@ sheet.glyphs.set("pyramid-flat-medium", (canvas: SVGContainer) => {
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + xOffset, y);
+    group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-flat-small", (canvas: SVGContainer) => {
     const height = 100;
     const base = 56.25;
-    const group = canvas.group()
-        .id("pyramid-flat-small")
-        .attr("data-cellsize", cellsize);
-    group.rect(cellsize, cellsize).fill("none");
+    const group = canvas.symbol()
+        .id("pyramid-flat-small");
     group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
@@ -113,6 +98,7 @@ sheet.glyphs.set("pyramid-flat-small", (canvas: SVGContainer) => {
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
+    group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
 
@@ -120,10 +106,8 @@ sheet.glyphs.set("pyramid-flat-small", (canvas: SVGContainer) => {
 sheet.glyphs.set("pyramid-flattened-large", (canvas: SVGContainer) => {
     const height = 175;
     const base = 100;
-    const group = canvas.group()
-        .id("pyramid-flattened-large")
-        .attr("data-cellsize", cellsize);
-    group.rect(cellsize, cellsize).fill("none");
+    const group = canvas.symbol()
+        .id("pyramid-flattened-large");
     const tri = group.group();
     tri.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
@@ -144,17 +128,15 @@ sheet.glyphs.set("pyramid-flattened-large", (canvas: SVGContainer) => {
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + (xOffset * 2), y);
-    tri.translate(0, cellsize - (halfcell + height / 2));
+    group.viewbox(0, ((cellsize - (halfcell + height / 2)) * -1) + 1, cellsize, cellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-flattened-medium", (canvas: SVGContainer) => {
     const height = 137.5;
     const base = 78.125;
-    const group = canvas.group()
-        .id("pyramid-flattened-medium")
-        .attr("data-cellsize", cellsize);
-    group.rect(cellsize, cellsize).fill("none");
+    const group = canvas.symbol()
+        .id("pyramid-flattened-medium");
     const tri = group.group();
     tri.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
@@ -171,17 +153,15 @@ sheet.glyphs.set("pyramid-flattened-medium", (canvas: SVGContainer) => {
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + xOffset, y);
-    tri.translate(0, cellsize - (halfcell + height / 2));
+    group.viewbox(0, ((cellsize - (halfcell + height / 2)) * -1) + 1, cellsize, cellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-flattened-small", (canvas: SVGContainer) => {
     const height = 100;
     const base = 56.25;
-    const group = canvas.group()
-        .id("pyramid-flattened-small")
-        .attr("data-cellsize", cellsize);
-    group.rect(cellsize, cellsize).fill("none");
+    const group = canvas.symbol()
+        .id("pyramid-flattened-small");
     const tri = group.group();
     tri.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
@@ -193,17 +173,15 @@ sheet.glyphs.set("pyramid-flattened-small", (canvas: SVGContainer) => {
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
-    tri.translate(0, cellsize - (halfcell + height / 2));
+    group.viewbox(0, ((cellsize - (halfcell + height / 2)) * -1) + 1, cellsize, cellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     const base = 100;
     const halfbase = base / 2;
-    const group = canvas.group()
-        .id("pyramid-up-large")
-        .attr("data-cellsize", cellsize);
-    group.rect(cellsize, cellsize).fill("none");
+    const group = canvas.symbol()
+        .id("pyramid-up-large");
     group.rect(base, base)
         .attr("data-playerfill", true)
         .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
@@ -267,13 +245,14 @@ sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     group.line(x, y, x, (y - pipWidth))
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
+    group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
     const base = 100;
     const halfbase = base / 2;
-    const group = canvas.group()
+    const group = canvas.symbol()
         .id("pyramid-up-large-upscaled")
         .attr("data-cellsize", upCellsize);
     group.rect(upCellsize, upCellsize).fill("none");
@@ -340,13 +319,14 @@ sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
     group.line(x, y, x, (y - pipWidth))
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
+    group.viewbox(0, 0, upCellsize, upCellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     const base = 78.125;
     const halfbase = base / 2;
-    const group = canvas.group()
+    const group = canvas.symbol()
         .id("pyramid-up-medium")
         .attr("data-cellsize", cellsize);
     group.rect(cellsize, cellsize).fill("none");
@@ -401,13 +381,14 @@ sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     group.line(x, y, x, (y - pipWidth))
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
+    group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
     const base = 78.125;
     const halfbase = base / 2;
-    const group = canvas.group()
+    const group = canvas.symbol()
         .id("pyramid-up-medium-upscaled")
         .attr("data-cellsize", upCellsize);
     group.rect(upCellsize, upCellsize).fill("none");
@@ -462,13 +443,14 @@ sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
     group.line(x, y, x, (y - pipWidth))
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
+    group.viewbox(0, 0, upCellsize, upCellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-up-small", (canvas: SVGContainer) => {
     const base = 56.25;
     const halfbase = base / 2;
-    const group = canvas.group()
+    const group = canvas.symbol()
         .id("pyramid-up-small")
         .attr("data-cellsize", cellsize);
     group.rect(cellsize, cellsize).fill("none");
@@ -507,13 +489,14 @@ sheet.glyphs.set("pyramid-up-small", (canvas: SVGContainer) => {
     group.line(x, y, x, (y - pipWidth))
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
+    group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
 
 sheet.glyphs.set("pyramid-up-small-upscaled", (canvas: SVGContainer) => {
     const base = 56.25;
     const halfbase = base / 2;
-    const group = canvas.group()
+    const group = canvas.symbol()
         .id("pyramid-up-small-upscaled")
         .attr("data-cellsize", upCellsize);
     group.rect(upCellsize, upCellsize).fill("none");
@@ -552,6 +535,7 @@ sheet.glyphs.set("pyramid-up-small-upscaled", (canvas: SVGContainer) => {
     group.line(x, y, x, (y - pipWidth))
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
+    group.viewbox(0, 0, upCellsize, upCellsize);
     return group;
 });
 

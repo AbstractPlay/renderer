@@ -1,4 +1,4 @@
-import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
+import { SVG, Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schema";
@@ -198,17 +198,26 @@ export class EntropyRenderer extends RendererBase {
                             if (col >= width) {
                                 point = grid2[row][col - width];
                             }
-                            const piece = SVG("#" + key);
+                            const piece = SVG("#" + key) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            const use = group.use(piece) as SVGG;
-                            use.center(point.x, point.y);
-                            const sheetCellSize = piece.attr("data-cellsize");
+
+                            let sheetCellSize = piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
                             }
-                            use.scale((this.cellsize / sheetCellSize) * 0.85);
+                            const use = group.use(piece);
+                            const factor = (this.cellsize / sheetCellSize) * 0.85;
+                            const newsize = sheetCellSize * factor;
+                            const delta = this.cellsize - newsize;
+                            const newx = point.x - (this.cellsize / 2) + (delta / 2);
+                            const newy = point.y - (this.cellsize / 2) + (delta / 2);
+                            use.dmove(newx, newy);
+                            use.scale(factor, newx, newy);
                         }
                     }
                 }

@@ -101,18 +101,25 @@ export class DefaultRenderer extends RendererBase {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
                             const point = gridPoints[row][col];
-                            const piece = SVG("#" + key);
+                            const piece = SVG("#" + key) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            const sheetCellSize = piece.attr("data-cellsize");
+                            let sheetCellSize = piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
                             }
-                            const use = group.use(piece) as SVGG;
-                            // use.center(point.x, point.y);
-                            use.dmove(point.x - sheetCellSize / 2, point.y - sheetCellSize / 2);
-                            use.scale((this.cellsize / sheetCellSize) * 0.85);
+                            const use = group.use(piece);
+                            const factor = (this.cellsize / sheetCellSize) * 0.85;
+                            const newsize = sheetCellSize * factor;
+                            const delta = this.cellsize - newsize;
+                            const newx = point.x - (this.cellsize / 2) + (delta / 2);
+                            const newy = point.y - (this.cellsize / 2) + (delta / 2);
+                            use.dmove(newx, newy);
+                            use.scale(factor, newx, newy);
                             if (opts.boardClick !== undefined) {
                                 if ( (! json.board.style.startsWith("squares")) && (! json.board.style.startsWith("vertex")) ) {
                                     use.click(() => opts.boardClick!(row, col, key));

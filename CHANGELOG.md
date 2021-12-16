@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.0] - 2021-12-15
+
+### Breaking Change
+
+- The renderer now works correctly in both Chrome and Firefox. The glyph sheets have now all been converted to `symbol`s instead of basic `group`s. This has vastly simplified the layout code, though it required extensive code changes. Further testing is planned on other browsers.
 
 ### Added
 
@@ -14,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a new `buffer` property to the `board` schema to create adjustable buffer zones on given edges of the board. The intent is that these would be used by the click handlers to do things like bear pieces off the board or other such interactions. Only works for `square*`, `vertex*`, and `go` boards. If a click handler is attached, they will all return the coordinates `-1, -1` and the label `_buffer_[DIR]`, either `N`, `E`, `S`, or `W`. Rotates correctly.
 
   **Note:** To avoid the buffer click handlers from interfering with the generic click handler on `vertex` boards, if a buffer is present at all (regardless of whether it is shown), the generic handler ignores clicks outside of the board's outer edge. This reduces the sensitivity of clicks along the edge, but it's still quite functional.
+
+### Removed
+
+- Removed the `key` feature for now. It is a decidedly nontrivial task to generalize this in a way that works cross-browser. Its only use so far has been for Volcano, and that is now obviated by the click handler. This is something I may revisit.
 
 ## [0.5.0] - 2021-12-10
 

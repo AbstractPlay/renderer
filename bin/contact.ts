@@ -5,7 +5,7 @@ import { sheets } from "../src/sheets";
 const { createSVGWindow } = require("svgdom");
 const window = createSVGWindow();
 const document = window.document;
-import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
+import { registerWindow, SVG, Svg, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 
 // register window and document
 registerWindow(window, document);
@@ -15,10 +15,12 @@ const canvas = SVG(document.documentElement) as Svg;
 
 const tileSizeOuter = 200;
 const tileSizeInner = 150;
+const factor = tileSizeInner / tileSizeOuter;
 const innerTL = (tileSizeOuter - tileSizeInner) / 2;
 const numimgswide = 6;
 const rowPadding = 5;
 const sheetPadding = 40;
+const width = tileSizeOuter * numimgswide;
 
 const title = canvas.nested().id("title");
 title.text("Renderer Contact Sheet\n(Generated " + moment().format("DD MMM YYYY") + ")").move(0, 0);
@@ -39,10 +41,11 @@ Array.from(sheets.values()).forEach((sheet) => {
         const name = names[idx];
         const glyph = glyphs[idx];
         const tile = nstSheet.nested().size(tileSizeOuter, tileSizeOuter);
-        const placed = glyph(tile);
+        const symbol = glyph(tile);
+        const used = tile.use(tile.findOne("#" + symbol.id()) as SVGSymbol);
         // Scale it appropriately
-        placed.size(tileSizeInner);
-        placed.move(innerTL, innerTL);
+        used.dmove(innerTL, innerTL);
+        used.scale(factor, innerTL, innerTL);
         tile.plain(name).move(0, tileSizeOuter - innerTL);
         tiles.push(tile);
     }
@@ -62,21 +65,23 @@ Array.from(sheets.values()).forEach((sheet) => {
             }
         }
     }
-    nstSheet.height((numrows * tileSizeOuter) + (numrows * rowPadding));
+    const height = (numrows * tileSizeOuter) + (numrows * rowPadding);
+    // nstSheet.viewbox(0, 0, width, height);
+    nstSheet.size(width, height);
     nestedSheets.push(nstSheet);
 });
 
 // Arrange sheets
 let currY = 40;
-nestedSheets.forEach((sheet) => {
+nestedSheets.forEach((sheet: Svg) => {
     sheet.move(0, currY);
-    currY += sheet.height() + sheetPadding;
+    currY += (sheet.height() as number) + sheetPadding;
 });
 
 // Calculate total image size and resize the canvas
 const height = currY;
-const width = tileSizeOuter * numimgswide;
-canvas.size(width, height);
+canvas.viewbox(0, 0, width, height);
+// canvas.size(width, height);
 canvas.rect(width, height).fill("#fff").back();
 
 // tslint:disable-next-line: no-console

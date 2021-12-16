@@ -1,5 +1,4 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
-import {applyToPoint, compose, scale} from "transformation-matrix";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schema";
 import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "./_base";
@@ -46,7 +45,6 @@ export class HomeworldsRenderer extends RendererBase {
 
         // PIECES
         // Load all the pieces in the legend
-        // json.legend!["_dragon"] = {name: "dragon", colour: "#2C4D69", opacity: 0.5};
         this.loadLegend(json, draw, opts);
 
         // Extract the systems and ships and compose them into two groups: home and peripheral
@@ -207,28 +205,15 @@ export class HomeworldsRenderer extends RendererBase {
                 if (idx >= sysPeriph.length) {
                     continue;
                 }
-                //     const id = `#_sysPeriph__dragons`;
-                //     const point = grid[row][col];
-                //     const system = SVG(id);
-                //     if ( (system === null) || (system === undefined) ) {
-                //         throw new Error(`Could not find the requested system (#_sysPeriph__dragons). This should never happen`);
-                //     }
-                //     if (SVGFind('#__no_double_dragons').length === 0) {
-                //         const use = group.use(system) as SVGG;
-                //         use.id("__no_double_dragons");
-                //         use.dmove(point.x, point.y);
-                //     }
-                // } else {
-                    const sys = sysPeriph[idx];
-                    const point = grid[row][col];
-                    const id = `#_sysPeriph_${sys.name}`;
-                    const system = SVG(id);
-                    if ( (system === null) || (system === undefined) ) {
-                        throw new Error(`Could not find the requested system (${id}). This should never happen`);
-                    }
-                    const use = group.use(system) as SVGG;
-                    use.dmove(point.x, point.y);
-                // }
+                const sys = sysPeriph[idx];
+                const point = grid[row][col];
+                const id = `#_sysPeriph_${sys.name}`;
+                const system = SVG(id) as Svg;
+                if ( (system === null) || (system === undefined) ) {
+                    throw new Error(`Could not find the requested system (${id}). This should never happen`);
+                }
+                const use = group.use(system) as SVGG;
+                use.dmove(point.x, point.y);
             }
         }
 
@@ -258,11 +243,11 @@ export class HomeworldsRenderer extends RendererBase {
                     throw new Error(`Unrecognized seat (${sys.seat}). This should never happen.`);
             }
             const id = `#_sysHome_${sys.seat}`;
-            const system = SVG(id);
+            const system = SVG(id) as Svg;
             if ( (system === null) || (system === undefined) ) {
                 throw new Error(`Could not find the requested system (${id}). This should never happen`);
             }
-            const use = group.use(system) as SVGG;
+            const use = group.use(system);
             use.dmove(x, y);
         });
 
@@ -299,43 +284,39 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 const ship = colour + size + "S";
                 const point = sgrid[i][parseInt(size, 10) - 1];
-                const piece = SVG("#" + ship);
+                const piece = SVG("#" + ship) as Svg;
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
-                const sheetCellSize = piece.attr("data-cellsize");
+                let sheetCellSize = piece.viewbox().h;
                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                    throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                    sheetCellSize = piece.attr("data-cellsize");
+                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                        throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                    }
                 }
                 const use = sgroup.use(piece);
                 if (opts.boardClick !== undefined) {
                     use.click(() => opts.boardClick!(-1, -1, `${colour}${size}`));
                 }
-                // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
                 const factor = (stashCellSize / sheetCellSize);
-                const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                const dx = 0 - newpt.x;
-                const dy = 0 - newpt.y;
 
                 // Shift pieces up 20% to simulate stacking
                 const stackingOffset = count * (stashCellSize * 0.2);
 
                 // Shift small and medium pieces down to align the bottoms of the stacks
                 // Also account for the width difference to create more even column spacing
-                let alignBottom = 0;
                 let evenSpacing = 0;
                 if (size === "1") {
-                    evenSpacing = 10.9375 * (500 / 180) * factor;
-                    alignBottom = 37.5 * (500 / 180) * factor;
-                    // evenSpacing = 21.875 * (500 / 180) * factor;
+                    // evenSpacing = 10.9375 * (500 / 180) * factor;
                 } else if (size === "2") {
                     evenSpacing = 10.9375 * (500 / 180) * factor;
-                    alignBottom = 18.75 * (500 / 180) * factor;
                 }
 
-                use.dmove(point.x + dx - evenSpacing, point.y + dy - stackingOffset + alignBottom);
-                use.scale(factor);
+                const newx = point.x - evenSpacing;
+                const newy = point.y - stackingOffset;
+                use.dmove(newx, newy);
+                use.scale(factor, newx, newy);
             }
             // Add "sacrifice" box
             sgroup.text("SACRIFICE").fill("black").center(stashCellSize * 1.5, stashCellSize * 8.5);
@@ -373,9 +354,9 @@ export class HomeworldsRenderer extends RendererBase {
         return effSeat;
     }
 
-    private genSystem(draw: Svg, opts: IRendererOptionsOut, id: string, name: string, ports: (string|undefined)[][], highlight?: string): SVGG {
+    private genSystem(draw: Svg, opts: IRendererOptionsOut, id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
-        const nested = draw.defs().group().id(id).size(250, 250);
+        const nested = draw.defs().nested().id(id).size(250, 250).viewbox(0, 0, 250, 250);
 
         // Add fill and border
         // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).
@@ -418,23 +399,21 @@ export class HomeworldsRenderer extends RendererBase {
                         ship = cell.slice(0, 2) + newowner;
                     }
                     const point = grid[row][col];
-                    const piece = SVG("#" + ship);
+                    const piece = SVG("#" + ship) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
-                    const sheetCellSize = piece.attr("data-cellsize");
+                    let sheetCellSize = piece.viewbox().h;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        sheetCellSize = piece.attr("data-cellsize");
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        }
                     }
                     const use = nested.use(piece);
-                    // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
                     const factor = (50 / sheetCellSize);
-                    const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                    const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                    const dx = 0 - newpt.x;
-                    const dy = 0 - newpt.y;
-                    use.dmove(point.x + dx, point.y + dy);
-                    use.scale(factor * 0.95);
+                    use.dmove(point.x, point.y);
+                    use.scale(factor, point.x, point.y);
                     if (opts.boardClick !== undefined) {
                         use.click(() => opts.boardClick!(0, 0, `${name}|${cell}`));
                     }
@@ -443,59 +422,18 @@ export class HomeworldsRenderer extends RendererBase {
         }
 
         // Add name
-        nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
+        // nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
+        const fontsize = 12;
+        nested.text(name)
+            .font({
+                anchor: "start",
+                fill: "#fff",
+                size: fontsize,
+            })
+            .attr("alignment-baseline", "hanging")
+            .attr("dominant-baseline", "hanging")
+            .move(1, 0);
 
         return nested;
     }
-
-    // private genUncharted(draw: Svg, opts: IRendererOptionsOut): SVGG {
-    //     const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
-    //     const nested = draw.defs().group().id("_sysPeriph__dragons").size(250, 250);
-
-    //     // Add fill and border
-    //     // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).
-    //     // If size is a problem, this could be deleted and just fill the nested `rect` with `black` instead of `pattern`.
-    //     const pattern = draw.pattern(250, 250, (add) => {
-    //         add.rect(250, 250).fill("black");
-    //         // Add 250 stars
-    //         const n = Math.floor(Math.random() * 100) + 150;
-    //         for (let i = 0; i < n; i++) {
-    //             const r = Math.floor(Math.random() * (250 * 250));
-    //             const y = Math.floor(r / 250);
-    //             const x = r % 250;
-    //             add.circle(Math.random() + 1).center(x, y).fill("white");
-    //         }
-    //     });
-    //     let stroke: any = {width: 2, color: "#fff"};
-    //     nested.rect(250, 250).fill(pattern).stroke(stroke);
-
-    //     // Add the dragon
-    //     const piece = SVG("#_dragon")
-    //     if ( (piece === null) || (piece === undefined) ) {
-    //         throw new Error(`Could not find the DRAGON picture. This should never happen..`);
-    //     }
-    //     const sheetCellSize = piece.attr("data-cellsize");
-    //     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-    //         throw new Error(`The glyph you requested (DRAGON) does not contain the necessary information for scaling. This should never happen.`);
-    //     }
-    //     const use = nested.use(piece);
-    //     // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-    //     const factor = (250 / sheetCellSize);
-    //     const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-    //     const newpt = applyToPoint(matrix, {x: 0, y: 0});
-    //     const dx = 0 - newpt.x;
-    //     const dy = 0 - newpt.y;
-    //     use.dmove(dx, dy);
-    //     use.scale(factor * 0.95);
-
-    //     if (opts.boardClick !== undefined) {
-    //         nested.rect(250, 250).fill("#fff").opacity(0).click(() => opts.boardClick!(-1, -1, "_uncharted"));
-    //     }
-
-    //     // Add name
-    //     nested.text("\"Here be dragons\"").move(grid[0][0].x, grid[0][0].y).fill("#fff");
-    //     nested.opacity(0.5);
-
-    //     return nested;
-    // }
 }

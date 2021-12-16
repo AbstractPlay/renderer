@@ -52,15 +52,9 @@ function exportGlyph(sheetName: string, glyphName: string): string {
     // create canvas
     const canvas = SVG(document.documentElement) as Svg;
 
-    // add glyph directly to canvas
-    const placed = glyph(canvas);
-
-    // get sizing data and resize canvas
-    const size = placed.attr("data-cellsize");
-    if ( (size === null) || (size === undefined) ) {
-      throw new Error("Glyph does not have size metadata. This should never happen.");
-    }
-    canvas.size(size, size);
+    // add glyph to defs then use
+    const placed = glyph(canvas.defs());
+    canvas.use(placed);
 
     // return canvas SVG code
     return canvas.svg();

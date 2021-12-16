@@ -510,26 +510,6 @@ export interface APRenderRep {
         string
       ][];
   /**
-   * The list of pieces in the `legend` the players need identifiers for. Usually needed for games with many colours or just indicating who controls what.
-   */
-  key?: {
-    /**
-     * The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.
-     */
-    list: {
-      piece: string;
-      name: string;
-    }[];
-    /**
-     * Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.
-     */
-    placement?: "top" | "bottom" | "left" | "right";
-    /**
-     * Where you prefer the text be placed relative to the glyph. 'Inside' will place the text between the game board and the glyph. 'Outside' will place it on the outside. Specific renderers may override your preference.
-     */
-    textPosition?: "inside" | "outside";
-  };
-  /**
    * Areas are renderer-specific elements that are used and rendered in various ways.
    */
   areas?: (

@@ -1,5 +1,4 @@
-import { G as SVGG, SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
-import { applyToPoint, compose, scale } from "transformation-matrix";
+import { SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -31,32 +30,38 @@ export class StackingExpandingRenderer extends RendererBase {
                 if (area !== undefined) {
                     // Create a group to store the column and place all the pieces at 0,0 within it
                     const columnWidth = this.cellsize * 1;
-                    const used: SVGUse[] = [];
-                    const nested = draw.group().id("_expansion");
+                    const used: [SVGUse, number][] = [];
+                    const nested = draw.group().id("_expansion").width(columnWidth);
                     for (const p of (area.stack as string[]).reverse()) {
-                        const piece = SVG("#" + p);
+                        const piece = SVG("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
-                        const sheetCellSize = piece.attr("data-cellsize");
+                        let sheetCellSize = piece.viewbox().h;
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            sheetCellSize = piece.attr("data-cellsize");
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            }
                         }
                         const use = nested.use(piece);
-                        used.push(use);
+                        used.push([use, piece.viewbox().h]);
+                        const factor = (columnWidth / sheetCellSize) * 0.95;
+                        use.scale(factor, 0, 0);
+
                         // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                        const factor = (columnWidth / sheetCellSize);
-                        const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                        const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                        use.dmove(newpt.x * -1, newpt.y * -1);
-                        use.scale(factor * 0.95);
+                        // const factor = (columnWidth / sheetCellSize);
+                        // const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
+                        // const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                        // use.dmove(newpt.x * -1, newpt.y * -1);
+                        // use.scale(factor * 0.95);
                     }
 
                     // Now go through each piece and shift them down
                     let dy: number = 0;
                     for (const piece of used) {
-                        piece.dmove(0, dy);
-                        dy += piece.height() as number;
+                        piece[0].dmove(0, dy);
+                        dy += piece[1];
                     }
 
                     // Add cell name
@@ -126,17 +131,20 @@ export class StackingExpandingRenderer extends RendererBase {
                         for (const key of pieces[row][col]) {
                             if ( (key !== null) && (key !== "-") ) {
                                 const point = gridPoints[row][col];
-                                const piece = SVG("#" + key);
+                                const piece = SVG("#" + key) as Svg;
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }
-                                const use = group.use(piece) as SVGG;
+                                const use = group.use(piece);
                                 use.center(point.x, point.y);
-                                const sheetCellSize = piece.attr("data-cellsize");
+                                let sheetCellSize = piece.viewbox().h;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    sheetCellSize = piece.attr("data-cellsize");
+                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    }
                                 }
-                                use.scale((this.cellsize / sheetCellSize) * 0.85);
+                                use.scale((this.cellsize / sheetCellSize) * 0.85, point.x, point.y);
                             }
                         }
                     }
@@ -163,32 +171,37 @@ export class StackingExpandingRenderer extends RendererBase {
                     // Create a group to store the column and place all the pieces at 0,0 within it
                     const boardHeight = gridPoints[gridPoints.length - 1][0].x - gridPoints[0][0].x + (this.cellsize * 2);
                     const columnWidth = this.cellsize * 1;
-                    const used: SVGUse[] = [];
+                    const used: [SVGUse, number][] = [];
                     const nested = draw.defs().group().id("_expansion").size(columnWidth, boardHeight);
                     for (const p of (area.stack as string[]).reverse()) {
-                        const piece = SVG("#" + p);
+                        const piece = SVG("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
-                        const sheetCellSize = piece.attr("data-cellsize");
+                        let sheetCellSize = piece.viewbox().h;
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            sheetCellSize = piece.attr("data-cellsize");
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            }
                         }
                         const use = nested.use(piece);
-                        used.push(use);
-                        // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                        const factor = (columnWidth / sheetCellSize);
-                        const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                        const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                        use.dmove(newpt.x * -1, newpt.y * -1);
-                        use.scale(factor * 0.95);
+                        used.push([use, piece.viewbox().h]);
+                        const factor = (columnWidth / sheetCellSize) * 0.95;
+                        use.scale(factor, 0, 0);
+                        // // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                        // const factor = (columnWidth / sheetCellSize);
+                        // const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
+                        // const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                        // use.dmove(newpt.x * -1, newpt.y * -1);
+                        // use.scale(factor * 0.95);
                     }
 
                     // Now go through each piece and shift them down
                     let dy: number = 0;
                     for (const piece of used) {
-                        piece.dmove(0, dy);
-                        dy += piece.height() as number;
+                        piece[0].dmove(0, dy);
+                        dy += piece[1];
                     }
 
                     // Add cell name
@@ -203,54 +216,6 @@ export class StackingExpandingRenderer extends RendererBase {
                         .move(gridPoints[0][0].x - (this.cellsize * 1.5) - columnWidth, gridPoints[0][0].y - this.cellsize);
                         // .center(gridPoints[0][0].x - this.cellsize - columnWidth, gridPoints[0][0].y - this.cellsize + (boardHeight / 2));
                 }
-            }
-
-            // Add key
-            // Override a left-hand placement
-            if ( ("key" in json) && (json.key !== undefined) && ("placement" in json.key) && (json.key.placement === "left") ) {
-                json.key.placement = "right";
-            }
-            const keyImg = this.buildKey(json, draw);
-            if (keyImg !== undefined) {
-                const img = SVG("#_key");
-                if (img === undefined) {
-                    throw new Error("Could not load the key image. This should never happen.");
-                }
-                let keyX: number;
-                let keyY: number;
-                let placement = "right";
-                if ( ("key" in json) && (json.key !== undefined) && ("placement" in json.key) && (json.key.placement !== undefined) ) {
-                    placement = json.key.placement;
-                }
-                let position = "outside";
-                if ( ("key" in json) && (json.key !== undefined) && ("textPosition" in json.key) && (json.key.textPosition !== undefined) ) {
-                    position = json.key.textPosition;
-                }
-                switch (placement) {
-                    case "right":
-                        keyX = gridPoints[0][gridPoints[0].length - 1].x + (this.cellsize * 2);
-                        keyY = gridPoints[0][0].y - this.cellsize;
-                        break;
-                    case "top":
-                        keyX = gridPoints[0][0].x - this.cellsize;
-                        if (position === "outside") {
-                            keyY = gridPoints[0][0].y - (this.cellsize * 1.5) - (keyImg.height() as number);
-                        } else {
-                            keyY = gridPoints[0][0].y - (this.cellsize * 2) - (keyImg.height() as number);
-                        }
-                        break;
-                    case "bottom":
-                        keyX = gridPoints[0][0].x - this.cellsize;
-                        if (position === "outside") {
-                            keyY = gridPoints[gridPoints.length - 1][0].y + (this.cellsize * 1.5);
-                        } else {
-                            keyY = gridPoints[gridPoints.length - 1][0].y + (this.cellsize * 2);
-                        }
-                        break;
-                    default:
-                        throw new Error("Unrecognized placement. This should never happen.");
-                }
-                draw.use(img).dmove(keyX, keyY);
             }
 
             // Annotations
@@ -276,32 +241,37 @@ export class StackingExpandingRenderer extends RendererBase {
                     const nested = draw.defs().group().id(`_stash${iArea}`).size(areaWidth, areaHeight);
                     for (let iStack = 0; iStack < area.stash.length; iStack++) {
                         const stack = area.stash[iStack];
-                        const used: SVGUse[] = [];
+                        const used: [SVGUse, number][] = [];
                         for (const p of stack) {
-                            const piece = SVG("#" + p);
+                            const piece = SVG("#" + p) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                             }
-                            const sheetCellSize = piece.attr("data-cellsize");
+                            let sheetCellSize = piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                sheetCellSize = piece.attr("data-cellsize");
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
                             }
                             const use = nested.use(piece);
                             if (opts.boardClick !== undefined) {
                                 use.click(() => opts.boardClick!(-1, -1, p));
                             }
-                            used.push(use);
-                            // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                            used.push([use, piece.viewbox().h]);
                             const factor = (cellsize / sheetCellSize);
-                            const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                            const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                            use.dmove((newpt.x * -1) + (iStack * cellsize), (newpt.y * -1) + textHeight);
-                            use.scale(factor * 0.95);
+                            use.scale(factor, 0, 0);
+                            // // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
+                            // const factor = (cellsize / sheetCellSize);
+                            // const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
+                            // const newpt = applyToPoint(matrix, {x: 0, y: 0});
+                            // use.dmove((newpt.x * -1) + (iStack * cellsize), (newpt.y * -1) + textHeight);
+                            // use.scale(factor * 0.95);
                         }
                         // Now go through each piece and shift them down
                         let dy: number = 0;
                         for (const piece of used) {
-                            piece.dmove(0, dy);
+                            piece[0].dmove(0, dy);
                             dy -= offset;
                         }
                     }

@@ -1,6 +1,5 @@
-import { Element, Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, SVG, Svg } from "@svgdotjs/svg.js";
+import { Element, Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import { defineGrid, extendHex } from "honeycomb-grid";
-import { applyToPoint, compose, scale } from "transformation-matrix";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schema";
@@ -233,7 +232,7 @@ export abstract class RendererBase {
             // create text glyphs
             textSet.forEach((v) => {
                 const key = `_text_${v}`;
-                const group = draw.defs().group().id(key);
+                const group = draw.defs().symbol().id(key);
                 const fontsize = 17;
                 const text = group.text(v).font({
                     anchor: "start",
@@ -241,9 +240,15 @@ export abstract class RendererBase {
                     size: fontsize,
                 });
                 text.attr("data-playerfill", true);
-                const squaresize = Math.max(text.bbox().height, text.bbox().width);
-                text.center(squaresize / 2, squaresize / 2);
+                const temptext = draw.text(v).font({
+                    anchor: "start",
+                    fill: "#000",
+                    size: fontsize,
+                });
+                const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
+                group.viewbox(temptext.bbox());
                 group.attr("data-cellsize", squaresize);
+                temptext.remove();
             });
 
             // Load any requested patterns
@@ -290,63 +295,86 @@ export abstract class RendererBase {
 
                     // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                     const cellsize = 500;
-                    const nested = draw.defs().nested().id(key).size(cellsize, cellsize).attr("data-cellsize", cellsize);
+                    const nested = draw.defs().nested().id(key).size(cellsize, cellsize);
 
                     // Layer the glyphs, manipulating as you go
                     glyphs.forEach((glyph) => {
                         // Get the glyph from <defs>
-                        let got: SVGG;
+                        let got: SVGSymbol;
                         if ( ("name" in glyph) && (glyph.name !== undefined) && (glyph.name.length > 0) ) {
-                            got = draw.findOne("#" + glyph.name) as SVGG;
+                            got = draw.findOne("#" + glyph.name) as SVGSymbol;
                         } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
-                            got = draw.findOne("#_text_" + glyph.text) as SVGG;
+                            got = draw.findOne("#_text_" + glyph.text) as SVGSymbol;
                         } else {
                             throw new Error("Either `name` or `text` must be supplied for each glyph.");
                         }
                         if ( (got === undefined) || (got === null) ) {
                             throw new Error(`Could not load the requested glyph: ${glyph.name}.`);
                         }
-                        const use = got.clone();
-                        if ( (use === undefined) || (use === null) ) {
-                            throw new Error("The glyph sheet is malformed. This should never happen. Please let the administrator know.");
+
+                        let sheetCellSize = got.viewbox().height;
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            sheetCellSize = got.attr("data-cellsize");
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            }
                         }
 
-                        const sheetCellSize = use.attr("data-cellsize");
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        const clone = got.clone();
+
+                        // Colourize (`player` first, then `colour` if defined)
+                        if (glyph.player !== undefined) {
+                            if  (opts.patterns) {
+                                if (glyph.player > opts.patternList.length) {
+                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                                }
+                                const useSize = sheetCellSize;
+                                let fill = draw.findOne("#" + opts.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
+                                if (fill === null) {
+                                    fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
+                                    fill = fill.clone().id(opts.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
+                                    draw.defs().add(fill);
+                                }
+                                clone.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
+                            } else {
+                                if (glyph.player > opts.colours.length) {
+                                    throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
+                                }
+                                const fill = opts.colours[glyph.player - 1];
+                                clone.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
+                            }
+                        } else if (glyph.colour !== undefined) {
+                            clone.find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
+                        }
+
+                        // Apply requested opacity
+                        if (glyph.opacity !== undefined) {
+                            clone.fill({opacity: glyph.opacity});
+                        }
+
+                        nested.add(clone);
+                        const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol);
+
+                        // Rotate if requested
+                        if (glyph.rotate !== undefined) {
+                            use.rotate(glyph.rotate, cellsize / 2, cellsize / 2);
                         }
 
                         // Scale it appropriately
-                        // if (use.is(SVGG)) {
-                        //     const sheetCellSize = use.attr("data-cellsize");
-                        //     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        //         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                        //     }
-                        //     use.scale(cellsize / sheetCellSize);
-                        // } else {
-                        //     use.size(cellsize);
-                        // }
-                        // use.scale(cellsize / sheetCellSize);
-
-                        // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                        // It also incorporates any requested custom scaling into one transform
-                        let factor = (cellsize / sheetCellSize);
+                        let factor: number | undefined;
                         if (glyph.scale !== undefined) {
-                            factor *= glyph.scale;
+                            factor = glyph.scale;
                         }
                         if ( ("board" in json) && (json.board !== undefined) && (json.board !== null) && ("style" in json.board) && (json.board.style !== undefined) && (json.board.style === "hex-of-hex") ) {
-                            factor *= 0.85;
+                            if (factor === undefined) {
+                                factor = 0.85;
+                            } else {
+                                factor *= 0.85;
+                            }
                         }
-                        const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                        const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                        let scaledx = 0 - newpt.x;
-                        let scaledy = 0 - newpt.y;
-                        if (sheetCellSize * factor < cellsize) {
-                           scaledx += (cellsize - (sheetCellSize * factor)) / 2;
-                           scaledy += (cellsize - (sheetCellSize * factor)) / 2;
+                        if (factor !== undefined) {
+                            use.scale(factor, cellsize / 2, cellsize / 2);
                         }
-                        use.dmove(scaledx, scaledy);
-                        use.scale(factor, cellsize / 2, cellsize / 2);
 
                         // Shift if requested
                         if (glyph.nudge !== undefined) {
@@ -360,60 +388,8 @@ export abstract class RendererBase {
                             }
                             use.dmove(dx, dy);
                         }
-
-                        // Colourize (`player` first, then `colour` if defined)
-                        if (glyph.player !== undefined) {
-                            if  (opts.patterns) {
-                                if (glyph.player > opts.patternList.length) {
-                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
-                                }
-                                const useSize = use.attr("data-cellsize");
-                                let fill = draw.findOne("#" + opts.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
-                                if (fill === null) {
-                                    fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
-                                    fill = fill.clone().id(opts.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
-                                    draw.defs().add(fill);
-                                }
-                                // if (use.is(SVGG)) {
-                                //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
-                                // } else {
-                                //     use.fill(fill);
-                                // }
-                                use.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
-                            } else {
-                                if (glyph.player > opts.colours.length) {
-                                    throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
-                                }
-                                const fill = opts.colours[glyph.player - 1];
-                                // if (use.is(SVGG)) {
-                                //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
-                                // } else {
-                                //     use.fill(fill);
-                                // }
-                                use.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
-                            }
-                        } else if (glyph.colour !== undefined) {
-                            // if (use.is(SVGG)) {
-                            //     (use as SVGG).find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
-                            // } else {
-                            //     use.fill(glyph.colour);
-                            // }
-                            use.find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
-                        }
-
-                        // Apply requested opacity
-                        if (glyph.opacity !== undefined) {
-                            use.fill({opacity: glyph.opacity});
-                        }
-
-                        // Rotate if requested
-                        if (glyph.rotate !== undefined) {
-                            use.rotate(glyph.rotate);
-                        }
-
-                        // Add to the nested figure
-                        nested.add(use);
                     });
+                    nested.viewbox(0, 0, cellsize, cellsize);
                 }
             }
         }
@@ -594,7 +570,7 @@ export abstract class RendererBase {
                 .stroke({width: 0})
                 .id("tileDark");
             const tileLight = draw.defs().rect(cellsize, cellsize)
-                .fill("#ffffff")
+                .fill({color: "#ffffff", opacity: 0})
                 .stroke({width: 0})
                 .id("tileLight");
 
@@ -1926,134 +1902,27 @@ export abstract class RendererBase {
                     }
                 } else if (marker.type === "glyph") {
                     const key = marker.glyph;
-                    const piece = svgGroup.root().findOne("#" + key) as SVGG;
+                    const piece = svgGroup.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
-                    const sheetCellSize = piece.attr("data-cellsize");
+                    let sheetCellSize = piece.viewbox().h;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        sheetCellSize = piece.attr("data-cellsize");
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        }
                     }
                     for (const pt of marker.points) {
                         const point = grid[pt.row][pt.col];
-                        const use = svgGroup.use(piece) as SVGG;
-                        use.dmove(point.x - sheetCellSize / 2, point.y - sheetCellSize / 2);
-                        use.scale(this.cellsize / sheetCellSize);
+                        const use = svgGroup.use(piece);
+                        const newx = point.x - this.cellsize / 2;
+                        const newy = point.y - this.cellsize / 2;
+                        use.dmove(newx, newy);
+                        use.scale(this.cellsize / sheetCellSize, newx, newy);
                     }
                 }
             }
-        }
-    }
-
-    protected buildKey(json: APRenderRep, draw: Svg, orientation?: "H"|"V", textPos?: "I"|"O"): SVGG | undefined {
-        if ( (! ("key" in json)) || (json.key === undefined) ) {
-            return;
-        }
-        let placement = "right";
-        if ( ("key" in json) && (json.key !== undefined) && ("placement" in json.key) && (json.key.placement !== undefined) ) {
-            placement = json.key.placement;
-        }
-        if (orientation === undefined) {
-            orientation = "V";
-            if ( ("placement" in json.key) && (json.key.placement !== undefined) && ( (json.key.placement === "top") || (json.key.placement === "bottom") ) ) {
-                orientation = "H";
-            }
-        }
-        if (textPos === undefined) {
-            textPos = "O";
-            if ( ("textPosition" in json.key) && (json.key.textPosition !== undefined) && (json.key.textPosition === "inside") ) {
-                textPos = "I";
-            }
-        }
-        const unitSize = this.cellsize / 4;
-        const maxlen = Math.max(...json.key.list.map((e) => e.name.length));
-
-        // Load all the pieces
-        const pieces: Map<string, [SVGElement, number, string]> = new Map();
-        for (const p of json.key.list) {
-            const piece = SVG("#" + p.piece);
-            if ( (piece === null) || (piece === undefined) ) {
-                throw new Error(`Could not find the requested piece (${p.piece}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-            }
-            const sheetCellSize = piece.attr("data-cellsize");
-            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                throw new Error(`The glyph you requested (${p.piece}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-            }
-            pieces.set(p.piece, [piece, sheetCellSize, p.name]);
-        }
-
-        if (orientation === "V") {
-            const height = unitSize;
-            const width = ((maxlen / 2) + 1) * unitSize;
-            const entries: SVGG[] = [];
-            for (const [key, [glyph, glyphSize, label]] of pieces.entries()) {
-                const entry = draw.defs().group().id(`_key_entry_${key}`).size(width, height);
-                const usedGlyph = entry.use(glyph);
-                // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                const factor = (unitSize / glyphSize);
-                const matrix = compose(scale(factor, factor, glyphSize / 2, glyphSize / 2));
-                const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                usedGlyph.dmove(newpt.x * -1, newpt.y * -1);
-                usedGlyph.scale(factor);
-                const text = entry.text(label).font("size", height).move(0, 0);
-                if (textPos === "O") {
-                    if (placement === "right") {
-                        text.dx(unitSize);
-                    } else {
-                        text.dx(text.bbox().width * -1);
-                    }
-                } else {
-                    if (placement === "right") {
-                        text.dx((text.bbox().width + unitSize) * -1);
-                    } else {
-                        text.dx(unitSize);
-                    }
-                }
-                entries.push(entry);
-            }
-            const fullHeight = (height * entries.length) + ((height / 2) * (entries.length - 1));
-            const g = draw.defs().group().id("_key").size(width, fullHeight);
-            for (let i = 0; i < entries.length; i++) {
-                g.use(entries[i]).dmove(0, (height * 1.5) * i);
-            }
-            return g;
-        } else {
-            const height = unitSize * 2;
-            const width = (maxlen / 2) * unitSize;
-            const entries: SVGG[] = [];
-            for (const [key, [glyph, glyphSize, label]] of pieces.entries()) {
-                const entry = draw.defs().group().id(`_key_entry_${key}`).size(width, height);
-                const usedGlyph = entry.use(glyph);
-                // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                const factor = (unitSize / glyphSize);
-                const matrix = compose(scale(factor, factor, glyphSize / 2, glyphSize / 2));
-                const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                usedGlyph.dmove(newpt.x * -1, newpt.y * -1);
-                usedGlyph.scale(factor);
-                const text = entry.text(label).font("size", height / 2).move(0, 0);
-                if (textPos === "O") {
-                    // usedGlyph.dmove((text.bbox().width / 2) - (unitSize / 2), unitSize);
-                    if (placement === "top") {
-                        text.dmove(0, unitSize * -1);
-                    } else {
-                        text.dmove(0, unitSize);
-                    }
-                } else {
-                    // usedGlyph.dmove((text.bbox().width / 2) - (unitSize / 2), 0);
-                    if (placement === "top") {
-                        text.dmove(0, unitSize);
-                    } else {
-                        text.dmove(0, unitSize * -1);
-                    }
-                }
-                entries.push(entry);
-            }
-            const fullWidth = (width * entries.length) + ((width / 2) * (entries.length - 1));
-            const g = draw.defs().group().id("_key").size(fullWidth, height);
-            for (let i = 0; i < entries.length; i++) {
-                g.use(entries[i]).dmove(((height * 1.5) * i), 0);
-            }
-            return g;
         }
     }
 
