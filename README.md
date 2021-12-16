@@ -4,7 +4,9 @@
 
 This private NPM module graphically renders game states. This repository houses the authoritative JSON schema.
 
-Currently the only supported output format is SVG. The library has been tested and works correctly in Chrome, Firefox, Opera, and Edge.dep
+Currently the only supported output format is SVG. The library has been tested and works correctly in Chrome, Firefox, Opera, and Edge.
+
+[A playground/demo area is now available.](https://abstractplay.com/renderer/)
 
 ## Contributing
 

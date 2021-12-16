@@ -37,6 +37,8 @@ Glyphs are resolved based on user settings. The renderer will look at each glyph
 
 If you pass an array of glyphs, they are simply layered over each other, creating a composite piece. The object form supports the following options
 
+name:: This is the name of the glyph you want. See the contact sheet for a list of available glyphs. This overrides the `text` property.
+text:: If `name` is not given, then this must be. The string is turned into a glyph. The text will be "squished" to fit the cells, like all the other pieces, so this is really only used with short strings, often numbers.
 player:: This marks the piece as belonging to a specific player. The fill colour will be chosen based on user settings. This is the preferred way to assign colours to pieces.
 color:: A 3- or 6-digit hex colour value. This should only be used for tweaking composite pieces. Do not use this to assign player colours, which should be determined by player settings. Use the `player` property for that. This setting is ignored if `player` is also defined.
 scale:: This is a factor for growing or shrinking a glyph. Values <1 cause the glyph to shrink. Values >1 cause it to grow.
@@ -51,6 +53,7 @@ Now for the game board itself. This is rendered first, followed by the pieces.
 * The first is a set of preset boards, which includes the following:
   squares:: A grid of squares, all of the same colour.
   squares-checkered:: Same as `squares` but alternating dark and light colours. The bottom-left cell is always dark.
+  squares-beveled:: Same as `squares` but with very faint lines. Will eventually be updated with more attractive bevels.
   vertex:: Pieces are placed on the intersections of a grid of squares.
   vertex-cross:: Same as `vertex` but with crosses showing diagonal movement.
   go:: A special case of `vertex`. Always 19x19 with small nodes at the traditional points.
@@ -70,6 +73,8 @@ strokeColour:: Adjusts the colour of the drawn lines.
 strokeOpacity:: Adjusts the opacity of the drawn lines.
 tileWidth:: Draws a thicker line every X columns. Used to simulate tiles on a standard board.
 tileHeight:: Draws a thicker line every X rows. Used to simulate tiles on a standard board.
+stackOffset:: Used by the `stacking-offset` renderer to adjust how the pieces are stacked.
+buffer:: This property is only used by the default renderer and places buffer zones around the board for use by click handlers.
 
 For the Homeworlds renderer, this is instead an array of objects that include the following properties:
 
@@ -78,6 +83,16 @@ stars:: An array of stars.
 seat:: The value "N", "E", "S", or "W". Only defined if this is a home system
 
 To render individual glyphs (e.g., for inclusion into running HTML), set `board` to `null`. Populate the `legend` as usual (but usually just for the one piece you need so as to minimize code size), and then just put the single piece in the `pieces` field. Render that with `renderStatic()` to get the raw code you can insert wherever you like. This will respect all colours, patterns, and glyph sheets as customized by the user.
+
+==== `markers`
+
+Boards can be marked up in various ways. Markers are added to the board layer itself and so are covered up by pieces. The following marker types are available:
+
+dots:: This adds small dots at the requested points and respects the `strokeWeight`, `strokeColour`, and `strokeOpacity` settings.
+shading:: The points outline a polygon which gets filled in with the colour and opacity requested. The colour can be specified by player number or by hex string.
+edge:: This is how you highlight edges. It only works on the `squares*` and `vertex*` boards. Specify an edge by compass direction and give a colour by player id or by hex string.
+fence:: This is a specialized marker used to draw thick lines between cells. Only works on the `squares*` boards.
+glyph:: This lets you incorporate glyphs from your legend directly into the board itself.
 
 === `pieces`
 
@@ -101,7 +116,7 @@ For the Homeworlds renderer, this is an array of arrays of ships. Ships must des
 
 === `areas`
 
-This section is unique to different renderers. The default renderer ignores it. 
+This section is unique to different renderers. The default renderer ignores it.
 
 The Homewords renderer uses this for the global stash. Provide the stash contents of each of the four colours.
 
@@ -114,3 +129,5 @@ This is how a game tells the renderer how to illustrate state changes. The follo
 - `move`: Draws a line to each cell.
 - `enter`: Draws a dashed line around the new piece.
 - `exit`: Draws a dashed line around the now-missing piece.
+- `eject`: Draws a dotted arc that grows with each use. Currently only used in Volcano games.
+- `dots`: Like the marker, but these get placed on top of pieces. Good for showing movement range, for example.
