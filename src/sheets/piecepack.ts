@@ -160,7 +160,7 @@ sheet.glyphs.set("piecepack-number-9", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 696, 69);
+    group.viewbox(0, -800, 696, 696);
     return group;
 });
 
