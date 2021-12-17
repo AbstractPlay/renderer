@@ -79,13 +79,17 @@ export interface APRenderRep {
          */
         height?: number;
         /**
-         * Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.
+         * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
          */
         tileWidth?: number;
         /**
-         * Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.
+         * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells high as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
          */
         tileHeight?: number;
+        /**
+         * If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.
+         */
+        tileSpacing?: number;
         /**
          * Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.
          */

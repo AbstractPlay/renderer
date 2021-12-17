@@ -95,6 +95,11 @@
                     "description": "Adding thicker lines at fixed intervals to create a tiling effect",
                     "render": "{\"board\":{\"style\":\"squares\",\"width\":9,\"height\":9, \"tileHeight\":3, \"tileWidth\":3},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2}},\"pieces\":null}"
                 },
+                "formatting-tiling-spaced": {
+                    "name": "Formatting: Tiling with spacing",
+                    "description": "Adding the `tileSpacing` property breaks the tiles apart. The coordinate system stays the same.",
+                    "render": "{\"board\":{\"style\":\"squares\",\"width\":9,\"height\":9,\"tileWidth\":3,\"tileHeight\":3,\"tileSpacing\":1},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2}},\"pieces\":\"A-B-A-B-A\\n-B-A-B-A-\\n_\\n_\\n_\\n_\\n_\\n_\\n_\"}"
+                },
                 "formatting-buffers": {
                     "name": "Formatting: Buffer zones",
                     "description": "Adds buffer zones around edges of the board for click handling. Individual sides can be hidden, and they rotate correctly.",

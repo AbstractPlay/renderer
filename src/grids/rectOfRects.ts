@@ -30,11 +30,42 @@ export function rectOfRects(args: IGeneratorArgs): GridPoints {
         starty = args.starty;
     }
 
+    let tilex = 0;
+    let tiley = 0;
+    let tilespace = 0;
+    let hspace = 0;
+    let vspace = 0;
+    if (args.tileWidth !== undefined) {
+        tilex = args.tileWidth;
+        if ( (tilex > 0) && (gridWidth % tilex !== 0) ) {
+            throw new Error("When tiling, the total board width must divide evenly by the tile width.");
+        }
+    }
+    if (args.tileHeight !== undefined) {
+        tiley = args.tileHeight;
+        if ( (tiley > 0) && (gridHeight % tiley !== 0) ) {
+            throw new Error("When tiling, the total board height must divide evenly by the tile height.");
+        }
+    }
+    if (args.tileSpacing !== undefined) {
+        tilespace = args.tileSpacing;
+        hspace = tilespace * cellWidth;
+        vspace = tilespace * cellHeight;
+    }
+
     const grid: GridPoints = [];
+    let dy = 0;
     for (let row = 0; row < gridHeight; row++) {
         const node: IPoint[] = [];
+        if ( (tiley > 0) && (tilespace > 0) && (row > 0) && (row % tiley === 0) ) {
+            dy += vspace;
+        }
+        let dx = 0;
         for (let col = 0; col < gridWidth; col++) {
-            const point: IPoint = {x: startx + (cellWidth * col), y: starty + (cellHeight * row)};
+            if ( (tilex > 0) && (tilespace > 0) && (col > 0) && (col % tilex === 0) ) {
+                dx += hspace;
+            }
+            const point: IPoint = {x: startx + (cellWidth * col) + dx, y: starty + (cellHeight * row) + dy};
             node.push(point);
         }
         grid.push(node);

@@ -1,4 +1,4 @@
-import { Element, Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
+import { Element, Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
 import { defineGrid, extendHex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
@@ -418,8 +418,22 @@ export abstract class RendererBase {
             baseOpacity = json.board.strokeOpacity;
         }
 
+        // Check for tiling
+        let tilex: number = 0;
+        let tiley: number = 0;
+        let tileSpace: number = 0;
+        if (json.board.tileWidth !== undefined) {
+            tilex = json.board.tileWidth as number;
+        }
+        if (json.board.tileHeight !== undefined) {
+            tiley = json.board.tileHeight as number;
+        }
+        if (json.board.tileSpacing !== undefined) {
+            tileSpace = json.board.tileSpacing as number;
+        }
+
         // Get a grid of points
-        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = draw.group().id("board");
 
         // create buffer zone first if requested
@@ -589,11 +603,34 @@ export abstract class RendererBase {
                 }
                 for (let col = 0; col < width; col++) {
                     const {x, y} = grid[row][col];
+                    let used: SVGUse;
                     if (col % 2 !== lightCol) {
-                        tiles.use(tileDark).center(x, y);
+                        used = tiles.use(tileDark).center(x, y);
                     } else {
-                        tiles.use(tileLight).center(x, y);
+                        used = tiles.use(tileLight).center(x, y);
                     }
+                    if (tileSpace > 0) {
+                        used.click(() => opts.boardClick!(row, col, ""));
+                    }
+                }
+            }
+        } else if (tileSpace > 0) {
+            const tileLight = draw.defs().rect(cellsize, cellsize)
+                .fill({color: "#ffffff", opacity: 0})
+                .stroke({width: 0})
+                .id("tileLight");
+
+            const tiles = board.group().id("tiles");
+            for (let row = 0; row < height; row++) {
+                for (let col = 0; col < width; col++) {
+                    const {x, y} = grid[row][col];
+                    const used = tiles.use(tileLight).center(x, y);
+                    if (opts.rotate === 180) {
+                        used.click(() => opts.boardClick!(height - row - 1, width - col - 1, ""));
+                    } else {
+                        used.click(() => opts.boardClick!(row, col, ""));
+                    }
+
                 }
             }
         }
@@ -601,56 +638,80 @@ export abstract class RendererBase {
         // Draw grid lines
         const gridlines = board.group().id("gridlines");
 
-        // Check for tiling
-        let tilex: number = 0;
-        let tiley: number = 0;
-        if (json.board.tileWidth !== undefined) {
-            tilex = json.board.tileWidth as number;
-        }
-        if (json.board.tileHeight !== undefined) {
-            tiley = json.board.tileHeight as number;
-        }
-
         if (style === "squares-beveled") {
             baseOpacity *= 0.15;
         }
         // Horizontal, top of each row, then bottom line after loop
-        for (let row = 0; row < height; row++) {
-            let thisStroke = baseStroke;
-            if ( (tiley > 0) && (row > 0) && (row % tiley === 0) ) {
-                thisStroke = baseStroke * 3;
-            }
-            const x1 = grid[row][0].x - (cellsize / 2);
-            const y1 = grid[row][0].y - (cellsize / 2);
-            const x2 = grid[row][width - 1].x + (cellsize / 2);
-            const y2 = grid[row][width - 1].y - (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+        let numcols = 1;
+        if (tilex > 0) {
+            numcols = Math.floor(width / tilex);
         }
-        let lastx1 = grid[height - 1][0].x - (cellsize / 2);
-        let lasty1 = grid[height - 1][0].y + (cellsize / 2);
-        let lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
-        let lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        for (let tileCol = 0; tileCol < numcols; tileCol++) {
+            let idxLeft = 0;
+            if (tilex > 0) {
+                idxLeft = tileCol * tilex;
+            }
+            let idxRight = width - 1;
+            if (tilex > 0) {
+                idxRight = idxLeft + tilex - 1;
+            }
+            for (let row = 0; row < height; row++) {
+                let thisStroke = baseStroke;
+                if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
+                    thisStroke = baseStroke * 3;
+                }
+                const x1 = grid[row][idxLeft].x - (cellsize / 2);
+                const y1 = grid[row][idxLeft].y - (cellsize / 2);
+                const x2 = grid[row][idxRight].x + (cellsize / 2);
+                const y2 = grid[row][idxRight].y - (cellsize / 2);
+                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+
+                if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && (row > 0) && (row % tiley === tiley - 1) ) ) {
+                    const lastx1 = grid[row][idxLeft].x - (cellsize / 2);
+                    const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
+                    const lastx2 = grid[row][idxRight].x + (cellsize / 2);
+                    const lasty2 = grid[row][idxRight].y + (cellsize / 2);
+                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                }
+            }
+        }
 
         // Vertical, left of each column, then right line after loop
-        for (let col = 0; col < width; col++) {
-            let thisStroke = baseStroke;
-            if ( (tilex > 0) && (col > 0) && (col % tilex === 0) ) {
-                thisStroke = baseStroke * 3;
-            }
-            const x1 = grid[0][col].x - (cellsize / 2);
-            const y1 = grid[0][col].y - (cellsize / 2);
-            const x2 = grid[height - 1][col].x - (cellsize / 2);
-            const y2 = grid[height - 1][col].y + (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+        let numrows = 1;
+        if (tiley > 0) {
+            numrows = Math.floor(height / tiley);
         }
-        lastx1 = grid[0][width - 1].x + (cellsize / 2);
-        lasty1 = grid[0][width - 1].y - (cellsize / 2);
-        lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
-        lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        for (let tileRow = 0; tileRow < numrows; tileRow++) {
+            let idxTop = 0;
+            if (tiley > 0) {
+                idxTop = tileRow * tiley;
+            }
+            let idxBottom = height - 1;
+            if (tiley > 0) {
+                idxBottom = idxTop + tiley - 1;
+            }
+            for (let col = 0; col < width; col++) {
+                let thisStroke = baseStroke;
+                if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
+                    thisStroke = baseStroke * 3;
+                }
+                const x1 = grid[idxTop][col].x - (cellsize / 2);
+                const y1 = grid[idxTop][col].y - (cellsize / 2);
+                const x2 = grid[idxBottom][col].x - (cellsize / 2);
+                const y2 = grid[idxBottom][col].y + (cellsize / 2);
+                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
 
-        if (opts.boardClick !== undefined) {
+                if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && (col > 0) && (col % tilex === tilex - 1) ) ) {
+                    const lastx1 = grid[idxTop][col].x + (cellsize / 2);
+                    const lasty1 = grid[idxTop][col].y - (cellsize / 2);
+                    const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
+                    const lasty2 = grid[idxBottom][col].y + (cellsize / 2);
+                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                }
+            }
+        }
+
+        if ( (opts.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
@@ -688,105 +749,6 @@ export abstract class RendererBase {
         return grid;
     }
 
-    protected rectOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
-            throw new Error("Both the `width` and `height` properties are required for this board type.");
-        }
-        const width: number = json.board.width as number;
-        const height: number = json.board.height as number;
-        const cellsize = this.cellsize * 0.8;
-        const style = json.board.style;
-
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
-        }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
-        }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
-        }
-
-        // Get a grid of points
-        let orientation = "pointy";
-        if (style.endsWith("f")) {
-            orientation = "flat";
-        }
-        let offset = -1;
-        if (style.includes("-even")) {
-            offset = 1;
-        }
-        if (opts.rotate === 180) {
-            offset *= -1;
-        }
-        const Hex = extendHex({
-            offset,
-            orientation,
-            size: cellsize,
-        });
-        const grid = defineGrid(Hex);
-        const corners = Hex().corners();
-        const hexSymbol = draw.symbol()
-            .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
-            .fill("white").opacity(1)
-            .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
-
-        const board = draw.group().id("board");
-        const labels = draw.group().id("labels");
-        const rect = grid.rectangle({width, height});
-        const fontSize = this.cellsize / 5;
-        for (const hex of rect) {
-            const { x, y } = hex.toPoint();
-            const used = board.use(hexSymbol).translate(x, y);
-            let label = coords2algebraicHex(hex.x, hex.y, height);
-            if (opts.rotate === 180) {
-                label = coords2algebraicHex(width - hex.x - 1, height - hex.y - 1, height);
-            }
-            labels.text(label)
-            .font({
-                anchor: "middle",
-                fill: baseStroke,
-                size: fontSize,
-            })
-            // .center(cx, cy);
-            .center(corners[5].x, corners[5].y)
-            .translate(x, y + fontSize);
-            if (opts.boardClick !== undefined) {
-                if (opts.rotate === 180) {
-                    used.click(() => opts.boardClick!(height - hex.y - 1, width - hex.x - 1, ""));
-                } else {
-                    used.click(() => opts.boardClick!(hex.y, hex.x, ""));
-                }
-            }
-        }
-
-        let gridPoints: GridPoints = [];
-        const {x: cx, y: cy} = Hex().center();
-        for (let y = 0; y < 9; y++) {
-            const node: IPoint[] = [];
-            for (let x = 0; x < 9; x++) {
-                const hex = rect.get({x, y});
-                if (hex === undefined) {
-                    throw new Error();
-                }
-                const pt = hex.toPoint();
-                node.push({x: pt.x + cx, y: pt.y + cy} as IPoint);
-            }
-            gridPoints.push(node);
-        }
-
-        if (opts.rotate === 180) {
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
-        }
-        this.markBoard(json, board, gridPoints, opts);
-
-        return gridPoints;
-    }
-
     protected vertex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
@@ -810,8 +772,22 @@ export abstract class RendererBase {
             baseOpacity = json.board.strokeOpacity;
         }
 
+        // Check for tiling
+        let tilex: number = 0;
+        let tiley: number = 0;
+        let tileSpace: number = 0;
+        if (json.board.tileWidth !== undefined) {
+            tilex = json.board.tileWidth as number;
+        }
+        if (json.board.tileHeight !== undefined) {
+            tiley = json.board.tileHeight as number;
+        }
+        if (json.board.tileSpacing !== undefined) {
+            tileSpace = json.board.tileSpacing as number;
+        }
+
         // Get a grid of points
-        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = draw.group().id("board");
 
         // create buffer zone first if requested
@@ -956,73 +932,119 @@ export abstract class RendererBase {
         // Draw grid lines
         const gridlines = board.group().id("gridlines");
 
-        // Check for tiling
-        let tilex: number = 0;
-        let tiley: number = 0;
-        if (json.board.tileWidth !== undefined) {
-            tilex = json.board.tileWidth as number;
-        }
-        if (json.board.tileHeight !== undefined) {
-            tiley = json.board.tileHeight as number;
-        }
-
         // Horizontal, top of each row, then bottom line after loop
-        for (let row = 0; row < height; row++) {
-            let thisStroke = baseStroke;
-            if ( (tiley > 0) && (row > 0) && (row % tiley === 0) ) {
-                thisStroke = baseStroke * 3;
-            }
-            const x1 = grid[row][0].x;
-            const y1 = grid[row][0].y;
-            const x2 = grid[row][width - 1].x;
-            const y2 = grid[row][width - 1].y;
-            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+        let numcols = 1;
+        if (tilex > 0) {
+            numcols = Math.floor(width / tilex);
         }
-        let lastx1 = grid[height - 1][0].x;
-        let lasty1 = grid[height - 1][0].y;
-        let lastx2 = grid[height - 1][width - 1].x;
-        let lasty2 = grid[height - 1][width - 1].y;
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        for (let tileCol = 0; tileCol < numcols; tileCol++) {
+            let idxLeft = 0;
+            if (tilex > 0) {
+                idxLeft = tileCol * tilex;
+            }
+            let idxRight = width - 1;
+            if (tilex > 0) {
+                idxRight = idxLeft + tilex;
+                if ( (tileSpace > 0) || (idxRight === width) ) {
+                    idxRight--;
+                }
+            }
+            for (let row = 0; row < height; row++) {
+                let thisStroke = baseStroke;
+                if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
+                    thisStroke = baseStroke * 3;
+                }
+                const x1 = grid[row][idxLeft].x;
+                const y1 = grid[row][idxLeft].y;
+                const x2 = grid[row][idxRight].x;
+                const y2 = grid[row][idxRight].y;
+                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+
+                if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && (row > 0) && (row % tiley === tiley - 1) ) ) {
+                    const lastx1 = grid[row][idxLeft].x;
+                    const lasty1 = grid[row][idxLeft].y;
+                    const lastx2 = grid[row][idxRight].x;
+                    const lasty2 = grid[row][idxRight].y;
+                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                }
+            }
+        }
 
         // Vertical, left of each column, then right line after loop
-        for (let col = 0; col < width; col++) {
-            let thisStroke = baseStroke;
-            if ( (tilex > 0) && (col > 0) && (col % tilex === 0) ) {
-                thisStroke = baseStroke * 3;
-            }
-            const x1 = grid[0][col].x;
-            const y1 = grid[0][col].y;
-            const x2 = grid[height - 1][col].x;
-            const y2 = grid[height - 1][col].y;
-            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+        let numrows = 1;
+        if (tiley > 0) {
+            numrows = Math.floor(height / tiley);
         }
-        lastx1 = grid[0][width - 1].x;
-        lasty1 = grid[0][width - 1].y;
-        lastx2 = grid[height - 1][width - 1].x;
-        lasty2 = grid[height - 1][width - 1].y;
-        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        for (let tileRow = 0; tileRow < numrows; tileRow++) {
+            let idxTop = 0;
+            if (tiley > 0) {
+                idxTop = tileRow * tiley;
+            }
+            let idxBottom = height - 1;
+            if (tiley > 0) {
+                idxBottom = idxTop + tiley;
+                if ( (tileSpace > 0) || (idxBottom === height) ) {
+                    idxBottom--;
+                }
+            }
+            for (let col = 0; col < width; col++) {
+                let thisStroke = baseStroke;
+                if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
+                    thisStroke = baseStroke * 3;
+                }
+                const x1 = grid[idxTop][col].x;
+                const y1 = grid[idxTop][col].y;
+                const x2 = grid[idxBottom][col].x;
+                const y2 = grid[idxBottom][col].y;
+                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+
+                if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && (col > 0) && (col % tilex === tilex - 1) ) ) {
+                    const lastx1 = grid[idxTop][col].x;
+                    const lasty1 = grid[idxTop][col].y;
+                    const lastx2 = grid[idxBottom][col].x;
+                    const lasty2 = grid[idxBottom][col].y;
+                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                }
+            }
+        }
 
         // If `-cross` board, add crosses
         if (style === "vertex-cross") {
-            for (let row = 1; row < height; row++) {
-                for (let col = 0; col < width; col++) {
-                    const curr = grid[row][col];
-                    // if not last column, do next
-                    if (col < width - 1) {
-                        const next = grid[row - 1][col + 1];
-                        gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+            for (let tileRow = 0; tileRow < numrows; tileRow++) {
+                for (let tileCol = 0; tileCol < numcols; tileCol++) {
+                    const tileHeight = Math.floor(height / numrows);
+                    const tileWidth = Math.floor(width / numcols);
+                    let rowFirst = tileRow * tileHeight;
+                    if ( (rowFirst === 0) || (tileSpace > 0) ) {
+                        rowFirst++;
                     }
-                    // if not first column, do previous
-                    if (col > 0) {
-                        const prev = grid[row - 1][col - 1];
-                        gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+                    const rowLast = (tileRow * tileHeight) + tileHeight - 1;
+                    const colFirst = tileCol * tileWidth;
+                    let colLast = (tileCol * tileWidth) + tileWidth - 1;
+                    if ( (colLast < width - 1) && (tileSpace === 0) ) {
+                        colLast++;
+                    }
+                    for (let row = rowFirst; row <= rowLast; row++) {
+                        for (let col = colFirst; col <= colLast; col++) {
+                            const curr = grid[row][col];
+                            // if not last column, do next
+                            if (col < colLast) {
+                                const next = grid[row - 1][col + 1];
+                                gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+                            }
+                            // if not first column, do previous
+                            if (col > colFirst) {
+                                const prev = grid[row - 1][col - 1];
+                                gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+                            }
+                        }
                     }
                 }
             }
         }
 
         if (opts.boardClick !== undefined) {
-            if (json.renderer !== "stacking-offset") {
+            if ( (json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
                 const originX = grid[0][0].x;
                 const originY = grid[0][0].y;
                 const maxX = grid[0][grid[0].length - 1].x;
@@ -1092,6 +1114,105 @@ export abstract class RendererBase {
         this.markBoard(json, gridlines, grid, opts);
 
         return grid;
+    }
+
+    protected rectOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+        // Check required properites
+        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = json.board.width as number;
+        const height: number = json.board.height as number;
+        const cellsize = this.cellsize * 0.8;
+        const style = json.board.style;
+
+        let baseStroke: number = 1;
+        let baseColour: string = "#000";
+        let baseOpacity: number = 1;
+        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
+            baseStroke = json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
+            baseColour = json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        let orientation = "pointy";
+        if (style.endsWith("f")) {
+            orientation = "flat";
+        }
+        let offset = -1;
+        if (style.includes("-even")) {
+            offset = 1;
+        }
+        if (opts.rotate === 180) {
+            offset *= -1;
+        }
+        const Hex = extendHex({
+            offset,
+            orientation,
+            size: cellsize,
+        });
+        const grid = defineGrid(Hex);
+        const corners = Hex().corners();
+        const hexSymbol = draw.symbol()
+            .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+            .fill("white").opacity(1)
+            .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
+
+        const board = draw.group().id("board");
+        const labels = draw.group().id("labels");
+        const rect = grid.rectangle({width, height});
+        const fontSize = this.cellsize / 5;
+        for (const hex of rect) {
+            const { x, y } = hex.toPoint();
+            const used = board.use(hexSymbol).translate(x, y);
+            let label = coords2algebraicHex(hex.x, hex.y, height);
+            if (opts.rotate === 180) {
+                label = coords2algebraicHex(width - hex.x - 1, height - hex.y - 1, height);
+            }
+            labels.text(label)
+            .font({
+                anchor: "middle",
+                fill: baseStroke,
+                size: fontSize,
+            })
+            // .center(cx, cy);
+            .center(corners[5].x, corners[5].y)
+            .translate(x, y + fontSize);
+            if (opts.boardClick !== undefined) {
+                if (opts.rotate === 180) {
+                    used.click(() => opts.boardClick!(height - hex.y - 1, width - hex.x - 1, ""));
+                } else {
+                    used.click(() => opts.boardClick!(hex.y, hex.x, ""));
+                }
+            }
+        }
+
+        let gridPoints: GridPoints = [];
+        const {x: cx, y: cy} = Hex().center();
+        for (let y = 0; y < 9; y++) {
+            const node: IPoint[] = [];
+            for (let x = 0; x < 9; x++) {
+                const hex = rect.get({x, y});
+                if (hex === undefined) {
+                    throw new Error();
+                }
+                const pt = hex.toPoint();
+                node.push({x: pt.x + cx, y: pt.y + cy} as IPoint);
+            }
+            gridPoints.push(node);
+        }
+
+        if (opts.rotate === 180) {
+            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
+        }
+        this.markBoard(json, board, gridPoints, opts);
+
+        return gridPoints;
     }
 
     protected snubSquare(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {

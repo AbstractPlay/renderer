@@ -16,6 +16,9 @@ export interface IGeneratorArgs {
     readonly gridHeight?: number;
     readonly gridWidthMin?: number;
     readonly gridWidthMax?: number;
+    readonly tileHeight?: number;   // These three are for creating spaced grids of grids
+    readonly tileWidth?: number;
+    readonly tileSpacing?: number;
     readonly offsetX?: number;      // Used for stacking renderer only
     readonly offsetY?: number;      // Used for stacking renderer only
 }

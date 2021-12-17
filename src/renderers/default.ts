@@ -121,7 +121,7 @@ export class DefaultRenderer extends RendererBase {
                             use.dmove(newx, newy);
                             use.scale(factor, newx, newy);
                             if (opts.boardClick !== undefined) {
-                                if ( (! json.board.style.startsWith("squares")) && (! json.board.style.startsWith("vertex")) ) {
+                                if ( ( (json.board.tileSpacing !== undefined) && (json.board.tileSpacing > 0) ) || ( (! json.board.style.startsWith("squares")) && (! json.board.style.startsWith("vertex")) ) ) {
                                     use.click(() => opts.boardClick!(row, col, key));
                                 }
                             }

@@ -179,12 +179,18 @@
                             "$ref": "#/definitions/positiveInteger"
                         },
                         "tileWidth": {
-                            "description": "Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.",
+                            "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
                             "$ref": "#/definitions/positiveInteger"
                         },
                         "tileHeight": {
-                            "description": "Only meaningful for the `squares` and `vertex` boards. Places heavier grid lines to create tiles that are X grids high.",
+                            "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells high as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
                             "$ref": "#/definitions/positiveInteger"
+                        },
+                        "tileSpacing": {
+                            "description": "If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.",
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0
                         },
                         "stackOffset": {
                             "description": "Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.",

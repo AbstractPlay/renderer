@@ -71,8 +71,9 @@ These boards are adjustable using the following properties:
 strokeWeight:: Adjusts the width of the drawn lines.
 strokeColour:: Adjusts the colour of the drawn lines.
 strokeOpacity:: Adjusts the opacity of the drawn lines.
-tileWidth:: Draws a thicker line every X columns. Used to simulate tiles on a standard board.
-tileHeight:: Draws a thicker line every X rows. Used to simulate tiles on a standard board.
+tileWidth:: Only applies to `squares*` and `vertex*` boards. Defines tiles X cells wide. If `tileSpacing` is defined, the tiles will be broken apart from each other, otherwise thicker lines will be drawn to delineate.
+tileHeight:: Only applies to `squares*` and `vertex*` boards. Defines tiles X cells high. If `tileSpacing` is defined, the tiles will be broken apart from each other, otherwise thicker lines will be drawn to delineate.
+tileSpacing:: If given, defines the space to place between the tiles, expressed as a percentage of a cell size (i.e., `1` is one cell size, `0.5` is half, and `2` is double).
 stackOffset:: Used by the `stacking-offset` renderer to adjust how the pieces are stacked.
 buffer:: This property is only used by the default renderer and places buffer zones around the board for use by click handlers.
 
