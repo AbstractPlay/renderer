@@ -666,7 +666,7 @@ export abstract class RendererBase {
                 const y2 = grid[row][idxRight].y - (cellsize / 2);
                 gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
 
-                if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && (row > 0) && (row % tiley === tiley - 1) ) ) {
+                if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && ( (row > 0) || (tiley === 1) ) && (row % tiley === tiley - 1) ) ) {
                     const lastx1 = grid[row][idxLeft].x - (cellsize / 2);
                     const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
                     const lastx2 = grid[row][idxRight].x + (cellsize / 2);
@@ -701,7 +701,7 @@ export abstract class RendererBase {
                 const y2 = grid[idxBottom][col].y + (cellsize / 2);
                 gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
 
-                if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && (col > 0) && (col % tilex === tilex - 1) ) ) {
+                if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && ( (col > 0) || (tilex === 1) ) && (col % tilex === tilex - 1) ) ) {
                     const lastx1 = grid[idxTop][col].x + (cellsize / 2);
                     const lasty1 = grid[idxTop][col].y - (cellsize / 2);
                     const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
