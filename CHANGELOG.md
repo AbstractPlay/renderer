@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A new playground/demo site is now available at [https://abstractplay.com/renderer/](https://abstractplay.com/renderer/).
 - Added `tileSpacing` property that, when combined with `tileWidth` and `tileHeight`, will break the tiles apart and space them from each other. Only works for `squares*` and `vertex*` boards.
+- Added glyphs for Alfred's Wyke.
 
 ## [0.6.0] - 2021-12-15
 
