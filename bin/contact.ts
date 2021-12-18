@@ -5,7 +5,7 @@ import { sheets } from "../src/sheets";
 const { createSVGWindow } = require("svgdom");
 const window = createSVGWindow();
 const document = window.document;
-import { registerWindow, SVG, Svg, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
+import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 
 // register window and document
 registerWindow(window, document);
@@ -41,8 +41,8 @@ Array.from(sheets.values()).forEach((sheet) => {
         const name = names[idx];
         const glyph = glyphs[idx];
         const tile = nstSheet.nested().size(tileSizeOuter, tileSizeOuter);
-        const symbol = glyph(canvas.defs());
-        const used = tile.use(canvas.findOne("#" + symbol.id()) as SVGSymbol);
+        const symbol = glyph(tile);
+        const used = tile.use(symbol);
         // Scale it appropriately
         used.dmove(innerTL, innerTL);
         used.scale(factor, innerTL, innerTL);
