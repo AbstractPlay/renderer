@@ -19,7 +19,7 @@ Detailed instructions will appear here once the API is stable. For now, here's j
 
 The below contact sheet may not work properly in Firefox. The library itself *does* work correctly, however. Still trying to figure out why Firefox doesn't like the contact sheet itself.
 
-![Contact sheet](./contact.svg "Rudimentary contact sheet")
+![Contact sheet](./contact.png "Rudimentary contact sheet")
 
 ## Contact
 
