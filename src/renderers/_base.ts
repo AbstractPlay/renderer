@@ -6,7 +6,7 @@ import { APRenderRep, Glyph } from "../schema";
 import { sheets } from "../sheets";
 
 export interface IRendererOptionsIn {
-    sheetList?: string[];
+    sheets?: string[];
     colours?: string[];
     patterns?: boolean;
     patternList?: string[];
@@ -19,7 +19,7 @@ export interface IRendererOptionsIn {
 }
 
 export interface IRendererOptionsOut {
-    sheetList: string[];
+    sheets: string[];
     colours: string[];
     patterns: boolean;
     patternList: string[];
@@ -53,7 +53,7 @@ export abstract class RendererBase {
 
     constructor(name = "default") {
         this.name = name;
-        this.options = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0, glyphmap: []};
+        this.options = {sheets: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0, glyphmap: []};
     }
 
     public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
@@ -82,13 +82,13 @@ export abstract class RendererBase {
         }
 
         // Validate sheet list
-        if ( (opts.sheetList !== undefined) && (opts.sheetList.length > 0) ) {
-            for (const name of opts.sheetList) {
+        if ( (opts.sheets !== undefined) && (opts.sheets.length > 0) ) {
+            for (const name of opts.sheets) {
                 if (! sheets.has(name)) {
                     throw new Error(`A glyph sheet you requested could not be found: ${ name }`);
                 }
             }
-            this.options.sheetList = opts.sheetList;
+            this.options.sheets = opts.sheets;
         }
 
         // Validate patterns settings
@@ -261,7 +261,7 @@ export abstract class RendererBase {
                 glyphs.forEach((glyph) => {
                     let got: SVGSymbol;
                     if ( ("name" in glyph) && (glyph.name !== undefined) ) {
-                        got = this.loadGlyph(glyph.name, this.options.sheetList, nested);
+                        got = this.loadGlyph(glyph.name, this.options.sheets, nested);
                     } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;

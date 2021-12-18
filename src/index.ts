@@ -2,29 +2,20 @@
 import { G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
+import { IRendererOptionsIn } from "./renderers/_base";
 import { APRenderRep } from "./schema";
 import schema from "./schema.json";
 
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
-export interface IRenderOptions {
+export interface IRenderOptions extends IRendererOptionsIn {
     divid: string;
     divelem?: HTMLElement;
-    boardClick?: (row: number, col: number, piece: string) => void;
-    boardHover?: (row: number, col: number, piece: string) => void;
-    sheets?: string[];
     target?: Svg;
-    patterns?: boolean;
-    patternList?: string[];
-    colourBlind?: boolean;
-    colourList?: string[];
-    showAnnotations?: boolean;
-    rotate?: number;
     width?: NumberAlias;
     height?: NumberAlias;
     svgid?: string;
-    glyphmap?: [string,string][];
 }
 
 
@@ -150,7 +141,7 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheetList: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colourList, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap});
+    renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap});
     if (draw.bbox().h !== 0) {
         draw.viewbox(draw.bbox());
     }
