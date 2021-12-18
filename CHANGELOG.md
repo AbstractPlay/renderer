@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Change
+
+- Yet another breaking change. Found an issue where nested glyphs (symbols within symbols) couldn't be reused because of how the IDs got duplicated. So I completely refactored the glyph loading code.
+  - Glyphs in the sheets may *not* have hard-coded IDs. Let the renderer auto-assign them.
+  - This change has vastly simplified the `<defs>` section. It now only contains the glyphs defined in the legend.
+  - But the final SVG code is inflated slightly because the internal glyphs are duplicated.
+
 ### Added
 
 - A new playground/demo site is now available at [https://abstractplay.com/renderer/](https://abstractplay.com/renderer/).

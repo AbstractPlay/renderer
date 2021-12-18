@@ -17,27 +17,27 @@ describe("Glyph sheets", () => {
             });
     });
 
-    it("explicit ids should match internal SVG ids", () => {
-        // returns a window with a document and an svg root node
-        const { createSVGWindow } = require("svgdom");
-        const window = createSVGWindow();
-        const document = window.document;
-        const { SVG, registerWindow } = require("@svgdotjs/svg.js");
+    // it("explicit ids should match internal SVG ids", () => {
+    //     // returns a window with a document and an svg root node
+    //     const { createSVGWindow } = require("svgdom");
+    //     const window = createSVGWindow();
+    //     const document = window.document;
+    //     const { SVG, registerWindow } = require("@svgdotjs/svg.js");
 
-        // register window and document
-        registerWindow(window, document);
+    //     // register window and document
+    //     registerWindow(window, document);
 
-        Array.from(sheets.values()).forEach((sheet) => {
-            sheet.glyphs.forEach((v, k) => {
-                const canvas = SVG(document.documentElement);
-                v(canvas.defs());
-                const retrieved = SVG("#" + k);
-                if ( (retrieved === undefined) || (retrieved === null) ) {
-                    throw new Error("ID mismatch for glyph '" + k + "'");
-                }
-            });
-        });
-    });
+    //     Array.from(sheets.values()).forEach((sheet) => {
+    //         sheet.glyphs.forEach((v, k) => {
+    //             const canvas = SVG(document.documentElement);
+    //             v(canvas.defs());
+    //             const retrieved = SVG("#" + k);
+    //             if ( (retrieved === undefined) || (retrieved === null) ) {
+    //                 throw new Error("ID mismatch for glyph '" + k + "'");
+    //             }
+    //         });
+    //     });
+    // });
 
     it("should be in alphabetical order", (done) => {
         const fs = require("fs");

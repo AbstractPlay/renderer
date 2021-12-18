@@ -1,4 +1,4 @@
-import { Element, Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
 import { defineGrid, extendHex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
@@ -181,76 +181,23 @@ export abstract class RendererBase {
         }
     }
 
-    protected loadGlyph(glyph: string, sheetList: string[], canvas: Svg) {
-        let found: boolean = false;
+    protected loadGlyph(glyph: string, sheetList: string[], canvas: Svg): SVGSymbol {
         for (const s of sheetList) {
             const sheet = sheets.get(s);
             if (sheet !== undefined) {
                 const func = sheet.glyphs.get(glyph);
                 if (func !== undefined) {
-                    found = true;
-                    func(canvas.defs());
+                    return func(canvas.defs());
                 }
             } else {
                 throw new Error("Could not load the glyph sheet '" + s + "'");
             }
         }
-        if (! found) {
-            throw new Error("The glyph '" + glyph + "' could not be found in the requested sheets: " + sheetList.join(", "));
-        }
+        throw new Error("The glyph '" + glyph + "' could not be found in the requested sheets: " + sheetList.join(", "));
     }
 
     protected loadLegend(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut) {
         if ( ("legend" in json) && (json.legend !== undefined) ) {
-            const glyphSet: Set<string> = new Set();
-            const textSet: Set<string> = new Set();
-            // tslint:disable-next-line: forin
-            for (const key in json.legend) {
-                const node = json.legend[key];
-                if (typeof(node) === "string") {
-                    glyphSet.add(node);
-                } else if (Array.isArray(node)) {
-                    node.forEach((e) => {
-                        if ( ("name" in e) && (e.name !== undefined) ) {
-                            glyphSet.add(e.name);
-                        } else if ( ("text" in e) && (e.text !== undefined) && (e.text.length > 0) ) {
-                            textSet.add(e.text);
-                        }
-                    });
-                } else {
-                    if ( ("name" in node) && (node.name !== undefined) ) {
-                        glyphSet.add(node.name);
-                    } else if ( ("text" in node) && (node.text !== undefined) && (node.text.length > 0) ) {
-                        textSet.add(node.text);
-                    }
-                }
-            }
-            for (const glyph of glyphSet) {
-                this.loadGlyph(glyph, opts.sheetList, draw);
-            }
-
-            // create text glyphs
-            textSet.forEach((v) => {
-                const key = `_text_${v}`;
-                const group = draw.defs().symbol().id(key);
-                const fontsize = 17;
-                const text = group.text(v).font({
-                    anchor: "start",
-                    fill: "#000",
-                    size: fontsize,
-                });
-                text.attr("data-playerfill", true);
-                const temptext = draw.text(v).font({
-                    anchor: "start",
-                    fill: "#000",
-                    size: fontsize,
-                });
-                const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
-                group.viewbox(temptext.bbox());
-                group.attr("data-cellsize", squaresize);
-                temptext.remove();
-            });
-
             // Load any requested patterns
             if (opts.patterns) {
                 const patterns: Array<number> = new Array();
@@ -284,113 +231,127 @@ export abstract class RendererBase {
             // Now look for composite and coloured pieces and add those to the <defs> section for placement
             // tslint:disable-next-line: forin
             for (const key in json.legend) {
-                const node = json.legend[key];
-                if (typeof(node) !== "string") {
-                    let glyphs: Array<Glyph>;
-                    if (! Array.isArray(node)) {
-                        glyphs = [node];
+                const glyph = json.legend[key];
+                let glyphs: Array<Glyph>;
+                if (typeof glyph === "string") {
+                    glyphs = [{name: glyph}];
+                } else if (! Array.isArray(glyph)) {
+                    glyphs = [glyph];
+                } else {
+                    glyphs = glyph;
+                }
+
+                // Create a new SVG.Nested to represent the composite piece and add it to <defs>
+                const cellsize = 500;
+                const nested = draw.defs().nested().id(key).size(cellsize, cellsize);
+
+                // Layer the glyphs, manipulating as you go
+                glyphs.forEach((glyph) => {
+                    let got: SVGSymbol;
+                    if ( ("name" in glyph) && (glyph.name !== undefined) ) {
+                        got = this.loadGlyph(glyph.name, opts.sheetList, nested);
+                    } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
+                        const group = nested.symbol();
+                        const fontsize = 17;
+                        const text = group.text(glyph.text).font({
+                            anchor: "start",
+                            fill: "#000",
+                            size: fontsize,
+                        });
+                        text.attr("data-playerfill", true);
+                        const temptext = draw.text(glyph.text).font({
+                            anchor: "start",
+                            fill: "#000",
+                            size: fontsize,
+                        });
+                        const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
+                        group.viewbox(temptext.bbox());
+                        group.attr("data-cellsize", squaresize);
+                        temptext.remove();
+                        got = group;
                     } else {
-                        glyphs = node;
+                        throw new Error(`Could not load one of the components of the glyph '${key}': ${JSON.stringify(glyph)}.`);
                     }
 
-                    // Create a new SVG.Nested to represent the composite piece and add it to <defs>
-                    const cellsize = 500;
-                    const nested = draw.defs().nested().id(key).size(cellsize, cellsize);
-
-                    // Layer the glyphs, manipulating as you go
-                    glyphs.forEach((glyph) => {
-                        // Get the glyph from <defs>
-                        let got: SVGSymbol;
-                        if ( ("name" in glyph) && (glyph.name !== undefined) && (glyph.name.length > 0) ) {
-                            got = draw.findOne("#" + glyph.name) as SVGSymbol;
-                        } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
-                            got = draw.findOne("#_text_" + glyph.text) as SVGSymbol;
-                        } else {
-                            throw new Error("Either `name` or `text` must be supplied for each glyph.");
-                        }
-                        if ( (got === undefined) || (got === null) ) {
-                            throw new Error(`Could not load the requested glyph: ${glyph.name}.`);
-                        }
-
-                        let sheetCellSize = got.viewbox().height;
+                    let sheetCellSize = got.viewbox().height;
+                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                        sheetCellSize = got.attr("data-cellsize");
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            sheetCellSize = got.attr("data-cellsize");
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        }
+                    }
+
+                    // const clone = got.clone();
+                    const clone = got;
+
+                    // Colourize (`player` first, then `colour` if defined)
+                    if (glyph.player !== undefined) {
+                        if  (opts.patterns) {
+                            if (glyph.player > opts.patternList.length) {
+                                throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                             }
-                        }
-
-                        const clone = got.clone();
-
-                        // Colourize (`player` first, then `colour` if defined)
-                        if (glyph.player !== undefined) {
-                            if  (opts.patterns) {
-                                if (glyph.player > opts.patternList.length) {
-                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
-                                }
-                                const useSize = sheetCellSize;
-                                let fill = draw.findOne("#" + opts.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
-                                if (fill === null) {
-                                    fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
-                                    fill = fill.clone().id(opts.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
-                                    draw.defs().add(fill);
-                                }
-                                clone.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
-                            } else {
-                                if (glyph.player > opts.colours.length) {
-                                    throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
-                                }
-                                const fill = opts.colours[glyph.player - 1];
-                                clone.find("[data-playerfill=true]").each(function(this: Svg) { this.fill(fill); });
+                            const useSize = sheetCellSize;
+                            let fill = draw.findOne("#" + opts.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
+                            if (fill === null) {
+                                fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
+                                fill = fill.clone().id(opts.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
+                                draw.defs().add(fill);
                             }
-                        } else if (glyph.colour !== undefined) {
-                            clone.find("[data-playerfill=true]").each(function(this: Svg) { this.fill({color: glyph.colour}); });
-                        }
-
-                        // Apply requested opacity
-                        if (glyph.opacity !== undefined) {
-                            clone.fill({opacity: glyph.opacity});
-                        }
-
-                        nested.add(clone);
-                        const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol);
-
-                        // Rotate if requested
-                        if (glyph.rotate !== undefined) {
-                            use.rotate(glyph.rotate, cellsize / 2, cellsize / 2);
-                        }
-
-                        // Scale it appropriately
-                        let factor: number | undefined;
-                        if (glyph.scale !== undefined) {
-                            factor = glyph.scale;
-                        }
-                        if ( ("board" in json) && (json.board !== undefined) && (json.board !== null) && ("style" in json.board) && (json.board.style !== undefined) && (json.board.style === "hex-of-hex") ) {
-                            if (factor === undefined) {
-                                factor = 0.85;
-                            } else {
-                                factor *= 0.85;
+                            clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
+                        } else {
+                            if (glyph.player > opts.colours.length) {
+                                throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                             }
+                            const fill = opts.colours[glyph.player - 1];
+                            clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         }
-                        if (factor !== undefined) {
-                            use.scale(factor, cellsize / 2, cellsize / 2);
-                        }
+                    } else if (glyph.colour !== undefined) {
+                        clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: glyph.colour}); });
+                    }
 
-                        // Shift if requested
-                        if (glyph.nudge !== undefined) {
-                            let dx = 0;
-                            let dy = 0;
-                            if (glyph.nudge.dx !== undefined) {
-                                dx = glyph.nudge.dx;
-                            }
-                            if (glyph.nudge.dy !== undefined) {
-                                dy = glyph.nudge.dy;
-                            }
-                            use.dmove(dx, dy);
+                    // Apply requested opacity
+                    if (glyph.opacity !== undefined) {
+                        clone.fill({opacity: glyph.opacity});
+                    }
+
+                    nested.add(clone);
+                    const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol);
+
+                    // Rotate if requested
+                    if (glyph.rotate !== undefined) {
+                        use.rotate(glyph.rotate, cellsize / 2, cellsize / 2);
+                    }
+
+                    // Scale it appropriately
+                    let factor: number | undefined;
+                    if (glyph.scale !== undefined) {
+                        factor = glyph.scale;
+                    }
+                    if ( ("board" in json) && (json.board !== undefined) && (json.board !== null) && ("style" in json.board) && (json.board.style !== undefined) && (json.board.style === "hex-of-hex") ) {
+                        if (factor === undefined) {
+                            factor = 0.85;
+                        } else {
+                            factor *= 0.85;
                         }
-                    });
-                    nested.viewbox(0, 0, cellsize, cellsize);
-                }
+                    }
+                    if (factor !== undefined) {
+                        use.scale(factor, cellsize / 2, cellsize / 2);
+                    }
+
+                    // Shift if requested
+                    if (glyph.nudge !== undefined) {
+                        let dx = 0;
+                        let dy = 0;
+                        if (glyph.nudge.dx !== undefined) {
+                            dx = glyph.nudge.dx;
+                        }
+                        if (glyph.nudge.dy !== undefined) {
+                            dy = glyph.nudge.dy;
+                        }
+                        use.dmove(dx, dy);
+                    }
+                });
+                nested.viewbox(0, 0, cellsize, cellsize);
             }
         }
     }
@@ -463,9 +424,9 @@ export abstract class RendererBase {
             if (pattern !== undefined) {
                 this.loadPattern(pattern, draw);
             }
-            let fill: Element | undefined;
+            let fill: SVGElement | undefined;
             if (pattern !== undefined) {
-                fill = draw.findOne(`#${pattern}`) as Element;
+                fill = draw.findOne(`#${pattern}`) as SVGElement;
                 if (fill === undefined) {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }
@@ -817,9 +778,9 @@ export abstract class RendererBase {
             if (pattern !== undefined) {
                 this.loadPattern(pattern, draw);
             }
-            let fill: Element | undefined;
+            let fill: SVGElement | undefined;
             if (pattern !== undefined) {
-                fill = draw.findOne(`#${pattern}`) as Element;
+                fill = draw.findOne(`#${pattern}`) as SVGElement;
                 if (fill === undefined) {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }

@@ -14,8 +14,7 @@ const sheet: ISheet = {
 // If using groups to make complex glyphs, be sure to include the attribute `data-cellsize` (the greater of width and height) so the renderer can scale it properly.
 
 sheet.glyphs.set("d6-1", (canvas: SVGContainer) => {
-    const group = canvas.symbol()
-        .id("d6-1");
+    const group = canvas.symbol();
     group.rect(48, 48)
         .radius(10, 10)
         .fill("none")
@@ -30,8 +29,7 @@ sheet.glyphs.set("d6-1", (canvas: SVGContainer) => {
 });
 
 sheet.glyphs.set("d6-2", (canvas: SVGContainer) => {
-    const group = canvas.symbol()
-        .id("d6-2");
+    const group = canvas.symbol();
     group.rect(48, 48)
         .radius(10, 10)
         .fill("none")
@@ -47,8 +45,7 @@ sheet.glyphs.set("d6-2", (canvas: SVGContainer) => {
 });
 
 sheet.glyphs.set("d6-3", (canvas: SVGContainer) => {
-    const group = canvas.symbol()
-        .id("d6-3");
+    const group = canvas.symbol();
     group.rect(48, 48)
         .radius(10, 10)
         .fill("none")
@@ -66,8 +63,7 @@ sheet.glyphs.set("d6-3", (canvas: SVGContainer) => {
 });
 
 sheet.glyphs.set("d6-4", (canvas: SVGContainer) => {
-    const group = canvas.symbol()
-        .id("d6-4");
+    const group = canvas.symbol();
     group.rect(48, 48)
         .radius(10, 10)
         .fill("none")
@@ -87,8 +83,7 @@ sheet.glyphs.set("d6-4", (canvas: SVGContainer) => {
 });
 
 sheet.glyphs.set("d6-5", (canvas: SVGContainer) => {
-    const group = canvas.symbol()
-        .id("d6-5");
+    const group = canvas.symbol();
     group.rect(48, 48)
         .radius(10, 10)
         .fill("none")
@@ -110,8 +105,7 @@ sheet.glyphs.set("d6-5", (canvas: SVGContainer) => {
 });
 
 sheet.glyphs.set("d6-6", (canvas: SVGContainer) => {
-    const group = canvas.symbol()
-        .id("d6-6");
+    const group = canvas.symbol();
     group.rect(48, 48)
         .radius(10, 10)
         .fill("none")
