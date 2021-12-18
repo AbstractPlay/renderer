@@ -49,9 +49,11 @@ export abstract class RendererBase {
     public readonly patternNames = ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"];
     protected readonly columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     protected readonly cellsize = 50;
+    protected options: IRendererOptionsOut
 
     constructor(name = "default") {
         this.name = name;
+        this.options = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0, glyphmap: []};
     }
 
     public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
@@ -70,14 +72,12 @@ export abstract class RendererBase {
         return json;
     }
 
-    protected optionsPrecheck(opts: IRendererOptionsIn): IRendererOptionsOut {
-        const newOpts: IRendererOptionsOut = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0, glyphmap: []};
-
+    protected optionsPrecheck(opts: IRendererOptionsIn): void {
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
-            newOpts.colourBlind = opts.colourBlind;
-            if (newOpts.colourBlind) {
-                newOpts.colours = this.coloursBlind;
+            this.options.colourBlind = opts.colourBlind;
+            if (this.options.colourBlind) {
+                this.options.colours = this.coloursBlind;
             }
         }
 
@@ -88,13 +88,13 @@ export abstract class RendererBase {
                     throw new Error(`A glyph sheet you requested could not be found: ${ name }`);
                 }
             }
-            newOpts.sheetList = opts.sheetList;
+            this.options.sheetList = opts.sheetList;
         }
 
         // Validate patterns settings
-        newOpts.patterns = false;
+        this.options.patterns = false;
         if (opts.patterns) {
-            newOpts.patterns = true;
+            this.options.patterns = true;
             // Validate pattern list if given
             if ( (opts.patternList !== undefined) && (opts.patternList.length > 0) ) {
                 for (const name of opts.patternList) {
@@ -102,9 +102,9 @@ export abstract class RendererBase {
                         throw new Error(`A pattern you requested could not be found: ${ name }`);
                     }
                 }
-                newOpts.patternList = opts.patternList;
+                this.options.patternList = opts.patternList;
             } else {
-                newOpts.patternList = this.patternNames;
+                this.options.patternList = this.patternNames;
             }
         }
 
@@ -116,12 +116,12 @@ export abstract class RendererBase {
                     throw new Error(`One of the colours you requested is malformed: ${ c }`);
                 }
             }
-            newOpts.colours = opts.colours;
+            this.options.colours = opts.colours;
         }
 
         // Check for annotation screening
         if (opts.showAnnotations !== undefined) {
-            newOpts.showAnnotations = opts.showAnnotations;
+            this.options.showAnnotations = opts.showAnnotations;
         }
 
         // Validate rotation
@@ -130,22 +130,20 @@ export abstract class RendererBase {
             while (normalized < 0) {
                 normalized += 360;
             }
-            newOpts.rotate = normalized;
+            this.options.rotate = normalized;
         }
 
         // move any glyphmap option over
         if (opts.glyphmap !== undefined) {
-            newOpts.glyphmap = opts.glyphmap;
+            this.options.glyphmap = opts.glyphmap;
         }
 
         if (opts.boardClick !== undefined) {
-            newOpts.boardClick = opts.boardClick;
+            this.options.boardClick = opts.boardClick;
         }
         if (opts.boardHover !== undefined) {
-            newOpts.boardHover = opts.boardHover;
+            this.options.boardHover = opts.boardHover;
         }
-
-        return newOpts;
     }
 
     protected loadPattern(name: string, canvas: Svg): void {
@@ -203,10 +201,10 @@ export abstract class RendererBase {
         throw new Error("The glyph '" + glyph + "' could not be found in the requested sheets: " + sheetList.join(", "));
     }
 
-    protected loadLegend(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut) {
+    protected loadLegend(json: APRenderRep, draw: Svg) {
         if ( ("legend" in json) && (json.legend !== undefined) ) {
             // Load any requested patterns
-            if (opts.patterns) {
+            if (this.options.patterns) {
                 const patterns: Array<number> = new Array();
                 // tslint:disable-next-line: forin
                 for (const key in json.legend) {
@@ -228,10 +226,10 @@ export abstract class RendererBase {
                     }
                 }
                 patterns.forEach((n) => {
-                    if (n > opts.patternList.length) {
+                    if (n > this.options.patternList.length) {
                         throw new Error("The system does not support the number of patterns you have requested.");
                     }
-                    this.loadPattern(opts.patternList[n - 1], draw);
+                    this.loadPattern(this.options.patternList[n - 1], draw);
                 });
             }
 
@@ -256,7 +254,7 @@ export abstract class RendererBase {
                 glyphs.forEach((glyph) => {
                     let got: SVGSymbol;
                     if ( ("name" in glyph) && (glyph.name !== undefined) ) {
-                        got = this.loadGlyph(glyph.name, opts.sheetList, nested);
+                        got = this.loadGlyph(glyph.name, this.options.sheetList, nested);
                     } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;
@@ -293,23 +291,23 @@ export abstract class RendererBase {
 
                     // Colourize (`player` first, then `colour` if defined)
                     if (glyph.player !== undefined) {
-                        if  (opts.patterns) {
-                            if (glyph.player > opts.patternList.length) {
+                        if  (this.options.patterns) {
+                            if (glyph.player > this.options.patternList.length) {
                                 throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                             }
                             const useSize = sheetCellSize;
-                            let fill = draw.findOne("#" + opts.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
+                            let fill = draw.findOne("#" + this.options.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
                             if (fill === null) {
-                                fill = draw.findOne("#" + opts.patternList[glyph.player - 1]) as SVGElement;
-                                fill = fill.clone().id(opts.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
+                                fill = draw.findOne("#" + this.options.patternList[glyph.player - 1]) as SVGElement;
+                                fill = fill.clone().id(this.options.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
                                 draw.defs().add(fill);
                             }
                             clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         } else {
-                            if (glyph.player > opts.colours.length) {
+                            if (glyph.player > this.options.colours.length) {
                                 throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                             }
-                            const fill = opts.colours[glyph.player - 1];
+                            const fill = this.options.colours[glyph.player - 1];
                             clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         }
                     } else if (glyph.colour !== undefined) {
@@ -363,7 +361,7 @@ export abstract class RendererBase {
         }
     }
 
-    protected squares(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected squares(json: APRenderRep, draw: Svg): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -416,7 +414,7 @@ export abstract class RendererBase {
             }
             // adjust `show` to account for rotation
             const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 const newshow: ("N"|"E"|"S"|"W")[] = [];
                 for (const dir of show) {
                     newshow.push(oppDir.get(dir)!);
@@ -447,7 +445,7 @@ export abstract class RendererBase {
             let buffN: SVGRect | undefined;
             if (show.includes("N")) {
                 let key = "_buffer_N";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_S";
                 }
                 buffN = board.rect(width, height).id(key)
@@ -460,7 +458,7 @@ export abstract class RendererBase {
             let buffS: SVGRect | undefined;
             if (show.includes("S")) {
                 let key = "_buffer_S";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_N";
                 }
                 buffS = board.rect(width, height).id(key)
@@ -475,7 +473,7 @@ export abstract class RendererBase {
             let buffW: SVGRect | undefined;
             if (show.includes("W")) {
                 let key = "_buffer_W";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_E";
                 }
                 buffW = board.rect(width, height).id(key)
@@ -488,7 +486,7 @@ export abstract class RendererBase {
             let buffE: SVGRect | undefined;
             if (show.includes("E")) {
                 let key = "_buffer_E";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_W";
                 }
                 buffE = board.rect(width, height).id(key)
@@ -504,8 +502,8 @@ export abstract class RendererBase {
                 } else {
                     buff.fill({color: "white", opacity: 0})
                 }
-                if (opts.boardClick !== undefined) {
-                    buff.click(() => opts.boardClick!(-1, -1, buff.id()));
+                if (this.options.boardClick !== undefined) {
+                    buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
                 }
             }
             bufferwidth += offset;
@@ -514,7 +512,7 @@ export abstract class RendererBase {
         // Add board labels
         const labels = board.group().id("labels");
         let columnLabels = this.columnLabels.slice(0, width);
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
         // Columns (letters)
@@ -527,7 +525,7 @@ export abstract class RendererBase {
 
         // Rows (numbers)
         const rowLabels: string[] = [];
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             for (let row = 0; row < height; row++) {
                 rowLabels.push((row + 1).toString());
             }
@@ -580,7 +578,7 @@ export abstract class RendererBase {
                         used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
                     }
                     if (tileSpace > 0) {
-                        used.click(() => opts.boardClick!(row, col, ""));
+                        used.click(() => this.options.boardClick!(row, col, ""));
                     }
                 }
             }
@@ -595,10 +593,10 @@ export abstract class RendererBase {
                 for (let col = 0; col < width; col++) {
                     const {x, y} = grid[row][col];
                     const used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
-                    if (opts.rotate === 180) {
-                        used.click(() => opts.boardClick!(height - row - 1, width - col - 1, ""));
+                    if (this.options.rotate === 180) {
+                        used.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
                     } else {
-                        used.click(() => opts.boardClick!(row, col, ""));
+                        used.click(() => this.options.boardClick!(row, col, ""));
                     }
 
                 }
@@ -681,7 +679,7 @@ export abstract class RendererBase {
             }
         }
 
-        if ( (opts.boardClick !== undefined) && (tileSpace === 0) ) {
+        if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
@@ -689,16 +687,16 @@ export abstract class RendererBase {
                 const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                 if (x >= 0 && x < width && y >= 0 && y < height) {
-                    opts.boardClick!(y, x, "");
+                    this.options.boardClick!(y, x, "");
                 }
             });
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                     const point = draw.point(e.clientX, e.clientY);
                     const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                     const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                     if (x >= 0 && x < width && y >= 0 && y < height) {
-                        opts.boardClick!(y, x, "");
+                        this.options.boardClick!(y, x, "");
                     }
                 });
             }
@@ -709,17 +707,17 @@ export abstract class RendererBase {
         // Add one row and one column and shift all points up and to the left by half a cell size
         let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
         gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
-        this.markBoard(json, gridlines, grid, opts, gridExpanded);
+        this.markBoard(json, gridlines, grid, this.options, gridExpanded);
 
         return grid;
     }
 
-    protected vertex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected vertex(json: APRenderRep, draw: Svg): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -772,7 +770,7 @@ export abstract class RendererBase {
             }
             // adjust `show` to account for rotation
             const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 const newshow: ("N"|"E"|"S"|"W")[] = [];
                 for (const dir of show) {
                     newshow.push(oppDir.get(dir)!);
@@ -803,7 +801,7 @@ export abstract class RendererBase {
             let buffN: SVGRect | undefined;
             if (show.includes("N")) {
                 let key = "_buffer_N";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_S";
                 }
                 buffN = board.rect(width, height).id(key)
@@ -816,7 +814,7 @@ export abstract class RendererBase {
             let buffS: SVGRect | undefined;
             if (show.includes("S")) {
                 let key = "_buffer_S";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_N";
                 }
                 buffS = board.rect(width, height).id(key)
@@ -831,7 +829,7 @@ export abstract class RendererBase {
             let buffW: SVGRect | undefined;
             if (show.includes("W")) {
                 let key = "_buffer_W";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_E";
                 }
                 buffW = board.rect(width, height).id(key)
@@ -844,7 +842,7 @@ export abstract class RendererBase {
             let buffE: SVGRect | undefined;
             if (show.includes("E")) {
                 let key = "_buffer_E";
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     key = "_buffer_W";
                 }
                 buffE = board.rect(width, height).id(key)
@@ -860,8 +858,8 @@ export abstract class RendererBase {
                 } else {
                     buff.fill({color: "white", opacity: 0})
                 }
-                if (opts.boardClick !== undefined) {
-                    buff.click(() => opts.boardClick!(-1, -1, buff.id()));
+                if (this.options.boardClick !== undefined) {
+                    buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
                 }
             }
             bufferwidth += offset;
@@ -870,7 +868,7 @@ export abstract class RendererBase {
         // Add board labels
         const labels = board.group().id("labels");
         let columnLabels = this.columnLabels.slice(0, width);
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
         // Columns (letters)
@@ -883,7 +881,7 @@ export abstract class RendererBase {
 
         // Rows (numbers)
         const rowLabels: string[] = [];
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             for (let row = 0; row < height; row++) {
                 rowLabels.push((row + 1).toString());
             }
@@ -1013,7 +1011,7 @@ export abstract class RendererBase {
             }
         }
 
-        if (opts.boardClick !== undefined) {
+        if (this.options.boardClick !== undefined) {
             if ( (json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
                 const originX = grid[0][0].x;
                 const originY = grid[0][0].y;
@@ -1026,11 +1024,11 @@ export abstract class RendererBase {
                     if (x >= 0 && x < width && y >= 0 && y < height) {
                         // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
                         if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                            opts.boardClick!(y, x, "");
+                            this.options.boardClick!(y, x, "");
                         }
                     }
                 });
-                if (opts.rotate === 180) {
+                if (this.options.rotate === 180) {
                     genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                         const point = draw.point(e.clientX, e.clientY);
                         const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
@@ -1038,7 +1036,7 @@ export abstract class RendererBase {
                         if (x >= 0 && x < width && y >= 0 && y < height) {
                             // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
                             if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                                opts.boardClick!(y, x, "");
+                                this.options.boardClick!(y, x, "");
                             }
                         }
                     });
@@ -1051,16 +1049,16 @@ export abstract class RendererBase {
                     for (let col = 0; col < grid[row].length; col++) {
                         const {x, y} = grid[row][col];
                         const t = tiles.use(tile).center(x, y);
-                        if (opts.rotate === 180) {
-                            t.click(() => opts.boardClick!(height - row - 1, width - col - 1, ""));
+                        if (this.options.rotate === 180) {
+                            t.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
                         } else {
-                            t.click(() => opts.boardClick!(row, col, ""));
+                            t.click(() => this.options.boardClick!(row, col, ""));
                         }
                     }
                 }
             }
         }
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
@@ -1081,12 +1079,12 @@ export abstract class RendererBase {
             });
         }
 
-        this.markBoard(json, gridlines, grid, opts);
+        this.markBoard(json, gridlines, grid, this.options);
 
         return grid;
     }
 
-    protected rectOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected rectOfHex(json: APRenderRep, draw: Svg): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -1118,7 +1116,7 @@ export abstract class RendererBase {
         if (style.includes("-even")) {
             offset = 1;
         }
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             offset *= -1;
         }
         const Hex = extendHex({
@@ -1141,7 +1139,7 @@ export abstract class RendererBase {
             const { x, y } = hex.toPoint();
             const used = board.use(hexSymbol).translate(x, y);
             let label = coords2algebraicHex(hex.x, hex.y, height);
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 label = coords2algebraicHex(width - hex.x - 1, height - hex.y - 1, height);
             }
             labels.text(label)
@@ -1153,11 +1151,11 @@ export abstract class RendererBase {
             // .center(cx, cy);
             .center(corners[5].x, corners[5].y)
             .translate(x, y + fontSize);
-            if (opts.boardClick !== undefined) {
-                if (opts.rotate === 180) {
-                    used.click(() => opts.boardClick!(height - hex.y - 1, width - hex.x - 1, ""));
+            if (this.options.boardClick !== undefined) {
+                if (this.options.rotate === 180) {
+                    used.click(() => this.options.boardClick!(height - hex.y - 1, width - hex.x - 1, ""));
                 } else {
-                    used.click(() => opts.boardClick!(hex.y, hex.x, ""));
+                    used.click(() => this.options.boardClick!(hex.y, hex.x, ""));
                 }
             }
         }
@@ -1177,15 +1175,15 @@ export abstract class RendererBase {
             gridPoints.push(node);
         }
 
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, board, gridPoints, opts);
+        this.markBoard(json, board, gridPoints, this.options);
 
         return gridPoints;
     }
 
-    protected snubSquare(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected snubSquare(json: APRenderRep, draw: Svg): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
@@ -1214,7 +1212,7 @@ export abstract class RendererBase {
         // Add board labels
         const labels = board.group().id("labels");
         let columnLabels = this.columnLabels.slice(0, width);
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
         // Columns (letters)
@@ -1227,7 +1225,7 @@ export abstract class RendererBase {
 
         // Rows (numbers)
         const rowLabels: string[] = [];
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             for (let row = 0; row < height; row++) {
                 rowLabels.push((row + 1).toString());
             }
@@ -1289,33 +1287,33 @@ export abstract class RendererBase {
         }
 
         // If click handler is present, add transparent "click catcher" tiles over the points
-        if (opts.boardClick !== undefined) {
+        if (this.options.boardClick !== undefined) {
             const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
             const tiles = draw.group().id("tiles");
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
                     const {x, y} = grid[row][col];
                     const t = tiles.use(tile).center(x, y);
-                    if (opts.boardClick !== undefined) {
-                        if (opts.rotate === 180) {
-                            t.click(() => opts.boardClick!(height - row - 1, width - col - 1, ""));
+                    if (this.options.boardClick !== undefined) {
+                        if (this.options.rotate === 180) {
+                            t.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
                         } else {
-                            t.click(() => opts.boardClick!(row, col, ""));
+                            t.click(() => this.options.boardClick!(row, col, ""));
                         }
                     }
                 }
             }
         }
 
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, opts);
+        this.markBoard(json, gridlines, grid, this.options);
 
         return grid;
     }
 
-    protected hexOfTri(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected hexOfTri(json: APRenderRep, draw: Svg): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
@@ -1347,14 +1345,14 @@ export abstract class RendererBase {
 
         // Rows (numbers)
         let columnLabels = this.columnLabels.slice(0, maxWidth);
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
 
         for (let row = 0; row < height; row++) {
             let leftNum = "1";
             let rightNum = grid[row].length.toString();
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 leftNum = rightNum;
                 rightNum = "1";
             }
@@ -1417,33 +1415,33 @@ export abstract class RendererBase {
         }
 
         // If click handler is present, add transparent "click catcher" tiles over the points
-        if (opts.boardClick !== undefined) {
+        if (this.options.boardClick !== undefined) {
             const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
             const tiles = draw.group().id("tiles");
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
                     const {x, y} = grid[row][col];
                     const t = tiles.use(tile).center(x, y);
-                    if (opts.boardClick !== undefined) {
-                        if (opts.rotate === 180) {
-                            t.click(() => opts.boardClick!(height - row - 1, grid[row].length - col - 1, ""));
+                    if (this.options.boardClick !== undefined) {
+                        if (this.options.rotate === 180) {
+                            t.click(() => this.options.boardClick!(height - row - 1, grid[row].length - col - 1, ""));
                         } else {
-                            t.click(() => opts.boardClick!(row, col, ""));
+                            t.click(() => this.options.boardClick!(row, col, ""));
                         }
                     }
                 }
             }
         }
 
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, opts);
+        this.markBoard(json, gridlines, grid, this.options);
 
         return grid;
     }
 
-    protected hexOfCir(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected hexOfCir(json: APRenderRep, draw: Svg): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
@@ -1475,13 +1473,13 @@ export abstract class RendererBase {
 
         // Rows (numbers)
         let columnLabels = this.columnLabels.slice(0, maxWidth);
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
         for (let row = 0; row < height; row++) {
             let leftNum = "1";
             let rightNum = grid[row].length.toString();
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 leftNum = rightNum;
                 rightNum = "1";
             }
@@ -1502,25 +1500,25 @@ export abstract class RendererBase {
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
                 const c = gridlines.use(circle).size(cellsize, cellsize).center(p.x, p.y);
-                if (opts.boardClick !== undefined) {
-                    if (opts.rotate === 180) {
-                        c.click(() => opts.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                if (this.options.boardClick !== undefined) {
+                    if (this.options.rotate === 180) {
+                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
                     } else {
-                        c.click(() => opts.boardClick!(iRow, iCol, ""));
+                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
                     }
                 }
             }
         }
 
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, opts);
+        this.markBoard(json, gridlines, grid, this.options);
 
         return grid;
     }
 
-    protected hexOfHex(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): GridPoints {
+    protected hexOfHex(json: APRenderRep, draw: Svg): GridPoints {
         // Check required properites
         if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
@@ -1552,13 +1550,13 @@ export abstract class RendererBase {
 
         // Rows (numbers)
         let columnLabels = this.columnLabels.slice(0, maxWidth);
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
         for (let row = 0; row < height; row++) {
             let leftNum = "1";
             let rightNum = grid[row].length.toString();
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 leftNum = rightNum;
                 rightNum = "1";
             }
@@ -1600,24 +1598,24 @@ export abstract class RendererBase {
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
                 const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
-                if (opts.boardClick !== undefined) {
-                    if (opts.rotate === 180) {
-                        c.click(() => opts.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                if (this.options.boardClick !== undefined) {
+                    if (this.options.rotate === 180) {
+                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
                     } else {
-                        c.click(() => opts.boardClick!(iRow, iCol, ""));
+                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
                     }
                 }
             }
         }
-        if (opts.rotate === 180) {
+        if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, opts);
+        this.markBoard(json, gridlines, grid, this.options);
 
         return grid;
     }
 
-    protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints, opts: IRendererOptionsOut) {
+    protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints) {
         if ( ("annotations" in json) && (json.annotations !== undefined) ) {
             const notes = draw.group().id("annotations");
             const rIncrement = this.cellsize / 2;
@@ -1633,7 +1631,7 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = opts.colours[(note.player as number) - 1];
+                        colour = this.options.colours[(note.player as number) - 1];
                     }
                     let style = "solid";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -1680,7 +1678,7 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = opts.colours[(note.player as number) - 1];
+                        colour = this.options.colours[(note.player as number) - 1];
                     }
                     let style = "dashed";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -1726,7 +1724,7 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = opts.colours[(note.player as number) - 1];
+                        colour = this.options.colours[(note.player as number) - 1];
                     }
                     for (const node of (note.targets as any[])) {
                         const pt = grid[node.row][node.col];
@@ -1740,7 +1738,7 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = opts.colours[(note.player as number) - 1];
+                        colour = this.options.colours[(note.player as number) - 1];
                     }
                     for (const node of (note.targets as any[])) {
                         const pt = grid[node.row][node.col];
@@ -1754,7 +1752,7 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = opts.colours[(note.player as number) - 1];
+                        colour = this.options.colours[(note.player as number) - 1];
                     }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {

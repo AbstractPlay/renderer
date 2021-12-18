@@ -1,22 +1,22 @@
-import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
+import { SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
-import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "./_base";
+import { IRendererOptionsIn, RendererBase } from "./_base";
 
 export class DefaultRenderer extends RendererBase {
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
-        const opts = this.optionsPrecheck(options);
+        this.optionsPrecheck(options);
 
         // BOARD
         // Delegate to style-specific renderer
         if (json.board === null) {
-            return this.renderGlyph(json, draw, opts);
+            return this.renderGlyph(json, draw);
         }
 
         // Load all the pieces in the legend (have to do this first so the glyphs are available for marking the board)
-        this.loadLegend(json, draw, opts);
+        this.loadLegend(json, draw);
 
         let gridPoints: GridPoints;
         if (! ("style" in json.board)) {
@@ -26,32 +26,32 @@ export class DefaultRenderer extends RendererBase {
             case "squares-beveled":
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw, opts);
+                gridPoints = this.squares(json, draw);
                 break;
             case "go":
                 json.board.width = 19;
                 json.board.height = 19;
             case "vertex":
             case "vertex-cross":
-                gridPoints = this.vertex(json, draw, opts);
+                gridPoints = this.vertex(json, draw);
                 break;
             case "snubsquare":
-                gridPoints = this.snubSquare(json, draw, opts);
+                gridPoints = this.snubSquare(json, draw);
                 break;
             case "hex-of-hex":
-                gridPoints = this.hexOfHex(json, draw, opts);
+                gridPoints = this.hexOfHex(json, draw);
                 break;
             case "hex-of-tri":
-                gridPoints = this.hexOfTri(json, draw, opts);
+                gridPoints = this.hexOfTri(json, draw);
                 break;
             case "hex-of-cir":
-                gridPoints = this.hexOfCir(json, draw, opts);
+                gridPoints = this.hexOfCir(json, draw);
                 break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":
             case "hex-even-f":
-                gridPoints = this.rectOfHex(json, draw, opts);
+                gridPoints = this.rectOfHex(json, draw);
                 break;
             default:
                 throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
@@ -120,9 +120,9 @@ export class DefaultRenderer extends RendererBase {
                             const newy = point.y - (this.cellsize / 2) + (delta / 2);
                             use.dmove(newx, newy);
                             use.scale(factor, newx, newy);
-                            if (opts.boardClick !== undefined) {
+                            if (this.options.boardClick !== undefined) {
                                 if ( ( (json.board.tileSpacing !== undefined) && (json.board.tileSpacing > 0) ) || ( (! json.board.style.startsWith("squares")) && (! json.board.style.startsWith("vertex")) ) ) {
-                                    use.click(() => opts.boardClick!(row, col, key));
+                                    use.click(() => this.options.boardClick!(row, col, key));
                                 }
                             }
                         }
@@ -132,25 +132,28 @@ export class DefaultRenderer extends RendererBase {
         }
 
         // Finally, annotations
-        if (opts.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints, opts);
+        if (this.options.showAnnotations) {
+            this.annotateBoard(json, draw, gridPoints);
         }
     }
 
-    private renderGlyph(json: APRenderRep, draw: Svg, opts: IRendererOptionsOut): void {
+    private renderGlyph(json: APRenderRep, draw: Svg): void {
         // Load all the pieces in the legend
-        this.loadLegend(json, draw, opts);
+        this.loadLegend(json, draw);
         if (json.pieces === null) {
             throw new Error("There must be a piece given in the `pieces` property.");
         }
         const key = json.pieces;
-        const piece = draw.findOne("#" + key) as SVGG;
+        const piece = draw.findOne("#" + key) as Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
-        const sheetCellSize = piece.attr("data-cellsize");
+        let sheetCellSize = piece.viewbox().h;
         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+            sheetCellSize = piece.attr("data-cellsize");
+            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+            }
         }
         draw.use(piece);
     }

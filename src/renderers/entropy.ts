@@ -12,7 +12,7 @@ export class EntropyRenderer extends RendererBase {
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
-        const opts = this.optionsPrecheck(options);
+        this.optionsPrecheck(options);
 
         // BOARD
         if ( (json.board === null) || (! ("style" in json.board)) || (json.board.style !== "entropy") ) {
@@ -149,7 +149,7 @@ export class EntropyRenderer extends RendererBase {
 
         // PIECES
         // Load all the pieces in the legend
-        this.loadLegend(json, draw, opts);
+        this.loadLegend(json, draw);
 
         // Now place the pieces
         const group = draw.group().id("pieces");
@@ -231,8 +231,8 @@ export class EntropyRenderer extends RendererBase {
                 for (let col = 0; col < grid[row].length; col++) {
                     const {x, y} = grid[row][col];
                     const t = tiles.use(tile).center(x, y);
-                    if (opts.boardClick !== undefined) {
-                        t.click(() => opts.boardClick!(row, col, ""));
+                    if (this.options.boardClick !== undefined) {
+                        t.click(() => this.options.boardClick!(row, col, ""));
                     }
                 }
             }
@@ -251,12 +251,12 @@ export class EntropyRenderer extends RendererBase {
         }
 
         // Finally, annotations
-        if (opts.showAnnotations) {
+        if (this.options.showAnnotations) {
             const gridPoints: IPoint[][] = [...grid1];
             for (let i = 0; i < grid1.length; i++) {
                 gridPoints[i].push(...grid2[i]);
             }
-            this.annotateBoard(json, draw, gridPoints, opts);
+            this.annotateBoard(json, draw, gridPoints);
         }
     }
 }

@@ -11,7 +11,7 @@ export class StackingTilesRenderer extends RendererBase {
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
-        const opts = this.optionsPrecheck(options);
+        this.optionsPrecheck(options);
 
         if (json.board === null) {
             throw new Error("This renderer requires that `board` be defined.");
@@ -38,7 +38,7 @@ export class StackingTilesRenderer extends RendererBase {
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw, opts);
+                gridPoints = this.squares(json, draw);
                 break;
             // case "hex_of_hex":
             //     gridPoints = this.hexOfHex(json, draw, opts);
@@ -100,7 +100,7 @@ export class StackingTilesRenderer extends RendererBase {
                                 const y = point.y + offsetY - (tileHeight * (i + 1));
                                 // regular piece
                                 if (idx > 0) {
-                                    const color = opts.colours[idx];
+                                    const color = this.options.colours[idx];
                                     group.rect(tileWidth, tileHeight)
                                         .move(x, y)
                                         .fill(color)
@@ -119,8 +119,8 @@ export class StackingTilesRenderer extends RendererBase {
         }
 
         // Finally, annotations
-        if (opts.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints, opts);
+        if (this.options.showAnnotations) {
+            this.annotateBoard(json, draw, gridPoints);
         }
     }
 }

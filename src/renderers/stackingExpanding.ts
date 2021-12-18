@@ -18,12 +18,12 @@ export class StackingExpandingRenderer extends RendererBase {
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
-        const opts = this.optionsPrecheck(options);
-        opts.rotate = 0;
+        this.optionsPrecheck(options);
+        this.options.rotate = 0;
 
         if (json.board === null) {
             // Load all the pieces in the legend
-            this.loadLegend(json, draw, opts);
+            this.loadLegend(json, draw);
 
             if ( (json.areas !== undefined) && (Array.isArray(json.areas)) && (json.areas.length > 0) ) {
                 const area = json.areas.find((x) => x.type === "expandedColumn");
@@ -77,26 +77,26 @@ export class StackingExpandingRenderer extends RendererBase {
             switch (json.board.style) {
                 case "squares-checkered":
                 case "squares":
-                    gridPoints = this.squares(json, draw, opts);
+                    gridPoints = this.squares(json, draw);
                     break;
                 case "go":
                     json.board.width = 19;
                     json.board.height = 19;
                 case "vertex":
                 case "vertex-cross":
-                    gridPoints = this.vertex(json, draw, opts);
+                    gridPoints = this.vertex(json, draw);
                     break;
                 case "snubsquare":
-                    gridPoints = this.snubSquare(json, draw, opts);
+                    gridPoints = this.snubSquare(json, draw);
                     break;
                 case "hex-of-hex":
-                    gridPoints = this.hexOfHex(json, draw, opts);
+                    gridPoints = this.hexOfHex(json, draw);
                     break;
                 case "hex-of-tri":
-                    gridPoints = this.hexOfTri(json, draw, opts);
+                    gridPoints = this.hexOfTri(json, draw);
                     break;
                 case "hex-of-cir":
-                    gridPoints = this.hexOfCir(json, draw, opts);
+                    gridPoints = this.hexOfCir(json, draw);
                     break;
                 default:
                     throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
@@ -104,7 +104,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
             // PIECES
             // Load all the pieces in the legend
-            this.loadLegend(json, draw, opts);
+            this.loadLegend(json, draw);
 
             // Now place the pieces
             const group = draw.group().id("pieces");
@@ -158,8 +158,8 @@ export class StackingExpandingRenderer extends RendererBase {
                 for (let col = 0; col < gridPoints[row].length; col++) {
                     const {x, y} = gridPoints[row][col];
                     const t = tiles.use(tile).size(this.cellsize, this.cellsize).center(x, y);
-                    if (opts.boardHover !== undefined) {
-                        t.mousemove(() => opts.boardHover!(row, col, ""));
+                    if (this.options.boardHover !== undefined) {
+                        t.mousemove(() => this.options.boardHover!(row, col, ""));
                     }
                 }
             }
@@ -219,8 +219,8 @@ export class StackingExpandingRenderer extends RendererBase {
             }
 
             // Annotations
-            if (opts.showAnnotations) {
-                this.annotateBoard(json, draw, gridPoints, opts);
+            if (this.options.showAnnotations) {
+                this.annotateBoard(json, draw, gridPoints);
             }
 
             // Look for local stashes
@@ -255,8 +255,8 @@ export class StackingExpandingRenderer extends RendererBase {
                                 }
                             }
                             const use = nested.use(piece);
-                            if (opts.boardClick !== undefined) {
-                                use.click(() => opts.boardClick!(-1, -1, p));
+                            if (this.options.boardClick !== undefined) {
+                                use.click(() => this.options.boardClick!(-1, -1, p));
                             }
                             used.push([use, piece.viewbox().h]);
                             const factor = (cellsize / sheetCellSize);

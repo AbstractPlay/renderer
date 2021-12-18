@@ -1,7 +1,7 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schema";
-import { IRendererOptionsIn, IRendererOptionsOut, RendererBase } from "./_base";
+import { IRendererOptionsIn, RendererBase } from "./_base";
 
 type Seat = "N" | "E" | "S" | "W";
 
@@ -28,7 +28,7 @@ export class HomeworldsRenderer extends RendererBase {
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
-        const opts = this.optionsPrecheck(options);
+        this.optionsPrecheck(options);
 
         // BOARD
         if ( (! Array.isArray(json.board)) || ( (json.board.length > 0) && (! json.board[0].hasOwnProperty("stars")) ) ) {
@@ -45,7 +45,7 @@ export class HomeworldsRenderer extends RendererBase {
 
         // PIECES
         // Load all the pieces in the legend
-        this.loadLegend(json, draw, opts);
+        this.loadLegend(json, draw);
 
         // Extract the systems and ships and compose them into two groups: home and peripheral
         const sysHome: ISystem[] = [];
@@ -118,7 +118,7 @@ export class HomeworldsRenderer extends RendererBase {
             sys.ships.forEach((s) => {
                 const seat = s[s.length - 1];
                 // Adjust seat based on rotation
-                const effSeat = this.effectiveSeat(seat as Seat, opts.rotate);
+                const effSeat = this.effectiveSeat(seat as Seat, this.options.rotate);
                 const ps = portsHome.get(effSeat);
                 if (ps === undefined) {
                     throw new Error(`Could not find port list for seat '${effSeat}'. This should never happen.`);
@@ -132,10 +132,10 @@ export class HomeworldsRenderer extends RendererBase {
             });
             let bordercolour: string | undefined;
             if (sys.highlight !== undefined) {
-                bordercolour = opts.colours[sys.highlight - 1];
+                bordercolour = this.options.colours[sys.highlight - 1];
             }
 
-            this.genSystem(draw, opts, `_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, bordercolour);
+            this.genSystem(draw, `_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, bordercolour);
         });
 
         // Peripheral systems
@@ -151,7 +151,7 @@ export class HomeworldsRenderer extends RendererBase {
             sys.ships.forEach((s) => {
                 const seat = s[s.length - 1];
                 // Adjust seat based on rotation
-                const effSeat = this.effectiveSeat(seat as Seat, opts.rotate);
+                const effSeat = this.effectiveSeat(seat as Seat, this.options.rotate);
                 const ps = portsPeriph.get(effSeat);
                 if (ps === undefined) {
                     throw new Error(`Could not find port list for seat '${effSeat}'. This should never happen.`);
@@ -165,10 +165,10 @@ export class HomeworldsRenderer extends RendererBase {
             });
             let bordercolour: string | undefined;
             if (sys.highlight !== undefined) {
-                bordercolour = opts.colours[sys.highlight - 1];
+                bordercolour = this.options.colours[sys.highlight - 1];
             }
 
-            this.genSystem(draw, opts, `_sysPeriph_${sys.name}`, sys.name, ports, bordercolour);
+            this.genSystem(draw, `_sysPeriph_${sys.name}`, sys.name, ports, bordercolour);
         });
         // this.genUncharted(draw, opts);
 
@@ -221,7 +221,7 @@ export class HomeworldsRenderer extends RendererBase {
         sysHome.forEach((sys) => {
             let x: number;
             let y: number;
-            const seat = this.effectiveSeat(sys.seat!, opts.rotate);
+            const seat = this.effectiveSeat(sys.seat!, this.options.rotate);
             switch (seat) {
                 case "N":
                     x = ((pcols * 250) / 2) - 125;
@@ -296,8 +296,8 @@ export class HomeworldsRenderer extends RendererBase {
                     }
                 }
                 const use = sgroup.use(piece);
-                if (opts.boardClick !== undefined) {
-                    use.click(() => opts.boardClick!(-1, -1, `${colour}${size}`));
+                if (this.options.boardClick !== undefined) {
+                    use.click(() => this.options.boardClick!(-1, -1, `${colour}${size}`));
                 }
                 const factor = (stashCellSize / sheetCellSize);
 
@@ -321,15 +321,15 @@ export class HomeworldsRenderer extends RendererBase {
             // Add "sacrifice" box
             sgroup.text("SACRIFICE").fill("black").center(stashCellSize * 1.5, stashCellSize * 8.5);
             const sacrect = sgroup.rect(stashCellSize * 3, stashCellSize).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-            if (opts.boardClick !== undefined) {
-                sacrect.click(() => opts.boardClick!(-1, -1, "_sacrifice"));
+            if (this.options.boardClick !== undefined) {
+                sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
             }
             sacrect.dy(stashCellSize * 8);
             // Add "pass" box
             sgroup.text("PASS").fill("black").center(stashCellSize * 1.5, stashCellSize * 9.5);
             const passrect = sgroup.rect(stashCellSize * 3, stashCellSize).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-            if (opts.boardClick !== undefined) {
-                passrect.click(() => opts.boardClick!(-1, -1, "_pass"));
+            if (this.options.boardClick !== undefined) {
+                passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
             }
             passrect.dy(stashCellSize * 9);
         }
@@ -354,7 +354,7 @@ export class HomeworldsRenderer extends RendererBase {
         return effSeat;
     }
 
-    private genSystem(draw: Svg, opts: IRendererOptionsOut, id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
+    private genSystem(draw: Svg, id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
         const nested = draw.defs().nested().id(id).size(250, 250).viewbox(0, 0, 250, 250);
 
@@ -377,13 +377,13 @@ export class HomeworldsRenderer extends RendererBase {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
         nested.rect(250, 250).fill(pattern).stroke(stroke);
-        if (opts.boardClick !== undefined) {
-            nested.rect(250, 250).fill("#fff").opacity(0).click(() => opts.boardClick!(0, 0, name));
+        if (this.options.boardClick !== undefined) {
+            nested.rect(250, 250).fill("#fff").opacity(0).click(() => this.options.boardClick!(0, 0, name));
         }
 
         let rotation: number | undefined;
-        if ( ("rotate" in opts) && (opts.rotate !== undefined) ) {
-            rotation = opts.rotate;
+        if ( ("rotate" in this.options) && (this.options.rotate !== undefined) ) {
+            rotation = this.options.rotate;
         }
 
         // Add the stars and ships
@@ -414,8 +414,8 @@ export class HomeworldsRenderer extends RendererBase {
                     const factor = (50 / sheetCellSize);
                     use.dmove(point.x, point.y);
                     use.scale(factor, point.x, point.y);
-                    if (opts.boardClick !== undefined) {
-                        use.click(() => opts.boardClick!(0, 0, `${name}|${cell}`));
+                    if (this.options.boardClick !== undefined) {
+                        use.click(() => this.options.boardClick!(0, 0, `${name}|${cell}`));
                     }
                 }
             }

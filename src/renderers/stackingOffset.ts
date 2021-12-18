@@ -11,7 +11,7 @@ export class StackingOffsetRenderer extends RendererBase {
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         json = this.jsonPrechecks(json);
-        const opts = this.optionsPrecheck(options);
+        this.optionsPrecheck(options);
 
         if (json.board === null) {
             throw new Error("This renderer requires that `board` be defined.");
@@ -25,31 +25,31 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // Load all the pieces in the legend (have to do this early so the glyphs are available for marking the board)
-        this.loadLegend(json, draw, opts);
+        this.loadLegend(json, draw);
 
         switch (json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw, opts);
+                gridPoints = this.squares(json, draw);
                 break;
             case "go":
                 json.board.width = 19;
                 json.board.height = 19;
             case "vertex":
             case "vertex-cross":
-                gridPoints = this.vertex(json, draw, opts);
+                gridPoints = this.vertex(json, draw);
                 break;
             case "snubsquare":
-                gridPoints = this.snubSquare(json, draw, opts);
+                gridPoints = this.snubSquare(json, draw);
                 break;
             case "hex-of-hex":
-                gridPoints = this.hexOfHex(json, draw, opts);
+                gridPoints = this.hexOfHex(json, draw);
                 break;
             case "hex-of-tri":
-                gridPoints = this.hexOfTri(json, draw, opts);
+                gridPoints = this.hexOfTri(json, draw);
                 break;
             case "hex-of-cir":
-                gridPoints = this.hexOfCir(json, draw, opts);
+                gridPoints = this.hexOfCir(json, draw);
                 break;
             default:
                 throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
@@ -97,7 +97,7 @@ export class StackingOffsetRenderer extends RendererBase {
             const offset = this.cellsize * offsetPercent;
             // if the board is rotated, you have to place the pieces in reverse row order
             // for now the code is duplicated
-            if (opts.rotate === 180) {
+            if (this.options.rotate === 180) {
                 // for (let row = 0; row < pieces.length; row++) {
                 for (let row = pieces.length - 1; row >= 0; row--) {
                     for (let col = 0; col < pieces[row].length; col++) {
@@ -116,8 +116,8 @@ export class StackingOffsetRenderer extends RendererBase {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                                 use.scale((this.cellsize / sheetCellSize) * 0.85);
-                                if (opts.boardClick !== undefined) {
-                                    use.click(() => opts.boardClick!(row, col, i.toString()));
+                                if (this.options.boardClick !== undefined) {
+                                    use.click(() => this.options.boardClick!(row, col, i.toString()));
                                 }
                             }
                         }
@@ -149,8 +149,8 @@ export class StackingOffsetRenderer extends RendererBase {
                                 const newy = point.y - (this.cellsize / 2) + (delta / 2) - (offset * i);
                                 use.dmove(newx, newy);
                                 use.scale(factor, newx, newy);
-                                if (opts.boardClick !== undefined) {
-                                    use.click(() => opts.boardClick!(row, col, i.toString()));
+                                if (this.options.boardClick !== undefined) {
+                                    use.click(() => this.options.boardClick!(row, col, i.toString()));
                                 }
                             }
                         }
@@ -160,8 +160,8 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // Finally, annotations
-        if (opts.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints, opts);
+        if (this.options.showAnnotations) {
+            this.annotateBoard(json, draw, gridPoints);
         }
     }
 }
