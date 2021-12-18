@@ -187,6 +187,13 @@ export abstract class RendererBase {
     }
 
     protected loadGlyph(glyph: string, sheetList: string[], canvas: Svg): SVGSymbol {
+        // check for substituted glyphs
+        if (this.options.glyphmap.length > 0) {
+            const idx = this.options.glyphmap.findIndex(t => t[0] === glyph);
+            if (idx >= 0) {
+                glyph = this.options.glyphmap[idx][1];
+            }
+        }
         for (const s of sheetList) {
             const sheet = sheets.get(s);
             if (sheet !== undefined) {

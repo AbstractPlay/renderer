@@ -9,16 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Change
 
-- Yet another breaking change. Found an issue where nested glyphs (symbols within symbols) couldn't be reused because of how the IDs got duplicated. So I completely refactored the glyph loading code.
-  - Glyphs in the sheets may *not* have hard-coded IDs. Let the renderer auto-assign them.
-  - This change has vastly simplified the `<defs>` section. It now only contains the glyphs defined in the legend.
-  - But the final SVG code is inflated slightly because the internal glyphs are duplicated.
+- Yet another breaking change. Found an issue where nested glyphs (symbols within symbols) couldn't be reused because of how the IDs got duplicated. So I completely refactored the glyph loading code. This has vastly simplified the `<defs>` section. It now only contains the glyphs defined in the legend. It means that glyphs in the sheets may *not* have hard-coded IDs. Let the renderer auto-assign them. More documentation on this is forthcoming.
 
 ### Added
 
 - A new playground/demo site is now available at [https://abstractplay.com/renderer/](https://abstractplay.com/renderer/).
 - Added `tileSpacing` property that, when combined with `tileWidth` and `tileHeight`, will break the tiles apart and space them from each other. Only works for `squares*` and `vertex*` boards.
 - Added glyphs for Alfred's Wyke.
+- Added a `glyphmap: [string,string][]` option to the renderer (where `[string,string]` is the old glyph name mapped to a new glyph name). This lets the user swap any glyph for another. Say they prefer the square pieces to the default round ones. The front end could let them map `piece` to `piece-square`.
 
 ## [0.6.0] - 2021-12-15
 
