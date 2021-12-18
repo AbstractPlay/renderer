@@ -48,13 +48,6 @@ export class StackingExpandingRenderer extends RendererBase {
                         used.push([use, piece.viewbox().h]);
                         const factor = (columnWidth / sheetCellSize) * 0.95;
                         use.scale(factor, 0, 0);
-
-                        // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                        // const factor = (columnWidth / sheetCellSize);
-                        // const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                        // const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                        // use.dmove(newpt.x * -1, newpt.y * -1);
-                        // use.scale(factor * 0.95);
                     }
 
                     // Now go through each piece and shift them down
@@ -135,8 +128,6 @@ export class StackingExpandingRenderer extends RendererBase {
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }
-                                const use = group.use(piece);
-                                use.center(point.x, point.y);
                                 let sheetCellSize = piece.viewbox().h;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                     sheetCellSize = piece.attr("data-cellsize");
@@ -144,7 +135,15 @@ export class StackingExpandingRenderer extends RendererBase {
                                         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                     }
                                 }
-                                use.scale((this.cellsize / sheetCellSize) * 0.85, point.x, point.y);
+
+                                const use = group.use(piece);
+                                const factor = (this.cellsize / sheetCellSize) * 0.85;
+                                const newsize = sheetCellSize * factor;
+                                const delta = this.cellsize - newsize;
+                                const newx = point.x - (this.cellsize / 2) + (delta / 2);
+                                const newy = point.y - (this.cellsize / 2) + (delta / 2);
+                                use.dmove(newx, newy);
+                                use.scale(factor, newx, newy);
                             }
                         }
                     }
@@ -152,12 +151,13 @@ export class StackingExpandingRenderer extends RendererBase {
             }
 
             // Now add transparent tiles over each cell for the click handler
-            const tile = draw.defs().rect(this.cellsize, this.cellsize).fill("#fff").opacity(0).id("_clickCatcher");
+            const tile = draw.defs().symbol().viewbox(0, 0, this.cellsize, this.cellsize);
+            tile.rect(this.cellsize, this.cellsize).fill("#fff").opacity(0);
             const tiles = group.group().id("tiles");
             for (let row = 0; row < gridPoints.length; row++) {
                 for (let col = 0; col < gridPoints[row].length; col++) {
                     const {x, y} = gridPoints[row][col];
-                    const t = tiles.use(tile).center(x, y);
+                    const t = tiles.use(tile).size(this.cellsize, this.cellsize).center(x, y);
                     if (opts.boardHover !== undefined) {
                         t.mousemove(() => opts.boardHover!(row, col, ""));
                     }

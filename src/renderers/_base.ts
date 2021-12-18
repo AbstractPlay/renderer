@@ -13,6 +13,7 @@ export interface IRendererOptionsIn {
     colourBlind?: boolean;
     rotate?: number;
     showAnnotations?: boolean;
+    glyphmap?: [string,string][];
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
 }
@@ -25,6 +26,7 @@ export interface IRendererOptionsOut {
     colourBlind: boolean;
     rotate: number;
     showAnnotations: boolean;
+    glyphmap: [string,string][];
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
 }
@@ -69,7 +71,7 @@ export abstract class RendererBase {
     }
 
     protected optionsPrecheck(opts: IRendererOptionsIn): IRendererOptionsOut {
-        const newOpts: IRendererOptionsOut = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0};
+        const newOpts: IRendererOptionsOut = {sheetList: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0, glyphmap: []};
 
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
@@ -129,6 +131,11 @@ export abstract class RendererBase {
                 normalized += 360;
             }
             newOpts.rotate = normalized;
+        }
+
+        // move any glyphmap option over
+        if (opts.glyphmap !== undefined) {
+            newOpts.glyphmap = opts.glyphmap;
         }
 
         if (opts.boardClick !== undefined) {
@@ -539,15 +546,17 @@ export abstract class RendererBase {
         // Now the tiles
         if (style === "squares-checkered") {
             // Load glyphs for light and dark squares
-            const tileDark = draw.defs().rect(cellsize, cellsize)
+            const tileDark = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            tileDark.rect(cellsize, cellsize)
+                .move(0, 0)
                 .fill(baseColour)
                 .opacity(baseOpacity * 0.25)
-                .stroke({width: 0})
-                .id("tileDark");
-            const tileLight = draw.defs().rect(cellsize, cellsize)
+                .stroke({width: 0});
+            const tileLight = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            tileLight.rect(cellsize, cellsize)
+                .move(0, 0)
                 .fill({color: "#ffffff", opacity: 0})
-                .stroke({width: 0})
-                .id("tileLight");
+                .stroke({width: 0});
 
             const tiles = board.group().id("tiles");
             // Determine whether the first row starts with a light or dark square
@@ -566,9 +575,9 @@ export abstract class RendererBase {
                     const {x, y} = grid[row][col];
                     let used: SVGUse;
                     if (col % 2 !== lightCol) {
-                        used = tiles.use(tileDark).center(x, y);
+                        used = tiles.use(tileDark).size(cellsize, cellsize).center(x, y);
                     } else {
-                        used = tiles.use(tileLight).center(x, y);
+                        used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
                     }
                     if (tileSpace > 0) {
                         used.click(() => opts.boardClick!(row, col, ""));
@@ -576,16 +585,16 @@ export abstract class RendererBase {
                 }
             }
         } else if (tileSpace > 0) {
-            const tileLight = draw.defs().rect(cellsize, cellsize)
+            const tileLight = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            tileLight.rect(cellsize, cellsize)
                 .fill({color: "#ffffff", opacity: 0})
-                .stroke({width: 0})
-                .id("tileLight");
+                .stroke({width: 0});
 
             const tiles = board.group().id("tiles");
             for (let row = 0; row < height; row++) {
                 for (let col = 0; col < width; col++) {
                     const {x, y} = grid[row][col];
-                    const used = tiles.use(tileLight).center(x, y);
+                    const used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
                     if (opts.rotate === 180) {
                         used.click(() => opts.boardClick!(height - row - 1, width - col - 1, ""));
                     } else {
@@ -1484,15 +1493,15 @@ export abstract class RendererBase {
 
         // Draw circles
         const gridlines = board.group().id("circles");
-        const circle = draw.defs().circle(cellsize)
-            .id("_circle")
+        const circle = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+        circle.circle(cellsize)
             .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const c = gridlines.use(circle).center(p.x, p.y);
+                const c = gridlines.use(circle).size(cellsize, cellsize).center(p.x, p.y);
                 if (opts.boardClick !== undefined) {
                     if (opts.rotate === 180) {
                         c.click(() => opts.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
@@ -1577,20 +1586,20 @@ export abstract class RendererBase {
         */
 
         // Draw hexes
-        const triWidth = cellsize / 2;
+        const triWidth = 50 / 2;
         const half = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
         const gridlines = board.group().id("hexes");
-        const hex = draw.defs().polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
-            .id("_hex")
+        const hex = draw.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
+        hex.polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
             .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const c = gridlines.use(hex).center(p.x, p.y);
+                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
                 if (opts.boardClick !== undefined) {
                     if (opts.rotate === 180) {
                         c.click(() => opts.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
