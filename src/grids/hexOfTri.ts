@@ -1,5 +1,12 @@
 import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
 
+/**
+ * Generate a hexagonal field of intersection points.
+ *
+ * @export
+ * @param {IGeneratorArgs} args
+ * @returns {GridPoints}
+ */
 export function hexOfTri(args: IGeneratorArgs): GridPoints {
     let cellSize: number = 50;
     if (args.cellSize !== undefined) {

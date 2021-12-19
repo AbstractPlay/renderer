@@ -1,5 +1,12 @@
 import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
 
+/**
+ * Generates a hexagonal field of center points that will accommodate hexagons.
+ *
+ * @export
+ * @param {IGeneratorArgs} args
+ * @returns {GridPoints}
+ */
 export function hexOfHex(args: IGeneratorArgs): GridPoints {
     let cellSize: number = 50;
     if (args.cellSize !== undefined) {

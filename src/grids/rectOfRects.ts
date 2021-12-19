@@ -1,5 +1,13 @@
 import { GridPoints, IGeneratorArgs, IPoint} from "./_base";
 
+/**
+ * Generates a square field of points separated by a fixed width and height.
+ * It's the renderers that choose to interpret these points as centre points or vertices.
+ *
+ * @export
+ * @param {IGeneratorArgs} args
+ * @returns {GridPoints}
+ */
 export function rectOfRects(args: IGeneratorArgs): GridPoints {
     let cellWidth: number = 50;
     let cellHeight: number = 50;

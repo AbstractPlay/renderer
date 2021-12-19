@@ -564,7 +564,7 @@ export abstract class RendererBase {
     }
 
     /**
-     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates square boards of square cells. Points are the centre of each square.
      *
      * @protected
@@ -932,7 +932,7 @@ export abstract class RendererBase {
     }
 
     /**
-     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates square boards where the points are placed on the intersections of lines.
      *
      * @protected
@@ -1311,7 +1311,7 @@ export abstract class RendererBase {
     }
 
     /**
-     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates rectangular fields of hexes in various orientations.
      * It relies on a third-party library to do the heavy lifting.
      *
@@ -1423,7 +1423,7 @@ export abstract class RendererBase {
     }
 
     /**
-     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates snubsquare boards, which are a unique configuration where each cells is connected to five others.
      *
      * @protected
@@ -1565,7 +1565,7 @@ export abstract class RendererBase {
     }
 
     /**
-     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates a hexagonal-shaped field of triangles where the pieces are placed on line intersections.
      *
      * @protected
@@ -1705,7 +1705,7 @@ export abstract class RendererBase {
     }
 
     /**
-     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates a hexagonal field of circles.
      *
      * @protected
@@ -1794,7 +1794,7 @@ export abstract class RendererBase {
     }
 
     /**
-     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates a hexagonal field of hexes. Unlike {@link rectOfHex}, this does not require any third-party library.
      *
      * @protected

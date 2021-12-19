@@ -1,5 +1,12 @@
 import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
 
+/**
+ * Generates a rectangular snubsquare field.
+ *
+ * @export
+ * @param {IGeneratorArgs} args
+ * @returns {GridPoints}
+ */
 export function snubsquare(args: IGeneratorArgs): GridPoints {
     let cellSize: number = 50;
     if (args.cellSize !== undefined) {
