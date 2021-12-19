@@ -7,9 +7,6 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 /**
  * This is the Entropy-specific renderer that handles the side-by-side rendering and optional occlusion.
  *
- * @export
- * @class EntropyRenderer
- * @extends {RendererBase}
  */
 export class EntropyRenderer extends RendererBase {
 

@@ -9,82 +9,68 @@ import { sheets } from "../sheets";
 
 /**
  * Defines the options recognized by the rendering engine.
- *
- * @export
- * @interface IRendererOptionsIn
+ * @beta
  */
 export interface IRendererOptionsIn {
     /**
      * A list of glyph sheets to include.
      * Defaults to the full list, starting with `core`.
      *
-     * @type {string[]}
-     * @memberof IRendererOptionsIn
      */
     sheets?: string[];
     /**
      * A list of hexadecimal colour strings to be used as player colours. Be sure to provide enough for the number of players defined.
      * Defaults to a set of nine colours, defined in the constructor.
      *
-     * @type {string[]}
-     * @memberof IRendererOptionsIn
      */
     colours?: string[];
     /**
      * Signals whether you want black and white patterns used instead of colours.
      *
-     * @type {boolean}
-     * @memberof IRendererOptionsIn
      */
     patterns?: boolean;
     /**
      * List of pattern IDs to use as player colours.
      * Defaults to the full set of ten, defined in the constructor.
      *
-     * @type {string[]}
-     * @memberof IRendererOptionsIn
      */
     patternList?: string[];
     /**
      * Signals whether you want to use the built-in set of four colour-blind-friendly colours.
      *
-     * @type {boolean}
-     * @memberof IRendererOptionsIn
      */
     colourBlind?: boolean;
     /**
      * Indicates the number of degrees by which you want the entire render rotated.
      * Defaults to 0. The default renderer only supports rotation by 180 degrees. Other renderers may ignore it entirely.
      *
-     * @type {number}
-     * @memberof IRendererOptionsIn
      */
     rotate?: number;
     /**
      * Signals whether you want move annotations shown.
      *
-     * @type {boolean}
-     * @memberof IRendererOptionsIn
      */
     showAnnotations?: boolean;
     /**
      * A list of tuples indicating "requested glyph" and "replacement glyph."
      * This is a way of a user swapping out one glyph for another at render time.
      *
-     * @type {[string,string][]}
-     * @memberof IRendererOptionsIn
      */
     glyphmap?: [string,string][];
     /**
      * A callback attached to boards and pieces that is called whenever the user clicks on them.
      *
-     * @memberof IRendererOptionsIn
+     * @param row - The row number that was clicked on
+     * @param col - The column number that was clicked on
+     * @param piece - A string representation of the piece that was clicked on, if any
      */
     boardClick?: (row: number, col: number, piece: string) => void;
     /**
      * A callback attached to the entire drawing that is called as the user moves their mouse over it.
      *
-     * @memberof IRendererOptionsIn
+     * @param row - The row number that was clicked on
+     * @param col - The column number that was clicked on
+     * @param piece - A string representation of the piece that was clicked on, if any
      */
     boardHover?: (row: number, col: number, piece: string) => void;
 }
@@ -92,8 +78,6 @@ export interface IRendererOptionsIn {
 /**
  * Defines the options used by the renderer after all prechecks and validation.
  *
- * @export
- * @interface IRendererOptionsOut
  */
 export interface IRendererOptionsOut {
     sheets: string[];
@@ -111,10 +95,10 @@ export interface IRendererOptionsOut {
 /**
  * An internal helper function for producing labels for hex fields.
  *
- * @param {number} x
- * @param {number} y
- * @param {number} height
- * @returns {string}
+ * @param x - The column number
+ * @param y - The row number
+ * @param height - The total height of the field
+ * @returns A string label for the hex
  */
 const coords2algebraicHex = (x: number, y: number, height: number): string => {
     const columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
@@ -124,7 +108,6 @@ const coords2algebraicHex = (x: number, y: number, height: number): string => {
 /**
  * An internal interface used when rendering board buffers.
  *
- * @interface IBuffer
  */
 interface IBuffer {
     width?: number;
@@ -135,7 +118,6 @@ interface IBuffer {
 /**
  * Internal interface when placing markers and annotations
  *
- * @interface ITarget
  */
 interface ITarget {
     row: number;
@@ -145,38 +127,26 @@ interface ITarget {
 /**
  * The abstract base class from which all renderers inherit. Contains all the code shared by most renderers.
  *
- * @export
- * @abstract
- * @class RendererBase
  */
 export abstract class RendererBase {
     /**
      * Every renderer must have a unique name, referenced by the `renderer` property of the schema.
      *
-     * @type {string}
-     * @memberof RendererBase
      */
     public readonly name: string;
     /**
      * How columns are labelled. If there are more than 26 columns, then no labels will appear. Options to customize this are forthcoming.
      *
-     * @protected
-     * @memberof RendererBase
      */
     protected readonly columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     /**
      * The default cell size. It's simply a convenient constant. It has no bearing at all on the final output.
      *
-     * @protected
-     * @memberof RendererBase
      */
     protected readonly cellsize = 50;
     /**
      * The list of received, processed, and validated options. This is available to all class methods.
      *
-     * @protected
-     * @type {IRendererOptionsOut}
-     * @memberof RendererBase
      */
     protected options: IRendererOptionsOut
     protected json?: APRenderRep;
@@ -184,8 +154,7 @@ export abstract class RendererBase {
 
     /**
      * Creates an instance of RendererBase. A name must be provided. Also sets the default options.
-     * @param {string} [name="default"]
-     * @memberof RendererBase
+     * @param name - The unique name of the renderer
      */
     constructor(name = "default") {
         this.name = name;
@@ -204,21 +173,17 @@ export abstract class RendererBase {
     /**
      * This is the entry function for creating the rendered image.
      *
-     * @abstract
-     * @param {APRenderRep} json
-     * @param {Svg} draw
-     * @param {IRendererOptionsIn} opts
-     * @memberof RendererBase
+     * @param json - The parsed JSON to render
+     * @param draw - The canvas upon which to render the image
+     * @param opts - The renderer options
      */
     public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
 
     /**
      * Run on all JSON received before it is processed.
      *
-     * @protected
-     * @param {APRenderRep} json
-     * @returns {APRenderRep}
-     * @memberof RendererBase
+     * @param json - The parsed JSON to render
+     * @returns A fully validated {@link APRenderRep} object
      */
     protected jsonPrechecks(json: APRenderRep): void {
         // Check for missing renderer
@@ -237,9 +202,7 @@ export abstract class RendererBase {
     /**
      * Processes received options ({@link IRendererOptionsIn}) and translates them into valid {@link IRendererOptionsOut} options.
      *
-     * @protected
-     * @param {IRendererOptionsIn} opts
-     * @memberof RendererBase
+     * @param opts - Renderer options passed by the user
      */
     protected optionsPrecheck(opts: IRendererOptionsIn): void {
         // Check colour blindness
@@ -316,10 +279,8 @@ export abstract class RendererBase {
     /**
      * Loads any requested patterns into the final SVG.
      *
-     * @protected
-     * @param {string} name
-     * @param {Svg} canvas
-     * @memberof RendererBase
+     * @param name - The unique name of the pattern
+     * @param canvas - The container into which to add the pattern
      */
     protected loadPattern(name: string, canvas?: Svg): void {
         if (canvas === undefined) {
@@ -371,11 +332,9 @@ export abstract class RendererBase {
      * Goes through the list of sheets until it finds a matching glyph and adds it to the given Svg.
      * This is where glyph replacement happens (via `this.options.glyphmap`).
      *
-     * @protected
-     * @param {string} glyph
-     * @param {Svg} [canvas]
-     * @returns {SVGSymbol}
-     * @memberof RendererBase
+     * @param glyph - The name of the glyph to load
+     * @param canvas - The canvas into which to load the glyph
+     * @returns The {@link SVGSymbol} that was loaded
      */
     protected loadGlyph(glyph: string, canvas?: Svg): SVGSymbol {
         if (canvas === undefined) {
@@ -409,8 +368,6 @@ export abstract class RendererBase {
      * This function loads all the glyphs from the `legend` into the given Svg.
      * It deals with text glyphs and composite glyphs, including filling with colours, rotating, and scaling.
      *
-     * @protected
-     * @memberof RendererBase
      */
     protected loadLegend() {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -579,9 +536,7 @@ export abstract class RendererBase {
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates square boards of square cells. Points are the centre of each square.
      *
-     * @protected
-     * @returns {GridPoints}
-     * @memberof RendererBase
+     * @returns A map of row/column locations to x,y coordinates
      */
     protected squares(): GridPoints {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -947,9 +902,7 @@ export abstract class RendererBase {
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates square boards where the points are placed on the intersections of lines.
      *
-     * @protected
-     * @returns {GridPoints}
-     * @memberof RendererBase
+     * @returns A map of row/column locations to x,y coordinates
      */
     protected vertex(): GridPoints {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -1327,9 +1280,7 @@ export abstract class RendererBase {
      * This generator creates rectangular fields of hexes in various orientations.
      * It relies on a third-party library to do the heavy lifting.
      *
-     * @protected
-     * @returns {GridPoints}
-     * @memberof RendererBase
+     * @returns A map of row/column locations to x,y coordinate
      */
     protected rectOfHex(): GridPoints {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -1439,9 +1390,7 @@ export abstract class RendererBase {
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates snubsquare boards, which are a unique configuration where each cells is connected to five others.
      *
-     * @protected
-     * @returns {GridPoints}
-     * @memberof RendererBase
+     * @returns A map of row/column locations to x,y coordinates
      */
     protected snubSquare(): GridPoints {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -1581,9 +1530,7 @@ export abstract class RendererBase {
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates a hexagonal-shaped field of triangles where the pieces are placed on line intersections.
      *
-     * @protected
-     * @returns {GridPoints}
-     * @memberof RendererBase
+     * @returns A map of row/column locations to x,y coordinates
      */
     protected hexOfTri(): GridPoints {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -1721,9 +1668,7 @@ export abstract class RendererBase {
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates a hexagonal field of circles.
      *
-     * @protected
-     * @returns {GridPoints}
-     * @memberof RendererBase
+     * @returns A map of row/column locations to x,y coordinates
      */
     protected hexOfCir(): GridPoints {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -1810,9 +1755,7 @@ export abstract class RendererBase {
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates a hexagonal field of hexes. Unlike {@link rectOfHex}, this does not require any third-party library.
      *
-     * @protected
-     * @returns {GridPoints}
-     * @memberof RendererBase
+     * @returns A map of row/column locations to x,y coordinates
      */
     protected hexOfHex(): GridPoints {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -1919,9 +1862,7 @@ export abstract class RendererBase {
      * This is what applies annotations to a finished board.
      * Annotations are applied at the end, and so overlay pieces.
      *
-     * @protected
-     * @param {GridPoints} grid The map of row/column to x/y created by one of the grid point generators.
-     * @memberof RendererBase
+     * @param grid - A map of row/column locations to x,y coordinates
      */
     protected annotateBoard(grid: GridPoints) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -2088,11 +2029,9 @@ export abstract class RendererBase {
     /**
      * Markers are placed right after the board itself is generated, and so are obscured by placed pieces.
      *
-     * @protected
-     * @param {SVGG} svgGroup The SVG `<group>` you want to add the markers too. This is just for the sake of organization.
-     * @param {GridPoints} grid The map of row/column to x/y created by one of the grid point generators.
-     * @param {GridPoints} [gridExpanded] Square maps need to be expanded a little for all the markers to work. If provided, this is what will be used.
-     * @memberof RendererBase
+     * @param svgGroup - The SVG `<group>` you want to add the markers too. This is just for the sake of organization.
+     * @param grid - The map of row/column to x/y created by one of the grid point generators.
+     * @param gridExpanded - Square maps need to be expanded a little for all the markers to work. If provided, this is what will be used.
      */
     protected markBoard(svgGroup: SVGG, grid: GridPoints, gridExpanded?: GridPoints): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -2340,16 +2279,14 @@ export abstract class RendererBase {
         }
     }
 
-    // NOT GENERAL. Assumes we are only drawing in increments of 45 degrees
     /**
      * An internal helper function for generating `eject` annotations.
+     * This is not generalized. It only assumes we are rotating in increments of 45 degrees.
      *
-     * @private
-     * @param {IPoint} from
-     * @param {IPoint} to
-     * @param {number} delta
-     * @returns {IPoint}
-     * @memberof RendererBase
+     * @param from - Starting point
+     * @param to - Ending point
+     * @param delta - The depth of the arc
+     * @returns The midpoint of the arc
      */
     private getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
         const m: IPoint = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};

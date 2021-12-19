@@ -6,9 +6,6 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 /**
  * This is the default renderer used for most games.
  *
- * @export
- * @class DefaultRenderer
- * @extends {RendererBase}
  */
 export class DefaultRenderer extends RendererBase {
 
@@ -151,8 +148,6 @@ export class DefaultRenderer extends RendererBase {
     /**
      * Helper function for producing a single glyph when `board` is set to `null`.
      *
-     * @private
-     * @memberof DefaultRenderer
      */
     private renderGlyph(): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {

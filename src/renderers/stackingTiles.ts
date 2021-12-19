@@ -6,9 +6,6 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 /**
  * The `stacking-tiles` renderer is used to show a side view of a stack of pieces. This is theoretical and has not yet been used by any games.
  *
- * @export
- * @class StackingTilesRenderer
- * @extends {RendererBase}
  */
 export class StackingTilesRenderer extends RendererBase {
 

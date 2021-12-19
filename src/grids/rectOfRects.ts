@@ -4,9 +4,8 @@ import { GridPoints, IGeneratorArgs, IPoint} from "./_base";
  * Generates a square field of points separated by a fixed width and height.
  * It's the renderers that choose to interpret these points as centre points or vertices.
  *
- * @export
- * @param {IGeneratorArgs} args
- * @returns {GridPoints}
+ * @param args - Generator options
+ * @returns Map of x,y coordinates to row/column locations
  */
 export const rectOfRects = (args: IGeneratorArgs): GridPoints => {
     let cellWidth = 50;

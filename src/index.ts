@@ -1,68 +1,64 @@
-// import SVG from "@svgdotjs/svg.js";
+/**
+ * A library for building images of game boards
+ *
+ * @remarks
+ * Given a valid JSON file (see {@link APRenderRep}) and necessary options (see {@link IRenderOptions}), the library
+ * will produce an SVG file.
+ *
+ * @packageDocumentation
+ */
+
 import { G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 import { IRendererOptionsIn } from "./renderers/_base";
-import { APRenderRep } from "./schemas/schema";
+import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings } from "./schemas/schema";
 import schema from "./schemas/schema.json";
 import { v4 as uuidv4 } from 'uuid';
 
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
+export {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings};
+
 /**
- * Defines the options the renderer accepts. It includes all the options the renderer class needs ({@link IRenderOptionsIn})
+ * Defines the options the renderer accepts. It includes all the options the renderer class needs ({@link IRendererOptionsIn})
  * as well as a few that the layout front-end needs.
- *
- * @export
- * @interface IRenderOptions
- * @extends {IRendererOptionsIn}
+ * @beta
  */
 export interface IRenderOptions extends IRendererOptionsIn {
     /**
-     * The {string} ID of the DOM element into which you want the SVG rendered. This is most typically a `<div>` tag.
+     * The string ID of the DOM element into which you want the SVG rendered. This is most typically a `<div>` tag.
      * This is the preferred way of outputting the SVG.
      *
-     * @type {string}
-     * @memberof IRenderOptions
      */
     divid?: string;
     /**
      * You can also pass the HTML element itself.
      *
-     * @type {HTMLElement}
-     * @memberof IRenderOptions
      */
     divelem?: HTMLElement;
     /**
      * In some special cases, you already have an SVG and want the renderer to do it's thing inside of it.
-     * In that case, pass the {Svg} object.
+     * In that case, pass the Svg object.
      *
-     * @type {Svg}
-     * @memberof IRenderOptions
      */
     target?: Svg;
     /**
      * The width of the final SVG. This can be a string (representing something like a percentage).
      * See the SVG.js docs for details.
      *
-     * @type {NumberAlias}
-     * @memberof IRenderOptions
      */
     width?: NumberAlias;
     /**
      * The height of the final SVG. This can be a string (representing something like a percentage).
      * See the SVG.js docs for details.
      *
-     * @type {NumberAlias}
-     * @memberof IRenderOptions
      */
     height?: NumberAlias;
     /**
-     * The {string} DOM ID you want the final output out be given.
+     * The string DOM ID you want the final output out be given.
      *
-     * @type {string}
-     * @memberof IRenderOptions
      */
     svgid?: string;
 }
@@ -71,8 +67,8 @@ export interface IRenderOptions extends IRendererOptionsIn {
  * The intent was to produce human-readable and actionable error messages. This has proven difficult thus far.
  * Something to work on in the future.
  *
- * @param {AJVError[]} errors
- * @returns {string}
+ * @param errors - List of validation errors
+ * @returns A formatted string representing the errors
  */
 const formatAJVErrors = (errors: AJVError[]): string => {
     let retstr = "";
@@ -86,10 +82,10 @@ const formatAJVErrors = (errors: AJVError[]): string => {
  * Creates a detached DOM element into which the image is rendered unseen.
  * It returns the resulting SVG code. Useful in things like React functional components.
  *
- * @export
- * @param {APRenderRep} json
- * @param {*} [opts={} as IRenderOptions]
- * @returns {string}
+ * @param json - The parsed JSON to render
+ * @param opts - The list of renderer options
+ * @returns A string containing a valid `<svg>` tag
+ * @beta
  */
 export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): string => {
     const node = document.createElement("div");
@@ -103,11 +99,11 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
 /**
  * A helper function for producing code for a single glyph, intended to then be used inline.
  *
- * @export
- * @param {string} glyphid
- * @param {(number | string)} colour
- * @param {*} [opts={} as IRenderOptions]
- * @returns {string}
+ * @param glyphid - The name of the glyph to render
+ * @param colour - The fill colour, either a hex string or player number
+ * @param opts - The list of renderer options
+ * @returns A string containing a valid `<svg>` tag
+ * @beta
  */
 export const renderglyph = (glyphid: string, colour: number | string, opts = {} as IRenderOptions): string => {
     let obj: APRenderRep;
@@ -147,10 +143,10 @@ export const renderglyph = (glyphid: string, colour: number | string, opts = {} 
 /**
  * This is the primary function. Render an image based on the JSON and options
  *
- * @export
- * @param {APRenderRep} json
- * @param {*} [opts={} as IRenderOptions]
- * @returns {Svg}
+ * @param json - The parsed JSON to render
+ * @param opts - The list of renderer options
+ * @returns A valid SVG.js Svg object
+ * @beta
  */
 export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     // Validate the JSON

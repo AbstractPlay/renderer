@@ -21,12 +21,11 @@ export { sheets };
 /**
  * A helper function I use when importing arbitrary paths into a glyph.
  *
- * @export
- * @param {Box} box The bounding box of the glyph.
- * @param {number} [minSize] The minimum size of the final viewbox, in those cases where you want the glyph to be smaller.
- * @param {("N"|"E"|"S"|"W"|"C")} [alignment="C"] This determines what to do when the glyph is not as large as the viewbox.
- * @param {number} [buffer] Adds a guaranteed buffer around the glyph.
- * @returns {[number, number, number, number]} The `x`, `y`, `width`, and `height` of the resulting viewbox.
+ * @param box - The bounding box of the glyph.
+ * @param minSize - The minimum size of the final viewbox, in those cases where you want the glyph to be smaller.
+ * @param alignment - This determines what to do when the glyph is not as large as the viewbox.
+ * @param buffer - Adds a guaranteed buffer around the glyph.
+ * @returns The `x`, `y`, `width`, and `height` of the resulting viewbox.
  */
 export const calcViewBox = (box: Box, minSize?: number, alignment: "N"|"E"|"S"|"W"|"C" = "C", buffer?: number): [number, number, number, number] => {
     const lst = [box.width, box.height];

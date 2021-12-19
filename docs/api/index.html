@@ -1,0 +1,45 @@
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@abstractplay/renderer</title><meta name="description" content="Documentation for @abstractplay/renderer"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">@abstractplay/renderer</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label><input type="checkbox" id="tsd-filter-externals" checked/><label class="tsd-widget" for="tsd-filter-externals">Externals</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1>@abstractplay/renderer</h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography">
+<a href="#abstract-play-renderer" id="abstract-play-renderer" style="color: inherit; text-decoration: none;">
+  <h1>Abstract Play Renderer</h1>
+</a>
+<p><a href="https://travis-ci.com/AbstractPlay/renderer"><img src="https://travis-ci.com/AbstractPlay/renderer.svg?branch=master" alt="Build Status"></a></p>
+<p>This private NPM module graphically renders game states. This repository houses the authoritative JSON schema.</p>
+<p>Currently the only supported output format is SVG. The library has been tested and works correctly in Chrome, Firefox, Opera, and Edge.</p>
+<p><a href="https://abstractplay.com/renderer/">A playground/demo area is now available.</a></p>
+
+<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+  <h2>Usage</h2>
+</a>
+<p>In the browser, simply load <code>APRender.js</code> via a <code>&lt;script&gt;</code> tag. From within Node, simply import the variables and functions you need. Both methods give you access to the same API. For a concrete example, <a href="https://abstractplay.com/renderer/">see the playground</a>. The API and schema are documented in the <code>/docs</code> folder.</p>
+
+<a href="#contributing" id="contributing" style="color: inherit; text-decoration: none;">
+  <h2>Contributing</h2>
+</a>
+<p>If you want to create a new set of graphics, then I&#39;m afraid you have to get your hands a little dirty. You will need to learn <a href="https://www.typescriptlang.org/">TypeScript</a> and <a href="https://svgjs.com/">SVG.js</a>. For now, see the <code>src/sheets/default.ts</code> file for how this works. Once complete, submit a pull request and I&#39;ll consider it.</p>
+<p>Detailed instructions will appear here once the API is stable. For now, here&#39;s just a collection of points so I don&#39;t forget them:</p>
+<ul>
+<li>The size of SVG you return is irrelevant. It will be scaled by the renderer as appropriate. Use whatever size is convenient for you.</li>
+<li>The renderer will check each figure for an element with the <code>id</code> <code>playerfill</code> and <code>fill</code> that element with the colour for the given player based on the options passed to the renderer (e.g., colour-blind palette).</li>
+</ul>
+<p><img src="./contact.png" alt="Contact sheet" title="Rudimentary contact sheet"></p>
+
+<a href="#contact" id="contact" style="color: inherit; text-decoration: none;">
+  <h2>Contact</h2>
+</a>
+<p>The <a href="https://www.abstractplay.com">main website</a> houses the development blog and wiki.</p>
+
+<a href="#deploy" id="deploy" style="color: inherit; text-decoration: none;">
+  <h2>Deploy</h2>
+</a>
+<p>This is a basic NPM module; it&#39;s just private. It&#39;s not meant to be generally useful to anyone outside of myself. It is designed specifically for Abstract Play. If someone does use this elsewhere, let me know :)</p>
+<ul>
+<li>Clone the repo.</li>
+<li>From the newly created folder, run the following commands:<ul>
+<li><code>npm install</code> (installs dependencies)</li>
+<li><code>npm run test</code> (makes sure everything is working)</li>
+<li><code>npm run build</code> (compiles the TypeScript files into the <code>./build</code> folder)</li>
+<li><code>npm run dist-dev</code> (or <code>dist-prod</code> if you want it minified; bundles everything for the browser into the <code>./dist</code> folder)</li>
+</ul>
+</li>
+</ul>
+</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Exports</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="tsd-kind-interface"><a href="interfaces/APRenderRep.html" class="tsd-kind-icon">APRender<wbr/>Rep</a></li><li class="tsd-kind-interface"><a href="interfaces/Glyph.html" class="tsd-kind-icon">Glyph</a></li><li class="tsd-kind-interface"><a href="interfaces/IRenderOptions.html" class="tsd-kind-icon">IRender<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/IRendererOptionsIn.html" class="tsd-kind-icon">IRenderer<wbr/>Options<wbr/>In</a></li><li class="tsd-kind-type-alias"><a href="modules.html#Colourstrings" class="tsd-kind-icon">Colourstrings</a></li><li class="tsd-kind-type-alias"><a href="modules.html#PositiveInteger" class="tsd-kind-icon">Positive<wbr/>Integer</a></li><li class="tsd-kind-type-alias"><a href="modules.html#Stashstrings" class="tsd-kind-icon">Stashstrings</a></li><li class="tsd-kind-function"><a href="modules.html#render" class="tsd-kind-icon">render</a></li><li class="tsd-kind-function"><a href="modules.html#renderStatic" class="tsd-kind-icon">render<wbr/>Static</a></li><li class="tsd-kind-function"><a href="modules.html#renderglyph" class="tsd-kind-icon">renderglyph</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>

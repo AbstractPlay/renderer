@@ -23,9 +23,6 @@ interface ISystem {
 /**
  * This is the Homeworlds-specific renderer that generates the wholly unique images needed for the game.
  *
- * @export
- * @class HomeworldsRenderer
- * @extends {RendererBase}
  */
 export class HomeworldsRenderer extends RendererBase {
 
@@ -349,11 +346,9 @@ export class HomeworldsRenderer extends RendererBase {
     /**
      * Helper function for determining the new orientation of pieces if the board is rotated.
      *
-     * @private
-     * @param {Seat} seat
-     * @param {number} [deg]
-     * @returns {Seat}
-     * @memberof HomeworldsRenderer
+     * @param seat - Original seat designation
+     * @param deg - The amount of rotation in degrees, only in increments of 90
+     * @returns The new seat designation given the new perspective
      */
     private effectiveSeat(seat: Seat, deg?: number): Seat {
         if ( (deg === undefined) || (deg === 0) ) {
@@ -376,13 +371,11 @@ export class HomeworldsRenderer extends RendererBase {
     /**
      * Helper function that generates the individual systems
      *
-     * @private
-     * @param {string} id The DOM ID that will be inserted into the SVG
-     * @param {string} name The name that will be rendered onto the system.
-     * @param {((string|undefined)[][])} ports The x/y coordinates of the various ports in the system.
-     * @param {string} [highlight] A colour to highlight the border with. This is used for the custom annotations.
-     * @returns {Svg}
-     * @memberof HomeworldsRenderer
+     * @param id - The DOM ID that will be inserted into the SVG
+     * @param name - The name that will be rendered onto the system.
+     * @param ports - The x/y coordinates of the various ports in the system.
+     * @param highlight - An optional colour to highlight the border with. This is used for the custom annotations.
+     * @returns The resulting SVG.js Svg object
      */
     private genSystem(id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});

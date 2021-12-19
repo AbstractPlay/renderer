@@ -3,9 +3,8 @@ import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
 /**
  * Generates a hexagonal field of center points that will accommodate hexagons.
  *
- * @export
- * @param {IGeneratorArgs} args
- * @returns {GridPoints}
+ * @param args - Generator options
+ * @returns Map of x,y coordinates to row/column locations
  */
 export const hexOfHex = (args: IGeneratorArgs): GridPoints => {
     let cellSize = 50;

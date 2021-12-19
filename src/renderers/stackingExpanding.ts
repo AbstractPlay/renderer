@@ -13,9 +13,6 @@ interface ILocalStash {
 /**
  * This is the `stacking-expanding` renderer that handles things like local stashes and the expanded stack column.
  *
- * @export
- * @class StackingExpandingRenderer
- * @extends {RendererBase}
  */
 export class StackingExpandingRenderer extends RendererBase {
 

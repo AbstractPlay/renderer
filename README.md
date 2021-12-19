@@ -8,6 +8,10 @@ Currently the only supported output format is SVG. The library has been tested a
 
 [A playground/demo area is now available.](https://abstractplay.com/renderer/)
 
+## Usage
+
+In the browser, simply load `APRender.js` via a `<script>` tag. From within Node, simply import the variables and functions you need. Both methods give you access to the same API. For a concrete example, [see the playground](https://abstractplay.com/renderer/). The API and schema are documented in the `/docs` folder.
+
 ## Contributing
 
 If you want to create a new set of graphics, then I'm afraid you have to get your hands a little dirty. You will need to learn [TypeScript](https://www.typescriptlang.org/) and [SVG.js](https://svgjs.com/). For now, see the `src/sheets/default.ts` file for how this works. Once complete, submit a pull request and I'll consider it.

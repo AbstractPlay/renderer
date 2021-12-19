@@ -14,9 +14,9 @@ module.exports = {
         "sourceType": "module"
     },
     "plugins": [
-        "eslint-plugin-tsdoc",
         "eslint-plugin-prefer-arrow",
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "eslint-plugin-tsdoc",
     ],
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
@@ -161,6 +161,7 @@ module.exports = {
                 ]
             }
         ],
+        "tsdoc/syntax": "warn",
         "use-isnan": "error",
         "valid-typeof": "off"
     }

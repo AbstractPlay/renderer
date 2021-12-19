@@ -6,9 +6,6 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
  *
- * @export
- * @class StackingOffsetRenderer
- * @extends {RendererBase}
  */
 export class StackingOffsetRenderer extends RendererBase {
 
