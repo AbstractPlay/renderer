@@ -3,6 +3,13 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
+/**
+ * The `stacking-tiles` renderer is used to show a side view of a stack of pieces. This is theoretical and has not yet been used by any games.
+ *
+ * @export
+ * @class StackingTilesRenderer
+ * @extends {RendererBase}
+ */
 export class StackingTilesRenderer extends RendererBase {
 
     constructor() {
@@ -10,17 +17,21 @@ export class StackingTilesRenderer extends RendererBase {
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
-        json = this.jsonPrechecks(json);
+        this.jsonPrechecks(json);
+        if (this.json === undefined) {
+            throw new Error("JSON prechecks fatally failed.");
+        }
         this.optionsPrecheck(options);
+        this.rootSvg = draw;
 
-        if (json.board === null) {
+        if (this.json.board === null) {
             throw new Error("This renderer requires that `board` be defined.");
         }
 
         // BOARD
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
-        if (! ("style" in json.board)) {
+        if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
         /*
@@ -35,10 +46,10 @@ export class StackingTilesRenderer extends RendererBase {
         const offsetY: number = effWidth / 2;
         const tileWidth: number = effWidth;
         const tileHeight: number = Math.floor(effWidth / 8);
-        switch (json.board.style) {
+        switch (this.json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw);
+                gridPoints = this.squares();
                 break;
             // case "hex_of_hex":
             //     gridPoints = this.hexOfHex(json, draw, opts);
@@ -48,22 +59,22 @@ export class StackingTilesRenderer extends RendererBase {
             //     tileHeight = Math.floor((this.cellsize * Math.sqrt(3)) / 8);
             //     break;
             default:
-                throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
+                throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ this.name }' renderer.`);
         }
 
         // Now place the pieces
-        const group = draw.group().id("pieces");
-        if (json.pieces !== null) {
+        const group = this.rootSvg.group().id("pieces");
+        if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = new Array();
 
-            if (typeof json.pieces === "string") {
+            if (typeof this.json.pieces === "string") {
                 // Does it contain commas
-                if (json.pieces.indexOf(",") >= 0) {
-                    for (const row of json.pieces.split("\n")) {
+                if (this.json.pieces.indexOf(",") >= 0) {
+                    for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]);
                         } else {
                             let cells = row.split(",");
                             cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
@@ -74,8 +85,8 @@ export class StackingTilesRenderer extends RendererBase {
                 } else {
                     throw new Error("This renderer requires that you use the comma-delimited or array format of the `pieces` property.");
                 }
-            } else if ( (json.pieces instanceof Array) && (json.pieces[0] instanceof Array) && (json.pieces[0][0] instanceof Array) ) {
-                pieces = json.pieces as string[][][];
+            } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
+                pieces = this.json.pieces as string[][][];
             } else {
                 throw new Error("Unrecognized `pieces` property.");
             }
@@ -120,7 +131,7 @@ export class StackingTilesRenderer extends RendererBase {
 
         // Finally, annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints);
+            this.annotateBoard(gridPoints);
         }
     }
 }

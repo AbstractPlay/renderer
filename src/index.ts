@@ -9,16 +9,70 @@ import schema from "./schema.json";
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
+/**
+ * Defines the options the renderer accepts. It includes all the options the renderer class needs ({@link IRenderOptionsIn})
+ * as well as a few that the layout front-end needs.
+ *
+ * @export
+ * @interface IRenderOptions
+ * @extends {IRendererOptionsIn}
+ */
 export interface IRenderOptions extends IRendererOptionsIn {
-    divid: string;
+    /**
+     * The {string} ID of the DOM element into which you want the SVG rendered. This is most typically a `<div>` tag.
+     * This is the preferred way of outputting the SVG.
+     *
+     * @type {string}
+     * @memberof IRenderOptions
+     */
+    divid?: string;
+    /**
+     * You can also pass the HTML element itself.
+     *
+     * @type {HTMLElement}
+     * @memberof IRenderOptions
+     */
     divelem?: HTMLElement;
+    /**
+     * In some special cases, you already have an SVG and want the renderer to do it's thing inside of it.
+     * In that case, pass the {Svg} object.
+     *
+     * @type {Svg}
+     * @memberof IRenderOptions
+     */
     target?: Svg;
+    /**
+     * The width of the final SVG. This can be a string (representing something like a percentage).
+     * See the SVG.js docs for details.
+     *
+     * @type {NumberAlias}
+     * @memberof IRenderOptions
+     */
     width?: NumberAlias;
+    /**
+     * The height of the final SVG. This can be a string (representing something like a percentage).
+     * See the SVG.js docs for details.
+     *
+     * @type {NumberAlias}
+     * @memberof IRenderOptions
+     */
     height?: NumberAlias;
+    /**
+     * The {string} DOM ID you want the final output out be given.
+     *
+     * @type {string}
+     * @memberof IRenderOptions
+     */
     svgid?: string;
 }
 
-
+/**
+ * The intent was to produce human-readable and actionable error messages. This has proven difficult thus far.
+ * Something to work on in the future.
+ *
+ * @param {AJVError[]} errors
+ * @returns {string}
+ */
 function formatAJVErrors(errors: AJVError[]): string {
     let retstr = "";
     for (const error of errors) {
@@ -27,11 +81,15 @@ function formatAJVErrors(errors: AJVError[]): string {
     return retstr;
 }
 
-/*
-    Creates a detached DOM element in which to render the image unseen.
-    You can then just export the SVG.
-    Intended for use in React functional components.
-*/
+/**
+ * Creates a detached DOM element into which the image is rendered unseen.
+ * It returns the resulting SVG code. Useful in things like React functional components.
+ *
+ * @export
+ * @param {APRenderRep} json
+ * @param {*} [opts={} as IRenderOptions]
+ * @returns {string}
+ */
 export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): string {
     const node = document.createElement("div");
     const {v4: uuidv4} = require("uuid");
@@ -42,8 +100,16 @@ export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): st
     return canvas.svg();
 }
 
+/**
+ * A helper function for producing code for a single glyph, intended to then be used inline.
+ *
+ * @export
+ * @param {string} glyphid
+ * @param {(number | string)} colour
+ * @param {*} [opts={} as IRenderOptions]
+ * @returns {string}
+ */
 export function renderglyph(glyphid: string, colour: number | string, opts = {} as IRenderOptions): string {
-    // This is for inserting just a single glyph into running HTML.
     let obj: APRenderRep;
     if (typeof colour === "number") {
         obj = {
@@ -62,7 +128,6 @@ export function renderglyph(glyphid: string, colour: number | string, opts = {} 
             legend: {
                 A: {
                     name: glyphid,
-                    // tslint:disable-next-line: object-literal-sort-keys
                     colour,
                 },
             },
@@ -80,7 +145,14 @@ export function renderglyph(glyphid: string, colour: number | string, opts = {} 
     return canvas.svg();
 }
 
-// `json` is an `any` instead of an `APRenderRep` because of the enum/string mismatch
+/**
+ * This is the primary function. Render an image based on the JSON and options
+ *
+ * @export
+ * @param {APRenderRep} json
+ * @param {*} [opts={} as IRenderOptions]
+ * @returns {Svg}
+ */
 export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
     // Validate the JSON
     if (! validate(json)) {

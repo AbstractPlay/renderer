@@ -5,19 +5,94 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schema";
 import { sheets } from "../sheets";
 
+/**
+ * Defines the options recognized by the rendering engine.
+ *
+ * @export
+ * @interface IRendererOptionsIn
+ */
 export interface IRendererOptionsIn {
+    /**
+     * A list of glyph sheets to include.
+     * Defaults to the full list, starting with `core`.
+     *
+     * @type {string[]}
+     * @memberof IRendererOptionsIn
+     */
     sheets?: string[];
+    /**
+     * A list of hexadecimal colour strings to be used as player colours. Be sure to provide enough for the number of players defined.
+     * Defaults to a set of nine colours, defined in the constructor.
+     *
+     * @type {string[]}
+     * @memberof IRendererOptionsIn
+     */
     colours?: string[];
+    /**
+     * Signals whether you want black and white patterns used instead of colours.
+     *
+     * @type {boolean}
+     * @memberof IRendererOptionsIn
+     */
     patterns?: boolean;
+    /**
+     * List of pattern IDs to use as player colours.
+     * Defaults to the full set of ten, defined in the constructor.
+     *
+     * @type {string[]}
+     * @memberof IRendererOptionsIn
+     */
     patternList?: string[];
+    /**
+     * Signals whether you want to use the built-in set of four colour-blind-friendly colours.
+     *
+     * @type {boolean}
+     * @memberof IRendererOptionsIn
+     */
     colourBlind?: boolean;
+    /**
+     * Indicates the number of degrees by which you want the entire render rotated.
+     * Defaults to 0. The default renderer only supports rotation by 180 degrees. Other renderers may ignore it entirely.
+     *
+     * @type {number}
+     * @memberof IRendererOptionsIn
+     */
     rotate?: number;
+    /**
+     * Signals whether you want move annotations shown.
+     *
+     * @type {boolean}
+     * @memberof IRendererOptionsIn
+     */
     showAnnotations?: boolean;
+    /**
+     * A list of tuples indicating "requested glyph" and "replacement glyph."
+     * This is a way of a user swapping out one glyph for another at render time.
+     *
+     * @type {[string,string][]}
+     * @memberof IRendererOptionsIn
+     */
     glyphmap?: [string,string][];
+    /**
+     * A callback attached to boards and pieces that is called whenever the user clicks on them.
+     *
+     * @memberof IRendererOptionsIn
+     */
     boardClick?: (row: number, col: number, piece: string) => void;
+    /**
+     * A callback attached to the entire drawing that is called as the user moves their mouse over it.
+     *
+     * @memberof IRendererOptionsIn
+     */
     boardHover?: (row: number, col: number, piece: string) => void;
 }
 
+/**
+ * Defines the options used by the renderer after all prechecks and validation.
+ *
+ * @export
+ * @interface IRendererOptionsOut
+ */
 export interface IRendererOptionsOut {
     sheets: string[];
     colours: string[];
@@ -31,34 +106,109 @@ export interface IRendererOptionsOut {
     boardHover?: (row: number, col: number, piece: string) => void;
 }
 
+/**
+ * An internal helper function for producing labels for hex fields.
+ *
+ * @param {number} x
+ * @param {number} y
+ * @param {number} height
+ * @returns {string}
+ */
 function coords2algebraicHex(x: number, y: number, height: number): string {
     const columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     return columnLabels[height - y - 1] + (x + 1).toString();
 }
 
+/**
+ * An internal interface used when rendering board buffers.
+ *
+ * @interface IBuffer
+ */
 interface IBuffer {
     width?: number;
     pattern?: string;
     show?: ("N"|"E"|"S"|"W")[];
 };
 
+/**
+ * The abstract base class from which all renderers inherit. Contains all the code shared by most renderers.
+ *
+ * @export
+ * @abstract
+ * @class RendererBase
+ */
 export abstract class RendererBase {
+    /**
+     * Every renderer must have a unique name, referenced by the `renderer` property of the schema.
+     *
+     * @type {string}
+     * @memberof RendererBase
+     */
     public readonly name: string;
-    public readonly coloursBasic = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
-    public readonly coloursBlind = ["#a6611a", "#80cdc1", "#dfc27d", "#018571"];
-    public readonly patternNames = ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"];
+    /**
+     * How columns are labelled. If there are more than 26 columns, then no labels will appear. Options to customize this are forthcoming.
+     *
+     * @protected
+     * @memberof RendererBase
+     */
     protected readonly columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
+    /**
+     * The default cell size. It's simply a convenient constant. It has no bearing at all on the final output.
+     *
+     * @protected
+     * @memberof RendererBase
+     */
     protected readonly cellsize = 50;
+    /**
+     * The list of received, processed, and validated options. This is available to all class methods.
+     *
+     * @protected
+     * @type {IRendererOptionsOut}
+     * @memberof RendererBase
+     */
     protected options: IRendererOptionsOut
+    protected json?: APRenderRep;
+    protected rootSvg?: Svg;
 
+    /**
+     * Creates an instance of RendererBase. A name must be provided. Also sets the default options.
+     * @param {string} [name="default"]
+     * @memberof RendererBase
+     */
     constructor(name = "default") {
         this.name = name;
-        this.options = {sheets: ["core", "dice", "looney", "piecepack", "chess"], colourBlind: false, colours: this.coloursBasic, patterns: false, patternList: this.patternNames, showAnnotations: true, rotate: 0, glyphmap: []};
+        this.options = {
+            sheets: ["core", "dice", "looney", "piecepack", "chess"],
+            colourBlind: false,
+            colours: ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"],
+            patterns: false,
+            patternList: ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"],
+            showAnnotations: true,
+            rotate: 0,
+            glyphmap: []
+        };
     }
 
+    /**
+     * This is the entry function for creating the rendered image.
+     *
+     * @abstract
+     * @param {APRenderRep} json
+     * @param {Svg} draw
+     * @param {IRendererOptionsIn} opts
+     * @memberof RendererBase
+     */
     public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
 
-    protected jsonPrechecks(json: APRenderRep): APRenderRep {
+    /**
+     * Run on all JSON received before it is processed.
+     *
+     * @protected
+     * @param {APRenderRep} json
+     * @returns {APRenderRep}
+     * @memberof RendererBase
+     */
+    protected jsonPrechecks(json: APRenderRep): void {
         // Check for missing renderer
         if (json.renderer === undefined) {
             json.renderer = "default";
@@ -69,15 +219,22 @@ export abstract class RendererBase {
             throw new Error(`Renderer mismatch. The JSON data you provided is intended for the "${json.renderer}" renderer, but the "${this.name}" renderer received it.`);
         }
 
-        return json;
+        this.json = json;
     }
 
+    /**
+     * Processes received options ({@link IRendererOptionsIn}) and translates them into valid {@link IRendererOptionsOut} options.
+     *
+     * @protected
+     * @param {IRendererOptionsIn} opts
+     * @memberof RendererBase
+     */
     protected optionsPrecheck(opts: IRendererOptionsIn): void {
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
             this.options.colourBlind = opts.colourBlind;
             if (this.options.colourBlind) {
-                this.options.colours = this.coloursBlind;
+                this.options.colours = ["#a6611a", "#80cdc1", "#dfc27d", "#018571"];
             }
         }
 
@@ -97,14 +254,12 @@ export abstract class RendererBase {
             this.options.patterns = true;
             // Validate pattern list if given
             if ( (opts.patternList !== undefined) && (opts.patternList.length > 0) ) {
-                for (const name of opts.patternList) {
-                    if (this.patternNames.indexOf(name) < 0) {
-                        throw new Error(`A pattern you requested could not be found: ${ name }`);
-                    }
-                }
+                // for (const name of opts.patternList) {
+                //     if (this.patternNames.indexOf(name) < 0) {
+                //         throw new Error(`A pattern you requested could not be found: ${ name }`);
+                //     }
+                // }
                 this.options.patternList = opts.patternList;
-            } else {
-                this.options.patternList = this.patternNames;
             }
         }
 
@@ -146,9 +301,23 @@ export abstract class RendererBase {
         }
     }
 
-    protected loadPattern(name: string, canvas: Svg): void {
+    /**
+     * Loads any requested patterns into the final SVG.
+     *
+     * @protected
+     * @param {string} name
+     * @param {Svg} canvas
+     * @memberof RendererBase
+     */
+    protected loadPattern(name: string, canvas?: Svg): void {
+        if (canvas === undefined) {
+            if (this.rootSvg === undefined) {
+                throw new Error("Object in an invalid state!");
+            }
+            canvas = this.rootSvg;
+        }
         // Keep in alphabetical order.
-        // If you change any `id`s, you need to change them in the `patternsBW` property, too.
+        // If you change any `id`s, you need to change them in the constructor, too.
 
         switch (name) {
             case "chevrons":
@@ -186,7 +355,23 @@ export abstract class RendererBase {
         }
     }
 
-    protected loadGlyph(glyph: string, sheetList: string[], canvas: Svg): SVGSymbol {
+    /**
+     * Goes through the list of sheets until it finds a matching glyph and adds it to the given Svg.
+     * This is where glyph replacement happens (via `this.options.glyphmap`).
+     *
+     * @protected
+     * @param {string} glyph
+     * @param {Svg} [canvas]
+     * @returns {SVGSymbol}
+     * @memberof RendererBase
+     */
+    protected loadGlyph(glyph: string, canvas?: Svg): SVGSymbol {
+        if (canvas === undefined) {
+            if (this.rootSvg === undefined) {
+                throw new Error("Object in an invalid state!");
+            }
+            canvas = this.rootSvg;
+        }
         // check for substituted glyphs
         if (this.options.glyphmap.length > 0) {
             const idx = this.options.glyphmap.findIndex(t => t[0] === glyph);
@@ -194,7 +379,7 @@ export abstract class RendererBase {
                 glyph = this.options.glyphmap[idx][1];
             }
         }
-        for (const s of sheetList) {
+        for (const s of this.options.sheets) {
             const sheet = sheets.get(s);
             if (sheet !== undefined) {
                 const func = sheet.glyphs.get(glyph);
@@ -205,17 +390,27 @@ export abstract class RendererBase {
                 throw new Error("Could not load the glyph sheet '" + s + "'");
             }
         }
-        throw new Error("The glyph '" + glyph + "' could not be found in the requested sheets: " + sheetList.join(", "));
+        throw new Error("The glyph '" + glyph + "' could not be found in the requested sheets: " + this.options.sheets.join(", "));
     }
 
-    protected loadLegend(json: APRenderRep, draw: Svg) {
-        if ( ("legend" in json) && (json.legend !== undefined) ) {
+    /**
+     * This function loads all the glyphs from the `legend` into the given Svg.
+     * It deals with text glyphs and composite glyphs, including filling with colours, rotating, and scaling.
+     *
+     * @protected
+     * @memberof RendererBase
+     */
+    protected loadLegend() {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+        if ( ("legend" in this.json) && (this.json.legend !== undefined) ) {
             // Load any requested patterns
             if (this.options.patterns) {
                 const patterns: Array<number> = new Array();
                 // tslint:disable-next-line: forin
-                for (const key in json.legend) {
-                    const node = json.legend[key];
+                for (const key in this.json.legend) {
+                    const node = this.json.legend[key];
                     if (typeof(node) !== "string") {
                         let glyphs: Array<Glyph>;
                         if (! Array.isArray(node)) {
@@ -236,14 +431,14 @@ export abstract class RendererBase {
                     if (n > this.options.patternList.length) {
                         throw new Error("The system does not support the number of patterns you have requested.");
                     }
-                    this.loadPattern(this.options.patternList[n - 1], draw);
+                    this.loadPattern(this.options.patternList[n - 1]);
                 });
             }
 
             // Now look for composite and coloured pieces and add those to the <defs> section for placement
             // tslint:disable-next-line: forin
-            for (const key in json.legend) {
-                const glyph = json.legend[key];
+            for (const key in this.json.legend) {
+                const glyph = this.json.legend[key];
                 let glyphs: Array<Glyph>;
                 if (typeof glyph === "string") {
                     glyphs = [{name: glyph}];
@@ -255,13 +450,13 @@ export abstract class RendererBase {
 
                 // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                 const cellsize = 500;
-                const nested = draw.defs().nested().id(key).size(cellsize, cellsize);
+                const nested = this.rootSvg.defs().nested().id(key).size(cellsize, cellsize);
 
                 // Layer the glyphs, manipulating as you go
-                glyphs.forEach((glyph) => {
+                for (const glyph of glyphs) {
                     let got: SVGSymbol;
                     if ( ("name" in glyph) && (glyph.name !== undefined) ) {
-                        got = this.loadGlyph(glyph.name, this.options.sheets, nested);
+                        got = this.loadGlyph(glyph.name, nested);
                     } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;
@@ -271,7 +466,7 @@ export abstract class RendererBase {
                             size: fontsize,
                         });
                         text.attr("data-playerfill", true);
-                        const temptext = draw.text(glyph.text).font({
+                        const temptext = this.rootSvg.text(glyph.text).font({
                             anchor: "start",
                             fill: "#000",
                             size: fontsize,
@@ -303,11 +498,11 @@ export abstract class RendererBase {
                                 throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                             }
                             const useSize = sheetCellSize;
-                            let fill = draw.findOne("#" + this.options.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
+                            let fill = this.rootSvg.findOne("#" + this.options.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
                             if (fill === null) {
-                                fill = draw.findOne("#" + this.options.patternList[glyph.player - 1]) as SVGElement;
+                                fill = this.rootSvg.findOne("#" + this.options.patternList[glyph.player - 1]) as SVGElement;
                                 fill = fill.clone().id(this.options.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
-                                draw.defs().add(fill);
+                                this.rootSvg.defs().add(fill);
                             }
                             clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         } else {
@@ -339,7 +534,7 @@ export abstract class RendererBase {
                     if (glyph.scale !== undefined) {
                         factor = glyph.scale;
                     }
-                    if ( ("board" in json) && (json.board !== undefined) && (json.board !== null) && ("style" in json.board) && (json.board.style !== undefined) && (json.board.style === "hex-of-hex") ) {
+                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "hex-of-hex") ) {
                         if (factor === undefined) {
                             factor = 0.85;
                         } else {
@@ -362,62 +557,74 @@ export abstract class RendererBase {
                         }
                         use.dmove(dx, dy);
                     }
-                });
+                }
                 nested.viewbox(0, 0, cellsize, cellsize);
             }
         }
     }
 
-    protected squares(json: APRenderRep, draw: Svg): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+    /**
+     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates square boards of square cells. Points are the centre of each square.
+     *
+     * @protected
+     * @returns {GridPoints}
+     * @memberof RendererBase
+     */
+    protected squares(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = json.board.width as number;
-        const height: number = json.board.height as number;
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
         const cellsize = this.cellsize;
-        const style = json.board.style;
+        const style = this.json.board.style;
 
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         // Check for tiling
         let tilex: number = 0;
         let tiley: number = 0;
         let tileSpace: number = 0;
-        if (json.board.tileWidth !== undefined) {
-            tilex = json.board.tileWidth as number;
+        if (this.json.board.tileWidth !== undefined) {
+            tilex = this.json.board.tileWidth as number;
         }
-        if (json.board.tileHeight !== undefined) {
-            tiley = json.board.tileHeight as number;
+        if (this.json.board.tileHeight !== undefined) {
+            tiley = this.json.board.tileHeight as number;
         }
-        if (json.board.tileSpacing !== undefined) {
-            tileSpace = json.board.tileSpacing as number;
+        if (this.json.board.tileSpacing !== undefined) {
+            tileSpace = this.json.board.tileSpacing as number;
         }
 
         // Get a grid of points
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
-        const board = draw.group().id("board");
+        const board = this.rootSvg.group().id("board");
 
         // create buffer zone first if requested
         let bufferwidth = 0;
         let show: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
         // @ts-expect-error
-        if ( ("buffer" in json.board) && (json.board.buffer !== undefined) && ("width" in json.board.buffer) && (json.board.buffer.width !== undefined) && (json.board.buffer.width > 0) ) {
-            bufferwidth = cellsize * (json.board.buffer as IBuffer).width!;
+        if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
+            bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
             // @ts-expect-error
-            if ( ("show" in json.board.buffer) && (json.board.buffer.show !== undefined) && (Array.isArray(json.board.buffer.show)) && (json.board.buffer.show.length > 0) ) {
-                show = [...(json.board.buffer as IBuffer).show!];
+            if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && (this.json.board.buffer.show.length > 0) ) {
+                show = [...(this.json.board.buffer as IBuffer).show!];
             }
             // adjust `show` to account for rotation
             const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
@@ -430,15 +637,15 @@ export abstract class RendererBase {
             }
             let pattern: string | undefined;
             // @ts-expect-error
-            if ( ("pattern" in json.board.buffer) && (json.board.buffer.pattern !== undefined) && (json.board.buffer.pattern.length > 0) ) {
-                pattern = (json.board.buffer as IBuffer).pattern;
+            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
+                pattern = (this.json.board.buffer as IBuffer).pattern;
             }
             if (pattern !== undefined) {
-                this.loadPattern(pattern, draw);
+                this.loadPattern(pattern);
             }
             let fill: SVGElement | undefined;
             if (pattern !== undefined) {
-                fill = draw.findOne(`#${pattern}`) as SVGElement;
+                fill = this.rootSvg.findOne(`#${pattern}`) as SVGElement;
                 if (fill === undefined) {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }
@@ -551,13 +758,13 @@ export abstract class RendererBase {
         // Now the tiles
         if (style === "squares-checkered") {
             // Load glyphs for light and dark squares
-            const tileDark = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileDark = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
             tileDark.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill(baseColour)
                 .opacity(baseOpacity * 0.25)
                 .stroke({width: 0});
-            const tileLight = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileLight = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
             tileLight.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill({color: "#ffffff", opacity: 0})
@@ -590,7 +797,7 @@ export abstract class RendererBase {
                 }
             }
         } else if (tileSpace > 0) {
-            const tileLight = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileLight = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
             tileLight.rect(cellsize, cellsize)
                 .fill({color: "#ffffff", opacity: 0})
                 .stroke({width: 0});
@@ -690,7 +897,7 @@ export abstract class RendererBase {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = draw.point(e.clientX, e.clientY);
+                const point = this.rootSvg!.point(e.clientX, e.clientY);
                 const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                 if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -699,7 +906,7 @@ export abstract class RendererBase {
             });
             if (this.options.rotate === 180) {
                 genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = draw.point(e.clientX, e.clientY);
+                    const point = this.rootSvg!.point(e.clientX, e.clientY);
                     const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                     const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                     if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -707,7 +914,7 @@ export abstract class RendererBase {
                     }
                 });
             }
-            draw.click(genericCatcher);
+            this.rootSvg.click(genericCatcher);
         }
 
         // Make an expanded grid for markers, to accommodate edge marking and shading
@@ -719,61 +926,73 @@ export abstract class RendererBase {
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
-        this.markBoard(json, gridlines, grid, this.options, gridExpanded);
+        this.markBoard(gridlines, grid, gridExpanded);
 
         return grid;
     }
 
-    protected vertex(json: APRenderRep, draw: Svg): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+    /**
+     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates square boards where the points are placed on the intersections of lines.
+     *
+     * @protected
+     * @returns {GridPoints}
+     * @memberof RendererBase
+     */
+    protected vertex(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = json.board.width as number;
-        const height: number = json.board.height as number;
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
         const cellsize = this.cellsize;
-        const style = json.board.style;
+        const style = this.json.board.style;
 
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         // Check for tiling
         let tilex: number = 0;
         let tiley: number = 0;
         let tileSpace: number = 0;
-        if (json.board.tileWidth !== undefined) {
-            tilex = json.board.tileWidth as number;
+        if (this.json.board.tileWidth !== undefined) {
+            tilex = this.json.board.tileWidth as number;
         }
-        if (json.board.tileHeight !== undefined) {
-            tiley = json.board.tileHeight as number;
+        if (this.json.board.tileHeight !== undefined) {
+            tiley = this.json.board.tileHeight as number;
         }
-        if (json.board.tileSpacing !== undefined) {
-            tileSpace = json.board.tileSpacing as number;
+        if (this.json.board.tileSpacing !== undefined) {
+            tileSpace = this.json.board.tileSpacing as number;
         }
 
         // Get a grid of points
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
-        const board = draw.group().id("board");
+        const board = this.rootSvg.group().id("board");
 
         // create buffer zone first if requested
         let bufferwidth = 0;
         let show: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
         // @ts-expect-error
-        if ( ("buffer" in json.board) && (json.board.buffer !== undefined) && ("width" in json.board.buffer) && (json.board.buffer.width !== undefined) && (json.board.buffer.width > 0) ) {
-            bufferwidth = cellsize * (json.board.buffer as IBuffer).width!;
+        if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
+            bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
             // @ts-expect-error
-            if ( ("show" in json.board.buffer) && (json.board.buffer.show !== undefined) && (Array.isArray(json.board.buffer.show)) && (json.board.buffer.show.length > 0) ) {
-                show = [...(json.board.buffer as IBuffer).show!];
+            if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && (this.json.board.buffer.show.length > 0) ) {
+                show = [...(this.json.board.buffer as IBuffer).show!];
             }
             // adjust `show` to account for rotation
             const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
@@ -786,15 +1005,15 @@ export abstract class RendererBase {
             }
             let pattern: string | undefined;
             // @ts-expect-error
-            if ( ("pattern" in json.board.buffer) && (json.board.buffer.pattern !== undefined) && (json.board.buffer.pattern.length > 0) ) {
-                pattern = (json.board.buffer as IBuffer).pattern;
+            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
+                pattern = (this.json.board.buffer as IBuffer).pattern;
             }
             if (pattern !== undefined) {
-                this.loadPattern(pattern, draw);
+                this.loadPattern(pattern);
             }
             let fill: SVGElement | undefined;
             if (pattern !== undefined) {
-                fill = draw.findOne(`#${pattern}`) as SVGElement;
+                fill = this.rootSvg.findOne(`#${pattern}`) as SVGElement;
                 if (fill === undefined) {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }
@@ -1019,13 +1238,13 @@ export abstract class RendererBase {
         }
 
         if (this.options.boardClick !== undefined) {
-            if ( (json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
+            if ( (this.json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
                 const originX = grid[0][0].x;
                 const originY = grid[0][0].y;
                 const maxX = grid[0][grid[0].length - 1].x;
                 const maxY = grid[grid.length - 1][0].y;
                 let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = draw.point(e.clientX, e.clientY);
+                    const point = this.rootSvg!.point(e.clientX, e.clientY);
                     const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                     const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                     if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -1037,7 +1256,7 @@ export abstract class RendererBase {
                 });
                 if (this.options.rotate === 180) {
                     genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                        const point = draw.point(e.clientX, e.clientY);
+                        const point = this.rootSvg!.point(e.clientX, e.clientY);
                         const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                         const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                         if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -1048,10 +1267,10 @@ export abstract class RendererBase {
                         }
                     });
                 }
-                draw.click(genericCatcher);
+                this.rootSvg.click(genericCatcher);
             } else {
-                const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
-                const tiles = draw.group().id("tiles");
+                const tile = this.rootSvg.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+                const tiles = this.rootSvg.group().id("tiles");
                 for (let row = 0; row < grid.length; row++) {
                     for (let col = 0; col < grid[row].length; col++) {
                         const {x, y} = grid[row][col];
@@ -1086,32 +1305,45 @@ export abstract class RendererBase {
             });
         }
 
-        this.markBoard(json, gridlines, grid, this.options);
+        this.markBoard(gridlines, grid);
 
         return grid;
     }
 
-    protected rectOfHex(json: APRenderRep, draw: Svg): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+    /**
+     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates rectangular fields of hexes in various orientations.
+     * It relies on a third-party library to do the heavy lifting.
+     *
+     * @protected
+     * @returns {GridPoints}
+     * @memberof RendererBase
+     */
+    protected rectOfHex(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = json.board.width as number;
-        const height: number = json.board.height as number;
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
         const cellsize = this.cellsize * 0.8;
-        const style = json.board.style;
+        const style = this.json.board.style;
 
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         // Get a grid of points
@@ -1133,13 +1365,13 @@ export abstract class RendererBase {
         });
         const grid = defineGrid(Hex);
         const corners = Hex().corners();
-        const hexSymbol = draw.symbol()
+        const hexSymbol = this.rootSvg.symbol()
             .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
             .fill("white").opacity(1)
             .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
 
-        const board = draw.group().id("board");
-        const labels = draw.group().id("labels");
+        const board = this.rootSvg.group().id("board");
+        const labels = this.rootSvg.group().id("labels");
         const rect = grid.rectangle({width, height});
         const fontSize = this.cellsize / 5;
         for (const hex of rect) {
@@ -1185,36 +1417,48 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, board, gridPoints, this.options);
+        this.markBoard(board, gridPoints);
 
         return gridPoints;
     }
 
-    protected snubSquare(json: APRenderRep, draw: Svg): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("width" in json.board)) || (! ("height" in json.board)) || (json.board.width === undefined) || (json.board.height === undefined) ) {
+    /**
+     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates snubsquare boards, which are a unique configuration where each cells is connected to five others.
+     *
+     * @protected
+     * @returns {GridPoints}
+     * @memberof RendererBase
+     */
+    protected snubSquare(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = json.board.width as number;
-        const height: number = json.board.height as number;
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
         const cellsize = this.cellsize;
 
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         // Get a grid of points
         let grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
-        const board = draw.group().id("board");
+        const board = this.rootSvg.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
@@ -1295,8 +1539,8 @@ export abstract class RendererBase {
 
         // If click handler is present, add transparent "click catcher" tiles over the points
         if (this.options.boardClick !== undefined) {
-            const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
-            const tiles = draw.group().id("tiles");
+            const tile = this.rootSvg.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+            const tiles = this.rootSvg.group().id("tiles");
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
                     const {x, y} = grid[row][col];
@@ -1315,37 +1559,49 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, this.options);
+        this.markBoard(gridlines, grid);
 
         return grid;
     }
 
-    protected hexOfTri(json: APRenderRep, draw: Svg): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+    /**
+     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a hexagonal-shaped field of triangles where the pieces are placed on line intersections.
+     *
+     * @protected
+     * @returns {GridPoints}
+     * @memberof RendererBase
+     */
+    protected hexOfTri(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("minWidth" in this.json.board)) || (! ("maxWidth" in this.json.board)) || (this.json.board.minWidth === undefined) || (this.json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = json.board.minWidth as number;
-        const maxWidth: number = json.board.maxWidth as number;
+        const minWidth: number = this.json.board.minWidth as number;
+        const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         // Get a grid of points
         let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
-        const board = draw.group().id("board");
+        const board = this.rootSvg.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
@@ -1423,8 +1679,8 @@ export abstract class RendererBase {
 
         // If click handler is present, add transparent "click catcher" tiles over the points
         if (this.options.boardClick !== undefined) {
-            const tile = draw.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
-            const tiles = draw.group().id("tiles");
+            const tile = this.rootSvg.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+            const tiles = this.rootSvg.group().id("tiles");
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
                     const {x, y} = grid[row][col];
@@ -1443,37 +1699,49 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, this.options);
+        this.markBoard(gridlines, grid);
 
         return grid;
     }
 
-    protected hexOfCir(json: APRenderRep, draw: Svg): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+    /**
+     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a hexagonal field of circles.
+     *
+     * @protected
+     * @returns {GridPoints}
+     * @memberof RendererBase
+     */
+    protected hexOfCir(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("minWidth" in this.json.board)) || (! ("maxWidth" in this.json.board)) || (this.json.board.minWidth === undefined) || (this.json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = json.board.minWidth as number;
-        const maxWidth: number = json.board.maxWidth as number;
+        const minWidth: number = this.json.board.minWidth as number;
+        const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         // Get a grid of points
         let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
-        const board = draw.group().id("board");
+        const board = this.rootSvg.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
@@ -1498,7 +1766,7 @@ export abstract class RendererBase {
 
         // Draw circles
         const gridlines = board.group().id("circles");
-        const circle = draw.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+        const circle = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
         circle.circle(cellsize)
             .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
@@ -1520,37 +1788,49 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, this.options);
+        this.markBoard(gridlines, grid);
 
         return grid;
     }
 
-    protected hexOfHex(json: APRenderRep, draw: Svg): GridPoints {
-        // Check required properites
-        if ( (json.board === null) || (! ("minWidth" in json.board)) || (! ("maxWidth" in json.board)) || (json.board.minWidth === undefined) || (json.board.maxWidth === undefined) ) {
+    /**
+     * This a grid point generator that draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a hexagonal field of hexes. Unlike {@link rectOfHex}, this does not require any third-party library.
+     *
+     * @protected
+     * @returns {GridPoints}
+     * @memberof RendererBase
+     */
+    protected hexOfHex(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("minWidth" in this.json.board)) || (! ("maxWidth" in this.json.board)) || (this.json.board.minWidth === undefined) || (this.json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = json.board.minWidth as number;
-        const maxWidth: number = json.board.maxWidth as number;
+        const minWidth: number = this.json.board.minWidth as number;
+        const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         // Get a grid of points
         let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
-        const board = draw.group().id("board");
+        const board = this.rootSvg.group().id("board");
 
         // Add board labels
         const labels = board.group().id("labels");
@@ -1596,7 +1876,7 @@ export abstract class RendererBase {
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
         const gridlines = board.group().id("hexes");
-        const hex = draw.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
+        const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
         hex.polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
             .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
@@ -1617,18 +1897,30 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(json, gridlines, grid, this.options);
+        this.markBoard(gridlines, grid);
 
         return grid;
     }
 
-    protected annotateBoard(json: APRenderRep, draw: Svg, grid: GridPoints) {
-        if ( ("annotations" in json) && (json.annotations !== undefined) ) {
-            const notes = draw.group().id("annotations");
+    /**
+     * This is what applies annotations to a finished board.
+     * Annotations are applied at the end, and so overlay pieces.
+     *
+     * @protected
+     * @param {GridPoints} grid The map of row/column to x/y created by one of the grid point generators.
+     * @memberof RendererBase
+     */
+    protected annotateBoard(grid: GridPoints) {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
+            const notes = this.rootSvg.group().id("annotations");
             const rIncrement = this.cellsize / 2;
             let radius = rIncrement;
             let direction = 1;
-            for (const note of json.annotations) {
+            for (const note of this.json.annotations) {
                 if ( (note.type !== undefined) && (note.type === "move") ) {
                     if ((note.targets as any[]).length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");
@@ -1780,22 +2072,35 @@ export abstract class RendererBase {
         }
     }
 
-    protected markBoard(json: APRenderRep, svgGroup: SVGG, grid: GridPoints, opts: IRendererOptionsOut, gridExpanded?: GridPoints): void {
-        if ( ("board" in json) && (json.board !== undefined) && ("markers" in json.board!) && (json.board.markers !== undefined) && (Array.isArray(json.board.markers)) && (json.board.markers.length > 0) ) {
+    /**
+     * Markers are placed right after the board itself is generated, and so are obscured by placed pieces.
+     *
+     * @protected
+     * @param {SVGG} svgGroup The SVG `<group>` you want to add the markers too. This is just for the sake of organization.
+     * @param {GridPoints} grid The map of row/column to x/y created by one of the grid point generators.
+     * @param {GridPoints} [gridExpanded] Square maps need to be expanded a little for all the markers to work. If provided, this is what will be used.
+     * @memberof RendererBase
+     */
+    protected markBoard(svgGroup: SVGG, grid: GridPoints, gridExpanded?: GridPoints): void {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        if ( ("board" in this.json) && (this.json.board !== undefined) && ("markers" in this.json.board!) && (this.json.board.markers !== undefined) && (Array.isArray(this.json.board.markers)) && (this.json.board.markers.length > 0) ) {
             let baseStroke: number = 1;
             let baseColour: string = "#000";
             let baseOpacity: number = 1;
-            if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-                baseStroke = json.board.strokeWeight;
+            if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+                baseStroke = this.json.board.strokeWeight;
             }
-            if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-                baseColour = json.board.strokeColour;
+            if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+                baseColour = this.json.board.strokeColour;
             }
-            if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-                baseOpacity = json.board.strokeOpacity;
+            if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+                baseOpacity = this.json.board.strokeOpacity;
             }
 
-            for (const marker of json.board.markers) {
+            for (const marker of this.json.board.markers) {
                 if (marker.type === "dots") {
                     const pts: [number, number][] = [];
                     for (const point of marker.points) {
@@ -1813,7 +2118,7 @@ export abstract class RendererBase {
                     let colour = "#000";
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
-                            colour = opts.colours[marker.colour - 1];
+                            colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour;
                         }
@@ -1823,7 +2128,7 @@ export abstract class RendererBase {
                         opacity = marker.opacity;
                     }
                     const points: [number, number][] = [];
-                    if ( (json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                    if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
                         for (const point of marker.points) {
                             points.push([gridExpanded[point.row][point.col].x, gridExpanded[point.row][point.col].y]);
                         }
@@ -1838,13 +2143,13 @@ export abstract class RendererBase {
                     let colour = "#000";
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
-                            colour = opts.colours[marker.colour - 1];
+                            colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour;
                         }
                     }
                     const opacity = baseOpacity + ((1 - baseOpacity) / 2);
-                    const style = json.board.style;
+                    const style = this.json.board.style;
                     if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
@@ -1953,12 +2258,12 @@ export abstract class RendererBase {
                     let colour = "#000";
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
-                            colour = opts.colours[marker.colour - 1];
+                            colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour;
                         }
                     }
-                    const style = json.board.style;
+                    const style = this.json.board.style;
                     if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
                         const row: number = marker.cell.row;
                         const col: number = marker.cell.col;
@@ -2023,6 +2328,16 @@ export abstract class RendererBase {
     }
 
     // NOT GENERAL. Assumes we are only drawing in increments of 45 degrees
+    /**
+     * An internal helper function for generating `eject` annotations.
+     *
+     * @private
+     * @param {IPoint} from
+     * @param {IPoint} to
+     * @param {number} delta
+     * @returns {IPoint}
+     * @memberof RendererBase
+     */
     private getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
         const m: IPoint = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
         let dir = "";

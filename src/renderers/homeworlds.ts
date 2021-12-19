@@ -20,6 +20,13 @@ interface ISystem {
     highlight?: number;
 }
 
+/**
+ * This is the Homeworlds-specific renderer that generates the wholly unique images needed for the game.
+ *
+ * @export
+ * @class HomeworldsRenderer
+ * @extends {RendererBase}
+ */
 export class HomeworldsRenderer extends RendererBase {
 
     constructor() {
@@ -27,32 +34,36 @@ export class HomeworldsRenderer extends RendererBase {
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
-        json = this.jsonPrechecks(json);
+        this.jsonPrechecks(json);
+        if (this.json === undefined) {
+            throw new Error("JSON prechecks fatally failed.");
+        }
         this.optionsPrecheck(options);
+        this.rootSvg = draw;
 
         // BOARD
-        if ( (! Array.isArray(json.board)) || ( (json.board.length > 0) && (! json.board[0].hasOwnProperty("stars")) ) ) {
+        if ( (! Array.isArray(this.json.board)) || ( (this.json.board.length > 0) && (! this.json.board[0].hasOwnProperty("stars")) ) ) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
 
         // `board` and `pieces` array have to be the same length
-        if (! Array.isArray(json.pieces)) {
+        if (! Array.isArray(this.json.pieces)) {
             throw new Error("The `pieces` element must be an array.");
         }
-        if (json.board.length !== json.pieces.length) {
+        if (this.json.board.length !== this.json.pieces.length) {
             throw new Error("The `board` and `pieces` arrays must be the same length.");
         }
 
         // PIECES
         // Load all the pieces in the legend
-        this.loadLegend(json, draw);
+        this.loadLegend();
 
         // Extract the systems and ships and compose them into two groups: home and peripheral
         const sysHome: ISystem[] = [];
         const sysPeriph: ISystem[] = [];
-        for (let i = 0; i < json.board.length; i++) {
-            const sys = json.board[i];
-            const shps = json.pieces[i] as string[];
+        for (let i = 0; i < this.json.board.length; i++) {
+            const sys = this.json.board[i];
+            const shps = this.json.pieces[i] as string[];
             const node: ISystem = {
                 name: sys.name,
                 seat: sys.seat,
@@ -60,8 +71,8 @@ export class HomeworldsRenderer extends RendererBase {
                 // tslint:disable-next-line: object-literal-sort-keys
                 ships: [...shps],
             };
-            if ( ("annotations" in json) && (json.annotations !== undefined) ) {
-                const note = json.annotations.find((n) => n.system === node.name);
+            if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
+                const note = this.json.annotations.find((n) => n.system === node.name);
                 if (note !== undefined) {
                     node.highlight = note.action as number;
                 }
@@ -135,7 +146,7 @@ export class HomeworldsRenderer extends RendererBase {
                 bordercolour = this.options.colours[sys.highlight - 1];
             }
 
-            this.genSystem(draw, `_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, bordercolour);
+            this.genSystem(`_sysHome_${sys.seat}`, `${sys.name} (${sys.seat})`, ports, bordercolour);
         });
 
         // Peripheral systems
@@ -168,9 +179,8 @@ export class HomeworldsRenderer extends RendererBase {
                 bordercolour = this.options.colours[sys.highlight - 1];
             }
 
-            this.genSystem(draw, `_sysPeriph_${sys.name}`, sys.name, ports, bordercolour);
+            this.genSystem(`_sysPeriph_${sys.name}`, sys.name, ports, bordercolour);
         });
-        // this.genUncharted(draw, opts);
 
         // Now plot those systems on the game board
         // Calc number of peripheral rows and columns
@@ -198,7 +208,7 @@ export class HomeworldsRenderer extends RendererBase {
         const grid = rectOfRects({cellSize: 250, gridHeight: prows, gridWidth: pcols});
 
         // Place peripheral systems first
-        const group = draw.group().id("systems");
+        const group = this.rootSvg.group().id("systems");
         for (let row = 0; row < prows; row++) {
             for (let col = 0; col < pcols; col++) {
                 const idx = (pcols * row) + col;
@@ -252,13 +262,13 @@ export class HomeworldsRenderer extends RendererBase {
         });
 
         // Place the stash
-        if ( (json.areas === undefined) || (! Array.isArray(json.areas)) || (json.areas.length !== 1) ) {
+        if ( (this.json.areas === undefined) || (! Array.isArray(this.json.areas)) || (this.json.areas.length !== 1) ) {
             throw new Error("One `area` must be defined.");
         }
-        if (Array.isArray(json.areas[0])) {
+        if (Array.isArray(this.json.areas[0])) {
             throw new Error("Malformed `areas` definition");
         }
-        const stash = json.areas[0];
+        const stash = this.json.areas[0];
         if ("stack" in stash) {
             throw new Error("Malformed stash. The properties 'R', 'B', 'G', and 'Y' are required.");
         }
@@ -267,7 +277,7 @@ export class HomeworldsRenderer extends RendererBase {
         }
         const stashCellSize = 75;
         const sgrid = rectOfRects({gridWidth: 3, gridHeight: 5, cellHeight: stashCellSize * 2, cellWidth: stashCellSize});
-        const sgroup = draw.group().id("stash"); // .size(stashCellSize * 3, stashCellSize * 8);
+        const sgroup = this.rootSvg.group().id("stash"); // .size(stashCellSize * 3, stashCellSize * 8);
         sgroup.text("Global Stash").fill("black").move(0, stashCellSize * -1);
 
         const colours = ["R", "B", "G", "Y"];
@@ -336,6 +346,15 @@ export class HomeworldsRenderer extends RendererBase {
         sgroup.move((250 + (sgroup.width() as number) + 10) * -1, -250);
     }
 
+    /**
+     * Helper function for determining the new orientation of pieces if the board is rotated.
+     *
+     * @private
+     * @param {Seat} seat
+     * @param {number} [deg]
+     * @returns {Seat}
+     * @memberof HomeworldsRenderer
+     */
     private effectiveSeat(seat: Seat, deg?: number): Seat {
         if ( (deg === undefined) || (deg === 0) ) {
             return seat;
@@ -354,14 +373,25 @@ export class HomeworldsRenderer extends RendererBase {
         return effSeat;
     }
 
-    private genSystem(draw: Svg, id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
+    /**
+     * Helper function that generates the individual systems
+     *
+     * @private
+     * @param {string} id The DOM ID that will be inserted into the SVG
+     * @param {string} name The name that will be rendered onto the system.
+     * @param {((string|undefined)[][])} ports The x/y coordinates of the various ports in the system.
+     * @param {string} [highlight] A colour to highlight the border with. This is used for the custom annotations.
+     * @returns {Svg}
+     * @memberof HomeworldsRenderer
+     */
+    private genSystem(id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
-        const nested = draw.defs().nested().id(id).size(250, 250).viewbox(0, 0, 250, 250);
+        const nested = this.rootSvg!.defs().nested().id(id).size(250, 250).viewbox(0, 0, 250, 250);
 
         // Add fill and border
         // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).
         // If size is a problem, this could be deleted and just fill the nested `rect` with `black` instead of `pattern`.
-        const pattern = draw.pattern(250, 250, (add) => {
+        const pattern = this.rootSvg!.pattern(250, 250, (add) => {
             add.rect(250, 250).fill("black");
             // Add 250 stars
             const n = Math.floor(Math.random() * 100) + 150;

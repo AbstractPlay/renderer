@@ -4,6 +4,13 @@ import { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
+/**
+ * This is the Entropy-specific renderer that handles the side-by-side rendering and optional occlusion.
+ *
+ * @export
+ * @class EntropyRenderer
+ * @extends {RendererBase}
+ */
 export class EntropyRenderer extends RendererBase {
 
     constructor() {
@@ -11,11 +18,15 @@ export class EntropyRenderer extends RendererBase {
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
-        json = this.jsonPrechecks(json);
+        this.jsonPrechecks(json);
+        if (this.json === undefined) {
+            throw new Error("JSON prechecks fatally failed.");
+        }
         this.optionsPrecheck(options);
+        this.rootSvg = draw;
 
         // BOARD
-        if ( (json.board === null) || (! ("style" in json.board)) || (json.board.style !== "entropy") ) {
+        if ( (this.json.board === null) || (! ("style" in this.json.board)) || (this.json.board.style !== "entropy") ) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
 
@@ -23,20 +34,20 @@ export class EntropyRenderer extends RendererBase {
         let label2 = "Player 2: Order";
         let occlude1 = false;
         let occlude2 = false;
-        if ( ("boardOne" in json.board) && (json.board.boardOne !== undefined) ) {
-            if ( ("label" in json.board.boardOne) && (json.board.boardOne.label !== undefined) ) {
-                label1 = json.board.boardOne.label;
+        if ( ("boardOne" in this.json.board) && (this.json.board.boardOne !== undefined) ) {
+            if ( ("label" in this.json.board.boardOne) && (this.json.board.boardOne.label !== undefined) ) {
+                label1 = this.json.board.boardOne.label;
             }
-            if ( ("occluded" in json.board.boardOne) && (json.board.boardOne.occluded !== undefined) ) {
-                occlude1 = json.board.boardOne.occluded;
+            if ( ("occluded" in this.json.board.boardOne) && (this.json.board.boardOne.occluded !== undefined) ) {
+                occlude1 = this.json.board.boardOne.occluded;
             }
         }
-        if ( ("boardTwo" in json.board) && (json.board.boardTwo !== undefined) ) {
-            if ( ("label" in json.board.boardTwo) && (json.board.boardTwo.label !== undefined) ) {
-                label2 = json.board.boardTwo.label;
+        if ( ("boardTwo" in this.json.board) && (this.json.board.boardTwo !== undefined) ) {
+            if ( ("label" in this.json.board.boardTwo) && (this.json.board.boardTwo.label !== undefined) ) {
+                label2 = this.json.board.boardTwo.label;
             }
-            if ( ("occluded" in json.board.boardTwo) && (json.board.boardTwo.occluded !== undefined) ) {
-                occlude2 = json.board.boardTwo.occluded;
+            if ( ("occluded" in this.json.board.boardTwo) && (this.json.board.boardTwo.occluded !== undefined) ) {
+                occlude2 = this.json.board.boardTwo.occluded;
             }
         }
 
@@ -44,14 +55,14 @@ export class EntropyRenderer extends RendererBase {
         let baseStroke: number = 1;
         let baseColour: string = "#000";
         let baseOpacity: number = 1;
-        if ( ("strokeWeight" in json.board) && (json.board.strokeWeight !== undefined) ) {
-            baseStroke = json.board.strokeWeight;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
         }
-        if ( ("strokeColour" in json.board) && (json.board.strokeColour !== undefined) ) {
-            baseColour = json.board.strokeColour;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
         }
-        if ( ("strokeOpacity" in json.board) && (json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = json.board.strokeOpacity;
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
         }
 
         const width = 7;
@@ -61,7 +72,7 @@ export class EntropyRenderer extends RendererBase {
         const grid1 = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         let startx = boardOffset;
         let starty = 0;
-        if ( (json.board.orientation !== undefined) && (json.board.orientation === "vertical") ) {
+        if ( (this.json.board.orientation !== undefined) && (this.json.board.orientation === "vertical") ) {
             startx = 0;
             starty = boardOffset;
         }
@@ -78,13 +89,13 @@ export class EntropyRenderer extends RendererBase {
                 boardlabel = label2;
             }
             let titlePoint: IPoint = {x: 0, y: 0};
-            if (json.board.orientation === "vertical") {
+            if (this.json.board.orientation === "vertical") {
                 titlePoint = {x: grid[0][0].x - (cellsize * 1.5), y: grid[3][0].y};
             } else {
                 titlePoint = {x: grid[0][3].x, y: grid[0][0].y - (cellsize * 1.5)};
             }
 
-            const board = draw.group().id(boardid);
+            const board = this.rootSvg.group().id(boardid);
 
             // Add board labels
             const labels = board.group().id("labels");
@@ -94,7 +105,7 @@ export class EntropyRenderer extends RendererBase {
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
                 labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
                 // Skip top labels for board two if vertical
-                if ( (grid !== grid2) || (json.board.orientation !== "vertical") ) {
+                if ( (grid !== grid2) || (this.json.board.orientation !== "vertical") ) {
                     labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
             }
@@ -105,19 +116,19 @@ export class EntropyRenderer extends RendererBase {
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
                 labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 // Skip left-hand labels for board two if horizontal
-                if ( (grid !== grid2) || (json.board.orientation !== "horizontal") ) {
+                if ( (grid !== grid2) || (this.json.board.orientation !== "horizontal") ) {
                     labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
                 }
             }
 
             // Titles
             const title = labels.text(boardlabel).fill(baseColour).opacity(baseOpacity).font({weight: "bold"}).center(titlePoint.x, titlePoint.y);
-            if (json.board.orientation === "vertical") {
+            if (this.json.board.orientation === "vertical") {
                 title.rotate(-90, titlePoint.x, titlePoint.y);
             }
 
             // Draw grid lines
-            const gridlines = draw.group().id("gridlines");
+            const gridlines = this.rootSvg.group().id("gridlines");
             // Horizontal, top of each row, then bottom line after loop
             for (let row = 0; row < height; row++) {
                 const x1 = grid[row][0].x - (cellsize / 2);
@@ -149,18 +160,18 @@ export class EntropyRenderer extends RendererBase {
 
         // PIECES
         // Load all the pieces in the legend
-        this.loadLegend(json, draw);
+        this.loadLegend();
 
         // Now place the pieces
-        const group = draw.group().id("pieces");
-        if (json.pieces !== null) {
+        const group = this.rootSvg.group().id("pieces");
+        if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = new Array();
 
-            if (typeof json.pieces === "string") {
+            if (typeof this.json.pieces === "string") {
                 // Does it contain commas
-                if (json.pieces.indexOf(",") >= 0) {
-                    for (const row of json.pieces.split("\n")) {
+                if (this.json.pieces.indexOf(",") >= 0) {
+                    for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
                             node = new Array(width * 2).fill([]);
@@ -172,7 +183,7 @@ export class EntropyRenderer extends RendererBase {
                         pieces.push(node);
                     }
                 } else {
-                    for (const row of json.pieces.split("\n")) {
+                    for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
                             node = new Array(width).fill([]);
@@ -183,8 +194,8 @@ export class EntropyRenderer extends RendererBase {
                         pieces.push(node);
                     }
                 }
-            } else if ( (json.pieces instanceof Array) && (json.pieces[0] instanceof Array) && (json.pieces[0][0] instanceof Array) ) {
-                pieces = json.pieces as string[][][];
+            } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
+                pieces = this.json.pieces as string[][][];
             } else {
                 throw new Error("Unrecognized `pieces` property.");
             }
@@ -225,8 +236,8 @@ export class EntropyRenderer extends RendererBase {
         }
 
         for (const grid of [grid1, grid2]) {
-            const tile = draw.defs().rect(this.cellsize * 0.95, this.cellsize * 0.95).fill("#fff").opacity(0).id("_clickCatcher");
-            const tiles = draw.group().id("tiles");
+            const tile = this.rootSvg.defs().rect(this.cellsize * 0.95, this.cellsize * 0.95).fill("#fff").opacity(0).id("_clickCatcher");
+            const tiles = this.rootSvg.group().id("tiles");
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
                     const {x, y} = grid[row][col];
@@ -242,12 +253,12 @@ export class EntropyRenderer extends RendererBase {
         if (occlude1) {
             const topleft: IPoint = {x: grid1[0][0].x - (cellsize / 2), y: grid1[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid1[6][6].x + (cellsize / 2), y: grid1[6][6].y + (cellsize / 2)};
-            draw.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.85);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.85);
         }
         if (occlude2) {
             const topleft: IPoint = {x: grid2[0][0].x - (cellsize / 2), y: grid2[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid2[6][6].x + (cellsize / 2), y: grid2[6][6].y + (cellsize / 2)};
-            draw.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.85);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.85);
         }
 
         // Finally, annotations
@@ -256,7 +267,7 @@ export class EntropyRenderer extends RendererBase {
             for (let i = 0; i < grid1.length; i++) {
                 gridPoints[i].push(...grid2[i]);
             }
-            this.annotateBoard(json, draw, gridPoints);
+            this.annotateBoard(gridPoints);
         }
     }
 }

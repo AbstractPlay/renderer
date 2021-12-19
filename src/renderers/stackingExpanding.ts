@@ -10,6 +10,13 @@ interface ILocalStash {
     stash: string[][];
 }
 
+/**
+ * This is the `stacking-expanding` renderer that handles things like local stashes and the expanded stack column.
+ *
+ * @export
+ * @class StackingExpandingRenderer
+ * @extends {RendererBase}
+ */
 export class StackingExpandingRenderer extends RendererBase {
 
     constructor() {
@@ -17,21 +24,25 @@ export class StackingExpandingRenderer extends RendererBase {
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
-        json = this.jsonPrechecks(json);
+        this.jsonPrechecks(json);
+        if (this.json === undefined) {
+            throw new Error("JSON prechecks fatally failed.");
+        }
         this.optionsPrecheck(options);
         this.options.rotate = 0;
+        this.rootSvg = draw;
 
-        if (json.board === null) {
+        if (this.json.board === null) {
             // Load all the pieces in the legend
-            this.loadLegend(json, draw);
+            this.loadLegend();
 
-            if ( (json.areas !== undefined) && (Array.isArray(json.areas)) && (json.areas.length > 0) ) {
-                const area = json.areas.find((x) => x.type === "expandedColumn");
+            if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+                const area = this.json.areas.find((x) => x.type === "expandedColumn");
                 if (area !== undefined) {
                     // Create a group to store the column and place all the pieces at 0,0 within it
                     const columnWidth = this.cellsize * 1;
                     const used: [SVGUse, number][] = [];
-                    const nested = draw.group().id("_expansion").width(columnWidth);
+                    const nested = this.rootSvg.group().id("_expansion").width(columnWidth);
                     for (const p of (area.stack as string[]).reverse()) {
                         const piece = SVG("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
@@ -71,48 +82,48 @@ export class StackingExpandingRenderer extends RendererBase {
             // BOARD
             // Delegate to style-specific renderer
             let gridPoints: GridPoints;
-            if (! ("style" in json.board)) {
+            if (! ("style" in this.json.board)) {
                 throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
             }
-            switch (json.board.style) {
+            switch (this.json.board.style) {
                 case "squares-checkered":
                 case "squares":
-                    gridPoints = this.squares(json, draw);
+                    gridPoints = this.squares();
                     break;
                 case "go":
-                    json.board.width = 19;
-                    json.board.height = 19;
+                    this.json.board.width = 19;
+                    this.json.board.height = 19;
                 case "vertex":
                 case "vertex-cross":
-                    gridPoints = this.vertex(json, draw);
+                    gridPoints = this.vertex();
                     break;
                 case "snubsquare":
-                    gridPoints = this.snubSquare(json, draw);
+                    gridPoints = this.snubSquare();
                     break;
                 case "hex-of-hex":
-                    gridPoints = this.hexOfHex(json, draw);
+                    gridPoints = this.hexOfHex();
                     break;
                 case "hex-of-tri":
-                    gridPoints = this.hexOfTri(json, draw);
+                    gridPoints = this.hexOfTri();
                     break;
                 case "hex-of-cir":
-                    gridPoints = this.hexOfCir(json, draw);
+                    gridPoints = this.hexOfCir();
                     break;
                 default:
-                    throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
+                    throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ this.name }' renderer.`);
             }
 
             // PIECES
             // Load all the pieces in the legend
-            this.loadLegend(json, draw);
+            this.loadLegend();
 
             // Now place the pieces
-            const group = draw.group().id("pieces");
-            if (json.pieces !== null) {
+            const group = this.rootSvg.group().id("pieces");
+            if (this.json.pieces !== null) {
                 // Generate pieces array
                 let pieces: string[][][] = new Array();
 
-                if ( (json.pieces instanceof Array) && (json.pieces[0] instanceof Array) && (json.pieces[0][0] instanceof Array) ) {
+                if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
                     pieces = json.pieces as string[][][];
                 } else {
                     throw new Error("Unrecognized `pieces` property.");
@@ -151,7 +162,7 @@ export class StackingExpandingRenderer extends RendererBase {
             }
 
             // Now add transparent tiles over each cell for the click handler
-            const tile = draw.defs().symbol().viewbox(0, 0, this.cellsize, this.cellsize);
+            const tile = this.rootSvg.defs().symbol().viewbox(0, 0, this.cellsize, this.cellsize);
             tile.rect(this.cellsize, this.cellsize).fill("#fff").opacity(0);
             const tiles = group.group().id("tiles");
             for (let row = 0; row < gridPoints.length; row++) {
@@ -165,14 +176,14 @@ export class StackingExpandingRenderer extends RendererBase {
             }
 
             // Add expanded column, if requested
-            if ( (json.areas !== undefined) && (Array.isArray(json.areas)) && (json.areas.length > 0) ) {
-                const area = json.areas.find((x) => x.type === "expandedColumn");
+            if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+                const area = this.json.areas.find((x) => x.type === "expandedColumn");
                 if (area !== undefined) {
                     // Create a group to store the column and place all the pieces at 0,0 within it
                     const boardHeight = gridPoints[gridPoints.length - 1][0].x - gridPoints[0][0].x + (this.cellsize * 2);
                     const columnWidth = this.cellsize * 1;
                     const used: [SVGUse, number][] = [];
-                    const nested = draw.defs().group().id("_expansion").size(columnWidth, boardHeight);
+                    const nested = this.rootSvg.defs().group().id("_expansion").size(columnWidth, boardHeight);
                     for (const p of (area.stack as string[]).reverse()) {
                         const piece = SVG("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
@@ -212,7 +223,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     }
 
                     // Now place the whole group to the left-hand side of the board
-                    draw.use(nested)
+                    this.rootSvg.use(nested)
                         .move(gridPoints[0][0].x - (this.cellsize * 1.5) - columnWidth, gridPoints[0][0].y - this.cellsize);
                         // .center(gridPoints[0][0].x - this.cellsize - columnWidth, gridPoints[0][0].y - this.cellsize + (boardHeight / 2));
                 }
@@ -220,13 +231,13 @@ export class StackingExpandingRenderer extends RendererBase {
 
             // Annotations
             if (this.options.showAnnotations) {
-                this.annotateBoard(json, draw, gridPoints);
+                this.annotateBoard(gridPoints);
             }
 
             // Look for local stashes
             // This code is optimized for pyramids
-            if ( (json.areas !== undefined) && (Array.isArray(json.areas)) && (json.areas.length > 0) ) {
-                const areas = json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
+            if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+                const areas = this.json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
                 const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
                 let placeY = boardBottom + (this.cellsize / 2);
                 for (let iArea = 0; iArea < areas.length; iArea++) {
@@ -238,7 +249,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const offset = cellsize * 3.5;
                     const areaWidth = cellsize * numStacks;
                     const areaHeight = textHeight + cellsize + (offset * (maxHeight - 1));
-                    const nested = draw.defs().nested().id(`_stash${iArea}`).size(areaWidth, areaHeight);
+                    const nested = this.rootSvg.defs().nested().id(`_stash${iArea}`).size(areaWidth, areaHeight);
                     for (let iStack = 0; iStack < area.stash.length; iStack++) {
                         const stack = area.stash[iStack];
                         const used: [SVGUse, number][] = [];
@@ -281,7 +292,7 @@ export class StackingExpandingRenderer extends RendererBase {
                         .move(0, 0);
 
                     // Now place the whole group below the board
-                    draw.use(nested).move(gridPoints[0][0].x - this.cellsize, placeY);
+                    this.rootSvg.use(nested).move(gridPoints[0][0].x - this.cellsize, placeY);
                     placeY += nested.height() as number;
                 }
             }

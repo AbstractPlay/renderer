@@ -3,73 +3,84 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
+/**
+ * This is the default renderer used for most games.
+ *
+ * @export
+ * @class DefaultRenderer
+ * @extends {RendererBase}
+ */
 export class DefaultRenderer extends RendererBase {
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
-        json = this.jsonPrechecks(json);
+        this.jsonPrechecks(json);
+        if (this.json === undefined) {
+            throw new Error("JSON prechecks fatally failed.");
+        }
         this.optionsPrecheck(options);
+        this.rootSvg = draw;
 
         // BOARD
         // Delegate to style-specific renderer
-        if (json.board === null) {
-            return this.renderGlyph(json, draw);
+        if (this.json.board === null) {
+            return this.renderGlyph();
         }
 
         // Load all the pieces in the legend (have to do this first so the glyphs are available for marking the board)
-        this.loadLegend(json, draw);
+        this.loadLegend();
 
         let gridPoints: GridPoints;
-        if (! ("style" in json.board)) {
+        if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
-        switch (json.board.style) {
+        switch (this.json.board.style) {
             case "squares-beveled":
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw);
+                gridPoints = this.squares();
                 break;
             case "go":
-                json.board.width = 19;
-                json.board.height = 19;
+                this.json.board.width = 19;
+                this.json.board.height = 19;
             case "vertex":
             case "vertex-cross":
-                gridPoints = this.vertex(json, draw);
+                gridPoints = this.vertex();
                 break;
             case "snubsquare":
-                gridPoints = this.snubSquare(json, draw);
+                gridPoints = this.snubSquare();
                 break;
             case "hex-of-hex":
-                gridPoints = this.hexOfHex(json, draw);
+                gridPoints = this.hexOfHex();
                 break;
             case "hex-of-tri":
-                gridPoints = this.hexOfTri(json, draw);
+                gridPoints = this.hexOfTri();
                 break;
             case "hex-of-cir":
-                gridPoints = this.hexOfCir(json, draw);
+                gridPoints = this.hexOfCir();
                 break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":
             case "hex-even-f":
-                gridPoints = this.rectOfHex(json, draw);
+                gridPoints = this.rectOfHex();
                 break;
             default:
-                throw new Error(`The requested board style (${ json.board.style }) is not yet supported by the default renderer.`);
+                throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }
 
         // PIECES
-        const group = draw.group().id("pieces");
-        if (json.pieces !== null) {
+        const group = this.rootSvg.group().id("pieces");
+        if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = new Array();
 
-            if (typeof json.pieces === "string") {
+            if (typeof this.json.pieces === "string") {
                 // Does it contain commas
-                if (json.pieces.indexOf(",") >= 0) {
-                    for (const row of json.pieces.split("\n")) {
+                if (this.json.pieces.indexOf(",") >= 0) {
+                    for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]);
                         } else {
                             let cells = row.split(",");
                             cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
@@ -78,10 +89,10 @@ export class DefaultRenderer extends RendererBase {
                         pieces.push(node);
                     }
                 } else {
-                    for (const row of json.pieces.split("\n")) {
+                    for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]);
                         } else {
                             const cells = row.split("");
                             node = cells.map((x) => [x]);
@@ -89,8 +100,8 @@ export class DefaultRenderer extends RendererBase {
                         pieces.push(node);
                     }
                 }
-            } else if ( (json.pieces instanceof Array) && (json.pieces[0] instanceof Array) && (json.pieces[0][0] instanceof Array) ) {
-                pieces = json.pieces as string[][][];
+            } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
+                pieces = this.json.pieces as string[][][];
             } else {
                 throw new Error("Unrecognized `pieces` property.");
             }
@@ -121,7 +132,7 @@ export class DefaultRenderer extends RendererBase {
                             use.dmove(newx, newy);
                             use.scale(factor, newx, newy);
                             if (this.options.boardClick !== undefined) {
-                                if ( ( (json.board.tileSpacing !== undefined) && (json.board.tileSpacing > 0) ) || ( (! json.board.style.startsWith("squares")) && (! json.board.style.startsWith("vertex")) ) ) {
+                                if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
                                     use.click(() => this.options.boardClick!(row, col, key));
                                 }
                             }
@@ -133,18 +144,27 @@ export class DefaultRenderer extends RendererBase {
 
         // Finally, annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints);
+            this.annotateBoard(gridPoints);
         }
     }
 
-    private renderGlyph(json: APRenderRep, draw: Svg): void {
+    /**
+     * Helper function for producing a single glyph when `board` is set to `null`.
+     *
+     * @private
+     * @memberof DefaultRenderer
+     */
+    private renderGlyph(): void {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in invalid state!");
+        }
         // Load all the pieces in the legend
-        this.loadLegend(json, draw);
-        if (json.pieces === null) {
+        this.loadLegend();
+        if (this.json.pieces === null) {
             throw new Error("There must be a piece given in the `pieces` property.");
         }
-        const key = json.pieces;
-        const piece = draw.findOne("#" + key) as Svg;
+        const key = this.json.pieces;
+        const piece = this.rootSvg.findOne("#" + key) as Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
@@ -155,6 +175,6 @@ export class DefaultRenderer extends RendererBase {
                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
             }
         }
-        draw.use(piece);
+        this.rootSvg.use(piece);
     }
 }

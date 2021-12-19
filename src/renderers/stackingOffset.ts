@@ -3,6 +3,13 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
+/**
+ * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
+ *
+ * @export
+ * @class StackingOffsetRenderer
+ * @extends {RendererBase}
+ */
 export class StackingOffsetRenderer extends RendererBase {
 
     constructor() {
@@ -10,64 +17,68 @@ export class StackingOffsetRenderer extends RendererBase {
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
-        json = this.jsonPrechecks(json);
+        this.jsonPrechecks(json);
+        if (this.json === undefined) {
+            throw new Error("JSON prechecks fatally failed.");
+        }
         this.optionsPrecheck(options);
+        this.rootSvg = draw;
 
-        if (json.board === null) {
+        if (this.json.board === null) {
             throw new Error("This renderer requires that `board` be defined.");
         }
 
         // BOARD
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
-        if (! ("style" in json.board)) {
+        if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
         }
 
         // Load all the pieces in the legend (have to do this early so the glyphs are available for marking the board)
-        this.loadLegend(json, draw);
+        this.loadLegend();
 
-        switch (json.board.style) {
+        switch (this.json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares(json, draw);
+                gridPoints = this.squares();
                 break;
             case "go":
-                json.board.width = 19;
-                json.board.height = 19;
+                this.json.board.width = 19;
+                this.json.board.height = 19;
             case "vertex":
             case "vertex-cross":
-                gridPoints = this.vertex(json, draw);
+                gridPoints = this.vertex();
                 break;
             case "snubsquare":
-                gridPoints = this.snubSquare(json, draw);
+                gridPoints = this.snubSquare();
                 break;
             case "hex-of-hex":
-                gridPoints = this.hexOfHex(json, draw);
+                gridPoints = this.hexOfHex();
                 break;
             case "hex-of-tri":
-                gridPoints = this.hexOfTri(json, draw);
+                gridPoints = this.hexOfTri();
                 break;
             case "hex-of-cir":
-                gridPoints = this.hexOfCir(json, draw);
+                gridPoints = this.hexOfCir();
                 break;
             default:
-                throw new Error(`The requested board style (${ json.board.style }) is not supported by the '${ this.name }' renderer.`);
+                throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ this.name }' renderer.`);
         }
 
         // PIECES
-        const group = draw.group().id("pieces");
-        if (json.pieces !== null) {
+        const group = this.rootSvg.group().id("pieces");
+        if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = new Array();
 
-            if (typeof json.pieces === "string") {
+            if (typeof this.json.pieces === "string") {
                 // Does it contain commas
-                if (json.pieces.indexOf(",") >= 0) {
-                    for (const row of json.pieces.split("\n")) {
+                if (this.json.pieces.indexOf(",") >= 0) {
+                    for (const row of this.json.pieces.split("\n")) {
                         let node: string[][] = [];
                         if (row === "_") {
-                            node = new Array(json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]);
                         } else {
                             const cells = row.split(",");
                             for (const cell of cells) {
@@ -83,16 +94,16 @@ export class StackingOffsetRenderer extends RendererBase {
                 } else {
                     throw new Error("This renderer requires that you use the comma-delimited or array format of the `pieces` property.");
                 }
-            } else if ( (json.pieces instanceof Array) && (json.pieces[0] instanceof Array) && (json.pieces[0][0] instanceof Array) ) {
-                pieces = json.pieces as string[][][];
+            } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
+                pieces = this.json.pieces as string[][][];
             } else {
                 throw new Error("Unrecognized `pieces` property.");
             }
 
             // Place the pieces according to the grid
             let offsetPercent = 0.13;
-            if ( ("stackOffset" in json.board) && (json.board.stackOffset !== undefined) ) {
-                offsetPercent = json.board.stackOffset;
+            if ( ("stackOffset" in this.json.board) && (this.json.board.stackOffset !== undefined) ) {
+                offsetPercent = this.json.board.stackOffset;
             }
             const offset = this.cellsize * offsetPercent;
             // if the board is rotated, you have to place the pieces in reverse row order
@@ -161,7 +172,7 @@ export class StackingOffsetRenderer extends RendererBase {
 
         // Finally, annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(json, draw, gridPoints);
+            this.annotateBoard(gridPoints);
         }
     }
 }

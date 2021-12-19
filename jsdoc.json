@@ -1,0 +1,23 @@
+{
+  "plugins": ["plugins/markdown"],
+  "recurseDepth": 10,
+  "source": {
+      "include": ["./src/"],
+      "includePattern": ".+\\.ts(doc|x)?$",
+      "excludePattern": "\\.test\\."
+  },
+  "sourceType": "module",
+  "tags": {
+      "allowUnknownTags": true,
+      "dictionaries": ["jsdoc","closure"]
+  },
+  "templates": {
+      "cleverLinks": false,
+      "monospaceLinks": false
+  },
+  "opts": {
+    "encoding": "utf-8",
+    "destination": "./docs/api/",
+    "recurse": true
+  }
+}
