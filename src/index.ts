@@ -3,8 +3,9 @@ import { G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 import { IRendererOptionsIn } from "./renderers/_base";
-import { APRenderRep } from "./schema";
-import schema from "./schema.json";
+import { APRenderRep } from "./schemas/schema";
+import schema from "./schemas/schema.json";
+import { v4 as uuidv4 } from 'uuid';
 
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
@@ -73,7 +74,7 @@ export interface IRenderOptions extends IRendererOptionsIn {
  * @param {AJVError[]} errors
  * @returns {string}
  */
-function formatAJVErrors(errors: AJVError[]): string {
+const formatAJVErrors = (errors: AJVError[]): string => {
     let retstr = "";
     for (const error of errors) {
         retstr += `\nKeyword: ${error.keyword}, instancePath: ${error.instancePath}, schemaPath: ${error.schemaPath}`;
@@ -90,9 +91,8 @@ function formatAJVErrors(errors: AJVError[]): string {
  * @param {*} [opts={} as IRenderOptions]
  * @returns {string}
  */
-export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): string {
+export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): string => {
     const node = document.createElement("div");
-    const {v4: uuidv4} = require("uuid");
     const uid = uuidv4();
     node.setAttribute("id", uid);
     opts.divelem = node;
@@ -109,7 +109,7 @@ export function renderStatic(json: APRenderRep, opts = {} as IRenderOptions): st
  * @param {*} [opts={} as IRenderOptions]
  * @returns {string}
  */
-export function renderglyph(glyphid: string, colour: number | string, opts = {} as IRenderOptions): string {
+export const renderglyph = (glyphid: string, colour: number | string, opts = {} as IRenderOptions): string => {
     let obj: APRenderRep;
     if (typeof colour === "number") {
         obj = {
@@ -135,13 +135,12 @@ export function renderglyph(glyphid: string, colour: number | string, opts = {} 
         };
     }
     const node = document.createElement("div");
-    const {v4: uuidv4} = require("uuid");
     const uid = uuidv4();
     node.setAttribute("id", uid);
     opts.divelem = node;
     const canvas = render(obj, opts);
     const a = canvas.findOne("#A") as SVGG;
-    canvas.viewbox(`0 0 ${a.width()} ${a.height()}`);
+    canvas.viewbox(`0 0 ${a.width() as number} ${a.height() as number}`);
     return canvas.svg();
 }
 
@@ -153,7 +152,7 @@ export function renderglyph(glyphid: string, colour: number | string, opts = {} 
  * @param {*} [opts={} as IRenderOptions]
  * @returns {Svg}
  */
-export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
+export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     // Validate the JSON
     if (! validate(json)) {
         throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as AJVError[])}`);
@@ -191,15 +190,18 @@ export function render(json: APRenderRep, opts = {} as IRenderOptions): Svg {
         if ( ("svgid" in opts) && (opts.svgid !== undefined) && (opts.svgid.length > 0) ) {
             svgid = opts.svgid;
         }
+        if (opts.divid === undefined) {
+            throw new Error("No target for the rendered SVG was given.");
+        }
         draw = SVG().addTo("#" + opts.divid).size(width, height).id(svgid);
     }
 
-    let boardClick: (row: number, col: number, piece: string) => void = (row, col, piece) => undefined;
+    let boardClick: (row: number, col: number, piece: string) => void = () => undefined;
     if (("boardClick" in opts) && (opts.boardClick != null) ) {
         boardClick = opts.boardClick;
     }
 
-    let boardHover: (row: number, col: number, piece: string) => void = (row, col, piece) => undefined;
+    let boardHover: (row: number, col: number, piece: string) => void = () => undefined;
     if (("boardHover" in opts) && (opts.boardHover != null) ) {
         boardHover = opts.boardHover;
     }

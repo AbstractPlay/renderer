@@ -1,6 +1,6 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
-import { APRenderRep } from "../schema";
+import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
 /**
@@ -72,7 +72,7 @@ export class DefaultRenderer extends RendererBase {
         const group = this.rootSvg.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
-            let pieces: string[][][] = new Array();
+            let pieces: string[][][] = [];
 
             if (typeof this.json.pieces === "string") {
                 // Does it contain commas
@@ -80,7 +80,7 @@ export class DefaultRenderer extends RendererBase {
                     for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]) as string[][];
                         } else {
                             let cells = row.split(",");
                             cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
@@ -92,7 +92,7 @@ export class DefaultRenderer extends RendererBase {
                     for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]) as string[][];
                         } else {
                             const cells = row.split("");
                             node = cells.map((x) => [x]);
@@ -118,7 +118,7 @@ export class DefaultRenderer extends RendererBase {
                             }
                             let sheetCellSize = piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize");
+                                sheetCellSize = piece.attr("data-cellsize") as number;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
@@ -163,14 +163,14 @@ export class DefaultRenderer extends RendererBase {
         if (this.json.pieces === null) {
             throw new Error("There must be a piece given in the `pieces` property.");
         }
-        const key = this.json.pieces;
+        const key = this.json.pieces as string;
         const piece = this.rootSvg.findOne("#" + key) as Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
         let sheetCellSize = piece.viewbox().h;
         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-            sheetCellSize = piece.attr("data-cellsize");
+            sheetCellSize = piece.attr("data-cellsize") as number;
             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
             }

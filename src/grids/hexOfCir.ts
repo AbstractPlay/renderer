@@ -9,6 +9,6 @@ import { GridPoints, IGeneratorArgs} from "./_base";
  * @param {IGeneratorArgs} args
  * @returns {GridPoints}
  */
-export function hexOfCir(args: IGeneratorArgs): GridPoints {
+export const hexOfCir = (args: IGeneratorArgs): GridPoints => {
     return hexOfTri(args);
 }

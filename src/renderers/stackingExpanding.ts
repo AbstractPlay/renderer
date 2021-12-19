@@ -1,6 +1,6 @@
 import { SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
-import { APRenderRep } from "../schema";
+import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
 interface ILocalStash {
@@ -50,7 +50,7 @@ export class StackingExpandingRenderer extends RendererBase {
                         }
                         let sheetCellSize = piece.viewbox().h;
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            sheetCellSize = piece.attr("data-cellsize");
+                            sheetCellSize = piece.attr("data-cellsize") as number;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
@@ -62,7 +62,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     }
 
                     // Now go through each piece and shift them down
-                    let dy: number = 0;
+                    let dy = 0;
                     for (const piece of used) {
                         piece[0].dmove(0, dy);
                         dy += piece[1];
@@ -70,7 +70,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
                     // Add cell name
                     if ( ("cell" in area) && (area.cell !== undefined) ) {
-                        const txt = nested.text(`Cell ${area.cell}`);
+                        const txt = nested.text(`Cell ${area.cell as string}`);
                         txt.font("size", "50%");
                         txt.move(0, (this.cellsize / 4) * -1).fill("#000");
                     }
@@ -121,7 +121,7 @@ export class StackingExpandingRenderer extends RendererBase {
             const group = this.rootSvg.group().id("pieces");
             if (this.json.pieces !== null) {
                 // Generate pieces array
-                let pieces: string[][][] = new Array();
+                let pieces: string[][][] = [];
 
                 if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
                     pieces = json.pieces as string[][][];
@@ -141,7 +141,7 @@ export class StackingExpandingRenderer extends RendererBase {
                                 }
                                 let sheetCellSize = piece.viewbox().h;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    sheetCellSize = piece.attr("data-cellsize");
+                                    sheetCellSize = piece.attr("data-cellsize") as number;
                                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                     }
@@ -191,7 +191,7 @@ export class StackingExpandingRenderer extends RendererBase {
                         }
                         let sheetCellSize = piece.viewbox().h;
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            sheetCellSize = piece.attr("data-cellsize");
+                            sheetCellSize = piece.attr("data-cellsize") as number;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
@@ -209,7 +209,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     }
 
                     // Now go through each piece and shift them down
-                    let dy: number = 0;
+                    let dy = 0;
                     for (const piece of used) {
                         piece[0].dmove(0, dy);
                         dy += piece[1];
@@ -217,7 +217,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
                     // Add cell name
                     if ( ("cell" in area) && (area.cell !== undefined) ) {
-                        const txt = nested.text(`Cell ${area.cell}`);
+                        const txt = nested.text(`Cell ${area.cell as string}`);
                         txt.font("size", "50%");
                         txt.move(0, (this.cellsize / 4) * -1).fill("#000");
                     }
@@ -260,7 +260,7 @@ export class StackingExpandingRenderer extends RendererBase {
                             }
                             let sheetCellSize = piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize");
+                                sheetCellSize = piece.attr("data-cellsize") as number;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                     throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
@@ -277,7 +277,7 @@ export class StackingExpandingRenderer extends RendererBase {
                             use.scale(factor, newx, newy);
                         }
                         // Now go through each piece and shift them down
-                        let dy: number = 0;
+                        let dy = 0;
                         for (const piece of used) {
                             piece[0].dmove(0, dy);
                             dy -= offset;

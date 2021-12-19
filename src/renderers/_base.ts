@@ -1,8 +1,10 @@
+// The following is here because json2ts isn't recognizing json.board.markers correctly
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
 import { defineGrid, extendHex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
-import { APRenderRep, Glyph } from "../schema";
+import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 
 /**
@@ -114,7 +116,7 @@ export interface IRendererOptionsOut {
  * @param {number} height
  * @returns {string}
  */
-function coords2algebraicHex(x: number, y: number, height: number): string {
+const coords2algebraicHex = (x: number, y: number, height: number): string => {
     const columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     return columnLabels[height - y - 1] + (x + 1).toString();
 }
@@ -129,6 +131,16 @@ interface IBuffer {
     pattern?: string;
     show?: ("N"|"E"|"S"|"W")[];
 };
+
+/**
+ * Internal interface when placing markers and annotations
+ *
+ * @interface ITarget
+ */
+interface ITarget {
+    row: number;
+    col: number;
+}
 
 /**
  * The abstract base class from which all renderers inherit. Contains all the code shared by most renderers.
@@ -407,8 +419,8 @@ export abstract class RendererBase {
         if ( ("legend" in this.json) && (this.json.legend !== undefined) ) {
             // Load any requested patterns
             if (this.options.patterns) {
-                const patterns: Array<number> = new Array();
-                // tslint:disable-next-line: forin
+                const patterns: Array<number> = new Array<number>();
+                // eslint-disable-next-line guard-for-in
                 for (const key in this.json.legend) {
                     const node = this.json.legend[key];
                     if (typeof(node) !== "string") {
@@ -436,7 +448,7 @@ export abstract class RendererBase {
             }
 
             // Now look for composite and coloured pieces and add those to the <defs> section for placement
-            // tslint:disable-next-line: forin
+            // eslint-disable-next-line guard-for-in
             for (const key in this.json.legend) {
                 const glyph = this.json.legend[key];
                 let glyphs: Array<Glyph>;
@@ -453,20 +465,20 @@ export abstract class RendererBase {
                 const nested = this.rootSvg.defs().nested().id(key).size(cellsize, cellsize);
 
                 // Layer the glyphs, manipulating as you go
-                for (const glyph of glyphs) {
+                for (const g of glyphs) {
                     let got: SVGSymbol;
-                    if ( ("name" in glyph) && (glyph.name !== undefined) ) {
-                        got = this.loadGlyph(glyph.name, nested);
-                    } else if ( ("text" in glyph) && (glyph.text !== undefined) && (glyph.text.length > 0) ) {
+                    if ( ("name" in g) && (g.name !== undefined) ) {
+                        got = this.loadGlyph(g.name, nested);
+                    } else if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;
-                        const text = group.text(glyph.text).font({
+                        const text = group.text(g.text).font({
                             anchor: "start",
                             fill: "#000",
                             size: fontsize,
                         });
                         text.attr("data-playerfill", true);
-                        const temptext = this.rootSvg.text(glyph.text).font({
+                        const temptext = this.rootSvg.text(g.text).font({
                             anchor: "start",
                             fill: "#000",
                             size: fontsize,
@@ -477,12 +489,12 @@ export abstract class RendererBase {
                         temptext.remove();
                         got = group;
                     } else {
-                        throw new Error(`Could not load one of the components of the glyph '${key}': ${JSON.stringify(glyph)}.`);
+                        throw new Error(`Could not load one of the components of the glyph '${key}': ${JSON.stringify(g)}.`);
                     }
 
                     let sheetCellSize = got.viewbox().height;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = got.attr("data-cellsize");
+                        sheetCellSize = got.attr("data-cellsize") as number;
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                             throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                         }
@@ -492,47 +504,47 @@ export abstract class RendererBase {
                     const clone = got;
 
                     // Colourize (`player` first, then `colour` if defined)
-                    if (glyph.player !== undefined) {
+                    if (g.player !== undefined) {
                         if  (this.options.patterns) {
-                            if (glyph.player > this.options.patternList.length) {
+                            if (g.player > this.options.patternList.length) {
                                 throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                             }
                             const useSize = sheetCellSize;
-                            let fill = this.rootSvg.findOne("#" + this.options.patternList[glyph.player - 1] + "-" + useSize) as SVGElement;
+                            let fill = this.rootSvg.findOne("#" + this.options.patternList[g.player - 1] + "-" + useSize.toString()) as SVGElement;
                             if (fill === null) {
-                                fill = this.rootSvg.findOne("#" + this.options.patternList[glyph.player - 1]) as SVGElement;
-                                fill = fill.clone().id(this.options.patternList[glyph.player - 1] + "-" + useSize).scale(useSize / 150);
+                                fill = this.rootSvg.findOne("#" + this.options.patternList[g.player - 1]) as SVGElement;
+                                fill = fill.clone().id(this.options.patternList[g.player - 1] + "-" + useSize.toString()).scale(useSize / 150);
                                 this.rootSvg.defs().add(fill);
                             }
                             clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         } else {
-                            if (glyph.player > this.options.colours.length) {
+                            if (g.player > this.options.colours.length) {
                                 throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                             }
-                            const fill = this.options.colours[glyph.player - 1];
+                            const fill = this.options.colours[g.player - 1];
                             clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         }
-                    } else if (glyph.colour !== undefined) {
-                        clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: glyph.colour}); });
+                    } else if (g.colour !== undefined) {
+                        clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
                     }
 
                     // Apply requested opacity
-                    if (glyph.opacity !== undefined) {
-                        clone.fill({opacity: glyph.opacity});
+                    if (g.opacity !== undefined) {
+                        clone.fill({opacity: g.opacity});
                     }
 
                     nested.add(clone);
                     const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol);
 
                     // Rotate if requested
-                    if (glyph.rotate !== undefined) {
-                        use.rotate(glyph.rotate, cellsize / 2, cellsize / 2);
+                    if (g.rotate !== undefined) {
+                        use.rotate(g.rotate, cellsize / 2, cellsize / 2);
                     }
 
                     // Scale it appropriately
                     let factor: number | undefined;
-                    if (glyph.scale !== undefined) {
-                        factor = glyph.scale;
+                    if (g.scale !== undefined) {
+                        factor = g.scale;
                     }
                     if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "hex-of-hex") ) {
                         if (factor === undefined) {
@@ -546,14 +558,14 @@ export abstract class RendererBase {
                     }
 
                     // Shift if requested
-                    if (glyph.nudge !== undefined) {
+                    if (g.nudge !== undefined) {
                         let dx = 0;
                         let dy = 0;
-                        if (glyph.nudge.dx !== undefined) {
-                            dx = glyph.nudge.dx;
+                        if (g.nudge.dx !== undefined) {
+                            dx = g.nudge.dx;
                         }
-                        if (glyph.nudge.dy !== undefined) {
-                            dy = glyph.nudge.dy;
+                        if (g.nudge.dy !== undefined) {
+                            dy = g.nudge.dy;
                         }
                         use.dmove(dx, dy);
                     }
@@ -585,9 +597,9 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         const style = this.json.board.style;
 
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -599,9 +611,9 @@ export abstract class RendererBase {
         }
 
         // Check for tiling
-        let tilex: number = 0;
-        let tiley: number = 0;
-        let tileSpace: number = 0;
+        let tilex = 0;
+        let tiley = 0;
+        let tileSpace = 0;
         if (this.json.board.tileWidth !== undefined) {
             tilex = this.json.board.tileWidth as number;
         }
@@ -623,7 +635,7 @@ export abstract class RendererBase {
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
             // @ts-expect-error
-            if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && (this.json.board.buffer.show.length > 0) ) {
+            if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
                 show = [...(this.json.board.buffer as IBuffer).show!];
             }
             // adjust `show` to account for rotation
@@ -637,7 +649,7 @@ export abstract class RendererBase {
             }
             let pattern: string | undefined;
             // @ts-expect-error
-            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
+            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && ((this.json.board.buffer.pattern as string[]).length > 0) ) {
                 pattern = (this.json.board.buffer as IBuffer).pattern;
             }
             if (pattern !== undefined) {
@@ -652,17 +664,17 @@ export abstract class RendererBase {
             }
             const offset = cellsize * 0.1;
             // top
-            let height = bufferwidth;
-            let width = (grid[0][grid[0].length - 1].x + cellsize) - grid[0][0].x;
+            let h = bufferwidth;
+            let w = (grid[0][grid[0].length - 1].x + cellsize) - grid[0][0].x;
             let x = grid[0][0].x - (cellsize / 2);
-            let y = grid[0][0].y - (cellsize / 2) - (height + offset);
+            let y = grid[0][0].y - (cellsize / 2) - (h + offset);
             let buffN: SVGRect | undefined;
             if (show.includes("N")) {
                 let key = "_buffer_N";
                 if (this.options.rotate === 180) {
                     key = "_buffer_S";
                 }
-                buffN = board.rect(width, height).id(key)
+                buffN = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
@@ -675,14 +687,14 @@ export abstract class RendererBase {
                 if (this.options.rotate === 180) {
                     key = "_buffer_N";
                 }
-                buffS = board.rect(width, height).id(key)
+                buffS = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
             // left
-            width = bufferwidth;
-            height = (grid[grid.length - 1][0].y + cellsize) - grid[0][0].y;
-            x = grid[0][0].x - (cellsize / 2) - (width + offset);
+            w = bufferwidth;
+            h = (grid[grid.length - 1][0].y + cellsize) - grid[0][0].y;
+            x = grid[0][0].x - (cellsize / 2) - (w + offset);
             y = grid[0][0].y - (cellsize / 2);
             let buffW: SVGRect | undefined;
             if (show.includes("W")) {
@@ -690,7 +702,7 @@ export abstract class RendererBase {
                 if (this.options.rotate === 180) {
                     key = "_buffer_E";
                 }
-                buffW = board.rect(width, height).id(key)
+                buffW = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
@@ -703,7 +715,7 @@ export abstract class RendererBase {
                 if (this.options.rotate === 180) {
                     key = "_buffer_W";
                 }
-                buffE = board.rect(width, height).id(key)
+                buffE = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
@@ -772,14 +784,14 @@ export abstract class RendererBase {
 
             const tiles = board.group().id("tiles");
             // Determine whether the first row starts with a light or dark square
-            let startLight: number = 1;
+            let startLight = 1;
             if (height % 2 === 0) {
                 startLight = 0;
             }
 
             // Place them
             for (let row = 0; row < height; row++) {
-                let lightCol: number = 1;
+                let lightCol = 1;
                 if (row % 2 === startLight) {
                     lightCol = 0;
                 }
@@ -953,9 +965,9 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         const style = this.json.board.style;
 
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -967,9 +979,9 @@ export abstract class RendererBase {
         }
 
         // Check for tiling
-        let tilex: number = 0;
-        let tiley: number = 0;
-        let tileSpace: number = 0;
+        let tilex = 0;
+        let tiley = 0;
+        let tileSpace = 0;
         if (this.json.board.tileWidth !== undefined) {
             tilex = this.json.board.tileWidth as number;
         }
@@ -991,7 +1003,7 @@ export abstract class RendererBase {
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
             // @ts-expect-error
-            if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && (this.json.board.buffer.show.length > 0) ) {
+            if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
                 show = [...(this.json.board.buffer as IBuffer).show!];
             }
             // adjust `show` to account for rotation
@@ -1005,7 +1017,7 @@ export abstract class RendererBase {
             }
             let pattern: string | undefined;
             // @ts-expect-error
-            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
+            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && ((this.json.board.buffer.pattern as string[]).length > 0) ) {
                 pattern = (this.json.board.buffer as IBuffer).pattern;
             }
             if (pattern !== undefined) {
@@ -1020,17 +1032,17 @@ export abstract class RendererBase {
             }
             const offset = cellsize * 0.2;
             // top
-            let height = bufferwidth;
-            let width = (grid[0][grid[0].length - 1].x) - grid[0][0].x;
+            let h = bufferwidth;
+            let w = (grid[0][grid[0].length - 1].x) - grid[0][0].x;
             let x = grid[0][0].x;
-            let y = grid[0][0].y - (height + offset);
+            let y = grid[0][0].y - (h + offset);
             let buffN: SVGRect | undefined;
             if (show.includes("N")) {
                 let key = "_buffer_N";
                 if (this.options.rotate === 180) {
                     key = "_buffer_S";
                 }
-                buffN = board.rect(width, height).id(key)
+                buffN = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
@@ -1043,14 +1055,14 @@ export abstract class RendererBase {
                 if (this.options.rotate === 180) {
                     key = "_buffer_N";
                 }
-                buffS = board.rect(width, height).id(key)
+                buffS = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
             // left
-            width = bufferwidth;
-            height = (grid[grid.length - 1][0].y) - grid[0][0].y;
-            x = grid[0][0].x- (width + offset);
+            w = bufferwidth;
+            h = (grid[grid.length - 1][0].y) - grid[0][0].y;
+            x = grid[0][0].x- (w + offset);
             y = grid[0][0].y;
             let buffW: SVGRect | undefined;
             if (show.includes("W")) {
@@ -1058,7 +1070,7 @@ export abstract class RendererBase {
                 if (this.options.rotate === 180) {
                     key = "_buffer_E";
                 }
-                buffW = board.rect(width, height).id(key)
+                buffW = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
@@ -1071,7 +1083,7 @@ export abstract class RendererBase {
                 if (this.options.rotate === 180) {
                     key = "_buffer_W";
                 }
-                buffE = board.rect(width, height).id(key)
+                buffE = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
             }
@@ -1333,9 +1345,9 @@ export abstract class RendererBase {
         const cellsize = this.cellsize * 0.8;
         const style = this.json.board.style;
 
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -1358,6 +1370,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             offset *= -1;
         }
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const Hex = extendHex({
             offset,
             orientation,
@@ -1443,9 +1456,9 @@ export abstract class RendererBase {
         const height: number = this.json.board.height as number;
         const cellsize = this.cellsize;
 
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -1586,9 +1599,9 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -1726,9 +1739,9 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -1815,9 +1828,9 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         const height = ((maxWidth - minWidth) * 2) + 1;
 
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -1949,7 +1962,7 @@ export abstract class RendererBase {
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
                     const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
                     const points: string[] = [];
-                    for (const node of (note.targets as any[])) {
+                    for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         points.push(`${pt.x},${pt.y}`);
                     }
@@ -1995,7 +2008,7 @@ export abstract class RendererBase {
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
                     const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
-                    const [from, to] = note.targets as any[];
+                    const [from, to] = note.targets as ITarget[];
                     const ptFrom = grid[from.row][from.col];
                     const ptTo = grid[to.row][to.col];
                     const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
@@ -2025,7 +2038,7 @@ export abstract class RendererBase {
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
-                    for (const node of (note.targets as any[])) {
+                    for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")
@@ -2039,7 +2052,7 @@ export abstract class RendererBase {
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
-                    for (const node of (note.targets as any[])) {
+                    for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")
@@ -2057,7 +2070,7 @@ export abstract class RendererBase {
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
                         opacity = note.opacity as number;
                     }
-                    for (const node of (note.targets as any[])) {
+                    for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.circle(this.cellsize * 0.2)
                             .fill(colour)
@@ -2066,7 +2079,7 @@ export abstract class RendererBase {
                             .center(pt.x, pt.y);
                     }
                 } else {
-                    throw new Error(`The requested annotation (${ note.type }) is not supported.`);
+                    throw new Error(`The requested annotation (${ note.type as string }) is not supported.`);
                 }
             }
         }
@@ -2087,9 +2100,9 @@ export abstract class RendererBase {
         }
 
         if ( ("board" in this.json) && (this.json.board !== undefined) && ("markers" in this.json.board!) && (this.json.board.markers !== undefined) && (Array.isArray(this.json.board.markers)) && (this.json.board.markers.length > 0) ) {
-            let baseStroke: number = 1;
-            let baseColour: string = "#000";
-            let baseOpacity: number = 1;
+            let baseStroke = 1;
+            let baseColour = "#000";
+            let baseOpacity = 1;
             if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
                 baseStroke = this.json.board.strokeWeight;
             }
@@ -2103,7 +2116,7 @@ export abstract class RendererBase {
             for (const marker of this.json.board.markers) {
                 if (marker.type === "dots") {
                     const pts: [number, number][] = [];
-                    for (const point of marker.points) {
+                    for (const point of marker.points as ITarget[]) {
                         pts.push([point.row, point.col]);
                         pts.forEach((p) => {
                             const pt = grid[p[0]][p[1]];
@@ -2120,20 +2133,20 @@ export abstract class RendererBase {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
-                            colour = marker.colour;
+                            colour = marker.colour as string;
                         }
                     }
                     let opacity = 0.25;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
-                        opacity = marker.opacity;
+                        opacity = marker.opacity as number;
                     }
                     const points: [number, number][] = [];
                     if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
-                        for (const point of marker.points) {
+                        for (const point of marker.points as ITarget[]) {
                             points.push([gridExpanded[point.row][point.col].x, gridExpanded[point.row][point.col].y]);
                         }
                     } else {
-                        for (const point of marker.points) {
+                        for (const point of marker.points as ITarget[]) {
                             points.push([grid[point.row][point.col].x, grid[point.row][point.col].y]);
                         }
                     }
@@ -2145,7 +2158,7 @@ export abstract class RendererBase {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
-                            colour = marker.colour;
+                            colour = marker.colour as string;
                         }
                     }
                     const opacity = baseOpacity + ((1 - baseOpacity) / 2);
@@ -2260,13 +2273,13 @@ export abstract class RendererBase {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
-                            colour = marker.colour;
+                            colour = marker.colour as string;
                         }
                     }
                     const style = this.json.board.style;
                     if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
-                        const row: number = marker.cell.row;
-                        const col: number = marker.cell.col;
+                        const row = marker.cell.row as number;
+                        const col = marker.cell.col as number;
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         const cell = gridExpanded[row][col];
@@ -2302,19 +2315,19 @@ export abstract class RendererBase {
                         svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 6, color: colour});
                     }
                 } else if (marker.type === "glyph") {
-                    const key = marker.glyph;
+                    const key = marker.glyph as string;
                     const piece = svgGroup.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
                     let sheetCellSize = piece.viewbox().h;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = piece.attr("data-cellsize");
+                        sheetCellSize = piece.attr("data-cellsize") as number;
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                             throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                         }
                     }
-                    for (const pt of marker.points) {
+                    for (const pt of marker.points as ITarget[]) {
                         const point = grid[pt.row][pt.col];
                         const use = svgGroup.use(piece);
                         const newx = point.x - this.cellsize / 2;

@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
-import { APRenderRep } from "../schema";
+import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
 /**
@@ -66,7 +66,7 @@ export class StackingTilesRenderer extends RendererBase {
         const group = this.rootSvg.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
-            let pieces: string[][][] = new Array();
+            let pieces: string[][][] = [];
 
             if (typeof this.json.pieces === "string") {
                 // Does it contain commas
@@ -74,7 +74,7 @@ export class StackingTilesRenderer extends RendererBase {
                     for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]) as string[][];
                         } else {
                             let cells = row.split(",");
                             cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });

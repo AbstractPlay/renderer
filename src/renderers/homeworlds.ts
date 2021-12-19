@@ -1,6 +1,6 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
-import { APRenderRep } from "../schema";
+import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
 type Seat = "N" | "E" | "S" | "W";
@@ -300,7 +300,7 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 let sheetCellSize = piece.viewbox().h;
                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                    sheetCellSize = piece.attr("data-cellsize");
+                    sheetCellSize = piece.attr("data-cellsize") as number;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                         throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                     }
@@ -406,6 +406,7 @@ export class HomeworldsRenderer extends RendererBase {
         if (highlight !== undefined) {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         nested.rect(250, 250).fill(pattern).stroke(stroke);
         if (this.options.boardClick !== undefined) {
             nested.rect(250, 250).fill("#fff").opacity(0).click(() => this.options.boardClick!(0, 0, name));
@@ -435,7 +436,7 @@ export class HomeworldsRenderer extends RendererBase {
                     }
                     let sheetCellSize = piece.viewbox().h;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = piece.attr("data-cellsize");
+                        sheetCellSize = piece.attr("data-cellsize") as number;
                         if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                             throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                         }

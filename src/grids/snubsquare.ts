@@ -7,16 +7,16 @@ import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
  * @param {IGeneratorArgs} args
  * @returns {GridPoints}
  */
-export function snubsquare(args: IGeneratorArgs): GridPoints {
-    let cellSize: number = 50;
+export const snubsquare = (args: IGeneratorArgs): GridPoints => {
+    let cellSize = 50;
     if (args.cellSize !== undefined) {
         cellSize = args.cellSize;
     }
     const triHeight = (cellSize * Math.sqrt(3)) / 2;
     const halfCell = cellSize / 2;
 
-    let gridHeight: number = 6;
-    let gridWidth: number = 6;
+    let gridHeight = 6;
+    let gridWidth = 6;
     if (args.gridHeight !== undefined) {
         gridHeight = args.gridHeight;
     }

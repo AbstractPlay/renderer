@@ -118,7 +118,7 @@
         },
         "board": {
             "description": "This is the game board itself.",
-            "oneOf": [
+            "anyOf": [
                 {
                     "description": "Used to render a single glyph",
                     "type": "null"
@@ -230,7 +230,7 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "oneOf": [
+                                "anyOf": [
                                     {
                                         "properties": {
                                             "type": {
@@ -289,7 +289,7 @@
                                             },
                                             "colour": {
                                                 "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "oneOf": [
+                                                "anyOf": [
                                                     {"$ref": "#/definitions/positiveInteger"},
                                                     {"$ref": "#/definitions/colourstrings"}
                                                 ],
@@ -318,7 +318,7 @@
                                             },
                                             "colour": {
                                                 "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "oneOf": [
+                                                "anyOf": [
                                                     {"$ref": "#/definitions/positiveInteger"},
                                                     {"$ref": "#/definitions/colourstrings"}
                                                 ]
@@ -353,7 +353,7 @@
                                             },
                                             "colour": {
                                                 "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "oneOf": [
+                                                "anyOf": [
                                                     {"$ref": "#/definitions/positiveInteger"},
                                                     {"$ref": "#/definitions/colourstrings"}
                                                 ],
@@ -566,7 +566,7 @@
             "description": "Areas are renderer-specific elements that are used and rendered in various ways.",
             "type": "array",
             "items": {
-                "oneOf": [
+                "anyOf": [
                     {
                         "description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
                         "type": "object",
@@ -650,7 +650,7 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "oneOf": [
+                "anyOf": [
                     {
                         "properties": {
                             "type": {

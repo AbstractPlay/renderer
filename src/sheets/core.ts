@@ -30,6 +30,7 @@ sheet.glyphs.set("cannon-town", (canvas: SVGContainer) => {
         .stroke({width: 0})
         .fill("#000");
     // group.viewbox(77.451592, 110.856808, 9.136364, 9.136364);
+    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
     group.viewbox(77.45159912109375, 111.12551879882812, 9.136360168457031, 9.136360168457031);
     return group;
 });

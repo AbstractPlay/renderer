@@ -7,16 +7,16 @@ import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
  * @param {IGeneratorArgs} args
  * @returns {GridPoints}
  */
-export function hexOfTri(args: IGeneratorArgs): GridPoints {
-    let cellSize: number = 50;
+export const hexOfTri = (args: IGeneratorArgs): GridPoints => {
+    let cellSize = 50;
     if (args.cellSize !== undefined) {
         cellSize = args.cellSize;
     }
     const halfCell = cellSize / 2;
     const actualHeight = (cellSize * Math.sqrt(3)) / 2;
 
-    let minWidth: number = 4;
-    let maxWidth: number = 7;
+    let minWidth = 4;
+    let maxWidth = 7;
     if (args.gridWidthMin !== undefined) {
         minWidth = args.gridWidthMin;
     }

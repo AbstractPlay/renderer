@@ -125,8 +125,8 @@ export type GridPoints = Array<Array<IPoint>>;
  */
 export type GridGenerator = (args: IGeneratorArgs) => GridPoints;
 
-export function normalizeX(inGrid: GridPoints): GridPoints {
-    let minX: number = 0;
+export const normalizeX = (inGrid: GridPoints): GridPoints => {
+    let minX = 0;
     inGrid.forEach((row) => {
         minX = Math.min(minX, row[0].x);
     });

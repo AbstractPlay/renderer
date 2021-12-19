@@ -1,6 +1,6 @@
 import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
-import { APRenderRep } from "../schema";
+import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
 /**
@@ -70,7 +70,7 @@ export class StackingOffsetRenderer extends RendererBase {
         const group = this.rootSvg.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
-            let pieces: string[][][] = new Array();
+            let pieces: string[][][] = [];
 
             if (typeof this.json.pieces === "string") {
                 // Does it contain commas
@@ -78,7 +78,7 @@ export class StackingOffsetRenderer extends RendererBase {
                     for (const row of this.json.pieces.split("\n")) {
                         let node: string[][] = [];
                         if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]);
+                            node = new Array(this.json.board.width).fill([]) as string[][];
                         } else {
                             const cells = row.split(",");
                             for (const cell of cells) {
@@ -122,7 +122,7 @@ export class StackingOffsetRenderer extends RendererBase {
                                 }
                                 const use = group.use(piece) as SVGG;
                                 use.center(point.x, point.y - (offset * i));
-                                const sheetCellSize = piece.attr("data-cellsize");
+                                const sheetCellSize = piece.attr("data-cellsize") as number;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
@@ -147,7 +147,7 @@ export class StackingOffsetRenderer extends RendererBase {
                                 }
                                 let sheetCellSize = piece.viewbox().h;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    sheetCellSize = piece.attr("data-cellsize");
+                                    sheetCellSize = piece.attr("data-cellsize") as number;
                                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                     }

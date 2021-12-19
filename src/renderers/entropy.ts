@@ -1,7 +1,7 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { IPoint } from "../grids/_base";
-import { APRenderRep } from "../schema";
+import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
 /**
@@ -52,9 +52,9 @@ export class EntropyRenderer extends RendererBase {
         }
 
         const cellsize = this.cellsize;
-        let baseStroke: number = 1;
-        let baseColour: string = "#000";
-        let baseOpacity: number = 1;
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
         }
@@ -79,8 +79,8 @@ export class EntropyRenderer extends RendererBase {
         const grid2 = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, startx, starty});
 
         for (const grid of [grid1, grid2]) {
-            let boardid: string = "neverEver";
-            let boardlabel: string = "neverEver";
+            let boardid = "neverEver";
+            let boardlabel = "neverEver";
             if (grid === grid1) {
                 boardid = "boardOne";
                 boardlabel = label1;
@@ -166,7 +166,7 @@ export class EntropyRenderer extends RendererBase {
         const group = this.rootSvg.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
-            let pieces: string[][][] = new Array();
+            let pieces: string[][][] = [];
 
             if (typeof this.json.pieces === "string") {
                 // Does it contain commas
@@ -174,7 +174,7 @@ export class EntropyRenderer extends RendererBase {
                     for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(width * 2).fill([]);
+                            node = new Array(width * 2).fill([]) as string[][];
                         } else {
                             let cells = row.split(",");
                             cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
@@ -186,7 +186,7 @@ export class EntropyRenderer extends RendererBase {
                     for (const row of this.json.pieces.split("\n")) {
                         let node: string[][];
                         if (row === "_") {
-                            node = new Array(width).fill([]);
+                            node = new Array(width).fill([]) as string[][];
                         } else {
                             const cells = row.split("");
                             node = cells.map((x) => [x]);
@@ -216,7 +216,7 @@ export class EntropyRenderer extends RendererBase {
 
                             let sheetCellSize = piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize");
+                                sheetCellSize = piece.attr("data-cellsize") as number;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }

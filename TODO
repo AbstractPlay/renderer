@@ -15,3 +15,4 @@ Todo:
   - Make the `squares-beveled` style actually look chiseled (drop shadow effects)
   - Produce more useful JSON schema validation error messages.
   - Made column labels customizable and infinite.
+  - See if you can figure out why `board.markers` are not being interpreted properly in `src/renderers/_base.ts`, thus needing the blanket ESLint rule at the top of the file.

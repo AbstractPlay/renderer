@@ -8,9 +8,9 @@ import { GridPoints, IGeneratorArgs, IPoint} from "./_base";
  * @param {IGeneratorArgs} args
  * @returns {GridPoints}
  */
-export function rectOfRects(args: IGeneratorArgs): GridPoints {
-    let cellWidth: number = 50;
-    let cellHeight: number = 50;
+export const rectOfRects = (args: IGeneratorArgs): GridPoints => {
+    let cellWidth = 50;
+    let cellHeight = 50;
     if (args.cellSize !== undefined) {
         cellWidth = args.cellSize;
         cellHeight = args.cellSize;
@@ -20,8 +20,8 @@ export function rectOfRects(args: IGeneratorArgs): GridPoints {
         cellWidth = args.cellWidth;
     }
 
-    let gridHeight: number = 8;
-    let gridWidth: number = 8;
+    let gridHeight = 8;
+    let gridWidth = 8;
     if (args.gridHeight !== undefined) {
         gridHeight = args.gridHeight;
     }
@@ -29,8 +29,8 @@ export function rectOfRects(args: IGeneratorArgs): GridPoints {
         gridWidth = args.gridWidth;
     }
 
-    let startx: number = 0;
-    let starty: number = 0;
+    let startx = 0;
+    let starty = 0;
     if (args.startx !== undefined) {
         startx = args.startx;
     }
