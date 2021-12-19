@@ -1,10 +1,10 @@
 = Render Schema Documentation
 :toc:
-:schemaver: 0.2.0
+:schemaver: 0.7.0
 
 Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. The `description` fields in the schema itself are rather curt because JSON doesn't allow niceties like multi-line strings. So this file is intended to give you complete instructions on how to build an instance of this schema.
 
-This document describes version {schemaver} of the schema.
+Concrete examples of all the features of the renderer can be found at the https://abstractplay.com/renderer/[public playground/demo area].
 
 == Concepts
 

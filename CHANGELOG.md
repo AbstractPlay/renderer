@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2021-12-19
 
 ### Breaking Change
 
@@ -13,10 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Documented the API. This involved adding full [TSDoc](https://tsdoc.org/) comments and using [TypeDoc](http://typedoc.org/) to generate the HTML. Also included an API description from Microsoft's [API Extractor](https://api-extractor.com/). The JSON schema is still documented manually. See the `/docs` folder.
 - A new playground/demo site is now available at [https://abstractplay.com/renderer/](https://abstractplay.com/renderer/).
 - Added `tileSpacing` property that, when combined with `tileWidth` and `tileHeight`, will break the tiles apart and space them from each other. Only works for `squares*` and `vertex*` boards.
-- Added glyphs for Alfred's Wyke.
 - Added a `glyphmap: [string,string][]` option to the renderer (where `[string,string]` is the old glyph name mapped to a new glyph name). This lets the user swap any glyph for another. Say they prefer the square pieces to the default round ones. The front end could let them map `piece` to `piece-square`.
+- Added glyphs for Alfred's Wyke.
 
 ## [0.6.0] - 2021-12-15
 

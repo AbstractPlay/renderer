@@ -10,7 +10,11 @@ Currently the only supported output format is SVG. The library has been tested a
 
 ## Usage
 
-In the browser, simply load `APRender.js` via a `<script>` tag. From within Node, simply import the variables and functions you need. Both methods give you access to the same API. For a concrete example, [see the playground](https://abstractplay.com/renderer/). The API and schema are documented in the `/docs` folder.
+In the browser, simply load `APRender.js` via a `<script>` tag. For a concrete example, [see the playground](https://abstractplay.com/renderer/).
+
+From within Node, simply import the variables and functions you need. Both methods give you access to the same API.
+
+The API and schema are documented in the `/docs` folder.
 
 ## Contributing
 

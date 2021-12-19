@@ -1,6 +1,6 @@
 {
     "name": "@abstractplay/renderer",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "description": "Renders Abstract Play game states graphically",
     "repository": {
         "type": "git",
