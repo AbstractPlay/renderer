@@ -1,4 +1,4 @@
-import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
+import { SVG, Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -113,17 +113,25 @@ export class StackingOffsetRenderer extends RendererBase {
                             const key = pieces[row][col][i];
                             if ( (key !== null) && (key !== "-") ) {
                                 const point = gridPoints[row][col];
-                                const piece = SVG("#" + key);
+                                const piece = SVG("#" + key) as Svg;
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }
-                                const use = group.use(piece) as SVGG;
-                                use.center(point.x, point.y - (offset * i));
-                                const sheetCellSize = piece.attr("data-cellsize") as number;
+                                let sheetCellSize = piece.viewbox().h;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    sheetCellSize = piece.attr("data-cellsize") as number;
+                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    }
                                 }
-                                use.scale((this.cellsize / sheetCellSize) * 0.85);
+                                const use = group.use(piece);
+                                const factor = (this.cellsize / sheetCellSize) * 0.85;
+                                const newsize = sheetCellSize * factor;
+                                const delta = this.cellsize - newsize;
+                                const newx = point.x - (this.cellsize / 2) + (delta / 2);
+                                const newy = point.y - (this.cellsize / 2) + (delta / 2) - (offset * i);
+                                use.dmove(newx, newy);
+                                use.scale(factor, newx, newy);
                                 if (this.options.boardClick !== undefined) {
                                     use.click(() => this.options.boardClick!(row, col, i.toString()));
                                 }

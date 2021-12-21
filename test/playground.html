@@ -18,6 +18,8 @@
                 }
                 if (document.getElementById("rot180").checked) {
                     options.rotate = 180;
+                } else {
+                    options.rotate = 0;
                 }
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);

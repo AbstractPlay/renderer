@@ -445,6 +445,7 @@ export interface IRendererOptionsIn {
     boardHover?: (row: number, col: number, piece: string) => void;
     colourBlind?: boolean;
     colours?: string[];
+    columnLabels?: string;
     glyphmap?: [string, string][];
     patternList?: string[];
     patterns?: boolean;

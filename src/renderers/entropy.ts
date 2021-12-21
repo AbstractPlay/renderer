@@ -96,14 +96,15 @@ export class EntropyRenderer extends RendererBase {
 
             // Add board labels
             const labels = board.group().id("labels");
+            const colLabels = this.getLabels(width);
             // Columns (letters)
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-                labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(colLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
                 // Skip top labels for board two if vertical
                 if ( (grid !== grid2) || (this.json.board.orientation !== "vertical") ) {
-                    labels.text(this.columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(colLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
             }
 

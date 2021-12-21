@@ -52,6 +52,10 @@ export interface IRendererOptionsIn {
      */
     showAnnotations?: boolean;
     /**
+     * A string of unique characters that will be used to create column labels. Defaults to the lowercase English alphabet.
+     */
+    columnLabels?: string;
+    /**
      * A list of tuples indicating "requested glyph" and "replacement glyph."
      * This is a way of a user swapping out one glyph for another at render time.
      *
@@ -86,23 +90,11 @@ export interface IRendererOptionsOut {
     patternList: string[];
     colourBlind: boolean;
     rotate: number;
+    columnLabels: string;
     showAnnotations: boolean;
     glyphmap: [string,string][];
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
-}
-
-/**
- * An internal helper function for producing labels for hex fields.
- *
- * @param x - The column number
- * @param y - The row number
- * @param height - The total height of the field
- * @returns A string label for the hex
- */
-const coords2algebraicHex = (x: number, y: number, height: number): string => {
-    const columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
-    return columnLabels[height - y - 1] + (x + 1).toString();
 }
 
 /**
@@ -125,6 +117,37 @@ interface ITarget {
 }
 
 /**
+ * An infinite generator for creating column labels from an initial string of characters.
+ * With the English alphabet, you would get a-z, then aa-az-ba-zz, then aaa etc.
+ *
+ * @param labels - A string of characters to use as column labels
+ * @returns The next label in the sequence.
+ */
+function* generateColumnLabel(labels: string): IterableIterator<string> {
+    let n = 0
+    let len = 1;
+    const chars = labels.split("");
+    while (true) {
+        let label = "";
+        let mask = n.toString(chars.length);
+        while (mask.length < len) {
+            mask = "0" + mask;
+        }
+        for (const char of mask) {
+            const val = parseInt(char, chars.length);
+            label += chars[val];
+        }
+        yield label;
+        n++;
+        const threshold = Math.pow(chars.length, len);
+        if (n === threshold) {
+            n = 0;
+            len++;
+        }
+    }
+}
+
+/**
  * The abstract base class from which all renderers inherit. Contains all the code shared by most renderers.
  *
  */
@@ -134,11 +157,6 @@ export abstract class RendererBase {
      *
      */
     public readonly name: string;
-    /**
-     * How columns are labelled. If there are more than 26 columns, then no labels will appear. Options to customize this are forthcoming.
-     *
-     */
-    protected readonly columnLabels = "abcdefghijklmnopqrstuvwxyz".split("");
     /**
      * The default cell size. It's simply a convenient constant. It has no bearing at all on the final output.
      *
@@ -165,6 +183,7 @@ export abstract class RendererBase {
             patterns: false,
             patternList: ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"],
             showAnnotations: true,
+            columnLabels: "abcdefghijklmnopqrstuvwxyz",
             rotate: 0,
             glyphmap: []
         };
@@ -254,6 +273,11 @@ export abstract class RendererBase {
             this.options.showAnnotations = opts.showAnnotations;
         }
 
+        // Check for different column labels
+        if (opts.columnLabels !== undefined) {
+            this.options.columnLabels = opts.columnLabels;
+        }
+
         // Validate rotation
         if ( (opts.rotate !== undefined) && (opts.rotate !== 0) ) {
             let normalized = opts.rotate;
@@ -261,6 +285,8 @@ export abstract class RendererBase {
                 normalized += 360;
             }
             this.options.rotate = normalized;
+        } else {
+            this.options.rotate = 0;
         }
 
         // move any glyphmap option over
@@ -692,7 +718,7 @@ export abstract class RendererBase {
 
         // Add board labels
         const labels = board.group().id("labels");
-        let columnLabels = this.columnLabels.slice(0, width);
+        let columnLabels = this.getLabels(width);
         if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
@@ -1058,7 +1084,7 @@ export abstract class RendererBase {
 
         // Add board labels
         const labels = board.group().id("labels");
-        let columnLabels = this.columnLabels.slice(0, width);
+        let columnLabels = this.getLabels(width);
         if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
@@ -1341,9 +1367,9 @@ export abstract class RendererBase {
         for (const hex of rect) {
             const { x, y } = hex.toPoint();
             const used = board.use(hexSymbol).translate(x, y);
-            let label = coords2algebraicHex(hex.x, hex.y, height);
+            let label = this.coords2algebraicHex(hex.x, hex.y, height);
             if (this.options.rotate === 180) {
-                label = coords2algebraicHex(width - hex.x - 1, height - hex.y - 1, height);
+                label = this.coords2algebraicHex(width - hex.x - 1, height - hex.y - 1, height);
             }
             labels.text(label)
             .font({
@@ -1424,7 +1450,7 @@ export abstract class RendererBase {
 
         // Add board labels
         const labels = board.group().id("labels");
-        let columnLabels = this.columnLabels.slice(0, width);
+        let columnLabels = this.getLabels(width);
         if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
@@ -1567,7 +1593,7 @@ export abstract class RendererBase {
         const labels = board.group().id("labels");
 
         // Rows (numbers)
-        let columnLabels = this.columnLabels.slice(0, maxWidth);
+        let columnLabels = this.getLabels(maxWidth);
         if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
@@ -1705,7 +1731,7 @@ export abstract class RendererBase {
         const labels = board.group().id("labels");
 
         // Rows (numbers)
-        let columnLabels = this.columnLabels.slice(0, maxWidth);
+        let columnLabels = this.getLabels(maxWidth);
         if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
@@ -1792,7 +1818,7 @@ export abstract class RendererBase {
         const labels = board.group().id("labels");
 
         // Rows (numbers)
-        let columnLabels = this.columnLabels.slice(0, maxWidth);
+        let columnLabels = this.getLabels(maxWidth);
         if (this.options.rotate === 180) {
             columnLabels = columnLabels.reverse();
         }
@@ -2315,5 +2341,46 @@ export abstract class RendererBase {
             default:
                 throw new Error(`Unrecognized direction ${dir}`);
         }
+    }
+
+    /**
+     * Gets a list of column labels.
+     *
+     * @param arg1 - If alone, this is the number of labels you want starting from 0. Otherwise it's the starting point for the list.
+     * @param arg2 - If provided, this is the number of labels you want, starting from nth label from the first argument.
+     * @returns A list of labels
+     */
+    protected getLabels(arg1: number, arg2?: number) : string[] {
+        let start = 0;
+        let count = 0;
+        if (arg2 === undefined) {
+            count = arg1;
+        } else {
+            start = arg1;
+            count = arg2;
+        }
+        const it = generateColumnLabel(this.options.columnLabels);
+        const labels: string[] = [];
+        // prime the iterator to get to the start value
+        for (let i = 0; i < start; i++) {
+            it.next();
+        }
+        for (let i = 0; i < count; i++) {
+            labels.push(it.next().value as string);
+        }
+        return labels;
+    }
+
+    /**
+     * An internal helper function for producing labels for hex fields.
+     *
+     * @param x - The column number
+     * @param y - The row number
+     * @param height - The total height of the field
+     * @returns A string label for the hex
+     */
+    protected coords2algebraicHex(x: number, y: number, height: number): string {
+        const [label] = this.getLabels(height - y - 1, 1);
+        return label + (x + 1).toString();
     }
 }
