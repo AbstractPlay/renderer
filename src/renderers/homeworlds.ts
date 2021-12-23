@@ -1,4 +1,4 @@
-import { G as SVGG, SVG, Svg } from "@svgdotjs/svg.js";
+import { G as SVGG, Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -215,7 +215,7 @@ export class HomeworldsRenderer extends RendererBase {
                 const sys = sysPeriph[idx];
                 const point = grid[row][col];
                 const id = `#_sysPeriph_${sys.name}`;
-                const system = SVG(id) as Svg;
+                const system = this.rootSvg.findOne(id) as Svg;
                 if ( (system === null) || (system === undefined) ) {
                     throw new Error(`Could not find the requested system (${id}). This should never happen`);
                 }
@@ -250,7 +250,7 @@ export class HomeworldsRenderer extends RendererBase {
                     throw new Error(`Unrecognized seat (${sys.seat}). This should never happen.`);
             }
             const id = `#_sysHome_${sys.seat}`;
-            const system = SVG(id) as Svg;
+            const system = this.rootSvg!.findOne(id) as Svg;
             if ( (system === null) || (system === undefined) ) {
                 throw new Error(`Could not find the requested system (${id}). This should never happen`);
             }
@@ -291,7 +291,7 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 const ship = colour + size + "S";
                 const point = sgrid[i][parseInt(size, 10) - 1];
-                const piece = SVG("#" + ship) as Svg;
+                const piece = this.rootSvg.findOne("#" + ship) as Svg;
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
@@ -423,7 +423,7 @@ export class HomeworldsRenderer extends RendererBase {
                         ship = cell.slice(0, 2) + newowner;
                     }
                     const point = grid[row][col];
-                    const piece = SVG("#" + ship) as Svg;
+                    const piece = this.rootSvg!.findOne("#" + ship) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }

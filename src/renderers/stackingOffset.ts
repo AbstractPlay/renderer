@@ -1,4 +1,4 @@
-import { SVG, Svg } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -113,7 +113,7 @@ export class StackingOffsetRenderer extends RendererBase {
                             const key = pieces[row][col][i];
                             if ( (key !== null) && (key !== "-") ) {
                                 const point = gridPoints[row][col];
-                                const piece = SVG("#" + key) as Svg;
+                                const piece = this.rootSvg.findOne("#" + key) as Svg;
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }
@@ -146,7 +146,7 @@ export class StackingOffsetRenderer extends RendererBase {
                             const key = pieces[row][col][i];
                             if ( (key !== null) && (key !== "-") ) {
                                 const point = gridPoints[row][col];
-                                const piece = SVG("#" + key) as Svg;
+                                const piece = this.rootSvg.findOne("#" + key) as Svg;
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }

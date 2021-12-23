@@ -1,4 +1,4 @@
-import { SVG, Svg } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
@@ -207,7 +207,7 @@ export class EntropyRenderer extends RendererBase {
                             if (col >= width) {
                                 point = grid2[row][col - width];
                             }
-                            const piece = SVG("#" + key) as Svg;
+                            const piece = this.rootSvg.findOne("#" + key) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }

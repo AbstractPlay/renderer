@@ -1,4 +1,4 @@
-import { SVG, Svg, Use as SVGUse } from "@svgdotjs/svg.js";
+import { Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -41,7 +41,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const used: [SVGUse, number][] = [];
                     const nested = this.rootSvg.group().id("_expansion").width(columnWidth);
                     for (const p of (area.stack as string[]).reverse()) {
-                        const piece = SVG("#" + p) as Svg;
+                        const piece = this.rootSvg.findOne("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
@@ -132,7 +132,7 @@ export class StackingExpandingRenderer extends RendererBase {
                         for (const key of pieces[row][col]) {
                             if ( (key !== null) && (key !== "-") ) {
                                 const point = gridPoints[row][col];
-                                const piece = SVG("#" + key) as Svg;
+                                const piece = this.rootSvg.findOne("#" + key) as Svg;
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }
@@ -182,7 +182,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const used: [SVGUse, number][] = [];
                     const nested = this.rootSvg.defs().group().id("_expansion").size(columnWidth, boardHeight);
                     for (const p of (area.stack as string[]).reverse()) {
-                        const piece = SVG("#" + p) as Svg;
+                        const piece = this.rootSvg.findOne("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
@@ -251,7 +251,7 @@ export class StackingExpandingRenderer extends RendererBase {
                         const stack = area.stash[iStack];
                         const used: [SVGUse, number][] = [];
                         for (const p of stack) {
-                            const piece = SVG("#" + p) as Svg;
+                            const piece = this.rootSvg.findOne("#" + p) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                             }

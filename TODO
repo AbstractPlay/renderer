@@ -8,11 +8,11 @@ Todo:
   ✔ Does the click handler need more granularity? Homeworlds is a good example. Is it ok if one click triggers multiple events? @done(21-12-10 09:03)
   ✔ Figure out what's up with the renderer occasionally expanding piece names like "B3E" into hexadecimal colour strings (e.g., Pikemen with AB player names). [SVG.js bug. Reported.] @done(21-12-18 13:51)
   ✘ Make `stacking-expanding` renderer rotate properly, including keys and captured pieces. @cancelled(21-12-10 09:03)
+  ✔ Made column labels customizable and infinite. @done(21-12-20 18:12)
+  - Legend signifiers do not appear to be case sensitive (e.g., Cannon board tried to use "R" and "r" for soldiers and towns). Filed issue: https://github.com/svgdotjs/svg.js/issues/1242. @started(21-12-23 12:26)
   - Write proper tests
-  - Legend signifiers do not appear to be case sensitive (e.g., Cannon board tried to use "R" and "r" for soldiers and towns)
   - Make it possible to disable expanding `eject` annotations.
   - Pyramid rotation at odd angles clips a little (e.g., Pikemen).
   - Make the `squares-beveled` style actually look chiseled (drop shadow effects)
   - Produce more useful JSON schema validation error messages.
-  - Made column labels customizable and infinite.
   - See if you can figure out why `board.markers` are not being interpreted properly in `src/renderers/_base.ts`, thus needing the blanket ESLint rule at the top of the file.

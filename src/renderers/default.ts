@@ -1,4 +1,4 @@
-import { SVG, Svg } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -108,11 +108,15 @@ export class DefaultRenderer extends RendererBase {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
+                            // eslint-disable-next-line no-console
+                            console.log(`Loading the glyph ${key}`);
                             const point = gridPoints[row][col];
-                            const piece = SVG("#" + key) as Svg;
+                            const piece = this.rootSvg.findOne("#" + key) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
+                            // eslint-disable-next-line no-console
+                            console.log(piece.svg());
                             let sheetCellSize = piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 sheetCellSize = piece.attr("data-cellsize") as number;
