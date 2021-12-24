@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Column labels are now infinite and fully customizeable.
+### Added
+
+- Column labels are now infinite and fully customizable using the `columnLabels` renderer option. Just pass a string of characters.
+
+### Changed
+
+- The `static` property has been added to the `eject` annotation if you don't want each consecutive notation to be wider and wider.
 
 ## [0.7.0] - 2021-12-19
 

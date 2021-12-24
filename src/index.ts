@@ -71,11 +71,11 @@ export interface IRenderOptions extends IRendererOptionsIn {
  * @returns A formatted string representing the errors
  */
 const formatAJVErrors = (errors: AJVError[]): string => {
-    let retstr = "";
-    for (const error of errors) {
-        retstr += `\nKeyword: ${error.keyword}, instancePath: ${error.instancePath}, schemaPath: ${error.schemaPath}`;
+    const msgs: string[] = [];
+    for (const e of errors) {
+        msgs.push(`The element "${e.instancePath}" "${e.message}".`)
     }
-    return retstr;
+    return msgs.join("\n");
 }
 
 /**

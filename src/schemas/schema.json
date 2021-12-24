@@ -707,6 +707,11 @@
                             "arrow": {
                                 "type": "boolean",
                                 "default": true
+                            },
+                            "static": {
+                                "description": "Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.",
+                                "type": "boolean",
+                                "default": "true"
                             }
                         },
                         "required": ["type", "targets"]

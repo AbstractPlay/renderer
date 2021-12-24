@@ -1995,8 +1995,14 @@ export abstract class RendererBase {
                         line.marker("end", markerCircle);
                     }
                     direction *= -1;
-                    if (direction > 0) {
-                        radius += rIncrement;
+                    let fixed = false;
+                    if ( ("static" in note) && (note.static !== undefined) && (typeof note.static === "boolean") ) {
+                        fixed = note.static;
+                    }
+                    if (! fixed) {
+                        if (direction > 0) {
+                            radius += rIncrement;
+                        }
                     }
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
                     let colour = "#000";

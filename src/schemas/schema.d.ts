@@ -581,6 +581,10 @@ export interface APRenderRep {
          */
         player?: number;
         arrow?: boolean;
+        /**
+         * Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.
+         */
+        static?: boolean & string;
         [k: string]: unknown;
       }
     | {
