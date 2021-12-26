@@ -2427,25 +2427,27 @@ export abstract class RendererBase {
             if (bars.length > 1) {
                 throw new Error("Only one button bar may be defined.");
             }
-            const bar = bars[0];
-            const barimg = this.buildButtonBar(bar);
-            const y = grid[0][0].y - this.cellsize;
-            // Position defaults to "right"
-            // If a position is passed by the renderer, it overrides everything
-            // Otherwise, the JSON prevails
-            let pos = "right";
-            if (position !== undefined) {
-                pos = position;
-            } else if (bar.position !== undefined) {
-                pos = bar.position;
+            if (bars.length === 1) {
+                const bar = bars[0];
+                const barimg = this.buildButtonBar(bar);
+                const y = grid[0][0].y - this.cellsize;
+                // Position defaults to "right"
+                // If a position is passed by the renderer, it overrides everything
+                // Otherwise, the JSON prevails
+                let pos = "right";
+                if (position !== undefined) {
+                    pos = position;
+                } else if (bar.position !== undefined) {
+                    pos = bar.position;
+                }
+                let x = 0;
+                if (pos === "left") {
+                    x = grid[0][0].x - (this.cellsize * 2) - barimg.viewbox().w;
+                } else {
+                    x = grid[0][grid.length - 1].x + (this.cellsize * 2);
+                }
+                this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).dmove(x, y);
             }
-            let x = 0;
-            if (pos === "left") {
-                x = grid[0][0].x - (this.cellsize * 2) - barimg.viewbox().w;
-            } else {
-                x = grid[0][grid.length - 1].x + (this.cellsize * 2);
-            }
-            this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).dmove(x, y);
         }
     }
 
