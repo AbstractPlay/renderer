@@ -558,6 +558,19 @@ export interface APRenderRep {
              * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
              */
             value?: string;
+            /**
+             * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
+             */
+            attributes?: [
+              {
+                name: string;
+                value: string;
+              },
+              ...{
+                name: string;
+                value: string;
+              }[]
+            ];
             [k: string]: unknown;
           },
           ...{
@@ -569,6 +582,19 @@ export interface APRenderRep {
              * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
              */
             value?: string;
+            /**
+             * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
+             */
+            attributes?: [
+              {
+                name: string;
+                value: string;
+              },
+              ...{
+                name: string;
+                value: string;
+              }[]
+            ];
             [k: string]: unknown;
           }[]
         ];
