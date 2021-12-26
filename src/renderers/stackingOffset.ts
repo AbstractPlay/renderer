@@ -182,5 +182,8 @@ export class StackingOffsetRenderer extends RendererBase {
 
         // button bar
         this.placeButtonBar(gridPoints);
+
+        // key
+        this.placeKey(gridPoints);
     }
 }

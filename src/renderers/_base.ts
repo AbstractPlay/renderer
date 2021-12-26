@@ -139,6 +139,27 @@ interface IButtonBar {
 }
 
 /**
+ * Internal interface used for generating keys
+ */
+interface IKeyEntry {
+    piece: string;
+    name: string;
+}
+
+/**
+ * Internal interface used for generating keys
+ */
+interface IKey {
+    [k: string]: unknown;
+    type: "key";
+    list: IKeyEntry[];
+    height?: number;
+    buffer?: number;
+    position?: "left"|"right";
+    noclick?: boolean;
+}
+
+/**
  * An infinite generator for creating column labels from an initial string of characters.
  * With the English alphabet, you would get a-z, then aa-az-ba-zz, then aaa etc.
  *
@@ -2538,4 +2559,126 @@ export abstract class RendererBase {
         nested.viewbox(0, 0, width, (height * bar.buttons.length) + (buffer * (bar.buttons.length - 1)));
         return nested;
     }
+
+    /**
+     * Generates the key and then places it appropriately.
+     *
+     * @param grid - The grid of points; used for positioning.
+     * @param position - If given, overrides the JSON setting.
+     */
+         protected placeKey(grid: GridPoints, position?: "left"|"right"): void {
+            if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+                throw new Error("Invalid object state.");
+            }
+            if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+                const keys = this.json.areas.filter((b) => b.type === "key") as IKey[];
+                if (keys.length > 1) {
+                    throw new Error("Only one key may be defined.");
+                }
+                if (keys.length === 1) {
+                    const key = keys[0];
+                    const keyimg = this.buildKey(key);
+                    const y = grid[0][0].y - this.cellsize;
+                    // Position defaults to "right"
+                    // If a position is passed by the renderer, it overrides everything
+                    // Otherwise, the JSON prevails
+                    let pos = "right";
+                    if (position !== undefined) {
+                        pos = position;
+                    } else if (key.position !== undefined) {
+                        pos = key.position;
+                    }
+                    let x = 0;
+                    if (pos === "left") {
+                        x = grid[0][0].x - (this.cellsize * 2) - keyimg.viewbox().w;
+                    } else {
+                        x = grid[0][grid.length - 1].x + (this.cellsize * 2);
+                    }
+                    this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
+                }
+            }
+        }
+
+        /**
+         * Builds the key from JSON.
+         *
+         * @param key - The parsed JSON representing the button bar
+         * @returns The nested SVG, which is embedded in the root `defs()`
+         */
+        protected buildKey(key: IKey): Svg {
+            if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+                throw new Error("Invalid object state.");
+            }
+
+            // initialize values
+            let height = this.cellsize * 0.333;
+            if (key.height !== undefined) {
+                height = this.cellsize * key.height;
+            }
+            let buffer = height * 0.1;
+            if (key.buffer !== undefined) {
+                buffer = height * key.buffer;
+            }
+            let noclick = false;
+            if (key.noclick !== undefined) {
+                noclick = key.noclick;
+            }
+            const nested = this.rootSvg.defs().nested().id("_key");
+
+            // build symbols of each label
+            const labels: SVGSymbol[] = [];
+            let maxWidth = 0;
+            let maxHeight = 0;
+            for (const k of key.list) {
+                const tmptxt = this.rootSvg.text(k.name).font({size: 17, fill: "#000", anchor: "start"});
+                maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
+                maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
+                const symtxt = nested.symbol();
+                symtxt.text(k.name).font({size: 17, fill: "#000", anchor: "start"});
+                symtxt.viewbox(tmptxt.bbox());
+                tmptxt.remove();
+                labels.push(symtxt);
+            }
+            if (key.list.length !== labels.length) {
+                throw new Error("Something terrible happened.");
+            }
+
+            // Composite each into a group, all at 0,0, adding click handlers as we go
+            const groups: Svg[] = [];
+            let maxScaledWidth = 0;
+            for (let i = 0; i < labels.length; i++) {
+                const k = key.list[i];
+                const symlabel = labels[i];
+                const piece = this.rootSvg.findOne(`#${k.piece}`) as Svg;
+                if ( (piece === undefined) || (piece === null) ) {
+                    throw new Error(`Could not find the requested piece (${k.piece}). Each piece *must* exist in the \`legend\`.`);
+
+                }
+                const id = `_key_${k.name}`;
+                const g = nested.nested().id(id);
+                const usedPiece = g.use(piece).size(height, height);
+                if ( (this.options.boardClick !== undefined) && (! noclick) ) {
+                    usedPiece.click(() => this.options.boardClick!(-1, -1, id));
+                }
+                // Have to manually calculate the width so Firefox will render it properly.
+                const factor = height / symlabel.viewbox().h;
+                const usedLabel = g.use(symlabel).size(symlabel.viewbox().w * factor, height).dx(height * 1.1);
+                maxScaledWidth = Math.max(maxScaledWidth, usedLabel.width() as number)
+                if ( (this.options.boardClick !== undefined) && (! noclick) ) {
+                    usedLabel.click(() => this.options.boardClick!(-1, -1, id));
+                }
+                groups.push(g);
+            }
+
+            // move each successive one down
+            let dy = 0;
+            for (const g of groups) {
+                g.dy(dy);
+                dy += height + buffer;
+            }
+
+            // set the viewbox and return
+            nested.viewbox(0, 0, (height * 1.1) + maxScaledWidth, (height * key.list.length) + (buffer * (key.list.length - 1)));
+            return nested;
+        }
 }

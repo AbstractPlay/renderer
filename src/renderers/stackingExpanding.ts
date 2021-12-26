@@ -40,6 +40,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const columnWidth = this.cellsize * 1;
                     const used: [SVGUse, number][] = [];
                     const nested = this.rootSvg.group().id("_expansion").width(columnWidth);
+                    // @ts-expect-error
                     for (const p of (area.stack as string[]).reverse()) {
                         const piece = this.rootSvg.findOne("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
@@ -181,6 +182,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const columnWidth = this.cellsize * 1;
                     const used: [SVGUse, number][] = [];
                     const nested = this.rootSvg.defs().group().id("_expansion").size(columnWidth, boardHeight);
+                    // @ts-expect-error
                     for (const p of (area.stack as string[]).reverse()) {
                         const piece = this.rootSvg.findOne("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
@@ -197,12 +199,6 @@ export class StackingExpandingRenderer extends RendererBase {
                         used.push([use, piece.viewbox().h]);
                         const factor = (columnWidth / sheetCellSize) * 0.95;
                         use.scale(factor, 0, 0);
-                        // // `use` places the object at 0,0. When you scale by the center, 0,0 moves. This transformation corects that.
-                        // const factor = (columnWidth / sheetCellSize);
-                        // const matrix = compose(scale(factor, factor, sheetCellSize / 2, sheetCellSize / 2));
-                        // const newpt = applyToPoint(matrix, {x: 0, y: 0});
-                        // use.dmove(newpt.x * -1, newpt.y * -1);
-                        // use.scale(factor * 0.95);
                     }
 
                     // Now go through each piece and shift them down
@@ -282,6 +278,10 @@ export class StackingExpandingRenderer extends RendererBase {
                     }
 
                     // Add area label
+                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: "#000"});
+                    const txtWidth = tmptxt.bbox().w;
+                    tmptxt.remove();
+                    nested.width(Math.max(areaWidth, txtWidth));
                     const txt = nested.text(area.label);
                     txt.font({size: textHeight, anchor: "start", fill: "#000"})
                         .attr("alignment-baseline", "hanging")
@@ -296,6 +296,9 @@ export class StackingExpandingRenderer extends RendererBase {
 
             // button bar (override a left-hand placement)
             this.placeButtonBar(gridPoints, "right");
+
+            // key (override a left-hand placement)
+            this.placeKey(gridPoints, "right");
         }
     }
 }

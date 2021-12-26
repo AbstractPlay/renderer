@@ -593,7 +593,8 @@
                             "G",
                             "B",
                             "Y"
-                        ]
+                        ],
+                        "additionalProperties": false
                     },
                     {
                         "description": "Used by the `stacking-expanding` renderer to display the expanded contents of a cell.",
@@ -640,7 +641,8 @@
                                 }
                             }
                         },
-                        "required": ["type", "label", "stash"]
+                        "required": ["type", "label", "stash"],
+                        "additionalProperties": false
                     },
                     {
                         "description": "Used to create a button bar for clicking.",
@@ -698,7 +700,58 @@
                                 "default": "#000"
                             }
                         },
-                        "required": ["type", "buttons"]
+                        "required": ["type", "buttons"],
+                        "additionalProperties": false
+                    },
+                    {
+                        "description": "A list of pieces in the `legend` that players need identifiers for. Usually needed for games with many colours or just indicating who controls what.",
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "enum": ["key"]
+                            },
+                            "list": {
+                                "description": "The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "piece": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["piece", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "height": {
+                                "description": "The height of each entry as a percentage of cell size.",
+                                "type": "number",
+                                "minimum": 0,
+                                "default": 0.333
+                            },
+                            "buffer": {
+                                "description": "The spacing you want between each entry, expressed as a percentage of the height.",
+                                "type": "number",
+                                "minimum": 0,
+                                "default": 0.1
+                            },
+                            "position": {
+                                "description": "Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.",
+                                "enum": ["left", "right"],
+                                "default": "right"
+                            },
+                            "noclick": {
+                                "description": "By default, `key` entries have a click handler attached. Set this to `true` to disable that.",
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": ["list"],
+                        "additionalProperties": false
                     }
                 ]
             }

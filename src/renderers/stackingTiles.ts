@@ -133,5 +133,8 @@ export class StackingTilesRenderer extends RendererBase {
 
         // button bar
         this.placeButtonBar(gridPoints);
+
+        // key
+        this.placeKey(gridPoints);
     }
 }

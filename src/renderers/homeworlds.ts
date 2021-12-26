@@ -282,6 +282,7 @@ export class HomeworldsRenderer extends RendererBase {
             const colour = colours[i];
             let count = 0;
             let last;
+            // @ts-expect-error
             for (const size of stash[colour] as string) {
                 if (size !== last) {
                     last = size;

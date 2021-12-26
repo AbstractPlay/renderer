@@ -523,7 +523,6 @@ export interface APRenderRep {
         G: Stashstrings;
         B: Stashstrings;
         Y: Stashstrings;
-        [k: string]: unknown;
       }
     | {
         type: "expandedColumn";
@@ -543,7 +542,6 @@ export interface APRenderRep {
          * This is an array of stacks of pieces (themselves an array).
          */
         stash: string[][];
-        [k: string]: unknown;
       }
     | {
         type: "buttonBar";
@@ -594,7 +592,32 @@ export interface APRenderRep {
          * Pattern for hex colour strings
          */
         colour?: string;
-        [k: string]: unknown;
+      }
+    | {
+        type?: "key";
+        /**
+         * The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.
+         */
+        list: {
+          piece: string;
+          name: string;
+        }[];
+        /**
+         * The height of each entry as a percentage of cell size.
+         */
+        height?: number;
+        /**
+         * The spacing you want between each entry, expressed as a percentage of the height.
+         */
+        buffer?: number;
+        /**
+         * Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.
+         */
+        position?: "left" | "right";
+        /**
+         * By default, `key` entries have a click handler attached. Set this to `true` to disable that.
+         */
+        noclick?: boolean;
       }
   )[];
   /**
