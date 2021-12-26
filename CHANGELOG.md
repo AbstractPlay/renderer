@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Column labels are now infinite and fully customizable using the `columnLabels` renderer option. Just pass a string of characters.
+- Added `buttonBar` to the `areas` property. This lets you create a vertical bank of buttons for use by the click handler.
 
 ### Changed
 

@@ -117,6 +117,28 @@ interface ITarget {
 }
 
 /**
+ * Internal interface used for button bars
+ */
+interface IButton {
+    label: string;
+    value?: string;
+}
+
+/**
+ * Internal interface used for button bars
+ */
+interface IButtonBar {
+    [k: string]: unknown;
+    type: "buttonBar";
+    buttons: IButton[];
+    position?: "left"|"right";
+    height?: number;
+    minWidth?: number;
+    buffer?: number;
+    colour?: string;
+}
+
+/**
  * An infinite generator for creating column labels from an initial string of characters.
  * With the English alphabet, you would get a-z, then aa-az-ba-zz, then aaa etc.
  *
@@ -2388,5 +2410,130 @@ export abstract class RendererBase {
     protected coords2algebraicHex(x: number, y: number, height: number): string {
         const [label] = this.getLabels(height - y - 1, 1);
         return label + (x + 1).toString();
+    }
+
+    /**
+     * Generates the button bar and then places it appropriately.
+     *
+     * @param grid - The grid of points; used for positioning.
+     * @param position - If given, overrides the JSON setting.
+     */
+    protected placeButtonBar(grid: GridPoints, position?: "left"|"right"): void {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+        if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+            const bars = this.json.areas.filter((b) => b.type === "buttonBar") as IButtonBar[];
+            if (bars.length > 1) {
+                throw new Error("Only one button bar may be defined.");
+            }
+            const bar = bars[0];
+            const barimg = this.buildButtonBar(bar);
+            const y = grid[0][0].y - this.cellsize;
+            // Position defaults to "right"
+            // If a position is passed by the renderer, it overrides everything
+            // Otherwise, the JSON prevails
+            let pos = "right";
+            if (position !== undefined) {
+                pos = position;
+            } else if (bar.position !== undefined) {
+                pos = bar.position;
+            }
+            let x = 0;
+            if (pos === "left") {
+                x = grid[0][0].x - (this.cellsize * 2) - barimg.viewbox().w;
+            } else {
+                x = grid[0][grid.length - 1].x + (this.cellsize * 2);
+            }
+            this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).dmove(x, y);
+        }
+    }
+
+    /**
+     * Builds the button bar from JSON.
+     *
+     * @param bar - The parsed JSON representing the button bar
+     * @returns The nested SVG, which is embedded in the root `defs()`
+     */
+    protected buildButtonBar(bar: IButtonBar): Svg {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+
+        // initialize values
+        let colour = "#000";
+        if (bar.colour !== undefined) {
+            colour= bar.colour;
+        }
+        let minWidth = 0;
+        if (bar.minWidth !== undefined) {
+            minWidth = bar.minWidth;
+        }
+        let height = this.cellsize;
+        if (bar.height !== undefined) {
+            height = this.cellsize * bar.height;
+        }
+        let buffer = 0;
+        if (bar.buffer !== undefined) {
+            buffer = height * bar.buffer;
+        }
+        const nested = this.rootSvg.defs().nested().id("_btnBar");
+
+        // build symbols of each label
+        const labels: SVGSymbol[] = [];
+        let maxWidth = minWidth;
+        let maxHeight = 0;
+        for (const b of bar.buttons) {
+            const tmptxt = this.rootSvg.text(b.label).font({size: 17, fill: colour, anchor: "start"});
+            maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
+            maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
+            const symtxt = nested.symbol();
+            symtxt.text(b.label).font({size: 17, fill: colour, anchor: "start"});
+            symtxt.viewbox(tmptxt.bbox());
+            tmptxt.remove();
+            labels.push(symtxt);
+        }
+        if (bar.buttons.length !== labels.length) {
+            throw new Error("Something terrible happened.");
+        }
+
+        // build the symbol for the rectangle
+        const width = maxWidth * 1.5;
+        const symrect = nested.symbol();
+        symrect.rect(width, height).fill({opacity: 0}).stroke({width: 1, color: colour});
+        // symrect.viewbox(-1, -1, width + 2, height + 1);
+
+        // Composite each into a group, all at 0,0, adding click handlers as we go
+        const groups: Svg[] = [];
+        for (let i = 0; i < labels.length; i++) {
+            const b = bar.buttons[i];
+            const symlabel = labels[i];
+            let value = b.label.replace(/\s/g, "");
+            if (b.value !== undefined) {
+                value = b.value;
+            }
+            const id = `_btn_${value}`;
+            const g = nested.nested().id(id);
+            const usedRect = g.use(symrect).size(width, height).move(0, 0);
+            if (this.options.boardClick !== undefined) {
+                usedRect.click(() => this.options.boardClick!(-1, -1, id));
+            }
+            const usedLabel = g.use(symlabel).size(maxWidth, maxHeight).center(width / 2, height / 2);
+            if (this.options.boardClick !== undefined) {
+                usedLabel.click(() => this.options.boardClick!(-1, -1, id));
+            }
+            groups.push(g);
+        }
+
+        // move each successive one down
+        let dy = 0;
+        for (const g of groups) {
+            g.dy(dy);
+            dy += height + buffer;
+        }
+
+        // set the viewbox and return
+        nested.viewbox(0, 0, width, (height * bar.buttons.length) + (buffer * (bar.buttons.length - 1)));
+        return nested;
     }
 }

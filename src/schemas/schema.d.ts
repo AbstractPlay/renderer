@@ -545,6 +545,57 @@ export interface APRenderRep {
         stash: string[][];
         [k: string]: unknown;
       }
+    | {
+        type: "buttonBar";
+        /**
+         * The array of the buttons themselves, which will be presented in the order given.
+         */
+        buttons: [
+          {
+            /**
+             * The label that will be visible on the rendered image.
+             */
+            label: string;
+            /**
+             * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
+             */
+            value?: string;
+            [k: string]: unknown;
+          },
+          ...{
+            /**
+             * The label that will be visible on the rendered image.
+             */
+            label: string;
+            /**
+             * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
+             */
+            value?: string;
+            [k: string]: unknown;
+          }[]
+        ];
+        /**
+         * Where you want the bar to appear relative to the board.
+         */
+        position?: "left" | "right";
+        /**
+         * The height of each button as a percentage of the cell size.
+         */
+        height?: number;
+        /**
+         * If you want the buttons to have a minimum width, regardless of the values, provide it here as a percentage of the cell size. Otherwise all the buttons will have the width of the widest label.
+         */
+        minWidth?: number;
+        /**
+         * The spacing you want between each button, expressed as a percentage of the height.
+         */
+        buffer?: number;
+        /**
+         * Pattern for hex colour strings
+         */
+        colour?: string;
+        [k: string]: unknown;
+      }
   )[];
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.

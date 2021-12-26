@@ -139,10 +139,13 @@ export class DefaultRenderer extends RendererBase {
             }
         }
 
-        // Finally, annotations
+        // annotations
         if (this.options.showAnnotations) {
             this.annotateBoard(gridPoints);
         }
+
+        // button bar
+        this.placeButtonBar(gridPoints);
     }
 
     /**

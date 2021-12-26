@@ -293,6 +293,9 @@ export class StackingExpandingRenderer extends RendererBase {
                     placeY += nested.height() as number;
                 }
             }
+
+            // button bar (override a left-hand placement)
+            this.placeButtonBar(gridPoints, "right");
         }
     }
 }
