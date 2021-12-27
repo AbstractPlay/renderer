@@ -117,11 +117,16 @@ For the Homeworlds renderer, this is an array of arrays of ships. Ships must des
 
 === `areas`
 
-This section is unique to different renderers. The default renderer ignores it.
+This section is unique to different renderers.
 
 The Homewords renderer uses this for the global stash. Provide the stash contents of each of the four colours.
 
 The `stacking-expanding` renderer uses this to display an expanded column of pieces in a stack when requested.
+
+There are two generic areas available to most renderers:
+
+buttonBar:: This lets you place a clickable bar of buttons next to the board. The text of the buttons can be styled using CSS. Used in Alfred's Wyke. See the playground for an example.
+key:: This places a list of glyphs next to the board with a text label. Used to aid in move entry or to convey some other useful state information. Used in Volcano. See the playground for an example.
 
 === `annotations`
 

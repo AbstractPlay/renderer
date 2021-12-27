@@ -31,6 +31,7 @@ export interface APRenderRep {
         colour?: string;
         player?: number;
         arrow?: boolean;
+        static?: boolean & string;
         [k: string]: unknown;
     }
     | {
@@ -46,7 +47,6 @@ export interface APRenderRep {
         G: Stashstrings;
         B: Stashstrings;
         Y: Stashstrings;
-        [k: string]: unknown;
     }
     | {
         type: "expandedColumn";
@@ -57,7 +57,57 @@ export interface APRenderRep {
         type: "localStash";
         label: string;
         stash: string[][];
-        [k: string]: unknown;
+    }
+    | {
+        type: "buttonBar";
+        buttons: [
+            {
+            label: string;
+            value?: string;
+            attributes?: [
+                {
+                name: string;
+                value: string;
+            },
+            ...{
+                name: string;
+                value: string;
+            }[]
+            ];
+            [k: string]: unknown;
+        },
+        ...{
+            label: string;
+            value?: string;
+            attributes?: [
+                {
+                name: string;
+                value: string;
+            },
+            ...{
+                name: string;
+                value: string;
+            }[]
+            ];
+            [k: string]: unknown;
+        }[]
+        ];
+        position?: "left" | "right";
+        height?: number;
+        minWidth?: number;
+        buffer?: number;
+        colour?: string;
+    }
+    | {
+        type?: "key";
+        list: {
+            piece: string;
+            name: string;
+        }[];
+        height?: number;
+        buffer?: number;
+        position?: "left" | "right";
+        noclick?: boolean;
     }
     )[];
     board:

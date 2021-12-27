@@ -175,7 +175,7 @@
                 "niche-areas-bbar": {
                     "name": "Niche: Areas - Button Bar",
                     "description": "The `areas` property also supports a button bar, which places a vertical bar of buttons to the left or right of the game board, usually for use by the click handler.",
-                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2}},\"pieces\":\"BBBBBBBB\\nBBBBBBBB\\n_\\n_\\n_\\n_\\nAAAAAAAA\\nAAAAAAAA\",\"areas\":[{\"type\":\"buttonBar\",\"buttons\":[{\"label\":\"This\"},{\"label\":\"is\"},{\"label\":\"a\"},{\"label\":\"really long\",\"value\":\"long\"},{\"label\":\"test\"}],\"position\":\"right\",\"buffer\":0.1}]}"
+                    "render": "{\"board\":{\"style\":\"vertex\",\"width\":4,\"height\":4,\"tileHeight\":1,\"tileWidth\":1,\"tileSpacing\":0.5},\"legend\":{\"B\":{\"name\":\"piece-square\",\"player\":1},\"D\":{\"name\":\"piece-square\",\"player\":2},\"W1\":\"wyke-1\",\"W2\":\"wyke-2\",\"W3\":\"wyke-3\",\"W4\":\"wyke-4\",\"W5\":\"wyke-5\",\"W6\":\"wyke-6\",\"W7\":\"wyke-7\"},\"pieces\":\"W3,W6,W4,W4\\nW5,W5,W4,W4\\nW4,W4,W5,W3\\nW4,W4,W3,D\",\"annotations\":[{\"type\":\"enter\",\"targets\":[{\"row\":2,\"col\":3}]},{\"type\":\"enter\",\"targets\":[{\"row\":3,\"col\":2}]},{\"type\":\"enter\",\"targets\":[{\"row\":2,\"col\":2}]},{\"type\":\"enter\",\"targets\":[{\"row\":1,\"col\":1}]},{\"type\":\"enter\",\"targets\":[{\"row\":0,\"col\":0}]}],\"areas\":[{\"type\":\"buttonBar\",\"position\":\"left\",\"buttons\":[{\"label\":\"1-1-1-1-1\",\"attributes\":[{\"name\":\"text-decoration\",\"value\":\"line-through\"}]},{\"label\":\"2-1-1\",\"attributes\":[{\"name\":\"text-decoration\",\"value\":\"line-through\"}]},{\"label\":\"2-2\"},{\"label\":\"3-1\"},{\"label\":\"4\"}]}]}"
                 },
                 "niche-areas-key": {
                     "name": "Niche: Areas - Legend Key",
@@ -243,7 +243,7 @@
         <section>
             <h1>Abstract Play: Renderer Playground</h1>
             <p>This is a public place for people to interact and experiment with the Abstract Play rendering engine. Use the drop-down menu to select from a list of samples, and then tweak them to your heart's content. <a href="https://github.com/AbstractPlay/renderer">See the GitHub page for documentation and a list of available glyphs.</a> It should work correctly in Chrome, Firefox, Opera, and Edge. If you encounter issues, please let us know on the GitHub page.</p>
-            <p>Updated to version 0.7.0.</p>
+            <p>Updated to version 0.8.0.</p>
         </section>
         <section>
             <h1>JSON Input</h1>
