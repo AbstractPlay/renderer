@@ -1312,12 +1312,12 @@ export abstract class RendererBase {
                 }
                 this.rootSvg.click(genericCatcher);
             } else {
-                const tile = this.rootSvg.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
+                const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill("#fff").opacity(0).id("_clickCatcher");
                 const tiles = this.rootSvg.group().id("tiles");
                 for (let row = 0; row < grid.length; row++) {
                     for (let col = 0; col < grid[row].length; col++) {
                         const {x, y} = grid[row][col];
-                        const t = tiles.use(tile).center(x, y);
+                        const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
                         if (this.options.rotate === 180) {
                             t.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
                         } else {
