@@ -627,6 +627,10 @@ export interface APRenderRep {
         list: {
           piece: string;
           name: string;
+          /**
+           * If a click handler is attached, this is the value that will be given in the "piece" parameter. Otherwise it will pass the name.
+           */
+          value?: string;
         }[];
         /**
          * The height of each entry as a percentage of cell size.
@@ -641,9 +645,9 @@ export interface APRenderRep {
          */
         position?: "left" | "right";
         /**
-         * By default, `key` entries have a click handler attached. Set this to `true` to disable that.
+         * By default, `key` entries have a click handler attached. Set this to `false` to disable that.
          */
-        noclick?: boolean;
+        clickable?: boolean;
       }
   )[];
   /**

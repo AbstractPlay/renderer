@@ -153,6 +153,7 @@ interface IButtonBar {
 interface IKeyEntry {
     piece: string;
     name: string;
+    value?: string;
 }
 
 /**
@@ -165,7 +166,7 @@ interface IKey {
     height?: number;
     buffer?: number;
     position?: "left"|"right";
-    noclick?: boolean;
+    clickable?: boolean;
 }
 
 /**
@@ -2476,7 +2477,25 @@ export abstract class RendererBase {
                 } else {
                     x = grid[0][grid.length - 1].x + (this.cellsize * 2);
                 }
-                this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).dmove(x, y);
+                const used = this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).dmove(x, y);
+                if (this.options.boardClick !== undefined) {
+                    const top = used.y() as number;
+                    const height = used.height() as number;
+                    const numButtons = bar.buttons.length;
+                    const btnHeight = height / numButtons;
+                    used.click((e: { clientX: number; clientY: number; }) => {
+                        const point = used.point(e.clientX, e.clientY);
+                        const yRelative = point.y - top;
+                        const row = Math.floor(yRelative / btnHeight);
+                        if ( (row >= 0) && (row < numButtons) ) {
+                            let value = bar.buttons[row].label;
+                            if(bar.buttons[row].value !== undefined) {
+                                value = bar.buttons[row].value!;
+                            }
+                            this.options.boardClick!(-1, -1, `_btn_${value}`);
+                        }
+                    });
+                }
             }
         }
     }
@@ -2543,9 +2562,10 @@ export abstract class RendererBase {
         const width = maxWidth * 1.5;
         const symrect = nested.symbol();
         symrect.rect(width, height).fill({opacity: 0}).stroke({width: 1, color: colour});
+        // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
         // symrect.viewbox(-1, -1, width + 2, height + 1);
 
-        // Composite each into a group, all at 0,0, adding click handlers as we go
+        // Composite each into a group, all at 0,0
         const groups: Svg[] = [];
         for (let i = 0; i < labels.length; i++) {
             const b = bar.buttons[i];
@@ -2556,14 +2576,8 @@ export abstract class RendererBase {
             }
             const id = `_btn_${value}`;
             const g = nested.nested().id(id);
-            const usedRect = g.use(symrect).size(width, height).move(0, 0);
-            if (this.options.boardClick !== undefined) {
-                usedRect.click(() => this.options.boardClick!(-1, -1, id));
-            }
-            const usedLabel = g.use(symlabel).size(maxWidth, maxHeight).center(width / 2, height / 2);
-            if (this.options.boardClick !== undefined) {
-                usedLabel.click(() => this.options.boardClick!(-1, -1, id));
-            }
+            g.use(symrect).size(width, height).move(0, 0);
+            g.use(symlabel).size(maxWidth, maxHeight).center(width / 2, height / 2);
             groups.push(g);
         }
 
@@ -2575,7 +2589,7 @@ export abstract class RendererBase {
         }
 
         // set the viewbox and return
-        nested.viewbox(0, 0, width, (height * bar.buttons.length) + (buffer * (bar.buttons.length - 1)));
+        nested.viewbox(-1, -1, width + 2, (height * bar.buttons.length) + (buffer * (bar.buttons.length - 1)) + 2);
         return nested;
     }
 
@@ -2613,7 +2627,30 @@ export abstract class RendererBase {
                 } else {
                     x = grid[0][grid.length - 1].x + (this.cellsize * 2);
                 }
-                this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
+                const used = this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
+                let clickable = true;
+                if (key.clickable !== undefined) {
+                    clickable = key.clickable
+                }
+                if ( (this.options.boardClick !== undefined) && (clickable) ) {
+                    const top = used.y() as number;
+                    const height = used.height() as number;
+                    const numEntries = key.list.length;
+                    const btnHeight = height / numEntries;
+                    used.click((e: { clientX: number; clientY: number; }) => {
+                        const point = used.point(e.clientX, e.clientY);
+                        const yRelative = point.y - top;
+                        const row = Math.floor(yRelative / btnHeight);
+                        if ( (row >= 0) && (row < numEntries) ) {
+                            let value = key.list[row].name;
+                            if (key.list[row].value !== undefined) {
+                                value = key.list[row].value!;
+                            }
+                            this.options.boardClick!(-1, -1, `_key_${value}`);
+                        }
+                    });
+                }
+
             }
         }
     }
@@ -2637,10 +2674,6 @@ export abstract class RendererBase {
         let buffer = height * 0.1;
         if (key.buffer !== undefined) {
             buffer = height * key.buffer;
-        }
-        let noclick = false;
-        if (key.noclick !== undefined) {
-            noclick = key.noclick;
         }
         const nested = this.rootSvg.defs().nested().id("_key");
 
@@ -2673,19 +2706,16 @@ export abstract class RendererBase {
                 throw new Error(`Could not find the requested piece (${k.piece}). Each piece *must* exist in the \`legend\`.`);
 
             }
-            const id = `_key_${k.name}`;
-            const g = nested.nested().id(id);
-            const usedPiece = g.use(piece).size(height, height);
-            if ( (this.options.boardClick !== undefined) && (! noclick) ) {
-                usedPiece.click(() => this.options.boardClick!(-1, -1, id));
+            let id = `_key_${k.name}`;
+            if (k.value !== undefined) {
+                id = `_key_${k.value}`;
             }
+            const g = nested.nested().id(id);
+            g.use(piece).size(height, height);
             // Have to manually calculate the width so Firefox will render it properly.
             const factor = height / symlabel.viewbox().h;
             const usedLabel = g.use(symlabel).size(symlabel.viewbox().w * factor, height).dx(height * 1.1);
             maxScaledWidth = Math.max(maxScaledWidth, usedLabel.width() as number)
-            if ( (this.options.boardClick !== undefined) && (! noclick) ) {
-                usedLabel.click(() => this.options.boardClick!(-1, -1, id));
-            }
             groups.push(g);
         }
 

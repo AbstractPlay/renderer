@@ -739,6 +739,10 @@
                                         },
                                         "name": {
                                             "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "If a click handler is attached, this is the value that will be given in the \"piece\" parameter. Otherwise it will pass the name.",
+                                            "type": "string"
                                         }
                                     },
                                     "required": ["piece", "name"],
@@ -762,10 +766,10 @@
                                 "enum": ["left", "right"],
                                 "default": "right"
                             },
-                            "noclick": {
-                                "description": "By default, `key` entries have a click handler attached. Set this to `true` to disable that.",
+                            "clickable": {
+                                "description": "By default, `key` entries have a click handler attached. Set this to `false` to disable that.",
                                 "type": "boolean",
-                                "default": false
+                                "default": true
                             }
                         },
                         "required": ["list"],
