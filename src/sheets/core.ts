@@ -198,7 +198,8 @@ sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true)
         .stroke({width: 1, color: "black"})
-    group.use(rectsym);
+    rectsym.viewbox(-1, -1, 52, 52);
+    group.use(rectsym).size(50, 50);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -210,8 +211,9 @@ sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true)
         .stroke({width: 1, color: "black"})
-    group.use(rectsym);
-    group.use(rectsym).dx(50);
+    rectsym.viewbox(-1, -1, 52, 52);
+    group.use(rectsym).size(50, 50);
+    group.use(rectsym).size(50, 50).dx(50);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -223,9 +225,10 @@ sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true)
         .stroke({width: 1, color: "black"})
-    group.use(rectsym);
-    group.use(rectsym).dx(50);
-    group.use(rectsym).dy(50);
+    rectsym.viewbox(-1, -1, 52, 52);
+    group.use(rectsym).size(50, 50);
+    group.use(rectsym).size(50, 50).dx(50);
+    group.use(rectsym).size(50, 50).dy(50);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -237,10 +240,11 @@ sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true)
         .stroke({width: 1, color: "black"})
-    group.use(rectsym);
-    group.use(rectsym).dx(50);
-    group.use(rectsym).dy(50);
-    group.use(rectsym).dmove(50,50);
+    rectsym.viewbox(-1, -1, 52, 52);
+    group.use(rectsym).size(50, 50);
+    group.use(rectsym).size(50, 50).dx(50);
+    group.use(rectsym).size(50, 50).dy(50);
+    group.use(rectsym).size(50, 50).dmove(50,50);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -252,11 +256,12 @@ sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true)
         .stroke({width: 1, color: "black"})
-    group.use(rectsym);
-    group.use(rectsym).dx(50);
-    group.use(rectsym).dy(50);
-    group.use(rectsym).dmove(50,50);
-    group.use(rectsym).dmove(6.25, 6.25).scale(0.75, 6.25, 6.25);
+    rectsym.viewbox(-1, -1, 52, 52);
+    group.use(rectsym).size(50, 50);
+    group.use(rectsym).size(50, 50).dx(50);
+    group.use(rectsym).size(50, 50).dy(50);
+    group.use(rectsym).size(50, 50).dmove(50,50);
+    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 6.25);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -268,12 +273,13 @@ sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true)
         .stroke({width: 1, color: "black"})
-    group.use(rectsym);
-    group.use(rectsym).dx(50);
-    group.use(rectsym).dy(50);
-    group.use(rectsym).dmove(50,50);
-    group.use(rectsym).dmove(6.25, 6.25).scale(0.75, 6.25, 6.25);
-    group.use(rectsym).dmove(56.25, 6.25).scale(0.75, 56.25, 6.25);
+    rectsym.viewbox(-1, -1, 52, 52);
+    group.use(rectsym).size(50, 50);
+    group.use(rectsym).size(50, 50).dx(50);
+    group.use(rectsym).size(50, 50).dy(50);
+    group.use(rectsym).size(50, 50).dmove(50,50);
+    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 6.25);
+    group.use(rectsym).size(37.5, 37.5).dmove(56.25, 6.25);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -285,32 +291,14 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true)
         .stroke({width: 1, color: "black"})
-    group.use(rectsym);
-    group.use(rectsym).dx(50);
-    group.use(rectsym).dy(50);
-    group.use(rectsym).dmove(50,50);
-    group.use(rectsym).dmove(6.25, 6.25).scale(0.75, 6.25, 6.25);
-    group.use(rectsym).dmove(56.25, 6.25).scale(0.75, 56.25, 6.25);
-    group.use(rectsym).dmove(6.25, 56.25).scale(0.75, 6.25, 56.25);
-    group.viewbox(-1, -1, 102, 102);
-    return group;
-});
-
-sheet.glyphs.set("wyke-8", (canvas: SVGContainer) => {
-    const group = canvas.symbol();
-    const rectsym = group.symbol();
-    rectsym.rect(50, 50)
-        .fill("none")
-        .attr("data-playerfill", true)
-        .stroke({width: 1, color: "black"})
-    group.use(rectsym);
-    group.use(rectsym).dx(50);
-    group.use(rectsym).dy(50);
-    group.use(rectsym).dmove(50,50);
-    group.use(rectsym).dmove(6.25, 6.25).scale(0.75, 6.25, 6.25);
-    group.use(rectsym).dmove(56.25, 6.25).scale(0.75, 56.25, 6.25);
-    group.use(rectsym).dmove(6.25, 56.25).scale(0.75, 6.25, 56.25);
-    group.use(rectsym).dmove(56.25, 56.25).scale(0.75, 56.25, 56.25);
+    rectsym.viewbox(-1, -1, 52, 52);
+    group.use(rectsym).size(50, 50);
+    group.use(rectsym).size(50, 50).dx(50);
+    group.use(rectsym).size(50, 50).dy(50);
+    group.use(rectsym).size(50, 50).dmove(50,50);
+    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 6.25);
+    group.use(rectsym).size(37.5, 37.5).dmove(56.25, 6.25);
+    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 56.25);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });

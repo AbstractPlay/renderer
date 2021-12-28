@@ -12,6 +12,7 @@ Todo:
   ✘ Legend signifiers do not appear to be case sensitive (e.g., Cannon board tried to use "R" and "r" for soldiers and towns). See issue: https://github.com/svgdotjs/svg.js/issues/1242. Appears to be unrelated to SVG.js. @started(21-12-23 12:26) @cancelled(21-12-23 16:46) @wasted(4h20m57s)
   ✔ Produce more useful JSON schema validation error messages. @done(21-12-23 16:59)
   ✔ Make it possible to disable expanding `eject` annotations. @done(21-12-23 17:12)
+  ✔ Alfred's Wyke is clipping in Firefox. @done(21-12-28 11:46)
   - Write proper tests
   - Pyramid rotation at odd angles clips a little (e.g., Pikemen).
   - Make the `squares-beveled` style actually look chiseled (drop shadow effects)
