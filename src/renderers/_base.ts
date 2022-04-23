@@ -232,7 +232,7 @@ export abstract class RendererBase {
         this.options = {
             sheets: ["core", "dice", "looney", "piecepack", "chess"],
             colourBlind: false,
-            colours: ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"],
+            colours: [],
             patterns: false,
             patternList: ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"],
             showAnnotations: true,
@@ -280,9 +280,13 @@ export abstract class RendererBase {
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
             this.options.colourBlind = opts.colourBlind;
-            if (this.options.colourBlind) {
-                this.options.colours = ["#a6611a", "#80cdc1", "#dfc27d", "#018571"];
-            }
+        } else {
+            this.options.colourBlind = false;
+        }
+        if (this.options.colourBlind) {
+            this.options.colours = ["#a6611a", "#80cdc1", "#dfc27d", "#018571"];
+        } else {
+            this.options.colours = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
         }
 
         // Validate sheet list
@@ -942,8 +946,9 @@ export abstract class RendererBase {
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
+            const root = this.rootSvg;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = this.rootSvg!.point(e.clientX, e.clientY);
+                const point = root.point(e.clientX, e.clientY);
                 const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                 if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -952,7 +957,7 @@ export abstract class RendererBase {
             });
             if (this.options.rotate === 180) {
                 genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = this.rootSvg!.point(e.clientX, e.clientY);
+                    const point = root.point(e.clientX, e.clientY);
                     const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                     const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                     if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -1287,8 +1292,9 @@ export abstract class RendererBase {
                 const originY = grid[0][0].y;
                 const maxX = grid[0][grid[0].length - 1].x;
                 const maxY = grid[grid.length - 1][0].y;
+                const root = this.rootSvg;
                 let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = this.rootSvg!.point(e.clientX, e.clientY);
+                    const point = root.point(e.clientX, e.clientY);
                     const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                     const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                     if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -1300,7 +1306,7 @@ export abstract class RendererBase {
                 });
                 if (this.options.rotate === 180) {
                     genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                        const point = this.rootSvg!.point(e.clientX, e.clientY);
+                        const point = root.point(e.clientX, e.clientY);
                         const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                         const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                         if (x >= 0 && x < width && y >= 0 && y < height) {

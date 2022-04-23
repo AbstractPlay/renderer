@@ -10,7 +10,7 @@
     "types": "build/index.d.ts",
     "scripts": {
         "build": "npm run build-ts && npm run lint && npm run gendocs",
-        "build-ts": "npm run json2ts && tsc && copy .\\src\\schemas\\schema.d.ts .\\build\\schemas",
+        "build-ts": "npm run json2ts && tsc && copy .\\src\\schemas\\schema.d.ts .\\build\\schemas && npm pack",
         "test": "mocha -r ts-node/register test/**/*.test.ts",
         "lint": "npx eslint \"src/**/*.ts\" -c .eslintrc.js",
         "dist-dev": "webpack",
