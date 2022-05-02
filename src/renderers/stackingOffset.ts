@@ -133,7 +133,7 @@ export class StackingOffsetRenderer extends RendererBase {
                                 use.dmove(newx, newy);
                                 use.scale(factor, newx, newy);
                                 if (this.options.boardClick !== undefined) {
-                                    use.click(() => this.options.boardClick!(row, col, i.toString()));
+                                    use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                                 }
                             }
                         }
@@ -166,7 +166,7 @@ export class StackingOffsetRenderer extends RendererBase {
                                 use.dmove(newx, newy);
                                 use.scale(factor, newx, newy);
                                 if (this.options.boardClick !== undefined) {
-                                    use.click(() => this.options.boardClick!(row, col, i.toString()));
+                                    use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                                 }
                             }
                         }

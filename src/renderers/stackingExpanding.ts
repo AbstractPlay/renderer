@@ -260,7 +260,7 @@ export class StackingExpandingRenderer extends RendererBase {
                             }
                             const use = nested.use(piece);
                             if (this.options.boardClick !== undefined) {
-                                use.click(() => this.options.boardClick!(-1, -1, p));
+                                use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                             }
                             used.push([use, piece.viewbox().h]);
                             const factor = (cellsize / sheetCellSize);

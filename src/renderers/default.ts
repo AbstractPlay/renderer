@@ -130,7 +130,7 @@ export class DefaultRenderer extends RendererBase {
                             use.scale(factor, newx, newy);
                             if (this.options.boardClick !== undefined) {
                                 if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
-                                    use.click(() => this.options.boardClick!(row, col, key));
+                                    use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
                                 }
                             }
                         }
