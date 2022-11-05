@@ -9,8 +9,9 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
  */
 export class StackingTilesRenderer extends RendererBase {
 
+    public static readonly rendererName: string = "stacking-tiles";
     constructor() {
-        super("stacking-tiles");
+        super();
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
@@ -29,7 +30,7 @@ export class StackingTilesRenderer extends RendererBase {
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
         if (! ("style" in this.json.board)) {
-            throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
+            throw new Error(`This 'board' schema cannot be handled by the '${ StackingTilesRenderer.rendererName }' renderer.`);
         }
         /*
             This renderer needs a little more information than just the grid points themselves.
@@ -56,7 +57,7 @@ export class StackingTilesRenderer extends RendererBase {
             //     tileHeight = Math.floor((this.cellsize * Math.sqrt(3)) / 8);
             //     break;
             default:
-                throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ this.name }' renderer.`);
+                throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingTilesRenderer.rendererName }' renderer.`);
         }
 
         // Now place the pieces
@@ -102,7 +103,7 @@ export class StackingTilesRenderer extends RendererBase {
                             for (let i = 0; i < parts.length; i++) {
                                 const idx = parseInt(parts[i], 10);
                                 if ( (idx === undefined) && (isNaN(idx)) ) {
-                                    throw new Error(`The '${this.name}' renderer expects that each piece in the stack be a single digit between 1 and 9.`);
+                                    throw new Error(`The '${StackingTilesRenderer.rendererName}' renderer expects that each piece in the stack be a single digit between 1 and 9.`);
                                 }
                                 const x = point.x - offsetX;
                                 const y = point.y + offsetY - (tileHeight * (i + 1));

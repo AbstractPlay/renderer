@@ -9,8 +9,9 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
  */
 export class StackingOffsetRenderer extends RendererBase {
 
+    public static readonly rendererName: string = "stacking-offset";
     constructor() {
-        super("stacking-offset");
+        super();
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
@@ -29,7 +30,7 @@ export class StackingOffsetRenderer extends RendererBase {
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
         if (! ("style" in this.json.board)) {
-            throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
+            throw new Error(`This 'board' schema cannot be handled by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
 
         // Load all the pieces in the legend (have to do this early so the glyphs are available for marking the board)
@@ -60,7 +61,7 @@ export class StackingOffsetRenderer extends RendererBase {
                 gridPoints = this.hexOfCir();
                 break;
             default:
-                throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ this.name }' renderer.`);
+                throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
 
         // PIECES

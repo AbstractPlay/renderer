@@ -10,8 +10,10 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
  */
 export class EntropyRenderer extends RendererBase {
 
+    public static readonly rendererName: string = "entropy";
+
     constructor() {
-        super("entropy");
+        super();
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
@@ -24,7 +26,7 @@ export class EntropyRenderer extends RendererBase {
 
         // BOARD
         if ( (this.json.board === null) || (! ("style" in this.json.board)) || (this.json.board.style !== "entropy") ) {
-            throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
+            throw new Error(`This 'board' schema cannot be handled by the '${ EntropyRenderer.rendererName }' renderer.`);
         }
 
         let label1 = "Player 1: Order";

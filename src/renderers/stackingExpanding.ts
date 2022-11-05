@@ -16,8 +16,9 @@ interface ILocalStash {
  */
 export class StackingExpandingRenderer extends RendererBase {
 
+    public static readonly rendererName: string = "stacking-expanding";
     constructor() {
-        super("stacking-expanding");
+        super();
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
@@ -81,7 +82,7 @@ export class StackingExpandingRenderer extends RendererBase {
             // Delegate to style-specific renderer
             let gridPoints: GridPoints;
             if (! ("style" in this.json.board)) {
-                throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
+                throw new Error(`This 'board' schema cannot be handled by the '${ StackingExpandingRenderer.rendererName }' renderer.`);
             }
             switch (this.json.board.style) {
                 case "squares-checkered":
@@ -108,7 +109,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     gridPoints = this.hexOfCir();
                     break;
                 default:
-                    throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ this.name }' renderer.`);
+                    throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingExpandingRenderer.rendererName }' renderer.`);
             }
 
             // PIECES

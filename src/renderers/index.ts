@@ -8,17 +8,22 @@ import { StackingTilesRenderer } from "./stackingTiles";
 
 export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsRenderer, EntropyRenderer };
 
-const renderers = new Map<string, RendererBase>();
-const rDefault = new DefaultRenderer();
-const rStackingOff = new StackingOffsetRenderer();
-const rStackingTiles = new StackingTilesRenderer();
-const rStackingExpanding = new StackingExpandingRenderer();
-const rHomeworlds = new HomeworldsRenderer();
-const rEntropy = new EntropyRenderer();
-renderers.set(rDefault.name, rDefault);
-renderers.set(rStackingOff.name, rStackingOff);
-renderers.set(rStackingTiles.name, rStackingTiles);
-renderers.set(rHomeworlds.name, rHomeworlds);
-renderers.set(rEntropy.name, rEntropy);
-renderers.set(rStackingExpanding.name, rStackingExpanding);
+const renderers: (name: string) => RendererBase = (name) =>{
+  switch(name) {
+    case DefaultRenderer.rendererName:
+      return new DefaultRenderer();
+    case StackingOffsetRenderer.rendererName:
+      return new StackingOffsetRenderer();
+    case StackingTilesRenderer.rendererName:
+      return new StackingTilesRenderer();
+    case StackingExpandingRenderer.rendererName:
+      return new StackingExpandingRenderer();
+    case HomeworldsRenderer.rendererName:
+      return new HomeworldsRenderer();
+    case EntropyRenderer.rendererName:
+      return new EntropyRenderer();
+    default:
+      throw new Error(`Don't know a renderer called ${name}`);
+  }
+}
 export {renderers};

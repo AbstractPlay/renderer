@@ -209,7 +209,7 @@ export abstract class RendererBase {
      * Every renderer must have a unique name, referenced by the `renderer` property of the schema.
      *
      */
-    public readonly name: string;
+    public static readonly rendererName: string;
     /**
      * The default cell size. It's simply a convenient constant. It has no bearing at all on the final output.
      *
@@ -227,8 +227,7 @@ export abstract class RendererBase {
      * Creates an instance of RendererBase. A name must be provided. Also sets the default options.
      * @param name - The unique name of the renderer
      */
-    constructor(name = "default") {
-        this.name = name;
+    constructor() {
         this.options = {
             sheets: ["core", "dice", "looney", "piecepack", "chess"],
             colourBlind: false,
@@ -264,8 +263,8 @@ export abstract class RendererBase {
         }
 
         // Make sure the JSON is intended for you
-        if (json.renderer !== this.name) {
-            throw new Error(`Renderer mismatch. The JSON data you provided is intended for the "${json.renderer}" renderer, but the "${this.name}" renderer received it.`);
+        if (json.renderer !== (this.constructor as typeof RendererBase).rendererName) {
+            throw new Error(`Renderer mismatch. The JSON data you provided is intended for the "${json.renderer}" renderer, but the "${(this.constructor as typeof RendererBase).rendererName}" renderer received it.`);
         }
 
         this.json = json;
@@ -1724,7 +1723,7 @@ export abstract class RendererBase {
 
         if (this.options.boardClick !== undefined) {
             const root = this.rootSvg;
-            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                 const point = root.point(e.clientX, e.clientY);
                 let min = Number.MAX_VALUE;
                 let row0 = 0;

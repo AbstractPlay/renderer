@@ -26,8 +26,10 @@ interface ISystem {
  */
 export class HomeworldsRenderer extends RendererBase {
 
+    public static readonly rendererName: string = "homeworlds";
+
     constructor() {
-        super("homeworlds");
+        super();
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
@@ -40,7 +42,7 @@ export class HomeworldsRenderer extends RendererBase {
 
         // BOARD
         if ( (! Array.isArray(this.json.board)) || ( (this.json.board.length > 0) && (! this.json.board[0].hasOwnProperty("stars")) ) ) {
-            throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
+            throw new Error(`This 'board' schema cannot be handled by the '${ HomeworldsRenderer.rendererName }' renderer.`);
         }
 
         // `board` and `pieces` array have to be the same length
@@ -305,7 +307,7 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 const use = sgroup.use(piece);
                 if (this.options.boardClick !== undefined) {
-                    use.click(() => this.options.boardClick!(-1, -1, `${colour}${size}`));
+                    use.click((e : Event) => {this.options.boardClick!(-1, -1, `${colour}${size}`); e.stopPropagation();});
                 }
                 const factor = (stashCellSize / sheetCellSize);
 

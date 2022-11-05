@@ -9,6 +9,8 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
  */
 export class DefaultRenderer extends RendererBase {
 
+    public static readonly rendererName: string = "default";
+
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
@@ -28,7 +30,7 @@ export class DefaultRenderer extends RendererBase {
 
         let gridPoints: GridPoints;
         if (! ("style" in this.json.board)) {
-            throw new Error(`This 'board' schema cannot be handled by the '${ this.name }' renderer.`);
+            throw new Error(`This 'board' schema cannot be handled by the '${ DefaultRenderer.rendererName }' renderer.`);
         }
         switch (this.json.board.style) {
             case "squares-beveled":

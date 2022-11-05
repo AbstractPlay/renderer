@@ -171,7 +171,6 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
         if ( ("svgid" in opts) && (opts.svgid !== undefined) && (opts.svgid.length > 0) ) {
             svgid = opts.svgid;
         }
-        // draw = SVG(opts.divelem) as Svg;
         draw = SVG().addTo(opts.divelem).size(width, height).id(svgid);
     } else {
         let height: NumberAlias = "100%";
@@ -207,7 +206,7 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
         json.renderer = "default";
     }
 
-    const renderer = renderers.get(json.renderer as string);
+    const renderer = renderers(json.renderer as string);
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
