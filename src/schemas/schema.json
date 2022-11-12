@@ -556,7 +556,7 @@
                         "maxItems": 24,
                         "items": {
                             "type": "string",
-                            "pattern": "^[RGBY][123][NESW]$"
+                            "pattern": "^p[RGBY][123][NESW]$"
                         }
                     }
                 }

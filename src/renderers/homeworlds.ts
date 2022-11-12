@@ -186,7 +186,7 @@ export class HomeworldsRenderer extends RendererBase {
         let pcols: number;
         let prows: number;
         const numPeriph = sysPeriph.length; // + 1;
-        if (numPeriph === 1) {
+        if (numPeriph === 0) {
             pcols = 1;
             prows = 1;
         // If the number is a perfect square...
@@ -294,7 +294,7 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 const ship = colour + size + "S";
                 const point = sgrid[i][parseInt(size, 10) - 1];
-                const piece = this.rootSvg.findOne("#" + ship) as Svg;
+                const piece = this.rootSvg.findOne("#p" + ship) as Svg;
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
@@ -420,10 +420,10 @@ export class HomeworldsRenderer extends RendererBase {
                     const cell = ports[row][col]!;
                     let ship = cell;
                     // If a ship, adjust owner based on rotation
-                    if (cell.length === 3) {
-                        const owner = cell[2];
+                    if (cell.length === 4) {
+                        const owner = cell[3];
                         const newowner: Seat = this.effectiveSeat(owner as Seat, rotation);
-                        ship = cell.slice(0, 2) + newowner;
+                        ship = cell.slice(0, 3) + newowner;
                     }
                     const point = grid[row][col];
                     const piece = this.rootSvg!.findOne("#" + ship) as Svg;
