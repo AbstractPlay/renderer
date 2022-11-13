@@ -344,6 +344,8 @@ export class HomeworldsRenderer extends RendererBase {
             passrect.dy(stashCellSize * 9);
         }
         sgroup.move((250 + (sgroup.width() as number) + 10) * -1, -250);
+        const box = draw.bbox();
+        draw.viewbox(box.x - 2, box.y - 2, 250 * (pcols + 1) - box.x + 4, box.height + 4);
     }
 
     /**

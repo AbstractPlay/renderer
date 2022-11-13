@@ -211,7 +211,9 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
     renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap});
-    if (draw.bbox().h !== 0) {
+    if (draw.bbox().h !== 0 
+        && draw.viewbox().h === 0  // Only set it here if the renderer didn't set it
+        ) {
         // Important: Mozilla browsers include stroke widths where other browsers do not.
         const box = draw.bbox();
         draw.viewbox(box.x - 2, box.y - 2, box.width + 4, box.height + 4);
