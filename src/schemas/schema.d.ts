@@ -24,6 +24,10 @@ export interface APRenderRep {
    */
   renderer?: "default" | "stacking-offset" | "stacking-tiles" | "stacking-expanding" | "homeworlds" | "entropy";
   /**
+   * A list of flags to pass to the renderer.
+   */
+  options?: "rotate-pieces"[];
+  /**
    * Map each `piece` to an actual glyph with possible options.
    */
   legend?: {

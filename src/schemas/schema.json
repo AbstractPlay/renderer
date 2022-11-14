@@ -93,6 +93,13 @@
             ],
             "default": "default"
         },
+        "options": {
+            "description": "A list of flags to pass to the renderer.",
+            "type": "array",
+            "items": {
+                "enum": ["rotate-pieces"]
+            }
+        },
         "legend": {
             "description": "Map each `piece` to an actual glyph with possible options.",
             "type": "object",

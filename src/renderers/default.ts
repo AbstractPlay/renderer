@@ -130,6 +130,8 @@ export class DefaultRenderer extends RendererBase {
                             const newy = point.y - (this.cellsize / 2) + (delta / 2);
                             use.dmove(newx, newy);
                             use.scale(factor, newx, newy);
+                            if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
+                                use.rotate(options.rotate);
                             if (this.options.boardClick !== undefined) {
                                 if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
