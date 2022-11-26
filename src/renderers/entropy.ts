@@ -241,7 +241,7 @@ export class EntropyRenderer extends RendererBase {
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
                     const {x, y} = grid[row][col];
-                    const t = tiles.use(tile).center(x, y);
+                    const t = tiles.use(tile).center(x - (0.95 * this.cellsize / 2), y - (0.95 * this.cellsize / 2));
                     if (this.options.boardClick !== undefined) {
                         t.click(() => this.options.boardClick!(row, col, ""));
                     }
@@ -253,12 +253,12 @@ export class EntropyRenderer extends RendererBase {
         if (occlude1) {
             const topleft: IPoint = {x: grid1[0][0].x - (cellsize / 2), y: grid1[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid1[6][6].x + (cellsize / 2), y: grid1[6][6].y + (cellsize / 2)};
-            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.85);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.5);
         }
         if (occlude2) {
             const topleft: IPoint = {x: grid2[0][0].x - (cellsize / 2), y: grid2[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid2[6][6].x + (cellsize / 2), y: grid2[6][6].y + (cellsize / 2)};
-            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.85);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.5);
         }
 
         // Finally, annotations
