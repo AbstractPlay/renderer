@@ -2656,7 +2656,7 @@ export abstract class RendererBase {
                             if (key.list[row].value !== undefined) {
                                 value = key.list[row].value!;
                             }
-                            this.options.boardClick!(-1, -1, `_key_${value}`);
+                            this.options.boardClick!(-1, -1, value);
                         }
                     });
                 }
