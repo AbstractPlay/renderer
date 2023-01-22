@@ -1583,23 +1583,28 @@ export abstract class RendererBase {
             }
         }
 
-        // If click handler is present, add transparent "click catcher" tiles over the points
         if (this.options.boardClick !== undefined) {
-            const tile = this.rootSvg.defs().rect(this.cellsize * 0.85, this.cellsize * 0.85).fill("#fff").opacity(0).id("_clickCatcher");
-            const tiles = this.rootSvg.group().id("tiles");
-            for (let row = 0; row < grid.length; row++) {
-                for (let col = 0; col < grid[row].length; col++) {
-                    const {x, y} = grid[row][col];
-                    const t = tiles.use(tile).center(x, y);
-                    if (this.options.boardClick !== undefined) {
-                        if (this.options.rotate === 180) {
-                            t.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
-                        } else {
-                            t.click(() => this.options.boardClick!(row, col, ""));
+            const root = this.rootSvg;
+            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const point = root.point(e.clientX, e.clientY);
+                let min = Number.MAX_VALUE;
+                let row0 = 0;
+                let col0 = 0;
+                for (let row = 0; row < height; row++) {
+                    const currRow = grid[row];
+                    for (let col = 0; col < width; col++) {
+                        const curr = currRow[col];
+                        const dist2 = Math.pow(point.x - curr.x, 2.0) + Math.pow(point.y - curr.y, 2.0);
+                        if (dist2 < min) {
+                            min = dist2;
+                            row0 = row;
+                            col0 = col;
                         }
                     }
                 }
-            }
+                this.options.boardClick!(row0, col0, "");
+            });
+            this.rootSvg.click(genericCatcher);
         }
 
         if (this.options.rotate === 180) {
