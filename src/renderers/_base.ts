@@ -1,7 +1,7 @@
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
-import { defineGrid, extendHex } from "honeycomb-grid";
+import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
@@ -671,7 +671,6 @@ export abstract class RendererBase {
         // @ts-expect-error
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
-            // @ts-expect-error
             if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
                 show = [...(this.json.board.buffer as IBuffer).show!];
             }
@@ -685,7 +684,6 @@ export abstract class RendererBase {
                 show = [...newshow];
             }
             let pattern: string | undefined;
-            // @ts-expect-error
             if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && ((this.json.board.buffer.pattern as string[]).length > 0) ) {
                 pattern = (this.json.board.buffer as IBuffer).pattern;
             }
@@ -1038,7 +1036,6 @@ export abstract class RendererBase {
         // @ts-expect-error
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
-            // @ts-expect-error
             if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
                 show = [...(this.json.board.buffer as IBuffer).show!];
             }
@@ -1052,7 +1049,6 @@ export abstract class RendererBase {
                 show = [...newshow];
             }
             let pattern: string | undefined;
-            // @ts-expect-error
             if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && ((this.json.board.buffer.pattern as string[]).length > 0) ) {
                 pattern = (this.json.board.buffer as IBuffer).pattern;
             }
@@ -1394,25 +1390,25 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let orientation = "pointy";
+        let orientation = Orientation.POINTY;
         if (style.endsWith("f")) {
-            orientation = "flat";
+            orientation = Orientation.FLAT;
         }
-        let offset = -1;
+        let offset: HexOffset = -1;
         if (style.includes("-even")) {
             offset = 1;
         }
         if (this.options.rotate === 180) {
-            offset *= -1;
+            offset = -1;
         }
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const Hex = extendHex({
+        const myHex = defineHex({
             offset,
             orientation,
-            size: cellsize,
+            dimensions: cellsize,
         });
-        const grid = defineGrid(Hex);
-        const corners = Hex().corners();
+        const grid = new Grid(myHex, rectangle({width, height}));
+        const corners = grid.getHex({col: 0, row: 0})!.corners;
         const hexSymbol = this.rootSvg.symbol()
             .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
             .fill("white").opacity(1)
@@ -1420,14 +1416,14 @@ export abstract class RendererBase {
 
         const board = this.rootSvg.group().id("board");
         const labels = this.rootSvg.group().id("labels");
-        const rect = grid.rectangle({width, height});
+        // const rect = grid.rectangle({width, height});
         const fontSize = this.cellsize / 5;
-        for (const hex of rect) {
-            const { x, y } = hex.toPoint();
+        for (const hex of grid) {
+            const { x, y } = hex;
             const used = board.use(hexSymbol).translate(x, y);
-            let label = this.coords2algebraicHex(hex.x, hex.y, height);
+            let label = this.coords2algebraicHex(hex.col, hex.row, height);
             if (this.options.rotate === 180) {
-                label = this.coords2algebraicHex(width - hex.x - 1, height - hex.y - 1, height);
+                label = this.coords2algebraicHex(width - hex.col - 1, height - hex.row - 1, height);
             }
             labels.text(label)
             .font({
@@ -1440,24 +1436,24 @@ export abstract class RendererBase {
             .translate(x, y + fontSize);
             if (this.options.boardClick !== undefined) {
                 if (this.options.rotate === 180) {
-                    used.click(() => this.options.boardClick!(height - hex.y - 1, width - hex.x - 1, ""));
+                    used.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, ""));
                 } else {
-                    used.click(() => this.options.boardClick!(hex.y, hex.x, ""));
+                    used.click(() => this.options.boardClick!(hex.row, hex.col, ""));
                 }
             }
         }
 
         let gridPoints: GridPoints = [];
-        const {x: cx, y: cy} = Hex().center();
+        const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
         for (let y = 0; y < 9; y++) {
             const node: IPoint[] = [];
             for (let x = 0; x < 9; x++) {
-                const hex = rect.get({x, y});
+                const hex = grid.getHex({col: x, row: y});
                 if (hex === undefined) {
                     throw new Error();
                 }
-                const pt = hex.toPoint();
-                node.push({x: pt.x + cx, y: pt.y + cy} as IPoint);
+                // const pt = hex.toPoint();
+                node.push({x: hex.x + cx, y: hex.y + cy} as IPoint);
             }
             gridPoints.push(node);
         }
