@@ -1409,6 +1409,8 @@ export abstract class RendererBase {
         });
         const grid = new Grid(myHex, rectangle({width, height}));
         const corners = grid.getHex({col: 0, row: 0})!.corners;
+        // eslint-disable-next-line no-console
+        console.log(`Source corners: ${JSON.stringify(corners)}`);
         const hexSymbol = this.rootSvg.symbol()
             .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
             .fill("white").opacity(1)
@@ -1444,7 +1446,7 @@ export abstract class RendererBase {
         }
 
         let gridPoints: GridPoints = [];
-        const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
+        // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
         for (let y = 0; y < 9; y++) {
             const node: IPoint[] = [];
             for (let x = 0; x < 9; x++) {
@@ -1453,7 +1455,8 @@ export abstract class RendererBase {
                     throw new Error();
                 }
                 // const pt = hex.toPoint();
-                node.push({x: hex.x + cx, y: hex.y + cy} as IPoint);
+                // node.push({x: hex.x + cx, y: hex.y + cy} as IPoint);
+                node.push({x: hex.x, y: hex.y} as IPoint);
             }
             gridPoints.push(node);
         }
