@@ -1409,8 +1409,6 @@ export abstract class RendererBase {
         });
         const grid = new Grid(myHex, rectangle({width, height}));
         const corners = grid.getHex({col: 0, row: 0})!.corners;
-        // eslint-disable-next-line no-console
-        console.log(`Source corners: ${JSON.stringify(corners)}`);
         const hexSymbol = this.rootSvg.symbol()
             .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
             .fill("white").opacity(1)
