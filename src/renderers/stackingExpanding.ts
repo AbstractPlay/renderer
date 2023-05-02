@@ -243,7 +243,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const offset = cellsize * 3.5;
                     const areaWidth = cellsize * numStacks;
                     const areaHeight = textHeight + cellsize + (offset * (maxHeight - 1));
-                    const nested = this.rootSvg.defs().nested().id(`_stash${iArea}`).size(areaWidth, areaHeight);
+                    const nested = this.rootSvg.defs().nested().id(`_stash${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1, -1, areaWidth+2, areaHeight+2);
                     for (let iStack = 0; iStack < area.stash.length; iStack++) {
                         const stack = area.stash[iStack];
                         const used: [SVGUse, number][] = [];
@@ -290,8 +290,9 @@ export class StackingExpandingRenderer extends RendererBase {
                         .move(0, 0);
 
                     // Now place the whole group below the board
-                    this.rootSvg.use(nested).move(gridPoints[0][0].x - this.cellsize, placeY);
-                    placeY += nested.height() as number;
+                    const placed = this.rootSvg.use(nested);
+                    placed.move(gridPoints[0][0].x - this.cellsize, placeY);
+                    placeY += placed.bbox().height + (this.cellsize * 0.5);
                 }
             }
 
