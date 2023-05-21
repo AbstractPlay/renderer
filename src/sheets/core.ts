@@ -172,6 +172,46 @@ sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
     return group;
 });
 
+
+sheet.glyphs.set("piece-triangle", (canvas: SVGContainer) => {
+    const cellsize = 180;
+    const halfcell = cellsize / 2;
+    const height = 175;
+    const base = 100;
+    const group = canvas.symbol();
+    group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
+        .attr("data-playerfill", true)
+        .stroke({width: 5, color: "#000"})
+        .fill("#fff");
+    group.viewbox(0, 0, cellsize, cellsize);
+    return group;
+});
+
+sheet.glyphs.set("piece-triangle-dot", (canvas: SVGContainer) => {
+    const cellsize = 180;
+    const halfcell = cellsize / 2;
+    const height = 175;
+    const base = 100;
+    const group = canvas.symbol();
+    const x1 = halfcell;
+    const y1 = halfcell - height / 2;
+    const x2 = (halfcell) - (base / 2);
+    const y2 = halfcell + height / 2;
+    const x3 = (halfcell) + (base / 2);
+    const y3 = halfcell + height / 2;
+    const cx = (x1 + x2 + x3) / 3;
+    const cy = (y1 + y2 + y3) / 3;
+    group.polygon(`${x1},${y1} ${x2},${y2} ${x3},${y3}`)
+        .attr("data-playerfill", true)
+        .stroke({width: 5, color: "#000"})
+        .fill("#fff");
+    group.circle(base / 3)
+        .fill("#000")
+        .center(cx, cy);
+    group.viewbox(0, 0, cellsize, cellsize);
+    return group;
+});
+
 sheet.glyphs.set("tower", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const tower = group.group();
