@@ -310,7 +310,6 @@ export interface APRenderRep {
          * The text that will appear at the top left of the area
          */
         label: string;
-        [k: string]: unknown;
       }
     | {
         type: "globalStash";

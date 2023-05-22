@@ -45,7 +45,6 @@ export interface APRenderRep {
         type: "pieces";
         pieces: [string, ...string[]];
         label: string;
-        [k: string]: unknown;
     }
     | {
         type: "globalStash";
