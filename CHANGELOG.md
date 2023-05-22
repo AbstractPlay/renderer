@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Added two triangle pieces to core sheet for game Realm.
+* Added an `area` called `pieces` used by the default renderer. Give it a list of pieces in the legend, and it will place them in a bar beneath the board. Current use is for tracking pieces being rearranged in a game of Realm. (The playground has been updated.)
 
 ### Fixed
 

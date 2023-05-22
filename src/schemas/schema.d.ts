@@ -299,6 +299,20 @@ export interface APRenderRep {
    */
   areas?: (
     | {
+        type: "pieces";
+        /**
+         * A list of strings representing glyphs in the `legend`
+         *
+         * @minItems 1
+         */
+        pieces: [string, ...string[]];
+        /**
+         * The text that will appear at the top left of the area
+         */
+        label: string;
+        [k: string]: unknown;
+      }
+    | {
         type: "globalStash";
         R: Stashstrings;
         G: Stashstrings;

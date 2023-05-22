@@ -575,6 +575,28 @@
             "items": {
                 "anyOf": [
                     {
+                        "description": "The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm.",
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "enum": ["pieces"]
+                            },
+                            "pieces": {
+                                "description": "A list of strings representing glyphs in the `legend`",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "minItems": 1
+                            },
+                            "label": {
+                                "description": "The text that will appear at the top left of the area",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["type", "pieces", "label"]
+                    },
+                    {
                         "description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
                         "type": "object",
                         "properties": {

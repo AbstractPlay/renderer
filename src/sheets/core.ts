@@ -174,11 +174,11 @@ sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
 
 
 sheet.glyphs.set("piece-triangle", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
     const cellsize = 180;
     const halfcell = cellsize / 2;
     const height = 175;
     const base = 100;
-    const group = canvas.symbol();
     group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
         .stroke({width: 5, color: "#000"})
@@ -188,11 +188,11 @@ sheet.glyphs.set("piece-triangle", (canvas: SVGContainer) => {
 });
 
 sheet.glyphs.set("piece-triangle-dot", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
     const cellsize = 180;
     const halfcell = cellsize / 2;
     const height = 175;
     const base = 100;
-    const group = canvas.symbol();
     const x1 = halfcell;
     const y1 = halfcell - height / 2;
     const x2 = (halfcell) - (base / 2);

@@ -69,7 +69,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
                     // Add cell name
                     if ( ("cell" in area) && (area.cell !== undefined) ) {
-                        const txt = nested.text(`Cell ${area.cell }`);
+                        const txt = nested.text(`Cell ${area.cell as string}`);
                         txt.font("size", "50%");
                         txt.move(0, (this.cellsize / 4) * -1).fill("#000");
                     }
@@ -211,7 +211,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
                     // Add cell name
                     if ( ("cell" in area) && (area.cell !== undefined) ) {
-                        const txt = nested.text(`Cell ${area.cell }`);
+                        const txt = nested.text(`Cell ${area.cell as string}`);
                         txt.font("size", "50%");
                         txt.move(0, (this.cellsize / 4) * -1).fill("#000");
                     }

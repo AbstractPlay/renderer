@@ -42,6 +42,12 @@ export interface APRenderRep {
     )[];
     areas?: (
     | {
+        type: "pieces";
+        pieces: [string, ...string[]];
+        label: string;
+        [k: string]: unknown;
+    }
+    | {
         type: "globalStash";
         R: Stashstrings;
         G: Stashstrings;
