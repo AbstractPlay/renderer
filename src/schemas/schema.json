@@ -594,7 +594,8 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["type", "pieces", "label"]
+                        "required": ["type", "pieces", "label"],
+                        "additionalProperties": false
                     },
                     {
                         "description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
