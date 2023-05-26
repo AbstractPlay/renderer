@@ -329,19 +329,26 @@ export class HomeworldsRenderer extends RendererBase {
                 use.scale(factor, newx, newy);
             }
             // Add "sacrifice" box
-            sgroup.text("SACRIFICE").fill("black").center(stashCellSize * 1.5, stashCellSize * 8.5);
-            const sacrect = sgroup.rect(stashCellSize * 3, stashCellSize).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            sgroup.text("SACRIFICE").fill("black").center(stashCellSize * 1.25, stashCellSize * 8.35);
+            const sacrect = sgroup.rect(stashCellSize * 2.5, stashCellSize * 0.7).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
             if (this.options.boardClick !== undefined) {
                 sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
             }
             sacrect.dy(stashCellSize * 8);
             // Add "pass" box
-            sgroup.text("PASS").fill("black").center(stashCellSize * 1.5, stashCellSize * 9.5);
-            const passrect = sgroup.rect(stashCellSize * 3, stashCellSize).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            sgroup.text("PASS").fill("black").center(stashCellSize * 1.25, stashCellSize * 9.05);
+            const passrect = sgroup.rect(stashCellSize * 2.5, stashCellSize * 0.7).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
             if (this.options.boardClick !== undefined) {
                 passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
             }
-            passrect.dy(stashCellSize * 9);
+            passrect.dy(stashCellSize * 8.7);
+            // Add "catastrophe" box
+            sgroup.text("CATASTROPHE").fill("black").center(stashCellSize * 1.25, stashCellSize * 9.75);
+            const catrect = sgroup.rect(stashCellSize * 2.5, stashCellSize * 0.7).id("_catastropheclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            if (this.options.boardClick !== undefined) {
+                catrect.click(() => this.options.boardClick!(-1, -1, "_catastrophe"));
+            }
+            catrect.dy(stashCellSize * 9.4);
         }
         sgroup.move((250 + (sgroup.width() as number) + 10) * -1, -250);
         const box = draw.bbox();
