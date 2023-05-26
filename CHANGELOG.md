@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * Fixed bug causing excess whitespace between captured stashes in Volcano games.
+* Rebuilt the Homeworlds renderer to make it work in Firefox. Also tweaked the default renderer so the new `pieces` area would also work in Firefox.
 
 ## [1.0.0-beta] - 2023-04-30
 
