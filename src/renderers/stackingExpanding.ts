@@ -234,8 +234,7 @@ export class StackingExpandingRenderer extends RendererBase {
                 const areas = this.json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
                 const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
                 let placeY = boardBottom + (this.cellsize / 2);
-                for (let iArea = 0; iArea < areas.length; iArea++) {
-                    const area = areas[iArea];
+                for (const area of areas) {
                     const numStacks = area.stash.length;
                     const maxHeight = Math.max(...area.stash.map((s) => s.length));
                     const textHeight = 10; // the allowance for the label
@@ -243,7 +242,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     const offset = cellsize * 3.5;
                     const areaWidth = cellsize * numStacks;
                     const areaHeight = textHeight + cellsize + (offset * (maxHeight - 1));
-                    const nested = this.rootSvg.defs().nested().id(`_stash${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1, -1, areaWidth+2, areaHeight+2);
+                    const nested = this.rootSvg.nested().size(areaWidth+2, areaHeight+2).viewbox(-1, -1, areaWidth+2, areaHeight+2);
                     for (let iStack = 0; iStack < area.stash.length; iStack++) {
                         const stack = area.stash[iStack];
                         const used: [SVGUse, number][] = [];
@@ -290,9 +289,8 @@ export class StackingExpandingRenderer extends RendererBase {
                         .move(0, 0);
 
                     // Now place the whole group below the board
-                    const placed = this.rootSvg.use(nested);
-                    placed.move(gridPoints[0][0].x - this.cellsize, placeY);
-                    placeY += placed.bbox().height + (this.cellsize * 0.5);
+                    nested.move(gridPoints[0][0].x - this.cellsize, placeY);
+                    placeY += nested.bbox().height + (this.cellsize * 0.5);
                 }
             }
 
