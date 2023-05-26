@@ -11,11 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Added two triangle pieces to core sheet for game Realm.
 * Added an `area` called `pieces` used by the default renderer. Give it a list of pieces in the legend, and it will place them in a bar beneath the board. Current use is for tracking pieces being rearranged in a game of Realm. (The playground has been updated.)
+<<<<<<< HEAD
 * Added a Catastrophe button to the Homeworlds renderer.
+=======
+>>>>>>> develop
 
 ### Fixed
 
 * Fixed bug causing excess whitespace between captured stashes in Volcano games.
+* Rebuilt the Homeworlds renderer to make it work in Firefox. Also tweaked the default renderer so the new `pieces` area would also work in Firefox.
 
 ## [1.0.0-beta] - 2023-04-30
 

@@ -1,4 +1,4 @@
-import { G as SVGG, Svg } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -207,7 +207,7 @@ export class HomeworldsRenderer extends RendererBase {
         const grid = rectOfRects({cellSize: 250, gridHeight: prows, gridWidth: pcols});
 
         // Place peripheral systems first
-        const group = this.rootSvg.group().id("systems");
+        // const group = this.rootSvg.group().id("systems");
         for (let row = 0; row < prows; row++) {
             for (let col = 0; col < pcols; col++) {
                 const idx = (pcols * row) + col;
@@ -221,8 +221,8 @@ export class HomeworldsRenderer extends RendererBase {
                 if ( (system === null) || (system === undefined) ) {
                     throw new Error(`Could not find the requested system (${id}). This should never happen`);
                 }
-                const use = group.use(system) as SVGG;
-                use.dmove(point.x, point.y);
+                // const use = group.use(system) as SVGG;
+                system.dmove(point.x, point.y);
             }
         }
 
@@ -256,8 +256,8 @@ export class HomeworldsRenderer extends RendererBase {
             if ( (system === null) || (system === undefined) ) {
                 throw new Error(`Could not find the requested system (${id}). This should never happen`);
             }
-            const use = group.use(system);
-            use.dmove(x, y);
+            // const use = group.use(system);
+            system.dmove(x, y);
         });
 
         // Place the stash
@@ -391,7 +391,7 @@ export class HomeworldsRenderer extends RendererBase {
      */
     private genSystem(id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
-        const nested = this.rootSvg!.defs().nested().id(id).size(250, 250).viewbox(0, 0, 250, 250);
+        const nested = this.rootSvg!.nested().id(id).size(250, 250).viewbox(0, 0, 250, 250);
 
         // Add fill and border
         // This does increase the size of the generated SVG because of the unique star patterns (150+ KB depending on number of systems).

@@ -169,7 +169,11 @@ export class DefaultRenderer extends RendererBase {
                 const cellsize = this.cellsize * 0.75;
                 const areaWidth = cellsize * boardWidth;
                 const areaHeight = (textHeight * 2) + (cellsize * numRows);
+<<<<<<< HEAD
                 const nested = this.rootSvg.defs().nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1, -1, areaWidth+2, areaHeight+2);
+=======
+                const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1, -1, areaWidth+2, areaHeight+2);
+>>>>>>> develop
                 for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
                     const used: [SVGUse, number][] = [];
                     const p = area.pieces[iPiece];
@@ -210,9 +214,15 @@ export class DefaultRenderer extends RendererBase {
                     .move(0, 0);
 
                 // Now place the whole group below the board
+<<<<<<< HEAD
                 const placed = this.rootSvg.use(nested);
                 placed.move(gridPoints[0][0].x, placeY);
                 placeY += placed.bbox().height + (this.cellsize * 0.5);
+=======
+                // const placed = this.rootSvg.use(nested);
+                nested.move(gridPoints[0][0].x, placeY);
+                placeY += nested.bbox().height + (this.cellsize * 0.5);
+>>>>>>> develop
             }
         }
 
