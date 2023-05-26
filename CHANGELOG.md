@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * Fixed bug causing excess whitespace between captured stashes in Volcano games.
+* More Volcano fixes. Click handler on stash wasn't working in Firefox. Label text was getting truncated.
 
 ## [1.0.0-beta] - 2023-04-30
 
