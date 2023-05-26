@@ -234,20 +234,15 @@ export class StackingExpandingRenderer extends RendererBase {
                 const areas = this.json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
                 const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
                 let placeY = boardBottom + (this.cellsize / 2);
-                for (let iArea = 0; iArea < areas.length; iArea++) {
-                    const area = areas[iArea];
-                    const numStacks = area.stash.length;
-                    const maxHeight = Math.max(...area.stash.map((s) => s.length));
+                for (const area of areas) {
+                    const maxHeight = Math.max(...area.stash.map((s) => s.length)) - 1;
                     const textHeight = 10; // the allowance for the label
                     const cellsize = this.cellsize * 0.75;
-                    const offset = cellsize * 3.5;
-                    const areaWidth = cellsize * numStacks;
-                    const areaHeight = textHeight + cellsize + (offset * (maxHeight - 1));
-                    const nested = this.rootSvg.defs().nested().id(`_stash${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1, -1, areaWidth+2, areaHeight+2);
+                    const offset = 0.35 * cellsize;
                     for (let iStack = 0; iStack < area.stash.length; iStack++) {
                         const stack = area.stash[iStack];
-                        const used: [SVGUse, number][] = [];
-                        for (const p of stack) {
+                        for (let i = 0; i < stack.length; i++) {
+                            const p = stack[i];
                             const piece = this.rootSvg.findOne("#" + p) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
@@ -259,40 +254,27 @@ export class StackingExpandingRenderer extends RendererBase {
                                     throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                             }
-                            const use = nested.use(piece);
+                            const use = this.rootSvg.use(piece);
                             if (this.options.boardClick !== undefined) {
                                 use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                             }
-                            used.push([use, piece.viewbox().h]);
                             const factor = (cellsize / sheetCellSize);
-                            const newx = iStack * cellsize;
-                            const newy = textHeight;
+                            const newx = gridPoints[0][0].x - this.cellsize + iStack * cellsize;
+                            const newy = placeY + textHeight + (maxHeight - i) * offset + 0.15 * cellsize;
                             use.dmove(newx, newy);
                             use.scale(factor, newx, newy);
-                        }
-                        // Now go through each piece and shift them down
-                        let dy = 0;
-                        for (const piece of used) {
-                            piece[0].dmove(0, dy);
-                            dy -= offset;
                         }
                     }
 
                     // Add area label
-                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: "#000"});
-                    const txtWidth = tmptxt.bbox().w;
-                    tmptxt.remove();
-                    nested.width(Math.max(areaWidth, txtWidth));
-                    const txt = nested.text(area.label);
+                    const txt = this.rootSvg.text(area.label);
                     txt.font({size: textHeight, anchor: "start", fill: "#000"})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging")
-                        .move(0, 0);
+                        .move(gridPoints[0][0].x - this.cellsize, placeY);
 
-                    // Now place the whole group below the board
-                    const placed = this.rootSvg.use(nested);
-                    placed.move(gridPoints[0][0].x - this.cellsize, placeY);
-                    placeY += placed.bbox().height + (this.cellsize * 0.5);
+                    const areaHeight = textHeight + cellsize + maxHeight * offset;
+                    placeY += areaHeight + (this.cellsize * 0.5);
                 }
             }
 
