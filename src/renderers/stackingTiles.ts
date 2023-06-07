@@ -109,7 +109,7 @@ export class StackingTilesRenderer extends RendererBase {
                                 const y = point.y + offsetY - (tileHeight * (i + 1));
                                 // regular piece
                                 if (idx > 0) {
-                                    const color = this.options.colours[idx];
+                                    const color = this.options.colours[idx - 1];
                                     group.rect(tileWidth, tileHeight)
                                         .move(x, y)
                                         .fill(color)
