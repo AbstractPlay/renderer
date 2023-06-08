@@ -825,7 +825,7 @@ export abstract class RendererBase {
             const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
-                .fill({color: "#000000", opacity: 1})
+                .fill({color: baseColour, opacity: baseOpacity})
                 .stroke({width: 0});
 
             const tiles = board.group().id("tiles");
@@ -870,7 +870,7 @@ export abstract class RendererBase {
             const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
-                .fill({color: "#000000", opacity: 1})
+                .fill({color: baseColour, opacity: baseOpacity})
                 .stroke({width: 0});
 
             const tiles = board.group().id("tiles");
@@ -899,7 +899,7 @@ export abstract class RendererBase {
             const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
-                .fill({color: "#000000", opacity: 1})
+                .fill({color: baseColour, opacity: baseOpacity})
                 .stroke({width: 0});
             for (const coord of blocked) {
                 const {x, y} = grid[coord.row][coord.col];
