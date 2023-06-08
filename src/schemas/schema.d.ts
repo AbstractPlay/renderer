@@ -110,6 +110,10 @@ export interface APRenderRep {
          */
         tileSpacing?: number;
         /**
+         * Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.
+         */
+        stackMax?: number;
+        /**
          * Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.
          */
         stackOffset?: number;

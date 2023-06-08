@@ -154,6 +154,7 @@ export interface APRenderRep {
         tileWidth?: number;
         tileHeight?: number;
         tileSpacing?: number;
+        stackMax?: number;
         stackOffset?: number;
         buffer?: {
             width: number;
