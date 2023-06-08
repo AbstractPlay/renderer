@@ -67,6 +67,21 @@ export interface APRenderRep {
          */
         strokeOpacity?: number;
         /**
+         * Only meaningful for 'squares*' boards. Blacks out the specified cells and disables clicking. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+         *
+         * @minItems 1
+         */
+        blocked?: [
+          {
+            row: number;
+            col: number;
+          },
+          ...{
+            row: number;
+            col: number;
+          }[]
+        ];
+        /**
          * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
          */
         minWidth?: number;

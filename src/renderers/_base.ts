@@ -803,6 +803,12 @@ export abstract class RendererBase {
         }
 
         // Now the tiles
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
         if (style === "squares-checkered") {
             // Load glyphs for light and dark squares
             const tileDark = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
@@ -815,6 +821,11 @@ export abstract class RendererBase {
             tileLight.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill({color: "#ffffff", opacity: 0})
+                .stroke({width: 0});
+            const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            tileBlocked.rect(cellsize, cellsize)
+                .move(0, 0)
+                .fill({color: "#000000", opacity: 1})
                 .stroke({width: 0});
 
             const tiles = board.group().id("tiles");
@@ -831,15 +842,23 @@ export abstract class RendererBase {
                     lightCol = 0;
                 }
                 for (let col = 0; col < width; col++) {
+                    let idx = -1;
+                    if (blocked !== undefined) {
+                        idx = blocked.findIndex(o => o.row === row && o.col === col)
+                    }
                     const {x, y} = grid[row][col];
                     let used: SVGUse;
-                    if (col % 2 !== lightCol) {
-                        used = tiles.use(tileDark).size(cellsize, cellsize).center(x, y);
+                    if (idx !== -1) {
+                        used = tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
                     } else {
-                        used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
-                    }
-                    if (tileSpace > 0) {
-                        used.click(() => this.options.boardClick!(row, col, ""));
+                        if (col % 2 !== lightCol) {
+                            used = tiles.use(tileDark).size(cellsize, cellsize).center(x, y);
+                        } else {
+                            used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
+                        }
+                        if (tileSpace > 0) {
+                            used.click(() => this.options.boardClick!(row, col, ""));
+                        }
                     }
                 }
             }
@@ -848,19 +867,43 @@ export abstract class RendererBase {
             tileLight.rect(cellsize, cellsize)
                 .fill({color: "#ffffff", opacity: 0})
                 .stroke({width: 0});
+            const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            tileBlocked.rect(cellsize, cellsize)
+                .move(0, 0)
+                .fill({color: "#000000", opacity: 1})
+                .stroke({width: 0});
 
             const tiles = board.group().id("tiles");
             for (let row = 0; row < height; row++) {
                 for (let col = 0; col < width; col++) {
-                    const {x, y} = grid[row][col];
-                    const used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
-                    if (this.options.rotate === 180) {
-                        used.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
-                    } else {
-                        used.click(() => this.options.boardClick!(row, col, ""));
+                    let idx = -1;
+                    if (blocked !== undefined) {
+                        idx = blocked.findIndex(o => o.row === row && o.col === col)
                     }
-
+                    const {x, y} = grid[row][col];
+                    let used: SVGUse;
+                    if (idx !== -1) {
+                        used = tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
+                    } else {
+                        used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
+                        if (this.options.rotate === 180) {
+                            used.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
+                        } else {
+                            used.click(() => this.options.boardClick!(row, col, ""));
+                        }
+                    }
                 }
+            }
+        } else if (blocked !== undefined) {
+            const tiles = board.group().id("tiles");
+            const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            tileBlocked.rect(cellsize, cellsize)
+                .move(0, 0)
+                .fill({color: "#000000", opacity: 1})
+                .stroke({width: 0});
+            for (const coord of blocked) {
+                const {x, y} = grid[coord.row][coord.col];
+                tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
             }
         }
 
@@ -949,7 +992,13 @@ export abstract class RendererBase {
                 const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                 if (x >= 0 && x < width && y >= 0 && y < height) {
-                    this.options.boardClick!(y, x, "");
+                    let idx = -1;
+                    if (blocked !== undefined) {
+                        idx = blocked.findIndex(o => o.col === x && o.row === y);
+                    }
+                    if (idx === -1) {
+                        this.options.boardClick!(y, x, "");
+                    }
                 }
             });
             if (this.options.rotate === 180) {
@@ -958,7 +1007,13 @@ export abstract class RendererBase {
                     const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                     const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                     if (x >= 0 && x < width && y >= 0 && y < height) {
-                        this.options.boardClick!(y, x, "");
+                        let idx = -1;
+                        if (blocked !== undefined) {
+                            idx = blocked.findIndex(o => o.col === x && o.row === y);
+                        }
+                        if (idx === -1) {
+                            this.options.boardClick!(y, x, "");
+                        }
                     }
                 });
             }

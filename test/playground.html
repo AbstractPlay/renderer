@@ -4,6 +4,9 @@
         <title>Abstract Play: Renderer Playground</title>
         <script src="./APRender.js"></script>
         <script type="text/javascript">
+            function handleClick(row, col, piece) {
+                console.log(`Row: ${row}, Col: ${col}, Piece: ${piece}`);
+            }
             function processJson() {
                 var myNode = document.getElementById("drawing");
                 while (myNode.lastChild) {
@@ -21,6 +24,7 @@
                 } else {
                     options.rotate = 0;
                 }
+                options.boardClick = handleClick;
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
                 return false;
