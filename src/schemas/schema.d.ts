@@ -67,6 +67,21 @@ export interface APRenderRep {
          */
         strokeOpacity?: number;
         /**
+         * Only meaningful for 'squares*' boards. Blacks out the specified cells and disables clicking. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+         *
+         * @minItems 1
+         */
+        blocked?: [
+          {
+            row: number;
+            col: number;
+          },
+          ...{
+            row: number;
+            col: number;
+          }[]
+        ];
+        /**
          * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
          */
         minWidth?: number;
@@ -94,6 +109,10 @@ export interface APRenderRep {
          * If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.
          */
         tileSpacing?: number;
+        /**
+         * Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.
+         */
+        stackMax?: number;
         /**
          * Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.
          */

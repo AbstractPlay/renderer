@@ -39,11 +39,15 @@ export class StackingTilesRenderer extends RendererBase {
             `tileWidth` is the width of the stacking tiles.
             `tileHeight` is the height of the stacking tiles.
         */
+        let maxStack = 8;
+        if ("stackMax" in this.json.board) {
+            maxStack = this.json.board.stackMax as number;
+        }
         const effWidth: number = this.cellsize * 0.9;
         const offsetX: number = effWidth / 2;
         const offsetY: number = effWidth / 2;
         const tileWidth: number = effWidth;
-        const tileHeight: number = Math.floor(effWidth / 8);
+        const tileHeight: number = Math.floor(effWidth / maxStack);
         switch (this.json.board.style) {
             case "squares-checkered":
             case "squares":
@@ -95,8 +99,8 @@ export class StackingTilesRenderer extends RendererBase {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
                             let parts = key.split("");
-                            if (parts.length > 7) {
-                                parts = parts.slice(parts.length - 8);
+                            if (parts.length > maxStack) {
+                                parts = parts.slice(parts.length - maxStack);
                                 parts[0] = "0";
                             }
                             const point = gridPoints[row][col];
@@ -109,7 +113,7 @@ export class StackingTilesRenderer extends RendererBase {
                                 const y = point.y + offsetY - (tileHeight * (i + 1));
                                 // regular piece
                                 if (idx > 0) {
-                                    const color = this.options.colours[idx];
+                                    const color = this.options.colours[idx - 1];
                                     group.rect(tileWidth, tileHeight)
                                         .move(x, y)
                                         .fill(color)

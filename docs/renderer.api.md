@@ -137,6 +137,16 @@ export interface APRenderRep {
         strokeWeight?: number;
         strokeColour?: string;
         strokeOpacity?: number;
+        blocked?: [
+            {
+            row: number;
+            col: number;
+        },
+        ...{
+            row: number;
+            col: number;
+        }[]
+        ];
         minWidth?: number;
         maxWidth?: number;
         width?: number;
@@ -144,6 +154,7 @@ export interface APRenderRep {
         tileWidth?: number;
         tileHeight?: number;
         tileSpacing?: number;
+        stackMax?: number;
         stackOffset?: number;
         buffer?: {
             width: number;
