@@ -252,7 +252,7 @@ export interface APRenderRep {
     legend?: {
         [k: string]: string | Glyph | [Glyph, ...Glyph[]];
     };
-    options?: "rotate-pieces"[];
+    options?: ("rotate-pieces" | "hide-labels")[];
     pieces: null | string | [string[][], ...string[][][]] | [string, ...string[]][];
     renderer?: "default" | "stacking-offset" | "stacking-tiles" | "stacking-expanding" | "homeworlds" | "entropy";
 }

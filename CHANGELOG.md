@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added a Catastrophe button to the Homeworlds renderer.
 * Added `blocked` property for use in `square*` boards to black out entire cells and disable click handlers. Respects `strokeColour` and `strokeOpacity`.
 * Added `stackMax` property for use by the `stacking-tiles` renderer to set the number of tiles to be displayed in a cell.
+* Added `hide-labels` option to do just that.
 
 ### Fixed
 
