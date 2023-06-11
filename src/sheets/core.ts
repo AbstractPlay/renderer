@@ -122,6 +122,18 @@ sheet.glyphs.set("piece", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("piece-borderless", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 0;
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000", opacity: 0})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
 sheet.glyphs.set("piece-chariot", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
@@ -172,6 +184,17 @@ sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("piece-square-borderless", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 0;
+    group.rect(sheet.cellsize, sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000", opacity: 0})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
 
 sheet.glyphs.set("piece-triangle", (canvas: SVGContainer) => {
     const group = canvas.symbol();
