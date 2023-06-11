@@ -49,6 +49,7 @@ export class DefaultRenderer extends RendererBase {
                 this.json.board.height = 19;
             case "vertex":
             case "vertex-cross":
+            case "vertex-fanorona":
                 gridPoints = this.vertex();
                 break;
             case "snubsquare":

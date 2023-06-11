@@ -45,6 +45,7 @@ export interface APRenderRep {
           | "squares-beveled"
           | "vertex"
           | "vertex-cross"
+          | "vertex-fanorona"
           | "go"
           | "hex-odd-p"
           | "hex-even-p"
