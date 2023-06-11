@@ -94,10 +94,10 @@
             "default": "default"
         },
         "options": {
-            "description": "A list of flags to pass to the renderer.",
+            "description": "A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels.",
             "type": "array",
             "items": {
-                "enum": ["rotate-pieces"]
+                "enum": ["rotate-pieces", "hide-labels"]
             }
         },
         "legend": {
