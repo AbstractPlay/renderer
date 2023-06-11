@@ -1359,6 +1359,40 @@ export abstract class RendererBase {
                     }
                 }
             }
+        } else if (style === "vertex-fanorona") {
+            for (let tileRow = 0; tileRow < numrows; tileRow++) {
+                for (let tileCol = 0; tileCol < numcols; tileCol++) {
+                    const tileHeight = Math.floor(height / numrows);
+                    const tileWidth = Math.floor(width / numcols);
+                    const rowFirst = tileRow * tileHeight;
+                    const rowLast = (tileRow * tileHeight) + tileHeight - 1;
+                    const colFirst = tileCol * tileWidth;
+                    const colLast = (tileCol * tileWidth) + tileWidth - 1;
+                    // only go to the second-to-last row
+                    for (let row = rowFirst; row < rowLast; row++) {
+                        // connect down-left and down-right depending on row and col
+                        for (let col = colFirst; col <= colLast; col++) {
+                            const curr = grid[row][col];
+                            let connect = false;
+                            if ( ( (row % 2 === 0) && (col % 2 === 0) ) || ( (row % 2 !== 0) && (col % 2 !== 0) ) ){
+                                connect = true;
+                            }
+                            if (connect) {
+                                // if not last column, do next
+                                if (col < colLast) {
+                                    const next = grid[row + 1][col + 1];
+                                    gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+                                }
+                                // if not first column, do previous
+                                if (col > colFirst) {
+                                    const prev = grid[row + 1][col - 1];
+                                    gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity});
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if (this.options.boardClick !== undefined) {

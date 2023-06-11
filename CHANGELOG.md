@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added `hide-labels` option to do just that.
 * Added `no-border` option to omit drawing the very outside line of square boards.
 * Added `-borderless` versions of `piece` and `piece-square`.
+* Added `vertex-fanorona` board style.
 
 ### Fixed
 
