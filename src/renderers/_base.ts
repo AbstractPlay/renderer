@@ -930,6 +930,11 @@ export abstract class RendererBase {
                 idxRight = idxLeft + tilex - 1;
             }
             for (let row = 0; row < height; row++) {
+                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                    if ( (row === 0) || (row === height - 1) ) {
+                        continue;
+                    }
+                }
                 let thisStroke = baseStroke;
                 if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
                     thisStroke = baseStroke * 3;
@@ -965,6 +970,12 @@ export abstract class RendererBase {
                 idxBottom = idxTop + tiley - 1;
             }
             for (let col = 0; col < width; col++) {
+                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                    if ( (col === 0) || (col === width - 1) ) {
+                        continue;
+                    }
+                }
+
                 let thisStroke = baseStroke;
                 if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
                     thisStroke = baseStroke * 3;
@@ -1247,6 +1258,11 @@ export abstract class RendererBase {
                 }
             }
             for (let row = 0; row < height; row++) {
+                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                    if ( (row === 0) || (row === height - 1) ) {
+                        continue;
+                    }
+                }
                 let thisStroke = baseStroke;
                 if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
                     thisStroke = baseStroke * 3;
@@ -1285,6 +1301,11 @@ export abstract class RendererBase {
                 }
             }
             for (let col = 0; col < width; col++) {
+                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                    if ( (col === 0) || (col === width - 1) ) {
+                        continue;
+                    }
+                }
                 let thisStroke = baseStroke;
                 if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
                     thisStroke = baseStroke * 3;
