@@ -89,6 +89,7 @@
                 "stacking-tiles",
                 "stacking-expanding",
                 "homeworlds",
+                "homeworlds-compact",
                 "entropy"
             ],
             "default": "default"

@@ -1,12 +1,13 @@
 import { RendererBase } from "./_base";
 import { DefaultRenderer } from "./default";
 import { EntropyRenderer } from "./entropy";
+import { HomeworldsOrigRenderer } from "./homeworldsOrig";
 import { HomeworldsRenderer } from "./homeworlds";
 import { StackingExpandingRenderer } from "./stackingExpanding";
 import { StackingOffsetRenderer } from "./stackingOffset";
 import { StackingTilesRenderer } from "./stackingTiles";
 
-export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsRenderer, EntropyRenderer };
+export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer };
 
 const renderers: (name: string) => RendererBase = (name) =>{
   switch(name) {
@@ -18,6 +19,8 @@ const renderers: (name: string) => RendererBase = (name) =>{
       return new StackingTilesRenderer();
     case StackingExpandingRenderer.rendererName:
       return new StackingExpandingRenderer();
+    case HomeworldsOrigRenderer.rendererName:
+      return new HomeworldsOrigRenderer();
     case HomeworldsRenderer.rendererName:
       return new HomeworldsRenderer();
     case EntropyRenderer.rendererName:

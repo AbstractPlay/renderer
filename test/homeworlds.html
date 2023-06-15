@@ -1,0 +1,182 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Abstract Play: Homeworlds Diagram Generator</title>
+
+        <script src="./APRender.js"></script>
+        <script type="text/javascript">
+            var allNames = ["Gydux","Ayezi","Kroom","Foyu","Droostuf","Equasra","Gami","Prodryl","Usnismi","Iblukrot","Crusa","Wosand","Stobru","Ophu","Zumoobi","Akyv","Uhuva","Pryetam","Acawoh","Okrustel","Chrygris","Spif","Shasres","Uquek","Obliekiw","Izesnut","Blin","Agiem","Yust","Azefaq","Drapara","Tidiv","Axip","Hiesmasp","Stirbexe","Athi","Ukerblut","Emeck","Imblustuk","Ihmatec","Utin","Queawu","Mety","Edryl","Dikoth","Uzy","Amblylu","Ithy","Fody","Agrybri","Ismij","Oshoushir","Hylasti","Esra","Chrikrez","Ibleegrym","Zimyc","Veathyv","Osmoc","Arav","Data","Ebral","Cat","Staizu","Ipho","Thunispe","Osind","Krumblath","Orbu","Owoda","Esnet","Asnap","Sohib","Hasrar","Piew","Jouse","Viwa","Dybrus","Pom","Utiew","Stibryp","Esnaca","Cramblat","Yuque","Ekroomi","Chrof","Dokyze","Achyfo","Otrur","Brume","Lanoka","Uwaik","Ohmychril","Ucre","Eprex","Ana","Asnesro","Mind","Oga","Spen"];
+
+            function shuffle(lst){
+                const working = [...lst];
+                let remaining = working.length;
+
+                // While there remain elements to shuffle…
+                while (remaining) {
+
+                    // Pick a remaining element…
+                    const randomIdx = Math.floor(Math.random() * remaining--);
+
+                    // And swap it with the current element.
+                    const t = working[remaining];
+                    working[remaining] = working[randomIdx];
+                    working[randomIdx] = t;
+                }
+
+                return working;
+            }
+
+            function processJson() {
+                var myNode = document.getElementById("drawing");
+                while (myNode.lastChild) {
+                    myNode.removeChild(myNode.lastChild);
+                }
+                var options = {divid: "drawing"};
+                var r = document.getElementById("rotation");
+                options.rotate = parseInt(r.value, 10);
+                var skeleton = JSON.parse('{"renderer":"homeworlds-compact","board":[],"pieces":[],"areas":[{"type":"globalStash","R":"111112222233333","G":"111112222233333","B":"111112222233333","Y":"111112222233333"}],"legend":{"R1":{"name":"pyramid-up-small-upscaled","player":1},"R2":{"name":"pyramid-up-medium-upscaled","player":1},"R3":{"name":"pyramid-up-large-upscaled","player":1},"B1":{"name":"pyramid-up-small-upscaled","player":2},"B2":{"name":"pyramid-up-medium-upscaled","player":2},"B3":{"name":"pyramid-up-large-upscaled","player":2},"G1":{"name":"pyramid-up-small-upscaled","player":3},"G2":{"name":"pyramid-up-medium-upscaled","player":3},"G3":{"name":"pyramid-up-large-upscaled","player":3},"Y1":{"name":"pyramid-up-small-upscaled","player":4},"Y2":{"name":"pyramid-up-medium-upscaled","player":4},"Y3":{"name":"pyramid-up-large-upscaled","player":4},"pR1N":{"name":"pyramid-flat-small","player":1,"rotate":180},"pR2N":{"name":"pyramid-flat-medium","player":1,"rotate":180},"pR3N":{"name":"pyramid-flat-large","player":1,"rotate":180},"pB1N":{"name":"pyramid-flat-small","player":2,"rotate":180},"pB2N":{"name":"pyramid-flat-medium","player":2,"rotate":180},"pB3N":{"name":"pyramid-flat-large","player":2,"rotate":180},"pG1N":{"name":"pyramid-flat-small","player":3,"rotate":180},"pG2N":{"name":"pyramid-flat-medium","player":3,"rotate":180},"pG3N":{"name":"pyramid-flat-large","player":3,"rotate":180},"pY1N":{"name":"pyramid-flat-small","player":4,"rotate":180},"pY2N":{"name":"pyramid-flat-medium","player":4,"rotate":180},"pY3N":{"name":"pyramid-flat-large","player":4,"rotate":180},"pR1S":{"name":"pyramid-flat-small","player":1},"pR2S":{"name":"pyramid-flat-medium","player":1},"pR3S":{"name":"pyramid-flat-large","player":1},"pB1S":{"name":"pyramid-flat-small","player":2},"pB2S":{"name":"pyramid-flat-medium","player":2},"pB3S":{"name":"pyramid-flat-large","player":2},"pG1S":{"name":"pyramid-flat-small","player":3},"pG2S":{"name":"pyramid-flat-medium","player":3},"pG3S":{"name":"pyramid-flat-large","player":3},"pY1S":{"name":"pyramid-flat-small","player":4},"pY2S":{"name":"pyramid-flat-medium","player":4},"pY3S":{"name":"pyramid-flat-large","player":4},"pR1E":{"name":"pyramid-flat-small","player":1,"rotate":270},"pR2E":{"name":"pyramid-flat-medium","player":1,"rotate":270},"pR3E":{"name":"pyramid-flat-large","player":1,"rotate":270},"pB1E":{"name":"pyramid-flat-small","player":2,"rotate":270},"pB2E":{"name":"pyramid-flat-medium","player":2,"rotate":270},"pB3E":{"name":"pyramid-flat-large","player":2,"rotate":270},"pG1E":{"name":"pyramid-flat-small","player":3,"rotate":270},"pG2E":{"name":"pyramid-flat-medium","player":3,"rotate":270},"pG3E":{"name":"pyramid-flat-large","player":3,"rotate":270},"pY1E":{"name":"pyramid-flat-small","player":4,"rotate":270},"pY2E":{"name":"pyramid-flat-medium","player":4,"rotate":270},"pY3E":{"name":"pyramid-flat-large","player":4,"rotate":270},"pR1W":{"name":"pyramid-flat-small","player":1,"rotate":90},"pR2W":{"name":"pyramid-flat-medium","player":1,"rotate":90},"pR3W":{"name":"pyramid-flat-large","player":1,"rotate":90},"pB1W":{"name":"pyramid-flat-small","player":2,"rotate":90},"pB2W":{"name":"pyramid-flat-medium","player":2,"rotate":90},"pB3W":{"name":"pyramid-flat-large","player":2,"rotate":90},"pG1W":{"name":"pyramid-flat-small","player":3,"rotate":90},"pG2W":{"name":"pyramid-flat-medium","player":3,"rotate":90},"pG3W":{"name":"pyramid-flat-large","player":3,"rotate":90},"pY1W":{"name":"pyramid-flat-small","player":4,"rotate":90},"pY2W":{"name":"pyramid-flat-medium","player":4,"rotate":90},"pY3W":{"name":"pyramid-flat-large","player":4,"rotate":90}}}');
+                var data = JSON.parse(document.getElementById("jsonIn").value);
+                var economy = data.players.length + 1;
+                var stash = {R: [economy, economy, economy], G: [economy, economy, economy], B: [economy, economy, economy], Y: [economy, economy, economy]};
+                var names = shuffle(allNames);
+                for (var sys of data.universe) {
+                    var system = {};
+                    if (sys.owner === undefined) {
+                        if ( (sys.name !== undefined) && (sys.name.length > 0) ) {
+                            system.name = sys.name;
+                        } else {
+                            system.name = names.pop();
+                        }
+                    } else {
+                        system.seat = sys.owner;
+                        var found = false;
+                        for (var p of data.players) {
+                            if (p.seat === sys.owner) {
+                                system.name = p.name;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (! found) {
+                            throw new Error("Could not find a player who owns this system: " + sys);
+                        }
+                    }
+                    system.stars = sys.stars;
+                    skeleton.board.push(system);
+                    skeleton.pieces.push(sys.ships.map(s => `p${s}`));
+                    // update stash
+                    for (var star of sys.stars) {
+                        var [colour, size] = star.split("");
+                        size = parseInt(size, 10);
+                        stash[colour][size - 1]--;
+                        if (stash[colour][size - 1] < 0) {
+                            throw new Error("Not enough pieces in the stash to allocate '" + star + "' as a system star.");
+                        }
+                    }
+                    for (var ship of sys.ships) {
+                        var [colour, size, owner] = ship.split("");
+                        size = parseInt(size, 10);
+                        stash[colour][size - 1]--;
+                        if (stash[colour][size - 1] < 0) {
+                            throw new Error("Not enough pieces in the stash to allocate '" + ship + "' as a ship.");
+                        }
+                    }
+                }
+
+                for (var c of ["R", "G", "B", "Y"]) {
+                    var str = "";
+                    for (var s of [1, 2, 3]) {
+                        for (let i = 0; i < stash[c][s - 1]; i++) {
+                            str += s.toString();
+                        }
+                    }
+                    skeleton.areas[0][c] = str;
+                }
+
+                var pragmas = ["no-buttons"];
+                if (document.getElementById("light-mode").checked) {
+                    pragmas.push("no-stars");
+                }
+
+                var canvas = APRender.render(skeleton, options, pragmas);
+                return false;
+            }
+
+            document.addEventListener("DOMContentLoaded", function(event) {
+                document.getElementById("btnRenderJSON").addEventListener("click", processJson, false);
+
+                // listen for prettify click
+                var prettybtn = document.getElementById("btnPrettifyJSON");
+                prettybtn.addEventListener("click", (e) => {
+                    var jsonbox = document.getElementById("jsonIn");
+                    jsonbox.value = JSON.stringify(JSON.parse(jsonbox.value), undefined, 4);
+                });
+            });
+        </script>
+    </head>
+    <body style="width: 75%; padding-left: 12.5%">
+        <section>
+            <h1>Abstract Play: Homeworlds Diagram Generator</h1>
+            <p>A diagram generator for Homeworlds based on the <a href="https://github.com/AbstractPlay/renderer">Abstract Play game board renderer</a>. Simply enter each system with its contents. The engine will do the rest.</p>
+        </section>
+        <section>
+            <h1>Text Entry</h1>
+            <p>Your data must adhere to <a href="./homeworlds.json">this JSON schema</a>. The only validation is ensuring the number of pieces allocated matches the global stash for the given number of players. If a `name` is not provided for a system, it is randomly generated. Home worlds are named after the player.</p>
+            <form>
+                <div>
+                    <select id="rotation" name="rotation">
+                        <option value="0">North at top</option>
+                        <option value="180">South at top</option>
+                        <option value="-90">East at top</option>
+                        <option value="90">West at top</option>
+                    </select>
+                </div>
+                    <input type="checkbox" name="light-mode" id="light-mode" value="1">
+                    <label for="light-mode">Light Mode</label>
+                </div>
+                <div>
+                    <textarea id="jsonIn" style="width: 50%; height: 20em">
+{
+    "players": [
+        {
+            "name": "Alice",
+            "seat": "N"
+        },
+        {
+            "name": "Bob",
+            "seat": "S"
+        }
+    ],
+    "universe": [
+        {
+            "owner": "N",
+            "stars": ["G2", "B1"],
+            "ships": ["Y3N"]
+        },
+        {
+            "owner": "S",
+            "stars": ["G3", "R1"],
+            "ships": ["B3S"]
+        },
+        {
+            "stars": ["R3"],
+            "ships": ["Y1N"]
+        }
+    ]
+}
+                    </textarea>
+                </div>
+                <div>
+                    <button type="button" id="btnRenderJSON">Render JSON</button>&emsp;
+                    <button type="button" id="btnPrettifyJSON">Prettify JSON</button>&emsp;
+                    <button type="reset">Reset Form</button>
+                </div>
+            </form>
+        </section>
+        <hr>
+        <section>
+            <h1>SVG Output</h1>
+            <div id="drawing" style="width: 85%; height: 50em; border: 1px solid black; padding: 0.5em"></div>
+        </section>
+    </body>
+</html>

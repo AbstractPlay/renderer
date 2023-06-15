@@ -22,7 +22,14 @@ export interface APRenderRep {
   /**
    * The rendering engine the game wants to use.
    */
-  renderer?: "default" | "stacking-offset" | "stacking-tiles" | "stacking-expanding" | "homeworlds" | "entropy";
+  renderer?:
+    | "default"
+    | "stacking-offset"
+    | "stacking-tiles"
+    | "stacking-expanding"
+    | "homeworlds"
+    | "homeworlds-compact"
+    | "entropy";
   /**
    * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards.
    */
