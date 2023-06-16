@@ -1,0 +1,73 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "$id": "https://www.abstractplay.com/schemas/homeworldsplay/1-0-0.json#",
+    "title": "Homeworlds Diagram Generator Input",
+    "description": "The schema describing the input required for the Homeworlds diagram generator",
+    "type": "object",
+    "properties": {
+        "players": {
+            "description": "The list of players and their seats",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 25,
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+                    "seat": {
+                        "enum": ["N", "E", "S", "W"]
+                    }
+                },
+                "required": ["name", "seat"],
+                "additionalProperties": false
+            }
+        },
+        "universe": {
+            "description": "The list of systems and ships they contain",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 25,
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+                    "owner": {
+                        "description": "Omit in periphery systems",
+                        "enum": ["N", "E", "S", "W"]
+                    },
+                    "stars": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 2,
+                        "items": {
+                            "type": "string",
+                            "pattern": "^[RGBY][123]$"
+                        }
+                    },
+                    "ships": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 24,
+                        "items": {
+                            "type": "string",
+                            "pattern": "^[RGBY][123][NESW]$"
+                        }
+                    }
+                },
+                "required": ["stars", "ships"],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": ["players", "universe"],
+    "additionalProperties": false
+}
