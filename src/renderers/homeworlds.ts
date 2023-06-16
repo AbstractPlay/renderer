@@ -422,7 +422,7 @@ export class HomeworldsRenderer extends RendererBase {
             }
             // now ships
             for (let y = 0; y < seats.length; y++) {
-                const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]);
+                const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
                 for (let x = 0; x < ships.length; x++) {
                     const ship = ships[x];
                     const designation = ship.substring(0, 3);
