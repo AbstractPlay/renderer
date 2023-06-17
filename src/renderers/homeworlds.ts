@@ -417,8 +417,11 @@ export class HomeworldsRenderer extends RendererBase {
                     if (used.length > 0) {
                         const prev = used[used.length - 1];
                         const curr = use.rbox();
-                        const dist = prev.x2 - curr.x + pieceSpacing;
-                        use.dx(dist / factor);
+                        let dist = 0;
+                        if (curr.w < cellSize) {
+                            dist = prev.x2 - curr.x + pieceSpacing;
+                            use.dx(dist / factor);
+                        }
                     }
                     used.push(use.rbox());
                 }
