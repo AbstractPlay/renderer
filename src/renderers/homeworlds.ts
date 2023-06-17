@@ -29,6 +29,8 @@ interface ISystem {
 export class HomeworldsRenderer extends RendererBase {
 
     public static readonly rendererName: string = "homeworlds";
+    private backColour = "#000";
+    private contrastColour = "#fff";
 
     constructor() {
         super();
@@ -53,6 +55,11 @@ export class HomeworldsRenderer extends RendererBase {
         }
         if (this.json.board.length !== this.json.pieces.length) {
             throw new Error("The `board` and `pieces` arrays must be the same length.");
+        }
+
+        if ( (this.json.options) && (this.json.options.includes("hw-light")) ) {
+            this.backColour = "#fff";
+            this.contrastColour = "#000";
         }
 
         // PIECES
@@ -207,11 +214,11 @@ export class HomeworldsRenderer extends RendererBase {
         const backHeight = maxy - miny + (vbuffer * 2);
         const backX = minx - vbuffer;
         const backY = miny - vbuffer;
-        const handler = draw.rect(backWidth, backHeight).id("_void").fill("black").opacity(0).move(backX, backY).back();
+        const handler = draw.rect(backWidth, backHeight).id("_void").fill(this.backColour).opacity(0).move(backX, backY).back();
         if (this.options.boardClick !== undefined) {
             handler.click((e : Event) => {this.options.boardClick!(-1, -1, `_void`); e.stopPropagation();});
         }
-        draw.rect(backWidth, backHeight).id("_backfill").fill("black").move(backX, backY).back();
+        draw.rect(backWidth, backHeight).id("_backfill").fill(this.backColour).move(backX, backY).back();
 
         // Place the stash
         if ( (this.json.areas === undefined) || (! Array.isArray(this.json.areas)) || (this.json.areas.length !== 1) ) {
@@ -285,27 +292,31 @@ export class HomeworldsRenderer extends RendererBase {
                 use.dmove(newx, newy);
                 use.scale(factor, newx, newy);
             }
-            // Add "sacrifice" box
-            sgroup.text("Sacrifice").fill("black").center(cxBox, stashCellSize * 8.35);
-            const sacrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-            if (this.options.boardClick !== undefined) {
-                sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
+
+            // Add button bar unless told not to
+            if ( (! this.json.options) || (! this.json.options.includes("hw-no-buttons")) ) {
+                // Add "sacrifice" box
+                sgroup.text("Sacrifice").fill("black").center(cxBox, stashCellSize * 8.35);
+                const sacrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+                if (this.options.boardClick !== undefined) {
+                    sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
+                }
+                sacrect.dmove(dxBox, stashCellSize * 8);
+                // Add "pass" box
+                sgroup.text("Pass").fill("black").center(cxBox, stashCellSize * 9.05);
+                const passrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+                if (this.options.boardClick !== undefined) {
+                    passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
+                }
+                passrect.dmove(dxBox, stashCellSize * 8.7);
+                // Add "catastrophe" box
+                sgroup.text("Catastrophe").fill("black").center(cxBox, stashCellSize * 9.75);
+                const catrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_catastropheclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+                if (this.options.boardClick !== undefined) {
+                    catrect.click(() => this.options.boardClick!(-1, -1, "_catastrophe"));
+                }
+                catrect.dmove(dxBox, stashCellSize * 9.4);
             }
-            sacrect.dmove(dxBox, stashCellSize * 8);
-            // Add "pass" box
-            sgroup.text("Pass").fill("black").center(cxBox, stashCellSize * 9.05);
-            const passrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-            if (this.options.boardClick !== undefined) {
-                passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
-            }
-            passrect.dmove(dxBox, stashCellSize * 8.7);
-            // Add "catastrophe" box
-            sgroup.text("Catastrophe").fill("black").center(cxBox, stashCellSize * 9.75);
-            const catrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_catastropheclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-            if (this.options.boardClick !== undefined) {
-                catrect.click(() => this.options.boardClick!(-1, -1, "_catastrophe"));
-            }
-            catrect.dmove(dxBox, stashCellSize * 9.4);
         }
 
         sgroup.move(minx - (sgroup.width() as number) - stashCellSize, miny - (((sgroup.height() as number) - (maxy - miny)) / 2));
@@ -446,8 +457,11 @@ export class HomeworldsRenderer extends RendererBase {
                         if (used.length > 0) {
                             const prev = used[used.length - 1];
                             const curr = use.rbox();
-                            const dist = prev.y2 - curr.y + pieceSpacing;
-                            use.dy(dist / factor);
+                            let dist = 0;
+                            if (curr.w < cellSize) {
+                                dist = prev.y2 - curr.y + pieceSpacing;
+                                use.dy(dist / factor);
+                            }
                         }
                         used.push(use.rbox());
                     }
@@ -470,8 +484,11 @@ export class HomeworldsRenderer extends RendererBase {
                         if (used.length > 0) {
                             const prev = used[used.length - 1];
                             const curr = use.rbox();
-                            const dist = prev.y2 - curr.y + pieceSpacing;
-                            use.dy(dist / factor);
+                            let dist = 0;
+                            if (curr.w < cellSize) {
+                                dist = prev.y2 - curr.y + pieceSpacing;
+                                use.dy(dist / factor);
+                            }
                         }
                         used.push(use.rbox());
                     }
@@ -490,15 +507,15 @@ export class HomeworldsRenderer extends RendererBase {
         nested.size(realWidth, realHeight).viewbox(realX - 2, realY - 2, realWidth + 4, realHeight + 4);
 
         // Add fill and border
-        let stroke: any = {width: 2, color: "#fff"};
+        let stroke: any = {width: 2, color: this.contrastColour};
         if (highlight !== undefined) {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
         if (this.options.boardClick !== undefined) {
-            nested.rect(realWidth, realHeight).fill("#fff").opacity(0).dmove(realX, realY).back().click(() => this.options.boardClick!(0, 0, sys.name));
+            nested.rect(realWidth, realHeight).fill(this.contrastColour).opacity(0).dmove(realX, realY).back().click(() => this.options.boardClick!(0, 0, sys.name));
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        nested.rect(realWidth, realHeight).fill("black").stroke(stroke).dmove(realX, realY).back();
+        nested.rect(realWidth, realHeight).fill(this.backColour).stroke(stroke).dmove(realX, realY).back();
 
         // Add name
         // nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
@@ -510,7 +527,7 @@ export class HomeworldsRenderer extends RendererBase {
         nested.text(sysLabel)
             .font({
                 anchor: "start",
-                fill: "#fff",
+                fill: this.contrastColour,
                 size: fontsize,
             })
             .attr("alignment-baseline", "hanging")
