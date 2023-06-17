@@ -28,6 +28,12 @@
                 width: 75%;
                 padding-left: 12.5%
             }
+            #drawing {
+                width: 85%;
+                height: 50em;
+                border: 1px solid black;
+                padding: 0.5em
+            }
         </style>
 
         <script src="./APRender.js"></script>
@@ -63,7 +69,18 @@
                 options.rotate = parseInt(r.value, 10);
                 var skeleton = JSON.parse('{"options": ["hw-no-buttons"],"renderer":"homeworlds","board":[],"pieces":[],"areas":[{"type":"globalStash","R":"111112222233333","G":"111112222233333","B":"111112222233333","Y":"111112222233333"}],"legend":{"R1":{"name":"pyramid-up-small-upscaled","player":1},"R2":{"name":"pyramid-up-medium-upscaled","player":1},"R3":{"name":"pyramid-up-large-upscaled","player":1},"B1":{"name":"pyramid-up-small-upscaled","player":2},"B2":{"name":"pyramid-up-medium-upscaled","player":2},"B3":{"name":"pyramid-up-large-upscaled","player":2},"G1":{"name":"pyramid-up-small-upscaled","player":3},"G2":{"name":"pyramid-up-medium-upscaled","player":3},"G3":{"name":"pyramid-up-large-upscaled","player":3},"Y1":{"name":"pyramid-up-small-upscaled","player":4},"Y2":{"name":"pyramid-up-medium-upscaled","player":4},"Y3":{"name":"pyramid-up-large-upscaled","player":4},"pR1N":{"name":"pyramid-flat-small","player":1,"rotate":180},"pR2N":{"name":"pyramid-flat-medium","player":1,"rotate":180},"pR3N":{"name":"pyramid-flat-large","player":1,"rotate":180},"pB1N":{"name":"pyramid-flat-small","player":2,"rotate":180},"pB2N":{"name":"pyramid-flat-medium","player":2,"rotate":180},"pB3N":{"name":"pyramid-flat-large","player":2,"rotate":180},"pG1N":{"name":"pyramid-flat-small","player":3,"rotate":180},"pG2N":{"name":"pyramid-flat-medium","player":3,"rotate":180},"pG3N":{"name":"pyramid-flat-large","player":3,"rotate":180},"pY1N":{"name":"pyramid-flat-small","player":4,"rotate":180},"pY2N":{"name":"pyramid-flat-medium","player":4,"rotate":180},"pY3N":{"name":"pyramid-flat-large","player":4,"rotate":180},"pR1S":{"name":"pyramid-flat-small","player":1},"pR2S":{"name":"pyramid-flat-medium","player":1},"pR3S":{"name":"pyramid-flat-large","player":1},"pB1S":{"name":"pyramid-flat-small","player":2},"pB2S":{"name":"pyramid-flat-medium","player":2},"pB3S":{"name":"pyramid-flat-large","player":2},"pG1S":{"name":"pyramid-flat-small","player":3},"pG2S":{"name":"pyramid-flat-medium","player":3},"pG3S":{"name":"pyramid-flat-large","player":3},"pY1S":{"name":"pyramid-flat-small","player":4},"pY2S":{"name":"pyramid-flat-medium","player":4},"pY3S":{"name":"pyramid-flat-large","player":4},"pR1E":{"name":"pyramid-flat-small","player":1,"rotate":270},"pR2E":{"name":"pyramid-flat-medium","player":1,"rotate":270},"pR3E":{"name":"pyramid-flat-large","player":1,"rotate":270},"pB1E":{"name":"pyramid-flat-small","player":2,"rotate":270},"pB2E":{"name":"pyramid-flat-medium","player":2,"rotate":270},"pB3E":{"name":"pyramid-flat-large","player":2,"rotate":270},"pG1E":{"name":"pyramid-flat-small","player":3,"rotate":270},"pG2E":{"name":"pyramid-flat-medium","player":3,"rotate":270},"pG3E":{"name":"pyramid-flat-large","player":3,"rotate":270},"pY1E":{"name":"pyramid-flat-small","player":4,"rotate":270},"pY2E":{"name":"pyramid-flat-medium","player":4,"rotate":270},"pY3E":{"name":"pyramid-flat-large","player":4,"rotate":270},"pR1W":{"name":"pyramid-flat-small","player":1,"rotate":90},"pR2W":{"name":"pyramid-flat-medium","player":1,"rotate":90},"pR3W":{"name":"pyramid-flat-large","player":1,"rotate":90},"pB1W":{"name":"pyramid-flat-small","player":2,"rotate":90},"pB2W":{"name":"pyramid-flat-medium","player":2,"rotate":90},"pB3W":{"name":"pyramid-flat-large","player":2,"rotate":90},"pG1W":{"name":"pyramid-flat-small","player":3,"rotate":90},"pG2W":{"name":"pyramid-flat-medium","player":3,"rotate":90},"pG3W":{"name":"pyramid-flat-large","player":3,"rotate":90},"pY1W":{"name":"pyramid-flat-small","player":4,"rotate":90},"pY2W":{"name":"pyramid-flat-medium","player":4,"rotate":90},"pY3W":{"name":"pyramid-flat-large","player":4,"rotate":90}}}');
                 var data = JSON.parse(document.getElementById("jsonIn").value);
-                var economy = data.players.length + 1;
+                var economy = 3;
+                if (data.hasOwnProperty("numPlayers")) {
+                    economy = data.numPlayers + 1;
+                } else {
+                    let count = 0;
+                    for (const s of data.universe) {
+                        if (s.hasOwnProperty("owner")) {
+                            count++;
+                        }
+                    }
+                    economy = count + 1;
+                }
                 var stash = {R: [economy, economy, economy], G: [economy, economy, economy], B: [economy, economy, economy], Y: [economy, economy, economy]};
                 var names = shuffle(allNames);
                 for (var sys of data.universe) {
@@ -76,16 +93,20 @@
                         }
                     } else {
                         system.seat = sys.owner;
-                        var found = false;
-                        for (var p of data.players) {
-                            if (p.seat === sys.owner) {
-                                system.name = p.name;
-                                found = true;
-                                break;
-                            }
+                        var name;
+                        if (sys.owner === "N") {
+                            name = "North";
+                        } else if (sys.owner === "E") {
+                            name = "East";
+                        } else if (sys.owner === "S") {
+                            name = "South";
+                        } else {
+                            name = "West"
                         }
-                        if (! found) {
-                            throw new Error("Could not find a player who owns this system: " + sys);
+                        if ( (sys.name !== undefined) && (sys.name.length > 0) ) {
+                            system.name = sys.name;
+                        } else {
+                            system.name = name;
                         }
                     }
                     system.stars = sys.stars;
@@ -147,7 +168,7 @@
         </section>
         <section>
             <h1>Text Entry</h1>
-            <p>Your data must adhere to <a href="./homeworlds.json">this JSON schema</a>. The only validation is ensuring the number of pieces allocated matches the global stash for the given number of players. If a `name` is not provided for a system, it is randomly generated. Home worlds are named after the player.</p>
+            <p>Your data must adhere to <a href="./homeworlds.json">this JSON schema</a>. The only validation is ensuring the number of pieces allocated matches the global stash for the given number of players. If a `name` is not provided for a system, it is randomly generated. Homeworlds are automatically named after the compass direction, but can be changed if desired.</p>
             <form>
                 <div>
                     <select id="rotation" name="rotation">
@@ -163,16 +184,7 @@
                 <div>
                     <textarea id="jsonIn" style="width: 50%; height: 20em">
 {
-    "players": [
-        {
-            "name": "Alice",
-            "seat": "N"
-        },
-        {
-            "name": "Bob",
-            "seat": "S"
-        }
-    ],
+    "numPlayers": 2,
     "universe": [
         {
             "owner": "N",
@@ -202,7 +214,7 @@
         <hr>
         <section>
             <h1>SVG Output</h1>
-            <div id="drawing" style="width: 85%; height: 50em; border: 1px solid black; padding: 0.5em"></div>
+            <div id="drawing"></div>
         </section>
     </body>
 </html>
