@@ -1,4 +1,4 @@
-import { Svg, Use } from "@svgdotjs/svg.js";
+import { Box, Svg, Use } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import type { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
@@ -285,21 +285,21 @@ export class HomeworldsRenderer extends RendererBase {
                 use.scale(factor, newx, newy);
             }
             // Add "sacrifice" box
-            sgroup.text("SACRIFICE").fill("black").center(cxBox, stashCellSize * 8.35);
+            sgroup.text("Sacrifice").fill("black").center(cxBox, stashCellSize * 8.35);
             const sacrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
             if (this.options.boardClick !== undefined) {
                 sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
             }
             sacrect.dmove(dxBox, stashCellSize * 8);
             // Add "pass" box
-            sgroup.text("PASS").fill("black").center(cxBox, stashCellSize * 9.05);
+            sgroup.text("Pass").fill("black").center(cxBox, stashCellSize * 9.05);
             const passrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
             if (this.options.boardClick !== undefined) {
                 passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
             }
             passrect.dmove(dxBox, stashCellSize * 8.7);
             // Add "catastrophe" box
-            sgroup.text("CATASTROPHE").fill("black").center(cxBox, stashCellSize * 9.75);
+            sgroup.text("Catastrophe").fill("black").center(cxBox, stashCellSize * 9.75);
             const catrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_catastropheclick").fill({opacity: 0}).stroke({color: "black", width: 1});
             if (this.options.boardClick !== undefined) {
                 catrect.click(() => this.options.boardClick!(-1, -1, "_catastrophe"));
@@ -366,33 +366,16 @@ export class HomeworldsRenderer extends RendererBase {
      */
     private genSystem(id: string, sys: ISystem, orientation: "H"|"V" = "H", highlight?: string): Svg {
         const [shipWidth, shipHeight] = HomeworldsRenderer.dimensions(sys);
-        let realWidth = shipWidth + 1;
-        let realHeight = Math.max(shipHeight, sys.stars.length);
+        let gridWidth = shipWidth + 1;
+        let gridHeight = Math.max(shipHeight, sys.stars.length);
         if (orientation === "V") {
-            const x = realWidth;
-            realWidth = realHeight;
-            realHeight = x;
+            const x = gridWidth;
+            gridWidth = gridHeight;
+            gridHeight = x;
         }
         const cellSize = 50;
-        const padding = cellSize / 10;
-        const grid = rectOfRects({cellSize, gridHeight: realHeight, gridWidth: realWidth});
-        const labelHeight = cellSize / 3;
-        const pxWidth = (realWidth * cellSize) + (padding * 2);
-        const pxHeight = (realHeight * cellSize) + labelHeight + (padding * 2);
-        const realx = 0 - padding;
-        const realy = 0 - labelHeight - padding;
-        const nested = this.rootSvg!.nested().id(id).size(pxWidth, pxHeight).viewbox(realx, realy, pxWidth, pxHeight);
-
-        // Add fill and border
-        let stroke: any = {width: 2, color: "#fff"};
-        if (highlight !== undefined) {
-            stroke = {width: 5, color: highlight, dasharray: "4"};
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        nested.rect(pxWidth, pxHeight).fill("black").stroke(stroke).dmove(realx, realy);
-        if (this.options.boardClick !== undefined) {
-            nested.rect(pxWidth, pxHeight).fill("#fff").opacity(0).dmove(realx, realy).click(() => this.options.boardClick!(0, 0, sys.name));
-        }
+        const grid = rectOfRects({cellSize, gridHeight, gridWidth});
+        const nested = this.rootSvg!.nested().id(id);
 
         let rotation: number | undefined;
         if ( ("rotate" in this.options) && (this.options.rotate !== undefined) ) {
@@ -414,6 +397,7 @@ export class HomeworldsRenderer extends RendererBase {
         }
         const seats = [...new Set<Seat>(seatMap.map(s => s[1]))].sort(sortSeats);
 
+        const pieceSpacing = cellSize / 4;
         if (orientation === "H") {
             // stars first
             this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
@@ -423,10 +407,22 @@ export class HomeworldsRenderer extends RendererBase {
             // now ships
             for (let y = 0; y < seats.length; y++) {
                 const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
+                const used: Box[] = [];
                 for (let x = 0; x < ships.length; x++) {
                     const ship = ships[x];
                     const designation = ship.substring(0, 3);
-                    this.placePiece(nested, `${designation}${seats[y]}`, grid[y][x + 1], `${sys.name}|${ship}`)
+                    const [use, factor] = this.placePiece(nested, `${designation}${seats[y]}`, grid[y][x + 1], `${sys.name}|${ship}`);
+                    // pack it
+                    if (used.length > 0) {
+                        const prev = used[used.length - 1];
+                        const curr = use.rbox();
+                        let dist = 0;
+                        if (curr.w < cellSize) {
+                            dist = prev.x2 - curr.x + pieceSpacing;
+                            use.dx(dist / factor);
+                        }
+                    }
+                    used.push(use.rbox());
                 }
             }
         } else {
@@ -439,11 +435,20 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
-                    const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]);
+                    const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
+                    const used: Box[] = [];
                     for (let x = 0; x < sys.ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
-                        this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][grid[0].length - 1 - y], `${sys.name}|${ship}`)
+                        const [use, factor] = this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][grid[0].length - 1 - y], `${sys.name}|${ship}`)
+                        // pack it
+                        if (used.length > 0) {
+                            const prev = used[used.length - 1];
+                            const curr = use.rbox();
+                            const dist = prev.y2 - curr.y + pieceSpacing;
+                            use.dy(dist / factor);
+                        }
+                        used.push(use.rbox());
                     }
                 }
             } else {
@@ -454,15 +459,45 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
-                    const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]);
+                    const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
+                    const used: Box[] = [];
                     for (let x = 0; x < sys.ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
-                        this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][y], `${sys.name}|${ship}`)
+                        const [use, factor] = this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][y], `${sys.name}|${ship}`)
+                        // pack it
+                        if (used.length > 0) {
+                            const prev = used[used.length - 1];
+                            const curr = use.rbox();
+                            const dist = prev.y2 - curr.y + pieceSpacing;
+                            use.dy(dist / factor);
+                        }
+                        used.push(use.rbox());
                     }
                 }
             }
         }
+
+        // now calculate the true size and vbox
+        const bbox = nested.bbox();
+        const labelHeight = cellSize / 3;
+        const padding = cellSize / 9;
+        const realX = bbox.x - padding;
+        const realY = bbox.y - padding - labelHeight;
+        const realWidth = bbox.w + (padding * 2);
+        const realHeight = bbox.h + (padding * 2) + labelHeight;
+        nested.size(realWidth, realHeight).viewbox(realX - 2, realY - 2, realWidth + 4, realHeight + 4);
+
+        // Add fill and border
+        let stroke: any = {width: 2, color: "#fff"};
+        if (highlight !== undefined) {
+            stroke = {width: 5, color: highlight, dasharray: "4"};
+        }
+        if (this.options.boardClick !== undefined) {
+            nested.rect(realWidth, realHeight).fill("#fff").opacity(0).dmove(realX, realY).back().click(() => this.options.boardClick!(0, 0, sys.name));
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        nested.rect(realWidth, realHeight).fill("black").stroke(stroke).dmove(realX, realY).back();
 
         // Add name
         // nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
@@ -479,12 +514,12 @@ export class HomeworldsRenderer extends RendererBase {
             })
             .attr("alignment-baseline", "hanging")
             .attr("dominant-baseline", "hanging")
-            .move(realx + 5, realy + 2);
+            .move(realX + 5, realY + 2);
 
         return nested;
     }
 
-    private placePiece(nested: Svg, ship: string, point: IPoint, clickName: string): Use {
+    private placePiece(nested: Svg, ship: string, point: IPoint, clickName: string): [Use, number] {
         const piece = this.rootSvg!.findOne("#" + ship) as Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
@@ -503,7 +538,7 @@ export class HomeworldsRenderer extends RendererBase {
         if (this.options.boardClick !== undefined) {
             use.click(() => this.options.boardClick!(0, 0, clickName));
         }
-        return use;
+        return [use, factor];
     }
 }
 

@@ -28,12 +28,12 @@ export interface APRenderRep {
     | "stacking-tiles"
     | "stacking-expanding"
     | "homeworlds"
-    | "homeworlds-compact"
+    | "homeworlds-orig"
     | "entropy";
   /**
    * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards.
    */
-  options?: ("rotate-pieces" | "hide-labels" | "no-border")[];
+  options?: ("rotate-pieces" | "hide-labels" | "no-border" | "hw-light" | "hw-no-buttons")[];
   /**
    * Map each `piece` to an actual glyph with possible options.
    */
