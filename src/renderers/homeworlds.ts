@@ -234,15 +234,12 @@ export class HomeworldsRenderer extends RendererBase {
         if ( (! stash.hasOwnProperty("R")) || (! stash.hasOwnProperty("B")) || (! stash.hasOwnProperty("G")) || (! stash.hasOwnProperty("Y"))) {
             throw new Error("Malformed stash. The properties 'R', 'B', 'G', and 'Y' are required.");
         }
-        const stashCellSize = 50;
+        const stashCellSize = 35;
         const sgrid = rectOfRects({gridWidth: 3, gridHeight: 5, cellHeight: stashCellSize * 2, cellWidth: stashCellSize});
-        const cxBox = stashCellSize * 1.75;
-        const boxWidth = stashCellSize * 2.5;
-        const dxBox = cxBox - (boxWidth / 2);
 
         const sgroup = this.rootSvg.group().id("stash"); // .size(stashCellSize * 3, stashCellSize * 8);
-        sgroup.text("Global Stash").fill("black").center(cxBox, stashCellSize * -1);
-
+        let realcx = 0;
+        const pcgroup = sgroup.group();
         const colours = ["R", "B", "G", "Y"];
         for (let i = 0; i < colours.length; i++) {
             const colour = colours[i];
@@ -269,7 +266,7 @@ export class HomeworldsRenderer extends RendererBase {
                         throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                     }
                 }
-                const use = sgroup.use(piece);
+                const use = pcgroup.use(piece);
                 if (this.options.boardClick !== undefined) {
                     use.click((e : Event) => {this.options.boardClick!(-1, -1, `${colour}${size}`); e.stopPropagation();});
                 }
@@ -282,44 +279,51 @@ export class HomeworldsRenderer extends RendererBase {
                 // Also account for the width difference to create more even column spacing
                 let evenSpacing = 0;
                 if (size === "1") {
-                    // evenSpacing = 10.9375 * (500 / 180) * factor;
+                    evenSpacing = ((stashCellSize / 2) * 2.1);
                 } else if (size === "2") {
-                    evenSpacing = 10.9375 * (500 / 180) * factor;
+                    evenSpacing = (stashCellSize / 2);
+                    realcx = point.x + evenSpacing + (stashCellSize * 0.9);
                 }
 
-                const newx = point.x - evenSpacing;
+                const newx = point.x + evenSpacing;
                 const newy = point.y - stackingOffset;
                 use.dmove(newx, newy);
                 use.scale(factor, newx, newy);
             }
+        }
+        const cxBox = realcx;
+        const boxWidth = stashCellSize * 2.5;
+        const dxBox = cxBox - (boxWidth / 2);
 
-            // Add button bar unless told not to
-            if ( (! this.json.options) || (! this.json.options.includes("hw-no-buttons")) ) {
-                // Add "sacrifice" box
-                sgroup.text("Sacrifice").fill("black").center(cxBox, stashCellSize * 8.35);
-                const sacrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-                if (this.options.boardClick !== undefined) {
-                    sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
-                }
-                sacrect.dmove(dxBox, stashCellSize * 8);
-                // Add "pass" box
-                sgroup.text("Pass").fill("black").center(cxBox, stashCellSize * 9.05);
-                const passrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-                if (this.options.boardClick !== undefined) {
-                    passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
-                }
-                passrect.dmove(dxBox, stashCellSize * 8.7);
-                // Add "catastrophe" box
-                sgroup.text("Catastrophe").fill("black").center(cxBox, stashCellSize * 9.75);
-                const catrect = sgroup.rect(boxWidth, stashCellSize * 0.7).id("_catastropheclick").fill({opacity: 0}).stroke({color: "black", width: 1});
-                if (this.options.boardClick !== undefined) {
-                    catrect.click(() => this.options.boardClick!(-1, -1, "_catastrophe"));
-                }
-                catrect.dmove(dxBox, stashCellSize * 9.4);
+        sgroup.text("Global Stash").fill("black").center(cxBox, stashCellSize * -1.25);
+        // Add button bar unless told not to
+        if ( (! this.json.options) || (! this.json.options.includes("hw-no-buttons")) ) {
+            const top = stashCellSize * 7.5;
+            const height = stashCellSize * 0.7;
+            // Add "sacrifice" box
+            sgroup.text("Sacrifice").fill("black").center(cxBox, top + (height / 2));
+            const sacrect = sgroup.rect(boxWidth, height).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            if (this.options.boardClick !== undefined) {
+                sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
             }
+            sacrect.dmove(dxBox, top);
+            // Add "pass" box
+            sgroup.text("Pass").fill("black").center(cxBox, top + (height * 1.5));
+            const passrect = sgroup.rect(boxWidth, height).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            if (this.options.boardClick !== undefined) {
+                passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
+            }
+            passrect.dmove(dxBox, top + height);
+            // Add "catastrophe" box
+            sgroup.text("Catastrophe").fill("black").center(cxBox, top + (height * 2.5));
+            const catrect = sgroup.rect(boxWidth, height).id("_catastropheclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            if (this.options.boardClick !== undefined) {
+                catrect.click(() => this.options.boardClick!(-1, -1, "_catastrophe"));
+            }
+            catrect.dmove(dxBox, top + (height * 2));
         }
 
-        sgroup.move(minx - (sgroup.width() as number) - stashCellSize, miny - (((sgroup.height() as number) - (maxy - miny)) / 2));
+        sgroup.move(minx - (sgroup.width() as number) - (stashCellSize * 1), miny - (((sgroup.height() as number) - (maxy - miny)) / 2));
         const box = draw.bbox();
         const padding = 2;
         draw.viewbox(box.x - padding, box.y - padding, box.width + (padding * 2), box.height + (padding * 2));
