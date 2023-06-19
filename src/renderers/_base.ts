@@ -2494,7 +2494,10 @@ export abstract class RendererBase {
                         const newy = point.y - this.cellsize / 2;
                         use.dmove(newx, newy);
                         use.scale(this.cellsize / sheetCellSize, newx, newy);
-                    }
+                        if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
+                            use.rotate(this.options.rotate);
+                        }
+            }
                 }
             }
         }

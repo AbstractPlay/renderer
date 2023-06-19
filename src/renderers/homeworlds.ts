@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Box, Svg, Use } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import type { IPoint } from "../grids/_base";
