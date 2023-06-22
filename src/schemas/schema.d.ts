@@ -206,6 +206,40 @@ export interface APRenderRep {
             }
           | {
               /**
+               * A way of drawing arbitrary lines on the board. By default, respects the stroke width, colour, and opacity of the larger board.
+               */
+              type: "line";
+              /**
+               * Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.
+               *
+               * @minItems 2
+               * @maxItems 2
+               */
+              points: [
+                {
+                  row: number;
+                  col: number;
+                },
+                {
+                  row: number;
+                  col: number;
+                }
+              ];
+              /**
+               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour?: PositiveInteger | Colourstrings;
+              /**
+               * 1 is fully opaque. 0 is fully transparent.
+               */
+              opacity?: number;
+              /**
+               * Stroke width of the line
+               */
+              width?: number;
+            }
+          | {
+              /**
                * This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.
                */
               type: "edge";
