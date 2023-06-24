@@ -2312,6 +2312,37 @@ export abstract class RendererBase {
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
                     svgGroup.polygon(ptstr).fill(colour).opacity(opacity);
+                } else if (marker.type === "line") {
+                    let colour = baseColour;
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "number") {
+                            colour = this.options.colours[marker.colour - 1];
+                        } else {
+                            colour = marker.colour as string;
+                        }
+                    }
+                    let opacity = baseOpacity;
+                    if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                        opacity = marker.opacity as number;
+                    }
+                    let width = baseStroke;
+                    if ( ("width" in marker) && (marker.width !== undefined) ) {
+                        width = marker.width as number;
+                    }
+
+                    let x1: number; let x2: number; let y1: number; let y2: number;
+                    if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                        const point1 = (marker.points as ITarget[])[0];
+                        [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y]
+                        const point2 = (marker.points as ITarget[])[1];
+                        [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y]
+                    } else {
+                        const point1 = (marker.points as ITarget[])[0];
+                        [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y]
+                        const point2 = (marker.points as ITarget[])[1];
+                        [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
+                    }
+                    svgGroup.line(x1, y1, x2, y2).stroke({width, color: colour, opacity});
                 } else if (marker.type === "edge") {
                     let colour = "#000";
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -2494,7 +2525,10 @@ export abstract class RendererBase {
                         const newy = point.y - this.cellsize / 2;
                         use.dmove(newx, newy);
                         use.scale(this.cellsize / sheetCellSize, newx, newy);
-                    }
+                        if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
+                            use.rotate(this.options.rotate);
+                        }
+            }
                 }
             }
         }

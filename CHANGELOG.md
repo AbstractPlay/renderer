@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added `no-border` option to omit drawing the very outside line of square boards.
 * Added `-borderless` versions of `piece` and `piece-square`.
 * Added `vertex-fanorona` board style.
+* Added a sphere glyph to the core sheet.
+* Added a `line` marker for drawing arbitrary lines on a board.
+* In the `stacking-tiles` renderer, the click handler now returns the number of the tile being clicked, with 1 being the top piece.
 
 ### Fixed
 
