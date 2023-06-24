@@ -4,7 +4,7 @@ import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
 /**
- * The `stacking-tiles` renderer is used to show a side view of a stack of pieces. This is theoretical and has not yet been used by any games.
+ * The `stacking-tiles` renderer is used to show a side view of a stack of pieces. Currently only used in Focus.
  *
  */
 export class StackingTilesRenderer extends RendererBase {
@@ -114,10 +114,13 @@ export class StackingTilesRenderer extends RendererBase {
                                 // regular piece
                                 if (idx > 0) {
                                     const color = this.options.colours[idx - 1];
-                                    group.rect(tileWidth, tileHeight)
+                                    const tile = group.rect(tileWidth, tileHeight)
                                         .move(x, y)
                                         .fill(color)
                                         .stroke({width: tileHeight * 0.2, color: "#fff"});
+                                    if (this.options.boardClick !== undefined) {
+                                        tile.click((e: Event) => {this.options.boardClick!(row, col, (parts.length - i).toString()); e.stopPropagation();});
+                                    }
                                 // overflow piece (there should only be one)
                                 } else {
                                     group.line(x, y + (tileHeight / 2), x + tileWidth, y + (tileHeight / 2))

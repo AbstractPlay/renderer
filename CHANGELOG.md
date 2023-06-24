@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added `vertex-fanorona` board style.
 * Added a sphere glyph to the core sheet.
 * Added a `line` marker for drawing arbitrary lines on a board.
+* In the `stacking-tiles` renderer, the click handler now returns the number of the tile being clicked, with 1 being the top piece.
 
 ### Fixed
 
