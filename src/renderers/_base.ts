@@ -562,6 +562,7 @@ export abstract class RendererBase {
                             }
                             const fill = this.options.colours[g.player - 1];
                             clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
+                            clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); });
                         }
                     } else if (g.colour !== undefined) {
                         clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
