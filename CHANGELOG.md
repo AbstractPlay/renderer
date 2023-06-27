@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added two triangle pieces to core sheet for game Realm.
 * Added an `area` called `pieces` used by the default renderer. Give it a list of pieces in the legend, and it will place them in a bar beneath the board. Current use is for tracking pieces being rearranged in a game of Realm. (The playground has been updated.)
 * Added a Catastrophe button to the Homeworlds renderer.
-* Added `blocked` property for use in `square*` boards to black out entire cells and disable click handlers. Respects `strokeColour` and `strokeOpacity`.
+* Added `blocked` property for use in `square*` boards to black out entire cells and disable click handlers. Respects `strokeColour` and `strokeOpacity`. Also expanded to include hex grids, in which case it simply never draws the hex.
 * Added `stackMax` property for use by the `stacking-tiles` renderer to set the number of tiles to be displayed in a cell.
 * Added `hide-labels` option to do just that.
 * Added `no-border` option to omit drawing the very outside line of square boards.

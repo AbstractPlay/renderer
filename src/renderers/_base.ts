@@ -1528,17 +1528,39 @@ export abstract class RendererBase {
             .fill("white").opacity(1)
             .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
 
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
         const board = this.rootSvg.group().id("board");
         const labels = this.rootSvg.group().id("labels");
         // const rect = grid.rectangle({width, height});
         const fontSize = this.cellsize / 5;
         for (const hex of grid) {
+            // don't draw "blocked" hexes
+            if (blocked !== undefined) {
+                const found = blocked.find(e => e.row === hex.row && e.col === hex.col);
+                if (found !== undefined) {
+                    continue;
+                }
+            }
             const { x, y } = hex;
             const used = board.use(hexSymbol).translate(x, y);
             if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
                 let label = this.coords2algebraicHex(hex.col, hex.row, height);
                 if (this.options.rotate === 180) {
                     label = this.coords2algebraicHex(width - hex.col - 1, height - hex.row - 1, height);
+                }
+                let labelX = corners[5].x;
+                let labelY = corners[5].y;
+                const transX = x;
+                let transY = y + fontSize;
+                if (style.endsWith("f")) {
+                    labelX = (corners[5].x + corners[0].x) / 2;
+                    labelY = (corners[5].y + corners[0].y) / 2;
+                    transY = y + (fontSize / 2);
                 }
                 labels.text(label)
                 .font({
@@ -1547,8 +1569,8 @@ export abstract class RendererBase {
                     size: fontSize,
                 })
                 // .center(cx, cy);
-                .center(corners[5].x, corners[5].y)
-                .translate(x, y + fontSize);
+                .center(labelX, labelY)
+                .translate(transX, transY);
             }
             if (this.options.boardClick !== undefined) {
                 if (this.options.rotate === 180) {
@@ -1561,9 +1583,9 @@ export abstract class RendererBase {
 
         let gridPoints: GridPoints = [];
         // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
-        for (let y = 0; y < 9; y++) {
+        for (let y = 0; y < height; y++) {
             const node: IPoint[] = [];
-            for (let x = 0; x < 9; x++) {
+            for (let x = 0; x < width; x++) {
                 const hex = grid.getHex({col: x, row: y});
                 if (hex === undefined) {
                     throw new Error();
