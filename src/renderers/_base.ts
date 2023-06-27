@@ -1523,14 +1523,19 @@ export abstract class RendererBase {
         });
         const grid = new Grid(myHex, rectangle({width, height}));
         const corners = grid.getHex({col: 0, row: 0})!.corners;
+        let hexFill = "white";
+        if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            hexFill = this.json.board.hexFill;
+        }
         const hexSymbol = this.rootSvg.symbol()
             .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
-            .fill("white").opacity(1)
+            .fill(hexFill).opacity(1)
             .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
 
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
         let blocked: Blocked|undefined;
-        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
