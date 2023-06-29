@@ -95,10 +95,10 @@
             "default": "default"
         },
         "options": {
-            "description": "A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards.",
+            "description": "A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable.",
             "type": "array",
             "items": {
-                "enum": ["rotate-pieces", "hide-labels", "no-border", "hw-light", "hw-no-buttons"]
+                "enum": ["rotate-pieces", "hide-labels", "no-border", "hw-light", "hw-no-buttons", "clickable-edges"]
             }
         },
         "legend": {
@@ -421,7 +421,7 @@
                                     {
                                         "properties": {
                                             "type": {
-                                                "description": "Only works for the `squares*` board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
+                                                "description": "Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
                                                 "enum": ["fence"]
                                             },
                                             "cell": {
@@ -440,7 +440,7 @@
                                                 "additionalProperties": false
                                             },
                                             "side": {
-                                                "enum": ["N", "E", "S", "W"]
+                                                "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
                                             },
                                             "colour": {
                                                 "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
@@ -449,6 +449,11 @@
                                                     {"$ref": "#/definitions/colourstrings"}
                                                 ],
                                                 "default": "#000"
+                                            },
+                                            "width": {
+                                                "description": "Expressed as a multiple of the base stroke width",
+                                                "type": "number",
+                                                "default": 6
                                             }
                                         },
                                         "required": ["type", "cell", "side"],

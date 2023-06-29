@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
+import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
@@ -169,6 +170,51 @@ interface IKey {
     clickable?: boolean;
 }
 
+/** Helper functions for drawing edge click handlers */
+const sortPoints = (a: [number,number], b: [number,number]) => {
+    if (a[0] === b[0]) {
+        if (a[1] === b[1]) {
+            return 0;
+        } else {
+            return a[1] - b[1];
+        }
+    } else {
+        return a[0] - b[0];
+    }
+};
+const pts2id = (a: [number,number], b: [number,number]): string => {
+    const x = a.map(n => Math.trunc(n)) as [number,number];
+    const y = b.map(n => Math.trunc(n)) as [number,number];
+    return [x,y].sort(sortPoints).map(p => p.join(",")).join(" ");
+}
+type CompassDirection = "N"|"NE"|"E"|"SE"|"S"|"SW"|"W"|"NW";
+interface IEdge {
+    dir: CompassDirection;
+    corners: [0|1|2|3|4|5,0|1|2|3|4|5];
+}
+const oppDir = new Map<CompassDirection,CompassDirection>([
+    ["N","S"],["NE","SW"],["E","W"],["SE","NW"],
+    ["S","N"],["SW","NE"],["W","E"],["NW","SE"],
+]);
+const edges2corners = new Map<Orientation, IEdge[]>([
+    [Orientation.FLAT, [
+        {dir: "N", corners: [5,0]},
+        {dir: "NE", corners: [0,1]},
+        {dir: "SE", corners: [1,2]},
+        {dir: "S", corners: [2,3]},
+        {dir: "SW", corners: [3,4]},
+        {dir: "NW", corners: [4,5]},
+    ]],
+    [Orientation.POINTY, [
+        {dir: "NE", corners: [5,0]},
+        {dir: "E", corners: [0,1]},
+        {dir: "SE", corners: [1,2]},
+        {dir: "SW", corners: [2,3]},
+        {dir: "W", corners: [3,4]},
+        {dir: "NW", corners: [4,5]},
+    ]],
+]);
+
 /**
  * An infinite generator for creating column labels from an initial string of characters.
  * With the English alphabet, you would get a-z, then aa-az-ba-zz, then aaa etc.
@@ -229,7 +275,7 @@ export abstract class RendererBase {
      */
     constructor() {
         this.options = {
-            sheets: ["core", "dice", "looney", "piecepack", "chess"],
+            sheets: ["core", "dice", "looney", "piecepack", "chess", "streetcar"],
             colourBlind: false,
             colours: [],
             patterns: false,
@@ -667,7 +713,7 @@ export abstract class RendererBase {
 
         // create buffer zone first if requested
         let bufferwidth = 0;
-        let show: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
+        let show: CompassDirection[] = ["N", "E", "S", "W"];
         // @ts-expect-error
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
@@ -675,9 +721,8 @@ export abstract class RendererBase {
                 show = [...(this.json.board.buffer as IBuffer).show!];
             }
             // adjust `show` to account for rotation
-            const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
             if (this.options.rotate === 180) {
-                const newshow: ("N"|"E"|"S"|"W")[] = [];
+                const newshow: CompassDirection[] = [];
                 for (const dir of show) {
                     newshow.push(oppDir.get(dir)!);
                 }
@@ -1100,7 +1145,7 @@ export abstract class RendererBase {
 
         // create buffer zone first if requested
         let bufferwidth = 0;
-        let show: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
+        let show: CompassDirection[] = ["N", "E", "S", "W"];
         // @ts-expect-error
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
@@ -1108,9 +1153,8 @@ export abstract class RendererBase {
                 show = [...(this.json.board.buffer as IBuffer).show!];
             }
             // adjust `show` to account for rotation
-            const oppDir: Map<("N"|"E"|"S"|"W"), ("N"|"E"|"S"|"W")> = new Map([["N", "S"], ["S", "N"], ["E", "W"], ["W", "E"]])
             if (this.options.rotate === 180) {
-                const newshow: ("N"|"E"|"S"|"W")[] = [];
+                const newshow: CompassDirection[] = [];
                 for (const dir of show) {
                     newshow.push(oppDir.get(dir)!);
                 }
@@ -1502,19 +1546,25 @@ export abstract class RendererBase {
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
         }
+        let clickEdges = false;
+        if ( (this.json.options !== undefined) && (this.json.options.includes("clickable-edges")) ) {
+            clickEdges = (this.options.boardClick !== undefined);
+        }
 
         // Get a grid of points
         let orientation = Orientation.POINTY;
         if (style.endsWith("f")) {
             orientation = Orientation.FLAT;
         }
+        const edges = edges2corners.get(orientation)!;
         let offset: HexOffset = -1;
         if (style.includes("-even")) {
             offset = 1;
         }
-        if (this.options.rotate === 180) {
-            offset = -1;
+        if ( (this.options.rotate === 180) && (height % 2 !== 0) ) {
+            offset = (offset * -1) as HexOffset;
         }
+
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const myHex = defineHex({
             offset,
@@ -1531,7 +1581,9 @@ export abstract class RendererBase {
         const hexSymbol = this.rootSvg.symbol()
             .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
             .fill(hexFill).opacity(1)
-            .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
+        if (! clickEdges) {
+            hexSymbol.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
+        }
 
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
         let blocked: Blocked|undefined;
@@ -1541,8 +1593,8 @@ export abstract class RendererBase {
 
         const board = this.rootSvg.group().id("board");
         const labels = this.rootSvg.group().id("labels");
-        // const rect = grid.rectangle({width, height});
         const fontSize = this.cellsize / 5;
+        const seenEdges = new Set<string>();
         for (const hex of grid) {
             // don't draw "blocked" hexes
             if (blocked !== undefined) {
@@ -1586,6 +1638,36 @@ export abstract class RendererBase {
             }
         }
 
+        if (clickEdges) {
+            for (const hex of grid) {
+                // add clickable edges
+                // don't draw "blocked" hexes
+                if (blocked !== undefined) {
+                    const found = blocked.find(e => e.row === hex.row && e.col === hex.col);
+                    if (found !== undefined) {
+                        continue;
+                    }
+                }
+                const { x, y } = hex;
+                for (const edge of edges) {
+                    const [idx1, idx2] = edge.corners;
+                    const {x: x1, y: y1} = corners[idx1];
+                    const {x: x2, y: y2} = corners[idx2];
+                    const vid = pts2id([x1+x,y1+y],[x2+x,y2+y]);
+                    if (seenEdges.has(vid)) {
+                        continue;
+                    }
+                    seenEdges.add(vid);
+                    const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity }).translate(x,y);
+                    if (this.options.rotate === 180) {
+                        edgeLine.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, oppDir.get(edge.dir)!));
+                    } else {
+                        edgeLine.click(() => this.options.boardClick!(hex.row, hex.col, edge.dir));
+                    }
+                }
+            }
+        }
+
         let gridPoints: GridPoints = [];
         // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
         for (let y = 0; y < height; y++) {
@@ -1605,7 +1687,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(board, gridPoints);
+        this.markBoard(board, gridPoints, undefined, grid, width, height);
 
         return gridPoints;
     }
@@ -2281,7 +2363,7 @@ export abstract class RendererBase {
      * @param grid - The map of row/column to x/y created by one of the grid point generators.
      * @param gridExpanded - Square maps need to be expanded a little for all the markers to work. If provided, this is what will be used.
      */
-    protected markBoard(svgGroup: SVGG, grid: GridPoints, gridExpanded?: GridPoints): void {
+    protected markBoard(svgGroup: SVGG, grid: GridPoints, gridExpanded?: GridPoints, hexGrid?: Grid<Hex>, hexWidth?: number, hexHeight?: number): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -2494,6 +2576,10 @@ export abstract class RendererBase {
                             colour = marker.colour as string;
                         }
                     }
+                    let multiplier = 6;
+                    if ( ("width" in marker) && (marker.width !== undefined) ) {
+                        multiplier = marker.width as number;
+                    }
                     const style = this.json.board.style;
                     if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
                         const row = marker.cell.row as number;
@@ -2530,7 +2616,29 @@ export abstract class RendererBase {
                                 yTo = south.y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 6, color: colour});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour});
+                    } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
+                        let row = marker.cell.row as number;
+                        let col = marker.cell.col as number;
+                        if (this.options.rotate === 180) {
+                            row = hexHeight - row - 1;
+                            col = hexWidth - col - 1;
+                        }
+                        const hex = hexGrid.getHex({col, row});
+                        if (hex !== undefined) {
+                            let side = marker.side as CompassDirection;
+                            if (this.options.rotate === 180) {
+                                side = oppDir.get(side)!;
+                            }
+                            const edges = edges2corners.get(hex.orientation)!;
+                            const edge = edges.find(e => e.dir === side);
+                            if (edge !== undefined) {
+                                const [idx1, idx2] = edge.corners;
+                                const {x: xFrom, y: yFrom} = hex.corners[idx1];
+                                const {x: xTo, y: yTo} = hex.corners[idx2];
+                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour});
+                            }
+                        }
                     }
                 } else if (marker.type === "glyph") {
                     const key = marker.glyph as string;
