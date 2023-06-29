@@ -31,9 +31,9 @@ export interface APRenderRep {
     | "homeworlds-orig"
     | "entropy";
   /**
-   * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards.
+   * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable.
    */
-  options?: ("rotate-pieces" | "hide-labels" | "no-border" | "hw-light" | "hw-no-buttons")[];
+  options?: ("rotate-pieces" | "hide-labels" | "no-border" | "hw-light" | "hw-no-buttons" | "clickable-edges")[];
   /**
    * Map each `piece` to an actual glyph with possible options.
    */
@@ -75,7 +75,11 @@ export interface APRenderRep {
          */
         strokeOpacity?: number;
         /**
-         * Only meaningful for 'squares*' boards. Blacks out the specified cells and disables clicking. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+         * Only affects rect of hex maps. Used to fill hexes with a colour.
+         */
+        hexFill?: string;
+        /**
+         * On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
          *
          * @minItems 1
          */
@@ -254,18 +258,22 @@ export interface APRenderRep {
             }
           | {
               /**
-               * Only works for the `squares*` board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
+               * Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
                */
               type: "fence";
               cell: {
                 row: number;
                 col: number;
               };
-              side: "N" | "E" | "S" | "W";
+              side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
               /**
                * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
                */
               colour?: PositiveInteger | Colourstrings;
+              /**
+               * Expressed as a multiple of the base stroke width
+               */
+              width?: number;
             }
           | {
               /**
