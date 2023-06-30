@@ -171,6 +171,9 @@ export class DefaultRenderer extends RendererBase {
                 const areaWidth = cellsize * boardWidth;
                 const areaHeight = (textHeight * 2) + (cellsize * numRows);
                 const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1, -1, areaWidth+2, areaHeight+2);
+                if ("background" in area) {
+                    nested.rect(areaWidth,areaHeight).fill(area.background as string);
+                }
                 for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
                     const used: [SVGUse, number][] = [];
                     const p = area.pieces[iPiece];

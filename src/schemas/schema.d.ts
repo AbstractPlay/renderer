@@ -379,6 +379,10 @@ export interface APRenderRep {
          * The text that will appear at the top left of the area
          */
         label: string;
+        /**
+         * Pattern for hex colour strings
+         */
+        background?: string;
       }
     | {
         type: "globalStash";
