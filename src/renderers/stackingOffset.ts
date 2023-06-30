@@ -60,6 +60,12 @@ export class StackingOffsetRenderer extends RendererBase {
             case "hex-of-cir":
                 gridPoints = this.hexOfCir();
                 break;
+            case "hex-odd-p":
+            case "hex-even-p":
+            case "hex-odd-f":
+            case "hex-even-f":
+                gridPoints = this.rectOfHex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
