@@ -681,6 +681,11 @@
                             "label": {
                                 "description": "The text that will appear at the top left of the area",
                                 "type": "string"
+                            },
+                            "background": {
+                                "description": "A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
+                                "$ref": "#/definitions/colourstrings",
+                                "default": "#fff"
                             }
                         },
                         "required": ["type", "pieces", "label"],

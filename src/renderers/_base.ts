@@ -183,8 +183,8 @@ const sortPoints = (a: [number,number], b: [number,number]) => {
     }
 };
 const pts2id = (a: [number,number], b: [number,number]): string => {
-    const x = a.map(n => Math.trunc(n)) as [number,number];
-    const y = b.map(n => Math.trunc(n)) as [number,number];
+    const x = a.map(n => Math.trunc(n * 1000) / 1000) as [number,number];
+    const y = b.map(n => Math.trunc(n * 1000) / 1000) as [number,number];
     return [x,y].sort(sortPoints).map(p => p.join(",")).join(" ");
 }
 type CompassDirection = "N"|"NE"|"E"|"SE"|"S"|"SW"|"W"|"NW";
