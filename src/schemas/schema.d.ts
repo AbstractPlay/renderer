@@ -79,6 +79,10 @@ export interface APRenderRep {
          */
         hexFill?: string;
         /**
+         * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
+         */
+        backFill?: string;
+        /**
          * On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
          *
          * @minItems 1

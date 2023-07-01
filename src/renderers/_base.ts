@@ -1667,7 +1667,7 @@ export abstract class RendererBase {
                         continue;
                     }
                     seenEdges.add(vid);
-                    const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity }).translate(x,y);
+                    const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
                     if (this.options.rotate === 180) {
                         edgeLine.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, oppDir.get(edge.dir)!));
                     } else {
@@ -2625,7 +2625,7 @@ export abstract class RendererBase {
                                 yTo = south.y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour, linecap: "round"});
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
                         let row = marker.cell.row as number;
                         let col = marker.cell.col as number;
@@ -2645,7 +2645,7 @@ export abstract class RendererBase {
                                 const [idx1, idx2] = edge.corners;
                                 const {x: xFrom, y: yFrom} = hex.corners[idx1];
                                 const {x: xTo, y: yTo} = hex.corners[idx2];
-                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour});
+                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour, linecap: "round"});
                             }
                         }
                     }
@@ -3133,6 +3133,21 @@ export abstract class RendererBase {
                 // const placed = this.rootSvg.use(nested);
                 nested.move(gridPoints[0][0].x, placeY);
                 placeY += nested.bbox().height + (this.cellsize * 0.5);
+            }
+        }
+    }
+
+    protected backFill() {
+        if (this.rootSvg === undefined) {
+            throw new Error("Can't add a back fill unless the root SVG is initialized!");
+        }
+        if ( (this.json === undefined) || (this.json.board === undefined) ) {
+            throw new Error("Can't add a back fill unless the JSON is initialized!");
+        }
+        if (this.json.board !== null) {
+            if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
+                const bbox = this.rootSvg.bbox();
+                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).move(bbox.x - 10, bbox.y - 10).fill(this.json.board.backFill).back();
             }
         }
     }

@@ -163,6 +163,8 @@ export class DefaultRenderer extends RendererBase {
 
         // key
         this.placeKey(gridPoints);
+
+        this.backFill();
     }
 
     /**

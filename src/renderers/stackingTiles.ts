@@ -144,5 +144,7 @@ export class StackingTilesRenderer extends RendererBase {
 
         // key
         this.placeKey(gridPoints);
+
+        this.backFill();
     }
 }

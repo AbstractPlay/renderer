@@ -201,5 +201,7 @@ export class StackingOffsetRenderer extends RendererBase {
 
         // key
         this.placeKey(gridPoints);
+
+        this.backFill();
     }
 }
