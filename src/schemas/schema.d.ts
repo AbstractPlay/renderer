@@ -383,6 +383,10 @@ export interface APRenderRep {
          * Pattern for hex colour strings
          */
         background?: string;
+        /**
+         * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
+         */
+        ownerMark?: PositiveInteger | Colourstrings;
       }
     | {
         type: "globalStash";

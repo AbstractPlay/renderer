@@ -170,6 +170,15 @@ interface IKey {
     clickable?: boolean;
 }
 
+/**
+ * For the generic "pieces" area
+ */
+export interface IPiecesArea {
+    type: "pieces";
+    pieces: [string, ...string[]];
+    label: string;
+}
+
 /** Helper functions for drawing edge click handlers */
 const sortPoints = (a: [number,number], b: [number,number]) => {
     if (a[0] === b[0]) {
@@ -3034,5 +3043,97 @@ export abstract class RendererBase {
         // set the viewbox and return
         nested.viewbox(0, 0, (height * 1.1) + maxScaledWidth, (height * key.list.length) + (buffer * (key.list.length - 1)));
         return nested;
+    }
+
+    /**
+     * For placing a generic `pieces` area at the bottom of the board.
+     *
+     * @protected
+     * @param {GridPoints} gridPoints
+     * @memberof RendererBase
+     * @returns Svg
+     */
+    protected piecesArea(gridPoints: GridPoints) {
+        if (this.rootSvg === undefined) {
+            throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
+        }
+        if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+            const areas = this.json.areas.filter((x) => x.type === "pieces") as IPiecesArea[];
+            const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
+            // Width in number of cells, taking the maximum board width
+            const boardWidth = Math.max(...gridPoints.map(r => r.length));
+            let placeY = boardBottom + (this.cellsize / 2);
+            for (let iArea = 0; iArea < areas.length; iArea++) {
+                const area = areas[iArea];
+                const numPieces = area.pieces.length;
+                const numRows = Math.ceil(numPieces / boardWidth);
+                const textHeight = 10; // the allowance for the label
+                const cellsize = this.cellsize * 0.75;
+                const areaWidth = cellsize * boardWidth;
+                const areaHeight = (textHeight * 2) + (cellsize * numRows);
+                let markWidth = 0;
+                let markColour: string|undefined;
+                if ( ("ownerMark" in area) && (area.ownerMark !== undefined) ) {
+                    markWidth = 15;
+                    if (typeof area.ownerMark === "number") {
+                        markColour = this.options.colours[area.ownerMark - 1];
+                    } else {
+                        markColour = area.ownerMark as string;
+                    }
+                }
+                const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth, -1, areaWidth+2+markWidth, areaHeight+2);
+                if ("background" in area) {
+                    nested.rect(areaWidth,areaHeight).fill(area.background as string);
+                }
+                for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
+                    const used: [SVGUse, number][] = [];
+                    const p = area.pieces[iPiece];
+                    const row = Math.floor(iPiece / boardWidth);
+                    const col = iPiece % boardWidth;
+                    const piece = this.rootSvg.findOne("#" + p) as Svg;
+                    if ( (piece === null) || (piece === undefined) ) {
+                        throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
+                    }
+                    let sheetCellSize = piece.viewbox().h;
+                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                        sheetCellSize = piece.attr("data-cellsize") as number;
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        }
+                    }
+                    const use = nested.use(piece);
+                    if (this.options.boardClick !== undefined) {
+                        use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
+                    }
+                    used.push([use, piece.viewbox().h]);
+                    const factor = (cellsize / sheetCellSize);
+                    const newx = col * cellsize;
+                    const newy = (textHeight * 2) + (row * cellsize);
+                    use.dmove(newx, newy);
+                    use.scale(factor, newx, newy);
+                }
+
+                // add marker line if indicated
+                if ( (markWidth > 0) && (markColour !== undefined) ) {
+                    nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
+                }
+
+                // Add area label
+                const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: "#000"});
+                const txtWidth = tmptxt.bbox().w;
+                tmptxt.remove();
+                nested.width(Math.max(areaWidth, txtWidth));
+                const txt = nested.text(area.label);
+                txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                    .attr("alignment-baseline", "hanging")
+                    .attr("dominant-baseline", "hanging")
+                    .move(0, 0);
+
+                // Now place the whole group below the board
+                // const placed = this.rootSvg.use(nested);
+                nested.move(gridPoints[0][0].x, placeY);
+                placeY += nested.bbox().height + (this.cellsize * 0.5);
+            }
+        }
     }
 }

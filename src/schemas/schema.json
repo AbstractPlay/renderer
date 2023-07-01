@@ -683,9 +683,16 @@
                                 "type": "string"
                             },
                             "background": {
-                                "description": "A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
+                                "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
                                 "$ref": "#/definitions/colourstrings",
                                 "default": "#fff"
+                            },
+                            "ownerMark": {
+                                "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
+                                "anyOf": [
+                                    {"$ref": "#/definitions/positiveInteger"},
+                                    {"$ref": "#/definitions/colourstrings"}
+                                ]
                             }
                         },
                         "required": ["type", "pieces", "label"],

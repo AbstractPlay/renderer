@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added `width` property to the `fence` marker so the game can adjust the weight of the fence.
 * Added a `clickable-edges` option that only affects rect-of-hex maps. It renders the edges using the base stroke width, colour, etc., but it also attaches a click handler, returning the row, column, and face the edge represents. The renderer does not double up on edges (e.g., a1NE and b1SW are the same edge, and only one will be rendered).
 * Added glyphs for Streetcar Suburb.
+* Added `ownerMark` property to generic `pieces` area to add a bar of colour indicating ownership.
 
 ### Fixed
 
