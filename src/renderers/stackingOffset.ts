@@ -3,6 +3,12 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
+export interface IPiecesArea {
+    type: "pieces";
+    pieces: [string, ...string[]];
+    label: string;
+}
+
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
  *
@@ -59,6 +65,12 @@ export class StackingOffsetRenderer extends RendererBase {
                 break;
             case "hex-of-cir":
                 gridPoints = this.hexOfCir();
+                break;
+            case "hex-odd-p":
+            case "hex-even-p":
+            case "hex-odd-f":
+            case "hex-even-f":
+                gridPoints = this.rectOfHex();
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
@@ -181,10 +193,15 @@ export class StackingOffsetRenderer extends RendererBase {
             this.annotateBoard(gridPoints);
         }
 
+        // `pieces` area, if present
+        this.piecesArea(gridPoints);
+
         // button bar
         this.placeButtonBar(gridPoints);
 
         // key
         this.placeKey(gridPoints);
+
+        this.backFill();
     }
 }

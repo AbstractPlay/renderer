@@ -10,20 +10,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Added two triangle pieces to core sheet for game Realm.
-* Added an `area` called `pieces` used by the default renderer. Give it a list of pieces in the legend, and it will place them in a bar beneath the board. Current use is for tracking pieces being rearranged in a game of Realm. (The playground has been updated.)
+* Added an `area` called `pieces` used by the default renderer. Give it a list of pieces in the legend, and it will place them in a bar beneath the board. Current use is for tracking pieces being rearranged in a game of Realm. Also added to the `stacking-offset` renderer. (The playground has been updated.)
 * Added a Catastrophe button to the Homeworlds renderer.
-* Added `blocked` property for use in `square*` boards to black out entire cells and disable click handlers. Respects `strokeColour` and `strokeOpacity`.
+* Added `blocked` property for use in `square*` boards to black out entire cells and disable click handlers. Respects `strokeColour` and `strokeOpacity`. Also expanded to include hex grids, in which case it simply never draws the hex.
 * Added `stackMax` property for use by the `stacking-tiles` renderer to set the number of tiles to be displayed in a cell.
 * Added `hide-labels` option to do just that.
 * Added `no-border` option to omit drawing the very outside line of square boards.
 * Added `-borderless` versions of `piece` and `piece-square`.
 * Added `vertex-fanorona` board style.
+* Added a sphere glyph to the core sheet.
+* Added a `line` marker for drawing arbitrary lines on a board.
+* In the `stacking-tiles` renderer, the click handler now returns the number of the tile being clicked, with 1 being the top piece.
+* Added `hexFill` property that will fill hexes in a hex grid with a given colour.
+* Added `width` property to the `fence` marker so the game can adjust the weight of the fence.
+* Added a `clickable-edges` option that only affects rect-of-hex maps. It renders the edges using the base stroke width, colour, etc., but it also attaches a click handler, returning the row, column, and face the edge represents. The renderer does not double up on edges (e.g., a1NE and b1SW are the same edge, and only one will be rendered).
+* Added glyphs for Streetcar Suburb.
+* Added `ownerMark` property to generic `pieces` area to add a bar of colour indicating ownership.
+* Added `backFill` property to add background fill to entire image.
 
 ### Fixed
 
 * Fixed bug causing excess whitespace between captured stashes in Volcano games.
 * Rebuilt the Homeworlds renderer to make it work in Firefox. Also tweaked the default renderer so the new `pieces` area would also work in Firefox.
 * More Volcano fixes. Click handler on stash wasn't working in Firefox. Label text was getting truncated.
+
+### Changed
+
+* Fence markers are now rounded by default.
 
 ## [1.0.0-beta] - 2023-04-30
 

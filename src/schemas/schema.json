@@ -96,10 +96,10 @@
             "default": "default"
         },
         "options": {
-            "description": "A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards.",
+            "description": "A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable.",
             "type": "array",
             "items": {
-                "enum": ["rotate-pieces", "hide-labels", "no-border", "hw-light", "hw-no-buttons"]
+                "enum": ["rotate-pieces", "hide-labels", "no-border", "hw-light", "hw-no-buttons", "clickable-edges"]
             }
         },
         "legend": {
@@ -172,8 +172,16 @@
                             "maximum": 1,
                             "default": 1
                         },
+                        "hexFill": {
+                            "description": "Only affects rect of hex maps. Used to fill hexes with a colour.",
+                            "$ref": "#/definitions/colourstrings"
+                        },
+                        "backFill": {
+                            "description": "Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.",
+                            "$ref": "#/definitions/colourstrings"
+                        },
                         "blocked": {
-                            "description": "Only meaningful for 'squares*' boards. Blacks out the specified cells and disables clicking. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
+                            "description": "On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
                             "type": "array",
                             "items": {
                                 "type": "object",
@@ -345,6 +353,58 @@
                                     {
                                         "properties": {
                                             "type": {
+                                                "description": "A way of drawing arbitrary lines on the board. By default, respects the stroke width, colour, and opacity of the larger board.",
+                                                "enum": ["line"]
+                                            },
+                                            "points": {
+                                                "description": "Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "row": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        },
+                                                        "col": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": ["row", "col"],
+                                                    "additionalProperties": false
+                                                },
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                            },
+                                            "colour": {
+                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                                "anyOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ],
+                                                "default": "#000"
+                                            },
+                                            "opacity": {
+                                                "description": "1 is fully opaque. 0 is fully transparent.",
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 1,
+                                                "default": 0.5
+                                            },
+                                            "width": {
+                                                "description": "Stroke width of the line",
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "default": 1
+                                            }
+                                        },
+                                        "required": ["type", "points"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "properties": {
+                                            "type": {
                                                 "description": "This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.",
                                                 "enum": ["edge"]
                                             },
@@ -366,7 +426,7 @@
                                     {
                                         "properties": {
                                             "type": {
-                                                "description": "Only works for the `squares*` board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
+                                                "description": "Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
                                                 "enum": ["fence"]
                                             },
                                             "cell": {
@@ -385,7 +445,7 @@
                                                 "additionalProperties": false
                                             },
                                             "side": {
-                                                "enum": ["N", "E", "S", "W"]
+                                                "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
                                             },
                                             "colour": {
                                                 "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
@@ -394,6 +454,11 @@
                                                     {"$ref": "#/definitions/colourstrings"}
                                                 ],
                                                 "default": "#000"
+                                            },
+                                            "width": {
+                                                "description": "Expressed as a multiple of the base stroke width",
+                                                "type": "number",
+                                                "default": 6
                                             }
                                         },
                                         "required": ["type", "cell", "side"],
@@ -621,6 +686,18 @@
                             "label": {
                                 "description": "The text that will appear at the top left of the area",
                                 "type": "string"
+                            },
+                            "background": {
+                                "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
+                                "$ref": "#/definitions/colourstrings",
+                                "default": "#fff"
+                            },
+                            "ownerMark": {
+                                "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
+                                "anyOf": [
+                                    {"$ref": "#/definitions/positiveInteger"},
+                                    {"$ref": "#/definitions/colourstrings"}
+                                ]
                             }
                         },
                         "required": ["type", "pieces", "label"],
