@@ -2510,7 +2510,7 @@ export abstract class RendererBase {
      * @param delta - The depth of the arc
      * @returns The midpoint of the arc
      */
-    private getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
+    public getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
         const m: IPoint = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
         let dir = "";
         if (to.y < from.y) {

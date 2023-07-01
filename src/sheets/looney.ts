@@ -28,28 +28,28 @@ const strokeWeight = 2;
 const strokeOpacity = 0.5;
 const cellsize = 180;
 const halfcell = cellsize / 2;
-const upCellsize = 100;
+const upCellsize = 102;
 const upHalfcell = upCellsize / 2;
 
+const cellsize3D = 100;
+const halfcellsize3D = 50;
 const vstrokeIn = 5;
 const vstrokeOut = 8;
-const vheight3 = 50;
+// set vheight3 = 45, vheight2 = 2/3 * vheight3 = 30, vheight1 = 1/3 * vheight3 = 15
+// set vbottom1 = 50 (= cellsize3D / 2)
+// we also want vbottom<n> + vheight<n> = vbottom3 + vheight3 (this makes stacking just offsetting)
+// so vbottom1 + vheight1 = 50 + vheigth3 / 3 = vbottom3 + vheight3 => vbottom3 = 50 - 2/3 * vheight3
+// vbottom2 = vbottom3 + vheight3 - vheight2 = 50 - 2/3 * vheight3 + vheight3 - 2/3 * vheight3 = 50 - 1/3 * vheight3
+
+const vheight3 = 45;
 const vwidth3 = vheight3 / 2;
-const vbottom3 = 50 / 3;
+const vbottom3 = 50 - (2 / 3 * vheight3);
 const vheight2 = vheight3 * 2 / 3;
 const vwidth2 = vheight2 / 2;
-// vbottom + vheight = vbottom3 + vheight3
-const vbottom2 = vbottom3 + vheight3 - vheight2;
+const vbottom2 = 50 - (1 / 3 * vheight3);
 const vheight1 = vheight3 * 1 / 3;
 const vwidth1 = vheight1 / 2;
-const vbottom1 = vbottom3 + vheight3 - vheight1;
-
-// set vbottom1 = 50
-// we also want vbottomn + vheightn = vbottom3 + vheight3
-// and vheight3 = 50
-// so vbottom1 + vheight1 = 50 + vheigth3 / 3 = vbottom3 + vheight3 => vbottom3 = 50 - 2/3 * vheight3 = 50 / 3
-// vbottom1 = 25 + 50 - 16.66666666666667 = 58.33333333333333
-// vbottom1 - vbottom2 = vheight2 - vheight1 = vheight3 / 3 = 16.66666666666667
+const vbottom1 = 50;
 
 sheet.glyphs.set("pyramid-flat-large", (canvas: SVGContainer) => {
     const height = 175;
@@ -262,18 +262,90 @@ sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
+sheet.glyphs.set("pyramid-up-large-3D", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    group.rect(upCellsize, upCellsize).fill("none");
+    group.rect(cellsize3D, cellsize3D).fill("none");
 
-    group.polyline([[upHalfcell - vwidth3, upCellsize - vbottom3], [upHalfcell, upCellsize - (vbottom3 + vheight3)], [upHalfcell + vwidth3, upCellsize - vbottom3]])
+    group.polyline([[halfcellsize3D - vwidth3, cellsize3D - vbottom3], [halfcellsize3D, cellsize3D - (vbottom3 + vheight3)], [halfcellsize3D + vwidth3, cellsize3D - vbottom3]])
         .fill("none")
         .stroke({width: vstrokeOut, color: "#000", linecap: "round", linejoin: "round"});
 
-    group.polyline([[upHalfcell - vwidth3, upCellsize - vbottom3], [upHalfcell, upCellsize - (vbottom3 + vheight3)], [upHalfcell + vwidth3, upCellsize - vbottom3]])
+    group.polyline([[halfcellsize3D - vwidth3, cellsize3D - vbottom3], [halfcellsize3D, cellsize3D - (vbottom3 + vheight3)], [halfcellsize3D + vwidth3, cellsize3D - vbottom3]])
         .attr("data-playerstroke", true)
         .fill("none")
         .stroke({width: vstrokeIn, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.viewbox(0, 0, cellsize3D, cellsize3D);
+    return group;
+});
+
+sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
+    const base = 100;
+    const halfbase = base / 2;
+    const group = canvas.symbol();
+    group.rect(upCellsize, upCellsize).fill("none");
+    group.rect(base, base)
+        .attr("data-playerfill", true)
+        .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
+        .fill("#fff")
+        .center(upHalfcell, upHalfcell);
+    group.line(upHalfcell - halfbase, upHalfcell + halfbase, upHalfcell + halfbase, upHalfcell - halfbase)
+        .stroke({width: strokeWeight / 2, color: "#000", opacity: strokeOpacity * 0.5});
+    group.line(upHalfcell - halfbase, upHalfcell - halfbase, upHalfcell + halfbase, upHalfcell + halfbase)
+        .stroke({width: strokeWeight / 2, color: "#000", opacity: strokeOpacity * 0.5});
+    group.circle(strokeWeight * 2).center(upHalfcell, upHalfcell).fill("#000").opacity(strokeOpacity * 0.5);
+
+    // bottom
+    let x = upHalfcell - halfbase + pipWidth;
+    let xOffset = pipWidth * 1.5;
+    let y = upHalfcell + halfbase - (strokeWeight * 2);
+    group.line(x, y, (x + pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    x = x + xOffset;
+    group.line(x, y, (x + pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    x = x + xOffset;
+    group.line(x, y, (x + pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // top
+    x = upHalfcell + halfbase - pipWidth;
+    xOffset = pipWidth * 1.5;
+    y = upHalfcell - halfbase + (strokeWeight * 2);
+    group.line(x, y, (x - pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    x = x - xOffset;
+    group.line(x, y, (x - pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    x = x - xOffset;
+    group.line(x, y, (x - pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // left
+    x = upHalfcell - halfbase + (strokeWeight * 2);
+    let yOffset = pipWidth * 1.5;
+    y = upHalfcell - halfbase + pipWidth;
+    group.line(x, y, x, (y + pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    y = y + yOffset;
+    group.line(x, y, x, (y + pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    y = y + yOffset;
+    group.line(x, y, x, (y + pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // right
+    x = upHalfcell + halfbase - (strokeWeight * 2);
+    yOffset = pipWidth * 1.5;
+    y = upHalfcell + halfbase - pipWidth;
+    group.line(x, y, x, (y - pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    y = y - yOffset;
+    group.line(x, y, x, (y - pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    y = y - yOffset;
+    group.line(x, y, x, (y - pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, upCellsize, upCellsize);
     return group;
@@ -339,18 +411,78 @@ sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
+sheet.glyphs.set("pyramid-up-medium-3D", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    group.rect(upCellsize, upCellsize).fill("none");
+    group.rect(cellsize3D, cellsize3D).fill("none");
 
-    group.polyline([[upHalfcell - vwidth2, upCellsize - vbottom2], [upHalfcell, upCellsize - (vbottom2 + vheight2)], [upHalfcell + vwidth2, upCellsize - vbottom2]])
+    group.polyline([[halfcellsize3D - vwidth2, cellsize3D - vbottom2], [halfcellsize3D, cellsize3D - (vbottom2 + vheight2)], [halfcellsize3D + vwidth2, cellsize3D - vbottom2]])
         .fill("none")
         .stroke({width: vstrokeOut, color: "#000", linecap: "round", linejoin: "round"});
 
-    group.polyline([[upHalfcell - vwidth2, upCellsize - vbottom2], [upHalfcell, upCellsize - (vbottom2 + vheight2)], [upHalfcell + vwidth2, upCellsize - vbottom2]])
+    group.polyline([[halfcellsize3D - vwidth2, cellsize3D - vbottom2], [halfcellsize3D, cellsize3D - (vbottom2 + vheight2)], [halfcellsize3D + vwidth2, cellsize3D - vbottom2]])
         .attr("data-playerstroke", true)
         .fill("none")
         .stroke({width: vstrokeIn, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.viewbox(0, 0, cellsize3D, cellsize3D);
+    return group;
+});
+
+sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
+    const base = 78.125;
+    const halfbase = base / 2;
+    const group = canvas.symbol();
+    group.rect(upCellsize, upCellsize).fill("none");
+    group.rect(base, base)
+        .attr("data-playerfill", true)
+        .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
+        .fill("#fff")
+        .center(upHalfcell, upHalfcell);
+    group.line(upHalfcell - halfbase, upHalfcell + halfbase, upHalfcell + halfbase, upHalfcell - halfbase)
+        .stroke({width: strokeWeight / 2, color: "#000", opacity: strokeOpacity * 0.5});
+    group.line(upHalfcell - halfbase, upHalfcell - halfbase, upHalfcell + halfbase, upHalfcell + halfbase)
+        .stroke({width: strokeWeight / 2, color: "#000", opacity: strokeOpacity * 0.5});
+    group.circle(strokeWeight * 2).center(upHalfcell, upHalfcell).fill("#000").opacity(strokeOpacity * 0.5);
+
+    // bottom
+    let x = upHalfcell - halfbase + pipWidth;
+    let xOffset = pipWidth * 1.5;
+    let y = upHalfcell + halfbase - (strokeWeight * 2);
+    group.line(x, y, (x + pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    x = x + xOffset;
+    group.line(x, y, (x + pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // top
+    x = upHalfcell + halfbase - pipWidth;
+    xOffset = pipWidth * 1.5;
+    y = upHalfcell - halfbase + (strokeWeight * 2);
+    group.line(x, y, (x - pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    x = x - xOffset;
+    group.line(x, y, (x - pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // left
+    x = upHalfcell - halfbase + (strokeWeight * 2);
+    let yOffset = pipWidth * 1.5;
+    y = upHalfcell - halfbase + pipWidth;
+    group.line(x, y, x, (y + pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    y = y + yOffset;
+    group.line(x, y, x, (y + pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // right
+    x = upHalfcell + halfbase - (strokeWeight * 2);
+    yOffset = pipWidth * 1.5;
+    y = upHalfcell + halfbase - pipWidth;
+    group.line(x, y, x, (y - pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+    y = y - yOffset;
+    group.line(x, y, x, (y - pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, upCellsize, upCellsize);
     return group;
@@ -400,18 +532,62 @@ sheet.glyphs.set("pyramid-up-small", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("pyramid-up-small-upscaled", (canvas: SVGContainer) => {
+sheet.glyphs.set("pyramid-up-small-3D", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    group.rect(upCellsize, upCellsize).fill("none");
+    group.rect(cellsize3D, cellsize3D).fill("none");
 
-    group.polyline([[upHalfcell - vwidth1, upCellsize - vbottom1], [upHalfcell, upCellsize - (vbottom1 + vheight1)], [upHalfcell + vwidth1, upCellsize - vbottom1]])
+    group.polyline([[halfcellsize3D - vwidth1, cellsize3D - vbottom1], [halfcellsize3D, cellsize3D - (vbottom1 + vheight1)], [halfcellsize3D + vwidth1, cellsize3D - vbottom1]])
         .fill("none")
         .stroke({width: vstrokeOut, color: "#000", linecap: "round", linejoin: "round"});
 
-    group.polyline([[upHalfcell - vwidth1, upCellsize - vbottom1], [upHalfcell, upCellsize - (vbottom1 + vheight1)], [upHalfcell + vwidth1, upCellsize - vbottom1]])
+    group.polyline([[halfcellsize3D - vwidth1, cellsize3D - vbottom1], [halfcellsize3D, cellsize3D - (vbottom1 + vheight1)], [halfcellsize3D + vwidth1, cellsize3D - vbottom1]])
         .attr("data-playerstroke", true)
         .fill("none")
         .stroke({width: vstrokeIn, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.viewbox(0, 0, cellsize3D, cellsize3D);
+    return group;
+});
+
+sheet.glyphs.set("pyramid-up-small-upscaled", (canvas: SVGContainer) => {
+    const base = 56.25;
+    const halfbase = base / 2;
+    const group = canvas.symbol();
+    group.rect(upCellsize, upCellsize).fill("none");
+    group.rect(base, base)
+        .attr("data-playerfill", true)
+        .stroke({width: strokeWeight, color: "#000", opacity: strokeOpacity})
+        .fill("#fff")
+        .center(upHalfcell, upHalfcell);
+    group.line(upHalfcell - halfbase, upHalfcell + halfbase, upHalfcell + halfbase, upHalfcell - halfbase)
+        .stroke({width: strokeWeight / 2, color: "#000", opacity: strokeOpacity * 0.5});
+    group.line(upHalfcell - halfbase, upHalfcell - halfbase, upHalfcell + halfbase, upHalfcell + halfbase)
+        .stroke({width: strokeWeight / 2, color: "#000", opacity: strokeOpacity * 0.5});
+    group.circle(strokeWeight * 2).center(upHalfcell, upHalfcell).fill("#000").opacity(strokeOpacity * 0.5);
+
+    // bottom
+    let x = upHalfcell - halfbase + pipWidth;
+    let y = upHalfcell + halfbase - (strokeWeight * 2);
+    group.line(x, y, (x + pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // top
+    x = upHalfcell + halfbase - pipWidth;
+    y = upHalfcell - halfbase + (strokeWeight * 2);
+    group.line(x, y, (x - pipWidth), y)
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // left
+    x = upHalfcell - halfbase + (strokeWeight * 2);
+    y = upHalfcell - halfbase + pipWidth;
+    group.line(x, y, x, (y + pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
+
+    // right
+    x = upHalfcell + halfbase - (strokeWeight * 2);
+    y = upHalfcell + halfbase - pipWidth;
+    group.line(x, y, x, (y - pipWidth))
+        .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, upCellsize, upCellsize);
     return group;

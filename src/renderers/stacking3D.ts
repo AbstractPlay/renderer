@@ -2,7 +2,27 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rectOfRects } from "../grids";
-import { Svg } from "@svgdotjs/svg.js";
+import { Svg, StrokeData } from "@svgdotjs/svg.js";
+
+/**
+ * Internal interface when placing markers and annotations
+ *
+ */
+interface ITarget {
+    row: number;
+    col: number;
+}
+
+/**
+ * A simple x,y coordinate container.
+ *
+ */
+/*
+export interface IPoint {
+    readonly x: number;
+    readonly y: number;
+}
+*/
 
 /**
  * The `stacking-3D` renderer creates a square board seen in perspective. Stacks of pieces therefore does not (fully) obscure stacks behind them.
@@ -11,9 +31,11 @@ import { Svg } from "@svgdotjs/svg.js";
 export class Stacking3DRenderer extends RendererBase {
 
     public static readonly rendererName: string = "stacking-3D";
+    // But see findaft() below.
     private f = -1;
     private a = 1;
     private t = Math.PI - 0.4 * Math.PI;
+
     private width = 0;
     private height = 0;
 
@@ -21,32 +43,25 @@ export class Stacking3DRenderer extends RendererBase {
         super();
     }
 
+    // If lower left is at (0,0), lower right at (1,0), map upper left to (x1, y), upper right to (x2, y).
+    // Make sure 0.5 < x2 - x1 < 1 and 0 < y < 2 * (x2 - x1) - 1.
     private findaft(x1: number, x2: number, y:number): void {
+      if (y <= 0)
+        throw new Error("y must be positive");
       y = y + 1;
       const b = x2 - x1;
-      if (b === 1)
-        throw new Error("x2 cannot be x1 + 1");
+      if (b >= 1)
+        throw new Error("x2 - x1 must be less than 1");
+      if (b <= 0.5)
+        throw new Error("x2 - x1 must be greater than 0.5");
       const a = x1 / (b - 1);
-      if (y / b - 1 < -1)
-        throw new Error("y / b - 1 < -1");
       if (y / b - 1 > 1)
-        throw new Error("y / b - 1 > 1");
+        throw new Error("y must be less than 2 * (x2 - x1) - 1");
       const t = Math.asin(y / b - 1);
       const f = Math.cos(t) / (1 / b - 1);
       this.f = f;
       this.a = a;
       this.t = t;
-      let p = this.projectUnscaled(0, 1);
-      if (Math.abs(p[0] - x1) > 0.000001) {
-        throw new Error("p[0] !== x1");
-      }
-      if (Math.abs(p[1] - y) > 0.000001) {
-        throw new Error("p[1] !== y");
-      }
-      p = this.projectUnscaled(1, 1);
-      if (Math.abs(p[0] - x2) > 0.000001) {
-        throw new Error("p[0] !== x2");
-      }
     }
 
     private project0(p: [number, number, number]): [number, number] {
@@ -54,26 +69,22 @@ export class Stacking3DRenderer extends RendererBase {
     }
 
     private projectUnscaled(x0: number, y0: number): [number, number] {
-      const p1: [number, number, number] = [1, 1 / this.a, this.f / this.a];
-      const p2: [number, number, number] = [1 + x0 / this.a, 1 / this.a, this.f / this.a];
-      // const p3: [number, number, number] = [1, 1 / this.a * (1 + y0 * Math.sin(t)), this.f / this.a + y0 / this.a * Math.cos(t)];
       const p4: [number, number, number] = [1 + x0 / this.a, 1 / this.a * (1 + y0 * Math.sin(this.t)), this.f / this.a + y0 / this.a * Math.cos(this.t)];
-      const p1p = this.project0(p1);
-      const p2p = this.project0(p2);
-      if (Math.abs(p1p[0] - this.a) > 0.000001) {
-        throw new Error("p1p[0] !== a");
-      }
-      if (Math.abs(p1p[1] - 1) > 0.000001) {
-        throw new Error("p1p[1] !== 1");
-      }
-      if (Math.abs(p2p[0] - (this.a + x0)) > 0.000001) {
-        throw new Error("p2p[0] !== a + x0");
-      }
-      if (Math.abs(p2p[1] - 1) > 0.000001) {
-        throw new Error("p2p[1] !== 1");
-      }
       const p4p = this.project0(p4);
-      return [p4p[0] - p1p[0], p4p[1]];
+      return [p4p[0] - this.a, p4p[1] - 1];
+    }
+
+    private unProjectUnscaled(x0: number, y0: number): [number, number] {
+      const y = y0 / (Math.sin(this.t) - Math.cos(this.t) * (y0 + 1) / this.f);
+      const x = (x0 + this.a) * (1 + y * Math.cos(this.t) / this.f) - this.a;
+      return [x, y];
+    }
+
+    private test(x: number, y: number): void {
+      const p = this.projectUnscaled(x, y);
+      const p2 = this.unProjectUnscaled(p[0], p[1]);
+      if (Math.abs(p2[0] - x) > 0.0001 || Math.abs(p2[1] - y) > 0.0001)
+        throw new Error("test failed");
     }
 
     private project(x0: number, y0: number): [number, number] {
@@ -83,23 +94,9 @@ export class Stacking3DRenderer extends RendererBase {
       return [scaleX * p[0], scaleY * (1 - p[1])];
     }
 
-    /*
-    private transformAt0(x0: number, y0: number): {a: number, b: number, c: number, d: number, e: number, f: number} {
-      const cellsize = this.cellsize;
+    // Returns the SVG transform that maps project(x0, y0) to project(x0, y0), project(x0, y0) - (t, 0) to project(x0 - t, y0), and project(x0, y0) + (0, t) to project(x0, y0 + t).
+    private transformAt(x0: number, y0: number, t: number = this.cellsize / 10): {a: number, b: number, c: number, d: number, e: number, f: number} {
       const [x, y] = this.project(x0, y0);
-      const [xl] = this.project(x0 - cellsize / 10, y0);
-      const [xd, yd] = this.project(x0, y0 + cellsize / 10);
-      const a = (xl - x) / (cellsize / 10);
-      const c = (xd - x) / (cellsize / 10);
-      const d = (yd - y) / (cellsize / 10);
-      return {a, b: 0, c, d, e: 0, f: 0};
-    }
-    */
-
-    private transformAt(x0: number, y0: number): {a: number, b: number, c: number, d: number, e: number, f: number} {
-      const cellsize = this.cellsize;
-      const [x, y] = this.project(x0, y0);
-      const t = cellsize / 10;
       const [x2] = this.project(x0 - t, y0);
       const [x3, y3] = this.project(x0, y0 + t);
       const a = (x - x2) / t;
@@ -111,6 +108,22 @@ export class Stacking3DRenderer extends RendererBase {
       return { a, b, c, d, e, f };
     }
 
+    // The SVG transform that matches the projection at the 3 given points.
+    private transformAt3(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number):
+        {a: number, b: number, c: number, d: number, e: number, f: number} {
+        const [u1, v1] = this.project(x1, y1);
+        const [u2, v2] = this.project(x2, y2);
+        const [u3, v3] = this.project(x3, y3);
+        const den = x2*y1 - x3*y1 - x1*y2 + x3*y2 + x1*y3 - x2*y3;
+        const a = -((-(u2*y1) + u3*y1 + u1*y2 - u3*y2 - u1*y3 + u2*y3)/den);
+        const b = -((-(v2*y1) + v3*y1 + v1*y2 - v3*y2 - v1*y3 + v2*y3)/den);
+        const c = (-(u2*x1) + u3*x1 + u1*x2 - u3*x2 - u1*x3 + u2*x3)/den;
+        const d = -(v2*x1 - v3*x1 - v1*x2 + v3*x2 + v1*x3 - v2*x3)/den;
+        const e = (u3*x2*y1 - u2*x3*y1 - u3*x1*y2 + u1*x3*y2 + u2*x1*y3 - u1*x2*y3)/den;
+        const f = -(-(v3*x2*y1) + v2*x3*y1 + v3*x1*y2 - v1*x3*y2 - v2*x1*y3 + v1*x2*y3)/den;
+        return { a, b, c, d, e, f };
+    }
+
     private scaleAt(x0: number, y0: number): number {
       const cellsize = this.cellsize;
       const [x] = this.project(x0, y0);
@@ -119,39 +132,45 @@ export class Stacking3DRenderer extends RendererBase {
       return (x - x2) / t;
     }
 
-    private svgt(x0: number, y0: number, t: {a: number, b: number, c: number, d: number, e: number, f: number}): [number, number] {
-      const x = t.a * x0 + t.c * y0 + t.e;
-      const y = t.b * x0 + t.d * y0 + t.f;
-      return [x, y];
+        /**
+     * An internal helper function for generating `eject` annotations.
+     * This is not generalized. It only assumes we are rotating in increments of 45 degrees.
+     *
+     * @param from - Starting point
+     * @param to - Ending point
+     * @param delta - The depth of the arc
+     * @returns The midpoint of the arc
+     */
+    /*
+    private getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
+        const m: IPoint = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
+        let dir = "";
+        if (to.y < from.y) {
+            dir = "N";
+        } else if (to.y > from.y) {
+            dir = "S";
+        }
+        if (to.x < from.x) {
+            dir += "W";
+        } else if (to.x > from.x) {
+            dir += "E";
+        }
+        switch (dir) {
+            case "N":
+            case "S":
+            case "NE":
+            case "SW":
+                return {x: m.x + delta, y: m.y};
+            case "E":
+            case "W":
+            case "NW":
+            case "SE":
+                return {x: m.x, y: m.y + delta};
+            default:
+                throw new Error(`Unrecognized direction ${dir}`);
+        }
     }
-
-    private test(x0: number, y0: number): boolean {
-      const cellsize = this.cellsize;
-      const [x, y] = this.project(x0, y0);
-      const t = cellsize / 10;
-      const [x2] = this.project(x0 - t, y0);
-      const [x3, y3] = this.project(x0, y0 + t);
-      const st = this.transformAt(x0, y0);
-      if (Math.abs(x - this.svgt(x, y, st)[0]) > 0.000001) {
-        throw new Error("x0 !== svgt(x0)");
-      }
-      if (Math.abs(y - this.svgt(x, y, st)[1]) > 0.000001) {
-        throw new Error("y0 !== svgt(y0)");
-      }
-      if (Math.abs(x2 - this.svgt(x - t, y, st)[0]) > 0.000001) {
-        throw new Error("x2 !== svgt(x0 - cellsize / 10)");
-      }
-      if (Math.abs(y - this.svgt(x - t, y, st)[1]) > 0.000001) {
-        throw new Error("y2 !== svgt(y2)");
-      }
-      if (Math.abs(x3 - this.svgt(x, y + t, st)[0]) > 0.000001) {
-        throw new Error("x3 !== svgt(x3)");
-      }
-      if (Math.abs(y3 - this.svgt(x, y + t, st)[1]) > 0.000001) {
-        throw new Error("y3 !== svgt(y3)");
-      }
-      return true;
-    }
+    */
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
@@ -170,7 +189,8 @@ export class Stacking3DRenderer extends RendererBase {
           throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
 
-        this.findaft(-0.2, 1.1, 1.2);
+        this.findaft(-0.25, 0.6, 0.6);
+        this.test(0.3, 0.55);
 
         this.width = this.json.board.width as number;
         const width = this.width;
@@ -212,7 +232,6 @@ export class Stacking3DRenderer extends RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
                 const [topX, topY] = this.project(pointTop.x, pointTop.y);
-                this.test(pointTop.x, pointTop.y);
                 labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(topX, topY).transform(this.transformAt(pointTop.x, pointTop.y));
                 const [bottomX, bottomY] = this.project(pointBottom.x, pointBottom.y);
                 labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(bottomX, bottomY).transform(this.transformAt(pointBottom.x, pointBottom.y));
@@ -375,6 +394,213 @@ export class Stacking3DRenderer extends RendererBase {
         return grid;
     }
 
+    /**
+     * This applies annotations to a board.
+     * Annotations are applied to the board, "under" the pieces.
+     *
+     * @param grid - A map of row/column locations to x,y coordinates
+     */
+    protected annotateBoard(grid: GridPoints) {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
+            const notes = this.rootSvg.group().id("annotations");
+            const rIncrement = this.cellsize / 2;
+            let radius = rIncrement;
+            let direction = 1;
+            for (const note of this.json.annotations) {
+                if ( (note.type !== undefined) && (note.type === "move") ) {
+                    if ((note.targets as any[]).length < 2) {
+                        throw new Error("Move annotations require at least two 'targets'.");
+                    }
+
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = this.options.colours[(note.player as number) - 1];
+                    }
+                    let style = "solid";
+                    if ( ("style" in note) && (note.style !== undefined) ) {
+                        style = note.style as string;
+                    }
+                    let arrow = true;
+                    if ( ("arrow" in note) && (note.arrow !== undefined)) {
+                        arrow = note.arrow as boolean;
+                    }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity as number;
+                    }
+
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const points: [number, number][] = [];
+                    for (const node of (note.targets as ITarget[])) {
+                        const pt = grid[node.row][node.col];
+                        const ptp = this.project(pt.x, pt.y);
+                        points.push([ptp[0],ptp[1]]);
+                    }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width: this.cellsize * 0.015,
+                    };
+                    if (style === "dashed") {
+                        stroke.dasharray = "4";
+                    }
+                    const line = notes.polyline(points).stroke(stroke).fill("none");
+                    line.marker("start", markerCircle);
+                    if (arrow) {
+                        line.marker("end", markerArrow);
+                    } else {
+                        line.marker("end", markerCircle);
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "eject") ) {
+                    if ((note.targets as any[]).length !== 2) {
+                        throw new Error("Eject annotations require exactly two 'targets'.");
+                    }
+
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = this.options.colours[(note.player as number) - 1];
+                    }
+                    let style = "dashed";
+                    if ( ("style" in note) && (note.style !== undefined) ) {
+                        style = note.style as string;
+                    }
+                    let arrow = false;
+                    if ( ("arrow" in note) && (note.arrow !== undefined)) {
+                        arrow = note.arrow as boolean;
+                    }
+                    let opacity = 0.5;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity as number;
+                    }
+
+                    // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const [from, to] = note.targets as ITarget[];
+                    const ptFrom = grid[from.row][from.col];
+                    const ptTo = grid[to.row][to.col];
+                    const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width: this.cellsize * 0.03,
+                    };
+                    if (style === "dashed") {
+                        stroke.dasharray = "4";
+                    }
+                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none");
+                    line.marker("start", markerCircle);
+                    if (arrow) {
+                        line.marker("end", markerArrow);
+                    } else {
+                        line.marker("end", markerCircle);
+                    }
+                    line.transform(this.transformAt3(ptFrom.x, ptFrom.y, ptCtr.x, ptCtr.y, ptTo.x, ptTo.y));
+                    direction *= -1;
+                    let fixed = false;
+                    if ( ("static" in note) && (note.static !== undefined) && (typeof note.static === "boolean") ) {
+                        fixed = note.static;
+                    }
+                    if (! fixed) {
+                        if (direction > 0) {
+                            radius += rIncrement;
+                        }
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "enter") ) {
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = this.options.colours[(note.player as number) - 1];
+                    }
+                    for (const node of (note.targets as ITarget[])) {
+                        const center = grid[node.row][node.col];
+                        const x1 = center.x - this.cellsize / 2;
+                        const x2 = center.x + this.cellsize / 2;
+                        const y1 = center.y - this.cellsize / 2;
+                        const y2 = center.y + this.cellsize / 2;
+                        const pt1 = this.project(x1, y1);
+                        notes.line(pt1[0], pt1[1], pt1[0] + this.cellsize, pt1[1]).transform(this.transformAt(x1, y1, -this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                        const pt2 = this.project(x2, y1);
+                        notes.line(pt2[0], pt2[1], pt2[0], pt2[1] + this.cellsize).transform(this.transformAt(x2, y1, this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                        const pt3 = this.project(x2, y2);
+                        notes.line(pt3[0], pt3[1], pt3[0] - this.cellsize, pt3[1]).transform(this.transformAt(x2, y2, this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                        const pt4 = this.project(x1, y2);
+                        notes.line(pt4[0], pt4[1], pt4[0], pt4[1] - this.cellsize).transform(this.transformAt(x1, y2, - this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "exit") ) {
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = this.options.colours[(note.player as number) - 1];
+                    }
+                    for (const node of (note.targets as ITarget[])) {
+                        const center = grid[node.row][node.col];
+                        const x1 = center.x - this.cellsize / 2;
+                        const x2 = center.x + this.cellsize / 2;
+                        const y1 = center.y - this.cellsize / 2;
+                        const y2 = center.y + this.cellsize / 2;
+                        const pt1 = this.project(x1, y1);
+                        notes.line(pt1[0], pt1[1], pt1[0] + this.cellsize, pt1[1]).transform(this.transformAt(x1, y1, -this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                        const pt2 = this.project(x2, y1);
+                        notes.line(pt2[0], pt2[1], pt2[0], pt2[1] + this.cellsize).transform(this.transformAt(x2, y1, this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                        const pt3 = this.project(x2, y2);
+                        notes.line(pt3[0], pt3[1], pt3[0] - this.cellsize, pt3[1]).transform(this.transformAt(x2, y2, this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                        const pt4 = this.project(x1, y2);
+                        notes.line(pt4[0], pt4[1], pt4[0], pt4[1] - this.cellsize).transform(this.transformAt(x1, y2, - this.cellsize))
+                            .fill("none")
+                            .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "dots") ) {
+                    let colour = "#000";
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = note.colour as string;
+                    } else if ( ("player" in note) && (note.player !== undefined) ) {
+                        colour = this.options.colours[(note.player as number) - 1];
+                    }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity as number;
+                    }
+                    for (const node of (note.targets as ITarget[])) {
+                        const pt = grid[node.row][node.col];
+                        notes.circle(this.cellsize * 0.2)
+                            .fill(colour)
+                            .opacity(opacity)
+                            .stroke({width: 0})
+                            .center(pt.x, pt.y);
+                    }
+                } else {
+                    throw new Error(`The requested annotation (${ note.type as string }) is not supported.`);
+                }
+            }
+        }
+    }
+
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
@@ -440,7 +666,7 @@ export class Stacking3DRenderer extends RendererBase {
             }
 
             // Place the pieces according to the grid
-            let offsetPercent = 0.167;
+            let offsetPercent = 0.15;
             if ( ("stackOffset" in this.json.board) && (this.json.board.stackOffset !== undefined) ) {
                 offsetPercent = this.json.board.stackOffset;
             }
@@ -466,19 +692,16 @@ export class Stacking3DRenderer extends RendererBase {
                                         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                     }
                                 }
+                                let [newx, newy] = this.project(point.x, point.y);
+                                const ps = this.scaleAt(newx, newy);
                                 const use = group.use(piece);
-                                const factor = (this.cellsize / sheetCellSize) * 0.85;
+                                const factor = ps * this.cellsize / sheetCellSize;
                                 const newsize = sheetCellSize * factor;
                                 const delta = this.cellsize - newsize;
-                                const newx = point.x - (this.cellsize / 2) + (delta / 2);
-                                const newy = point.y - this.cellsize + (delta / 2);
-                                const newp = this.project(newx, newy);
-                                const newxp = newp[0];
-                                let newyp = newp[1];
-                                const ps = this.scaleAt(newx, newy);
-                                newyp = newyp - ps * (offset * i);
-                                use.dmove(newxp, newyp);
-                                use.scale(ps * factor, newxp, newyp);
+                                newx = newx - (this.cellsize / 2) + (delta / 2);
+                                newy = newy - (this.cellsize / 2) + (delta / 2) - ps * (offset * i);
+                                use.dmove(newx, newy);
+                                use.scale(factor, newx, newy);
                                 if (this.options.boardClick !== undefined) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                                 }
@@ -524,17 +747,8 @@ export class Stacking3DRenderer extends RendererBase {
             }
         }
 
-        // annotations
-        /*
         if (this.options.showAnnotations) {
             this.annotateBoard(gridPoints);
         }
-        */
-
-        // button bar
-        this.placeButtonBar(gridPoints);
-
-        // key
-        this.placeKey(gridPoints);
     }
 }
