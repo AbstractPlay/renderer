@@ -4,6 +4,13 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rectOfRects } from "../grids";
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
 
+interface ILocalStash {
+    [k: string]: unknown;
+    type: "localStash";
+    label: string;
+    stash: string[][];
+}
+
 /**
  * Internal interface when placing markers and annotations
  *
@@ -12,17 +19,6 @@ interface ITarget {
     row: number;
     col: number;
 }
-
-/**
- * A simple x,y coordinate container.
- *
- */
-/*
-export interface IPoint {
-    readonly x: number;
-    readonly y: number;
-}
-*/
 
 /**
  * The `stacking-3D` renderer creates a square board seen in perspective. Stacks of pieces therefore does not (fully) obscure stacks behind them.
@@ -94,18 +90,24 @@ export class Stacking3DRenderer extends RendererBase {
       return [scaleX * p[0], scaleY * (1 - p[1])];
     }
 
-    // Returns the SVG transform that maps project(x0, y0) to project(x0, y0), project(x0, y0) - (t, 0) to project(x0 - t, y0), and project(x0, y0) + (0, t) to project(x0, y0 + t).
-    private transformAt(x0: number, y0: number, t: number = this.cellsize / 10): {a: number, b: number, c: number, d: number, e: number, f: number} {
-      const [x, y] = this.project(x0, y0);
-      const [x2] = this.project(x0 - t, y0);
-      const [x3, y3] = this.project(x0, y0 + t);
-      const a = (x - x2) / t;
-      const b = 0;
-      const c = -(x - x3) / t;
-      const d = -(y - y3) / t;
-      const e = -(-t*x + x*x - x*x2 - x*y + x3*y) / t;
-      const f = -(-t*y - y*y + y*y3) / t;
-      return { a, b, c, d, e, f };
+    private unproject(x0: number, y0: number): [number, number] {
+        const scaleX = this.cellsize * this.width;
+        const scaleY = this.cellsize * this.height;
+        const p = this.unProjectUnscaled(x0 / scaleX, 1 - y0 / scaleY);
+        return [scaleX * p[0], scaleY * (1 - p[1])];
+    }
+
+    private transformAt1(x1: number, y1: number):
+        {a: number, b: number, c: number, d: number, e: number, f: number} {
+        return this.transformAt3(x1, y1, x1 + this.cellsize / 10, y1, x1, y1 + this.cellsize / 10);
+    }
+
+    private transformAt2(x1: number, y1: number, x2: number, y2: number):
+        {a: number, b: number, c: number, d: number, e: number, f: number} {
+        if (Math.abs(x1 - x2) < 0.00001)
+            return this.transformAt3(x1, y1, x1 + this.cellsize / 10, y1, x2, y2);
+        else
+            return this.transformAt3(x1, y1, x1, y1 + this.cellsize / 10, x2, y2);
     }
 
     // The SVG transform that matches the projection at the 3 given points.
@@ -131,46 +133,6 @@ export class Stacking3DRenderer extends RendererBase {
       const [x2] = this.project(x0 - t, y0);
       return (x - x2) / t;
     }
-
-        /**
-     * An internal helper function for generating `eject` annotations.
-     * This is not generalized. It only assumes we are rotating in increments of 45 degrees.
-     *
-     * @param from - Starting point
-     * @param to - Ending point
-     * @param delta - The depth of the arc
-     * @returns The midpoint of the arc
-     */
-    /*
-    private getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
-        const m: IPoint = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
-        let dir = "";
-        if (to.y < from.y) {
-            dir = "N";
-        } else if (to.y > from.y) {
-            dir = "S";
-        }
-        if (to.x < from.x) {
-            dir += "W";
-        } else if (to.x > from.x) {
-            dir += "E";
-        }
-        switch (dir) {
-            case "N":
-            case "S":
-            case "NE":
-            case "SW":
-                return {x: m.x + delta, y: m.y};
-            case "E":
-            case "W":
-            case "NW":
-            case "SE":
-                return {x: m.x, y: m.y + delta};
-            default:
-                throw new Error(`Unrecognized direction ${dir}`);
-        }
-    }
-    */
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
@@ -231,10 +193,8 @@ export class Stacking3DRenderer extends RendererBase {
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-                const [topX, topY] = this.project(pointTop.x, pointTop.y);
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(topX, topY).transform(this.transformAt(pointTop.x, pointTop.y));
-                const [bottomX, bottomY] = this.project(pointBottom.x, pointBottom.y);
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(bottomX, bottomY).transform(this.transformAt(pointBottom.x, pointBottom.y));
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y).transform(this.transformAt1(pointTop.x, pointTop.y));
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y).transform(this.transformAt1(pointBottom.x, pointBottom.y));
             }
 
             // Rows (numbers)
@@ -251,10 +211,8 @@ export class Stacking3DRenderer extends RendererBase {
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-                const [leftX, leftY] = this.project(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(leftX, leftY).transform(this.transformAt(pointL.x, pointL.y));
-                const [rightX, rightY] = this.project(pointR.x, pointR.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(rightX, rightY).transform(this.transformAt(pointR.x, pointR.y));
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y).transform(this.transformAt1(pointL.x, pointL.y));
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y).transform(this.transformAt1(pointR.x, pointR.y));
             }
         }
 
@@ -352,44 +310,32 @@ export class Stacking3DRenderer extends RendererBase {
             }
         }
 
-        /*
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
             const root = this.rootSvg;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = root.point(e.clientX, e.clientY);
-                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
-                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
+                const pnt = root.point(e.clientX, e.clientY);
+                const point = this.unproject(pnt.x, pnt.y);
+                const x = Math.floor((point[0] - (originX - (cellsize / 2))) / cellsize);
+                const y = Math.floor((point[1] - (originY - (cellsize / 2))) / cellsize);
                 if (x >= 0 && x < width && y >= 0 && y < height) {
-                    let idx = -1;
-                    if (blocked !== undefined) {
-                        idx = blocked.findIndex(o => o.col === x && o.row === y);
-                    }
-                    if (idx === -1) {
-                        this.options.boardClick!(y, x, "");
-                    }
+                    this.options.boardClick!(y, x, "");
                 }
             });
             if (this.options.rotate === 180) {
                 genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = root.point(e.clientX, e.clientY);
-                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
-                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
+                    const pnt = root.point(e.clientX, e.clientY);
+                    const point = this.unproject(pnt.x, pnt.y);
+                    const x = width - Math.floor((point[0] - (originX - (cellsize / 2))) / cellsize) - 1;
+                    const y = height - Math.floor((point[1] - (originY - (cellsize / 2))) / cellsize) - 1;
                     if (x >= 0 && x < width && y >= 0 && y < height) {
-                        let idx = -1;
-                        if (blocked !== undefined) {
-                            idx = blocked.findIndex(o => o.col === x && o.row === y);
-                        }
-                        if (idx === -1) {
-                            this.options.boardClick!(y, x, "");
-                        }
+                        this.options.boardClick!(y, x, "");
                     }
                 });
             }
             this.rootSvg.click(genericCatcher);
         }
-        */
 
         return grid;
     }
@@ -528,20 +474,16 @@ export class Stacking3DRenderer extends RendererBase {
                         const x2 = center.x + this.cellsize / 2;
                         const y1 = center.y - this.cellsize / 2;
                         const y2 = center.y + this.cellsize / 2;
-                        const pt1 = this.project(x1, y1);
-                        notes.line(pt1[0], pt1[1], pt1[0] + this.cellsize, pt1[1]).transform(this.transformAt(x1, y1, -this.cellsize))
+                        notes.line(x1, y1, x2, y1).transform(this.transformAt2(x1, y1, x2, y1))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
-                        const pt2 = this.project(x2, y1);
-                        notes.line(pt2[0], pt2[1], pt2[0], pt2[1] + this.cellsize).transform(this.transformAt(x2, y1, this.cellsize))
+                        notes.line(x2, y1, x2, y2).transform(this.transformAt2(x2, y1, x2, y2))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
-                        const pt3 = this.project(x2, y2);
-                        notes.line(pt3[0], pt3[1], pt3[0] - this.cellsize, pt3[1]).transform(this.transformAt(x2, y2, this.cellsize))
+                        notes.line(x2, y2, x1, y2).transform(this.transformAt2(x2, y2, x1, y2))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
-                        const pt4 = this.project(x1, y2);
-                        notes.line(pt4[0], pt4[1], pt4[0], pt4[1] - this.cellsize).transform(this.transformAt(x1, y2, - this.cellsize))
+                        notes.line(x1, y2, x1, y1).transform(this.transformAt2(x1, y2, x1, y1))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                     }
@@ -558,20 +500,16 @@ export class Stacking3DRenderer extends RendererBase {
                         const x2 = center.x + this.cellsize / 2;
                         const y1 = center.y - this.cellsize / 2;
                         const y2 = center.y + this.cellsize / 2;
-                        const pt1 = this.project(x1, y1);
-                        notes.line(pt1[0], pt1[1], pt1[0] + this.cellsize, pt1[1]).transform(this.transformAt(x1, y1, -this.cellsize))
+                        notes.line(x1, y1, x2, y1).transform(this.transformAt2(x1, y1, x2, y1))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
-                        const pt2 = this.project(x2, y1);
-                        notes.line(pt2[0], pt2[1], pt2[0], pt2[1] + this.cellsize).transform(this.transformAt(x2, y1, this.cellsize))
+                        notes.line(x2, y1, x2, y2).transform(this.transformAt2(x2, y1, x2, y2))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
-                        const pt3 = this.project(x2, y2);
-                        notes.line(pt3[0], pt3[1], pt3[0] - this.cellsize, pt3[1]).transform(this.transformAt(x2, y2, this.cellsize))
+                        notes.line(x2, y2, x1, y2).transform(this.transformAt2(x2, y2, x1, y2))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
-                        const pt4 = this.project(x1, y2);
-                        notes.line(pt4[0], pt4[1], pt4[0], pt4[1] - this.cellsize).transform(this.transformAt(x1, y2, - this.cellsize))
+                        notes.line(x1, y2, x1, y1).transform(this.transformAt2(x1, y2, x1, y1))
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                     }
@@ -629,6 +567,10 @@ export class Stacking3DRenderer extends RendererBase {
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ Stacking3DRenderer.rendererName }' renderer.`);
+        }
+
+        if (this.options.showAnnotations) {
+            this.annotateBoard(gridPoints);
         }
 
         // PIECES
@@ -745,10 +687,56 @@ export class Stacking3DRenderer extends RendererBase {
                     }
                 }
             }
-        }
 
-        if (this.options.showAnnotations) {
-            this.annotateBoard(gridPoints);
+            // Look for local stashes
+            // This code is optimized for pyramids
+            if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+                const areas = this.json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
+                const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
+                let placeY = boardBottom + (this.cellsize / 2);
+                for (const area of areas) {
+                    const maxHeight = Math.max(...area.stash.map((s) => s.length)) - 1;
+                    const textHeight = 10; // the allowance for the label
+                    const cellsize = this.cellsize * 0.75;
+                    const stackoffest = 0.15 * cellsize;
+                    for (let iStack = 0; iStack < area.stash.length; iStack++) {
+                        const stack = area.stash[iStack];
+                        for (let i = 0; i < stack.length; i++) {
+                            const p = stack[i];
+                            const piece = this.rootSvg.findOne("#" + p) as Svg;
+                            if ( (piece === null) || (piece === undefined) ) {
+                                throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
+                            }
+                            let sheetCellSize = piece.viewbox().h;
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                sheetCellSize = piece.attr("data-cellsize") as number;
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                }
+                            }
+                            const use = this.rootSvg.use(piece);
+                            if (this.options.boardClick !== undefined) {
+                                use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
+                            }
+                            const factor = (cellsize / sheetCellSize);
+                            const newx = gridPoints[0][0].x - this.cellsize + iStack * cellsize;
+                            const newy = placeY + textHeight + (maxHeight - i) * stackoffest + 0.15 * cellsize;
+                            use.dmove(newx, newy);
+                            use.scale(factor, newx, newy);
+                        }
+                    }
+
+                    // Add area label
+                    const txt = this.rootSvg.text(area.label);
+                    txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                        .attr("alignment-baseline", "hanging")
+                        .attr("dominant-baseline", "hanging")
+                        .move(gridPoints[0][0].x - this.cellsize, placeY);
+
+                    const areaHeight = textHeight + cellsize + maxHeight * stackoffest;
+                    placeY += areaHeight + (this.cellsize * 0.5);
+                }
+            }
         }
     }
 }
