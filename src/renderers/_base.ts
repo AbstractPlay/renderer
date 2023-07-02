@@ -2461,6 +2461,53 @@ export abstract class RendererBase {
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
                     }
                     svgGroup.line(x1, y1, x2, y2).stroke({width, color: colour, opacity});
+                } else if (marker.type === "label") {
+                    let colour = baseColour;
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "number") {
+                            colour = this.options.colours[marker.colour - 1];
+                        } else {
+                            colour = marker.colour as string;
+                        }
+                    }
+                    let fontsize = 17;
+                    if ( ("size" in marker) && (marker.size !== undefined) ) {
+                        fontsize = marker.size as number;
+                    }
+                    // let opacity = baseOpacity;
+                    // if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                    //     opacity = marker.opacity as number;
+                    // }
+                    // let width = baseStroke;
+                    // if ( ("width" in marker) && (marker.width !== undefined) ) {
+                    //     width = marker.width as number;
+                    // }
+
+                    let x1: number; let x2: number; let y1: number; let y2: number;
+                    if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                        const point1 = (marker.points as ITarget[])[0];
+                        [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y]
+                        const point2 = (marker.points as ITarget[])[1];
+                        [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y]
+                    } else {
+                        const point1 = (marker.points as ITarget[])[0];
+                        [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y]
+                        const point2 = (marker.points as ITarget[])[1];
+                        [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
+                    }
+
+                    // check for nudging
+                    if ( ("nudge" in marker) && (marker.nudge !== undefined) && (marker.nudge !== null) ) {
+                        const {dx, dy} = marker.nudge as {dx: number; dy: number};
+                        x1 += (dx * this.cellsize); x2 += (dx * this.cellsize);
+                        y1 += (dy * this.cellsize); y2 += (dy * this.cellsize);
+                    }
+                    const text = svgGroup.text(marker.label as string)
+                        .font({size: fontsize, fill: colour, anchor: "middle"})
+                        .attr("alignment-baseline", "hanging")
+                        .attr("dominant-baseline", "hanging")
+                    text.path(`M${x1},${y1} L${x2},${y2}`)
+                        .attr("startOffset", "50%");
                 } else if (marker.type === "edge") {
                     let colour = "#000";
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -3048,10 +3095,7 @@ export abstract class RendererBase {
     /**
      * For placing a generic `pieces` area at the bottom of the board.
      *
-     * @protected
-     * @param {GridPoints} gridPoints
-     * @memberof RendererBase
-     * @returns Svg
+     * @param gridPoints -
      */
     protected piecesArea(gridPoints: GridPoints) {
         if (this.rootSvg === undefined) {

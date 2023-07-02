@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added glyphs for Streetcar Suburb.
 * Added `ownerMark` property to generic `pieces` area to add a bar of colour indicating ownership.
 * Added `backFill` property to add background fill to entire image.
+* Added `label` marker for drawing arbitrary text to a board. Currently only enabled for `squares*` boards.
 
 ### Fixed
 
