@@ -248,6 +248,47 @@ export interface APRenderRep {
             }
           | {
               /**
+               * A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.
+               */
+              type: "label";
+              /**
+               * The string itself you want to display.
+               */
+              label: string;
+              /**
+               * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
+               *
+               * @minItems 2
+               * @maxItems 2
+               */
+              points: [
+                {
+                  row: number;
+                  col: number;
+                },
+                {
+                  row: number;
+                  col: number;
+                }
+              ];
+              /**
+               * You almost never want a label *on* the board. Nudge lets you use board coordinates to get started and then move that line by a multiple of the 'cellspacing' (i.e., the base unit, the width of a square in a square grid). The nudge is applied to both points.
+               */
+              nudge?: {
+                dx: number;
+                dy: number;
+              };
+              /**
+               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour?: PositiveInteger | Colourstrings;
+              /**
+               * Font size in absolute pixels
+               */
+              size?: number;
+            }
+          | {
+              /**
                * This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.
                */
               type: "edge";
