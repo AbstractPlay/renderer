@@ -76,13 +76,6 @@ export class Stacking3DRenderer extends RendererBase {
       return [x, y];
     }
 
-    private test(x: number, y: number): void {
-      const p = this.projectUnscaled(x, y);
-      const p2 = this.unProjectUnscaled(p[0], p[1]);
-      if (Math.abs(p2[0] - x) > 0.0001 || Math.abs(p2[1] - y) > 0.0001)
-        throw new Error("test failed");
-    }
-
     private project(x0: number, y0: number): [number, number] {
       const scaleX = this.cellsize * this.width;
       const scaleY = this.cellsize * this.height;
@@ -152,7 +145,6 @@ export class Stacking3DRenderer extends RendererBase {
         }
 
         this.findaft(-0.25, 0.6, 0.6);
-        this.test(0.3, 0.55);
 
         this.width = this.json.board.width as number;
         const width = this.width;
@@ -179,7 +171,7 @@ export class Stacking3DRenderer extends RendererBase {
         const tileSpace = 0;
 
         // Get a grid of points
-        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
+        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = this.rootSvg.group().id("board");
 
         // Add board labels
@@ -335,6 +327,10 @@ export class Stacking3DRenderer extends RendererBase {
                 });
             }
             this.rootSvg.click(genericCatcher);
+        }
+
+        if (this.options.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
         }
 
         return grid;
@@ -614,74 +610,43 @@ export class Stacking3DRenderer extends RendererBase {
             }
             const offset = this.cellsize * offsetPercent;
             // if the board is rotated, you have to place the pieces in reverse row order
-            // for now the code is duplicated
+            let start = 0;
+            let end = pieces.length - 1;
+            let inc = 1;
             if (this.options.rotate === 180) {
-                // for (let row = 0; row < pieces.length; row++) {
-                for (let row = pieces.length - 1; row >= 0; row--) {
-                    for (let col = 0; col < pieces[row].length; col++) {
-                        for (let i = 0; i < pieces[row][col].length; i++) {
-                            const key = pieces[row][col][i];
-                            if ( (key !== null) && (key !== "-") ) {
-                                const point = gridPoints[row][col];
-                                const piece = this.rootSvg.findOne("#" + key) as Svg;
-                                if ( (piece === null) || (piece === undefined) ) {
-                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                                }
-                                let sheetCellSize = piece.viewbox().h;
+                start = pieces.length - 1;
+                end = 0;
+                inc = -1;
+            }
+            for (let row = start; inc === 1 ? row <= end : row >= end; row += inc) {
+                for (let col = 0; col < pieces[row].length; col++) {
+                    for (let i = 0; i < pieces[row][col].length; i++) {
+                        const key = pieces[row][col][i];
+                        if ( (key !== null) && (key !== "-") ) {
+                            const point = gridPoints[row][col];
+                            const piece = this.rootSvg.findOne("#" + key) as Svg;
+                            if ( (piece === null) || (piece === undefined) ) {
+                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                            }
+                            let sheetCellSize = piece.viewbox().h;
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                sheetCellSize = piece.attr("data-cellsize") as number;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    sheetCellSize = piece.attr("data-cellsize") as number;
-                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                    }
-                                }
-                                let [newx, newy] = this.project(point.x, point.y);
-                                const ps = this.scaleAt(newx, newy);
-                                const use = group.use(piece);
-                                const factor = ps * this.cellsize / sheetCellSize;
-                                const newsize = sheetCellSize * factor;
-                                const delta = this.cellsize - newsize;
-                                newx = newx - (this.cellsize / 2) + (delta / 2);
-                                newy = newy - (this.cellsize / 2) + (delta / 2) - ps * (offset * i);
-                                use.dmove(newx, newy);
-                                use.scale(factor, newx, newy);
-                                if (this.options.boardClick !== undefined) {
-                                    use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
+                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                             }
-                        }
-                    }
-                }
-            } else {
-                for (let row = 0; row < pieces.length; row++) {
-                    for (let col = 0; col < pieces[row].length; col++) {
-                        for (let i = 0; i < pieces[row][col].length; i++) {
-                            const key = pieces[row][col][i];
-                            if ( (key !== null) && (key !== "-") ) {
-                                const point = gridPoints[row][col];
-                                const piece = this.rootSvg.findOne("#" + key) as Svg;
-                                if ( (piece === null) || (piece === undefined) ) {
-                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                                }
-                                let sheetCellSize = piece.viewbox().h;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    sheetCellSize = piece.attr("data-cellsize") as number;
-                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                    }
-                                }
-                                let [newx, newy] = this.project(point.x, point.y);
-                                const ps = this.scaleAt(newx, newy);
-                                const use = group.use(piece);
-                                const factor = ps * this.cellsize / sheetCellSize;
-                                const newsize = sheetCellSize * factor;
-                                const delta = this.cellsize - newsize;
-                                newx = newx - (this.cellsize / 2) + (delta / 2);
-                                newy = newy - (this.cellsize / 2) + (delta / 2) - ps * (offset * i);
-                                use.dmove(newx, newy);
-                                use.scale(factor, newx, newy);
-                                if (this.options.boardClick !== undefined) {
-                                    use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
-                                }
+                            let [newx, newy] = this.project(point.x, point.y);
+                            const ps = this.scaleAt(newx, newy);
+                            const use = group.use(piece);
+                            const factor = ps * this.cellsize / sheetCellSize;
+                            const newsize = sheetCellSize * factor;
+                            const delta = this.cellsize - newsize;
+                            newx = newx - (this.cellsize / 2) + (delta / 2);
+                            newy = newy - (this.cellsize / 2) + (delta / 2) - ps * (offset * i);
+                            use.dmove(newx, newy);
+                            use.scale(factor, newx, newy);
+                            if (this.options.boardClick !== undefined) {
+                                use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                             }
                         }
                     }
@@ -692,7 +657,7 @@ export class Stacking3DRenderer extends RendererBase {
             // This code is optimized for pyramids
             if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
                 const areas = this.json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
-                const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
+                const boardBottom = gridPoints[end][0].y + this.cellsize;
                 let placeY = boardBottom + (this.cellsize / 2);
                 for (const area of areas) {
                     const maxHeight = Math.max(...area.stash.map((s) => s.length)) - 1;
@@ -703,26 +668,28 @@ export class Stacking3DRenderer extends RendererBase {
                         const stack = area.stash[iStack];
                         for (let i = 0; i < stack.length; i++) {
                             const p = stack[i];
-                            const piece = this.rootSvg.findOne("#" + p) as Svg;
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
-                            }
-                            let sheetCellSize = piece.viewbox().h;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize") as number;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            if ( p !== "-" ) {
+                                const piece = this.rootSvg.findOne("#" + p) as Svg;
+                                if ( (piece === null) || (piece === undefined) ) {
+                                    throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                                 }
+                                let sheetCellSize = piece.viewbox().h;
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    sheetCellSize = piece.attr("data-cellsize") as number;
+                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                        throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    }
+                                }
+                                const use = this.rootSvg.use(piece);
+                                if (this.options.boardClick !== undefined) {
+                                    use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
+                                }
+                                const factor = (cellsize / sheetCellSize);
+                                const newx = gridPoints[start][start].x - this.cellsize + iStack * cellsize;
+                                const newy = placeY + textHeight + (maxHeight - i) * stackoffest - 0.1 * cellsize;
+                                use.dmove(newx, newy);
+                                use.scale(factor, newx, newy);
                             }
-                            const use = this.rootSvg.use(piece);
-                            if (this.options.boardClick !== undefined) {
-                                use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
-                            }
-                            const factor = (cellsize / sheetCellSize);
-                            const newx = gridPoints[0][0].x - this.cellsize + iStack * cellsize;
-                            const newy = placeY + textHeight + (maxHeight - i) * stackoffest + 0.15 * cellsize;
-                            use.dmove(newx, newy);
-                            use.scale(factor, newx, newy);
                         }
                     }
 
@@ -731,10 +698,10 @@ export class Stacking3DRenderer extends RendererBase {
                     txt.font({size: textHeight, anchor: "start", fill: "#000"})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging")
-                        .move(gridPoints[0][0].x - this.cellsize, placeY);
+                        .move(gridPoints[start][start].x - this.cellsize, placeY);
 
                     const areaHeight = textHeight + cellsize + maxHeight * stackoffest;
-                    placeY += areaHeight + (this.cellsize * 0.5);
+                    placeY += areaHeight + (this.cellsize * 0);
                 }
             }
         }

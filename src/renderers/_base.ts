@@ -621,6 +621,7 @@ export abstract class RendererBase {
                         }
                     } else if (g.colour !== undefined) {
                         clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
+                        clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); });
                     }
 
                     // Apply requested opacity
