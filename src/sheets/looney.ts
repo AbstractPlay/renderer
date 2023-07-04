@@ -31,6 +31,26 @@ const halfcell = cellsize / 2;
 const upCellsize = 102;
 const upHalfcell = upCellsize / 2;
 
+const cellsize3D = 100;
+const halfcellsize3D = 50;
+const vstrokeIn = 5;
+const vstrokeOut = 8;
+// set vheight3 = 45, vheight2 = 2/3 * vheight3 = 30, vheight1 = 1/3 * vheight3 = 15
+// set vbottom1 = 50 (= cellsize3D / 2)
+// we also want vbottom<n> + vheight<n> = vbottom3 + vheight3 (this makes stacking just offsetting)
+// so vbottom1 + vheight1 = 50 + vheigth3 / 3 = vbottom3 + vheight3 => vbottom3 = 50 - 2/3 * vheight3
+// vbottom2 = vbottom3 + vheight3 - vheight2 = 50 - 2/3 * vheight3 + vheight3 - 2/3 * vheight3 = 50 - 1/3 * vheight3
+
+const vheight3 = 45;
+const vwidth3 = vheight3 / 2;
+const vbottom3 = 50 - (2 / 3 * vheight3);
+const vheight2 = vheight3 * 2 / 3;
+const vwidth2 = vheight2 / 2;
+const vbottom2 = 50 - (1 / 3 * vheight3);
+const vheight1 = vheight3 * 1 / 3;
+const vwidth1 = vheight1 / 2;
+const vbottom1 = 50;
+
 sheet.glyphs.set("pyramid-flat-large", (canvas: SVGContainer) => {
     const height = 175;
     const base = 100;
@@ -242,6 +262,23 @@ sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("pyramid-up-large-3D", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.rect(cellsize3D, cellsize3D).fill("none");
+
+    group.polyline([[halfcellsize3D - vwidth3, cellsize3D - vbottom3], [halfcellsize3D, cellsize3D - (vbottom3 + vheight3)], [halfcellsize3D + vwidth3, cellsize3D - vbottom3]])
+        .fill("none")
+        .stroke({width: vstrokeOut, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.polyline([[halfcellsize3D - vwidth3, cellsize3D - vbottom3], [halfcellsize3D, cellsize3D - (vbottom3 + vheight3)], [halfcellsize3D + vwidth3, cellsize3D - vbottom3]])
+        .attr("data-playerstroke", true)
+        .fill("none")
+        .stroke({width: vstrokeIn, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.viewbox(0, 0, cellsize3D, cellsize3D);
+    return group;
+});
+
 sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
     const base = 100;
     const halfbase = base / 2;
@@ -374,6 +411,23 @@ sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("pyramid-up-medium-3D", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.rect(cellsize3D, cellsize3D).fill("none");
+
+    group.polyline([[halfcellsize3D - vwidth2, cellsize3D - vbottom2], [halfcellsize3D, cellsize3D - (vbottom2 + vheight2)], [halfcellsize3D + vwidth2, cellsize3D - vbottom2]])
+        .fill("none")
+        .stroke({width: vstrokeOut, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.polyline([[halfcellsize3D - vwidth2, cellsize3D - vbottom2], [halfcellsize3D, cellsize3D - (vbottom2 + vheight2)], [halfcellsize3D + vwidth2, cellsize3D - vbottom2]])
+        .attr("data-playerstroke", true)
+        .fill("none")
+        .stroke({width: vstrokeIn, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.viewbox(0, 0, cellsize3D, cellsize3D);
+    return group;
+});
+
 sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
     const base = 78.125;
     const halfbase = base / 2;
@@ -475,6 +529,23 @@ sheet.glyphs.set("pyramid-up-small", (canvas: SVGContainer) => {
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, cellsize, cellsize);
+    return group;
+});
+
+sheet.glyphs.set("pyramid-up-small-3D", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.rect(cellsize3D, cellsize3D).fill("none");
+
+    group.polyline([[halfcellsize3D - vwidth1, cellsize3D - vbottom1], [halfcellsize3D, cellsize3D - (vbottom1 + vheight1)], [halfcellsize3D + vwidth1, cellsize3D - vbottom1]])
+        .fill("none")
+        .stroke({width: vstrokeOut, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.polyline([[halfcellsize3D - vwidth1, cellsize3D - vbottom1], [halfcellsize3D, cellsize3D - (vbottom1 + vheight1)], [halfcellsize3D + vwidth1, cellsize3D - vbottom1]])
+        .attr("data-playerstroke", true)
+        .fill("none")
+        .stroke({width: vstrokeIn, color: "#000", linecap: "round", linejoin: "round"});
+
+    group.viewbox(0, 0, cellsize3D, cellsize3D);
     return group;
 });
 
