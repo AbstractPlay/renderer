@@ -617,9 +617,11 @@ export abstract class RendererBase {
                             }
                             const fill = this.options.colours[g.player - 1];
                             clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
+                            clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); });
                         }
                     } else if (g.colour !== undefined) {
                         clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
+                        clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); });
                     }
 
                     // Apply requested opacity
@@ -2734,7 +2736,7 @@ export abstract class RendererBase {
      * @param delta - The depth of the arc
      * @returns The midpoint of the arc
      */
-    private getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
+    public getArcCentre(from: IPoint, to: IPoint, delta: number): IPoint {
         const m: IPoint = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
         let dir = "";
         if (to.y < from.y) {
