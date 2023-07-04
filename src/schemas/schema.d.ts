@@ -27,6 +27,7 @@ export interface APRenderRep {
     | "stacking-offset"
     | "stacking-tiles"
     | "stacking-expanding"
+    | "stacking-3D"
     | "homeworlds"
     | "homeworlds-orig"
     | "entropy";
