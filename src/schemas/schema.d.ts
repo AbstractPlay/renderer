@@ -115,6 +115,14 @@ export interface APRenderRep {
          */
         height?: number;
         /**
+         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.
+         */
+        clickDeltaX?: number;
+        /**
+         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.
+         */
+        clickDeltaY?: number;
+        /**
          * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
          */
         tileWidth?: number;

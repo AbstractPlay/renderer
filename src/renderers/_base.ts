@@ -1055,12 +1055,14 @@ export abstract class RendererBase {
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
+            const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0) as number;
+            const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0) as number;
             const root = this.rootSvg;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                 const point = root.point(e.clientX, e.clientY);
                 const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
-                if (x >= 0 && x < width && y >= 0 && y < height) {
+                if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
                     let idx = -1;
                     if (blocked !== undefined) {
                         idx = blocked.findIndex(o => o.col === x && o.row === y);
@@ -1075,7 +1077,7 @@ export abstract class RendererBase {
                     const point = root.point(e.clientX, e.clientY);
                     const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                     const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
                         let idx = -1;
                         if (blocked !== undefined) {
                             idx = blocked.findIndex(o => o.col === x && o.row === y);
@@ -1452,6 +1454,8 @@ export abstract class RendererBase {
 
         if (this.options.boardClick !== undefined) {
             if ( (this.json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
+                const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0) as number;
+                const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0) as number;
                 const originX = grid[0][0].x;
                 const originY = grid[0][0].y;
                 const maxX = grid[0][grid[0].length - 1].x;
@@ -1461,7 +1465,7 @@ export abstract class RendererBase {
                     const point = root.point(e.clientX, e.clientY);
                     const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                     const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
                         // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
                         if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
                             this.options.boardClick!(y, x, "");
@@ -1473,7 +1477,7 @@ export abstract class RendererBase {
                         const point = root.point(e.clientX, e.clientY);
                         const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                         const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
-                        if (x >= 0 && x < width && y >= 0 && y < height) {
+                        if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
                             // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
                             if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
                                 this.options.boardClick!(y, x, "");
