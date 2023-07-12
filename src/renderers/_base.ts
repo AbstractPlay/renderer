@@ -2453,6 +2453,14 @@ export abstract class RendererBase {
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
                         width = marker.width as number;
                     }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width,
+                    };
+                    if ( ("style" in marker) && (marker.style !== undefined) && (marker.style === "dashed") ) {
+                        stroke.dasharray = "4";
+                    }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
                     if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
@@ -2466,7 +2474,7 @@ export abstract class RendererBase {
                         const point2 = (marker.points as ITarget[])[1];
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
                     }
-                    svgGroup.line(x1, y1, x2, y2).stroke({width, color: colour, opacity});
+                    svgGroup.line(x1, y1, x2, y2).stroke(stroke);
                 } else if (marker.type === "label") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -2642,6 +2650,14 @@ export abstract class RendererBase {
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
                         multiplier = marker.width as number;
                     }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        width: baseStroke * multiplier,
+                        linecap: "round",
+                    };
+                    if ( ("dashed" in marker) && (marker.dashed !== undefined) && (Array.isArray(marker.dashed)) && (marker.dashed.length > 0) ) {
+                        stroke.dasharray = (marker.dashed as number[]).join(" ");
+                    }
                     const style = this.json.board.style;
                     if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
                         const row = marker.cell.row as number;
@@ -2678,7 +2694,7 @@ export abstract class RendererBase {
                                 yTo = south.y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour, linecap: "round"});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
                         let row = marker.cell.row as number;
                         let col = marker.cell.col as number;
@@ -2698,7 +2714,7 @@ export abstract class RendererBase {
                                 const [idx1, idx2] = edge.corners;
                                 const {x: xFrom, y: yFrom} = hex.corners[idx1];
                                 const {x: xTo, y: yTo} = hex.corners[idx2];
-                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour, linecap: "round"});
+                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke(stroke);
                             }
                         }
                     }

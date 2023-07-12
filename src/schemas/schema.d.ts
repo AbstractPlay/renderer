@@ -243,7 +243,7 @@ export interface APRenderRep {
                 }
               ];
               /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
                */
               colour?: PositiveInteger | Colourstrings;
               /**
@@ -254,6 +254,7 @@ export interface APRenderRep {
                * Stroke width of the line
                */
               width?: number;
+              style?: "solid" | "dashed";
             }
           | {
               /**
@@ -328,6 +329,10 @@ export interface APRenderRep {
                * Expressed as a multiple of the base stroke width
                */
               width?: number;
+              /**
+               * A valid `dasharray` appropriate for the game's display.
+               */
+              dashed?: number[];
             }
           | {
               /**

@@ -386,7 +386,7 @@
                                                 "maxItems": 2
                                             },
                                             "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                                "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                                                 "anyOf": [
                                                     {"$ref": "#/definitions/positiveInteger"},
                                                     {"$ref": "#/definitions/colourstrings"}
@@ -405,6 +405,13 @@
                                                 "type": "number",
                                                 "minimum": 0,
                                                 "default": 1
+                                            },
+                                            "style": {
+                                                "enum": [
+                                                    "solid",
+                                                    "dashed"
+                                                ],
+                                                "default": "solid"
                                             }
                                         },
                                         "required": ["type", "points"],
@@ -529,6 +536,13 @@
                                                 "description": "Expressed as a multiple of the base stroke width",
                                                 "type": "number",
                                                 "default": 6
+                                            },
+                                            "dashed": {
+                                                "description": "A valid `dasharray` appropriate for the game's display.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
                                             }
                                         },
                                         "required": ["type", "cell", "side"],
