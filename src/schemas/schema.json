@@ -216,6 +216,14 @@
                             "description": "Required for the `squares*`, `vertex`, and `go` styles.",
                             "$ref": "#/definitions/positiveInteger"
                         },
+                        "clickDeltaX": {
+                            "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.",
+                            "$ref": "#/definitions/positiveInteger"
+                        },
+                        "clickDeltaY": {
+                            "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
+                            "$ref": "#/definitions/positiveInteger"
+                        },
                         "tileWidth": {
                             "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
                             "$ref": "#/definitions/positiveInteger"
@@ -378,7 +386,7 @@
                                                 "maxItems": 2
                                             },
                                             "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                                "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                                                 "anyOf": [
                                                     {"$ref": "#/definitions/positiveInteger"},
                                                     {"$ref": "#/definitions/colourstrings"}
@@ -397,6 +405,13 @@
                                                 "type": "number",
                                                 "minimum": 0,
                                                 "default": 1
+                                            },
+                                            "style": {
+                                                "enum": [
+                                                    "solid",
+                                                    "dashed"
+                                                ],
+                                                "default": "solid"
                                             }
                                         },
                                         "required": ["type", "points"],
@@ -521,6 +536,13 @@
                                                 "description": "Expressed as a multiple of the base stroke width",
                                                 "type": "number",
                                                 "default": 6
+                                            },
+                                            "dashed": {
+                                                "description": "A valid `dasharray` appropriate for the game's display.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
                                             }
                                         },
                                         "required": ["type", "cell", "side"],
