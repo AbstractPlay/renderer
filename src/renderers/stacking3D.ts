@@ -353,6 +353,9 @@ export class Stacking3DRenderer extends RendererBase {
             let radius = rIncrement;
             let direction = 1;
             for (const note of this.json.annotations) {
+                if ( (! ("type" in note)) || (note.type === undefined) ) {
+                    throw new Error("Invalid annotation format found.");
+                }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
                     if ((note.targets as any[]).length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");

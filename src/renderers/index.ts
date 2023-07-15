@@ -7,8 +7,9 @@ import { StackingExpandingRenderer } from "./stackingExpanding";
 import { Stacking3DRenderer } from "./stacking3D";
 import { StackingOffsetRenderer } from "./stackingOffset";
 import { StackingTilesRenderer } from "./stackingTiles";
+import { FreespaceRenderer } from "./freespace";
 
-export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer };
+export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer };
 
 const renderers: (name: string) => RendererBase = (name) =>{
   switch(name) {
@@ -28,6 +29,8 @@ const renderers: (name: string) => RendererBase = (name) =>{
       return new HomeworldsRenderer();
     case EntropyRenderer.rendererName:
       return new EntropyRenderer();
+    case FreespaceRenderer.rendererName:
+        return new FreespaceRenderer();
     default:
       throw new Error(`Don't know a renderer called ${name}`);
   }

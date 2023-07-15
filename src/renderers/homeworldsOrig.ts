@@ -71,8 +71,11 @@ export class HomeworldsOrigRenderer extends RendererBase {
                 ships: [...shps],
             };
             if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
-                const note = this.json.annotations.find((n) => n.system === node.name);
+                const note = this.json.annotations.find((n) => ("system" in n) && (n.system === node.name));
                 if (note !== undefined) {
+                    if ( (! ("action" in note)) || (note.action === undefined) ) {
+                        throw new Error("Invalid annotation found");
+                    }
                     node.highlight = note.action as number;
                 }
             }
