@@ -3162,7 +3162,7 @@ export abstract class RendererBase {
                         markColour = area.ownerMark as string;
                     }
                 }
-                const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth, -1, areaWidth+2+markWidth, areaHeight+2);
+                const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
                 if ("background" in area) {
                     nested.rect(areaWidth,areaHeight).fill(area.background as string);
                 }
@@ -3196,7 +3196,8 @@ export abstract class RendererBase {
 
                 // add marker line if indicated
                 if ( (markWidth > 0) && (markColour !== undefined) ) {
-                    nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
+                    nested.rect(markWidth, nested.bbox().height).fill(markColour).stroke({width: 1, color: "black"}).dmove((markWidth * -1) - 5, 0);
+                    // nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
                 }
 
                 // Add area label
