@@ -160,7 +160,7 @@ interface IKeyEntry {
 /**
  * Internal interface used for generating keys
  */
-interface IKey {
+export interface IKey {
     [k: string]: unknown;
     type: "key";
     list: IKeyEntry[];

@@ -79,7 +79,7 @@ export class FreespaceRenderer extends RendererBase {
         this.loadLegend();
 
         // clickable background field
-        const field = this.rootSvg.nested().id("pieces").viewbox(ox - borderBuffer, oy - borderBuffer, width + (borderBuffer*2), height + (borderBuffer*2)).move(0,0);
+        const field = this.rootSvg.nested().id("pieces").viewbox(ox - borderBuffer, oy - borderBuffer, width + (borderBuffer*2), height + (borderBuffer*2)).move(ox, oy);
         field.rect(width, height).move(ox, oy).fill(backFill).back();
         if (this.options.boardClick !== undefined) {
             const originX = field.x() as number;
@@ -141,8 +141,8 @@ export class FreespaceRenderer extends RendererBase {
         // // button bar
         // this.placeButtonBar(gridPoints);
 
-        // // key
-        // this.placeKey(gridPoints);
+        // key
+        this.placeKey([[{x: 175, y: 50} as IPoint, {x: 175 + width, y: 50} as IPoint]]);
 
         // this.backFill();
     }
