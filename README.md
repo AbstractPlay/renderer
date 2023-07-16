@@ -6,11 +6,11 @@ This private NPM module graphically renders game states. This repository houses 
 
 Currently the only supported output format is SVG. The library has been tested and works correctly in Chrome, Firefox, Opera, and Edge.
 
-[A playground/demo area is now available.](https://abstractplay.com/renderer/)
+[A playground/demo area is now available.](https://renderer.dev.abstractplay.com)
 
 ## Usage
 
-In the browser, simply load `APRender.js` via a `<script>` tag. For a concrete example, [see the playground](https://abstractplay.com/renderer/).
+In the browser, simply load `APRender.js` via a `<script>` tag. For a concrete example, [see the playground](https://renderer.dev.abstractplay.com).
 
 From within Node, simply import the variables and functions you need. Both methods give you access to the same API.
 

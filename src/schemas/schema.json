@@ -91,7 +91,8 @@
                 "stacking-3D",
                 "homeworlds",
                 "homeworlds-orig",
-                "entropy"
+                "entropy",
+                "freespace"
             ],
             "default": "default"
         },
@@ -127,7 +128,7 @@
         },
         "board": {
             "description": "This is the game board itself.",
-            "anyOf": [
+            "oneOf": [
                 {
                     "description": "Used to render a single glyph",
                     "type": "null"
@@ -692,6 +693,183 @@
                         }
                     },
                     "required": ["style"]
+                },
+                {
+                    "description": "Board schema for `freespace` boards",
+                    "type": "object",
+                    "properties": {
+                        "width": {
+                            "description": "Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.",
+                            "type": "number"
+                        },
+                        "height": {
+                            "description": "Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.",
+                            "type": "number"
+                        },
+                        "backFill": {
+                            "description": "Used to add a solid block of colour behind the field. To enable click handling, a background is required and defaults to white.",
+                            "$ref": "#/definitions/colourstrings",
+                            "default": "#fff"
+                        },
+                        "origin": {
+                            "description": "In most cases, you'll want the top-left corner of the field to be 0,0 and generate your render accordingly. But if for some reason you want that origin to be different, change it here.",
+                            "type": "object",
+                            "properties": {
+                                "x": {
+                                    "type": "number",
+                                    "default": 0
+                                },
+                                "y": {
+                                    "type": "number",
+                                    "default": 0
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "markers": {
+                            "description": "Markers are placed before pieces, and thus can be obscured by them.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "anyOf": [
+                                    {
+                                        "description": "A simple SVG path with stroke and fill attributes.",
+                                        "properties": {
+                                            "type": {
+                                                "enum": ["path"]
+                                            },
+                                            "path": {
+                                                "type": "string"
+                                            },
+                                            "fill": {
+                                                "anyOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ],
+                                                "default": "#fff"
+                                            },
+                                            "fillOpacity": {
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 1,
+                                                "default": 1
+                                            },
+                                            "stroke": {
+                                                "anyOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ],
+                                                "default": "#000"
+                                            },
+                                            "strokeWidth": {
+                                                "type": "number",
+                                                "minimum": 0.1,
+                                                "default": 1
+                                            },
+                                            "strokeOpacity": {
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 1,
+                                                "default": 1
+                                            },
+                                            "dashed": {
+                                                "description": "A valid `dasharray` appropriate for the game's display.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        },
+                                        "required": ["type", "path"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "properties": {
+                                            "type": {
+                                                "description": "A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.",
+                                                "enum": ["label"]
+                                            },
+                                            "label": {
+                                                "description": "The string itself you want to display.",
+                                                "type": "string"
+                                            },
+                                            "points": {
+                                                "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "x": {
+                                                            "type": "number"
+                                                        },
+                                                        "y": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["x", "y"],
+                                                    "additionalProperties": false
+                                                },
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                            },
+                                            "colour": {
+                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                                "anyOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ],
+                                                "default": "#000"
+                                            },
+                                            "size": {
+                                                "description": "Font size in absolute pixels",
+                                                "type": "number",
+                                                "default": 17
+                                            }
+                                        },
+                                        "required": ["type", "label", "points"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "properties": {
+                                            "type": {
+                                                "description": "A way of incorporating a glyph from the legend into the board itself.",
+                                                "enum": ["glyph"]
+                                            },
+                                            "glyph": {
+                                                "description": "The name of the glyph in the `legend`.",
+                                                "type": "string"
+                                            },
+                                            "orientation": {
+                                                "type": "number"
+                                            },
+                                            "points": {
+                                                "description": "Provide absolute x,y coordinates.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "x": {
+                                                            "type": "number"
+                                                        },
+                                                        "y": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["x", "y"],
+                                                    "additionalProperties": false
+                                                },
+                                                "minItems": 1
+                                            }
+                                        },
+                                        "required": ["type", "glyph", "points"],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["width", "height"],
+                    "additionalProperties": false
                 }
             ]
         },
@@ -743,6 +921,37 @@
                             "type": "string",
                             "pattern": "^p[RGBY][123][NESW]$"
                         }
+                    }
+                },
+                {
+                    "description": "Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "glyph": {
+                                "description": "The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.",
+                                "type": "string"
+                            },
+                            "id": {
+                                "description": "A unique ID that should be passed to the click handler. If not provided, it will just return the glyph name.",
+                                "type": "string"
+                            },
+                            "x": {
+                                "description": "Absolute x coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.",
+                                "type": "number"
+                            },
+                            "y": {
+                                "description": "Absolute y coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.",
+                                "type": "number"
+                            },
+                            "orientation": {
+                                "description": "Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["glyph", "x", "y", "orientation"],
+                        "additionalProperties": false
                     }
                 }
             ]
@@ -1083,6 +1292,94 @@
                             }
                         },
                         "required": ["system", "action"]
+                    },
+                    {
+                        "description": "Annotations specifically for the `freespace` renderer.",
+                        "anyOf": [
+                            {
+                                "description": "Path annotations are simply an SVG path with stroke and fill attributes. You can draw whatever annotations you want. They will overlie any pieces.",
+                                "properties": {
+                                    "type": {
+                                        "enum": ["path"]
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    },
+                                    "fill": {
+                                        "anyOf": [
+                                            {"$ref": "#/definitions/positiveInteger"},
+                                            {"$ref": "#/definitions/colourstrings"}
+                                        ],
+                                        "default": "#fff"
+                                    },
+                                    "fillOpacity": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "default": 1
+                                    },
+                                    "stroke": {
+                                        "anyOf": [
+                                            {"$ref": "#/definitions/positiveInteger"},
+                                            {"$ref": "#/definitions/colourstrings"}
+                                        ],
+                                        "default": "#000"
+                                    },
+                                    "strokeWidth": {
+                                        "type": "number",
+                                        "minimum": 0.1,
+                                        "default": 1
+                                    },
+                                    "strokeOpacity": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "default": 1
+                                    },
+                                    "dashed": {
+                                        "description": "A valid `dasharray` appropriate for the game's display.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number"
+                                        }
+                                    }
+                                },
+                                "required": ["type", "path"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "properties": {
+                                    "type": {
+                                        "description": "A way of incorporating a glyph from the legend into the board itself. This one is specific to the `freespace` renderer.",
+                                        "enum": ["glyph"]
+                                    },
+                                    "glyph": {
+                                        "description": "The name of the glyph in the `legend`.",
+                                        "type": "string"
+                                    },
+                                    "points": {
+                                        "description": "Provide absolute x,y coordinates.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "x": {
+                                                    "type": "number"
+                                                },
+                                                "y": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["x","y"],
+                                            "additionalProperties": false
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "required": ["type", "glyph", "points"],
+                                "additionalProperties": false
+                            }
+                        ]
                     }
                 ]
             }
