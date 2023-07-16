@@ -1,6 +1,7 @@
+/* eslint-disable no-console */
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
 import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
+import { IRendererOptionsIn, RendererBase, IKey } from "./_base";
 import { IPoint } from "../grids/_base";
 
 export interface IPiecesArea {
@@ -142,9 +143,24 @@ export class FreespaceRenderer extends RendererBase {
         // this.placeButtonBar(gridPoints);
 
         // key
-        this.placeKey([[{x: 175, y: 50} as IPoint, {x: 175 + width, y: 50} as IPoint]]);
+        const xadjust = this.placeFixedKey(width);
 
         // this.backFill();
+
+        // set the root viewbox
+        // const box = this.rootSvg.bbox();
+        // console.log(box);
+        // const buffer = 5;
+        // draw.viewbox(box.x - buffer, box.y - buffer, box.width + (buffer*2), box.height + (buffer*2));
+        // eslint-disable-next-line prefer-const
+        let {x, y, w, h} = field.viewbox();
+        if (xadjust < 0) {
+            x += xadjust;
+            w += Math.abs(xadjust);
+        } else {
+            w += xadjust;
+        }
+        draw.viewbox(x, y, w, h);
     }
 
     protected annotateField(field: Svg) {
@@ -330,6 +346,72 @@ export class FreespaceRenderer extends RendererBase {
                 }
             }
         }
+    }
+
+    /**
+     * Generates the key and then places it appropriately.
+     *
+     * @param grid - The grid of points; used for positioning.
+     * @param position - If given, overrides the JSON setting.
+     */
+    protected placeFixedKey(width: number, position?: "left"|"right"): number {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+        if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+            const keys = this.json.areas.filter((b) => b.type === "key") as IKey[];
+            if (keys.length > 1) {
+                throw new Error("Only one key may be defined.");
+            }
+            if (keys.length === 1) {
+                const key = keys[0];
+                const keyimg = this.buildKey(key);
+                const y = 0
+                // Position defaults to "right"
+                // If a position is passed by the renderer, it overrides everything
+                // Otherwise, the JSON prevails
+                let pos = "right";
+                if (position !== undefined) {
+                    pos = position;
+                } else if (key.position !== undefined) {
+                    pos = key.position;
+                }
+                let x = 0;
+                let xadjust = 0;
+                if (pos === "left") {
+                    x = (keyimg.viewbox().w * 1.5) * -1;
+                    xadjust = x;
+                } else {
+                    x = width + (keyimg.viewbox().w * 0.5);
+                    xadjust = x + keyimg.viewbox().w;
+                }
+                const used = this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
+                let clickable = true;
+                if (key.clickable !== undefined) {
+                    clickable = key.clickable
+                }
+                if ( (this.options.boardClick !== undefined) && (clickable) ) {
+                    const top = used.y() as number;
+                    const height = used.height() as number;
+                    const numEntries = key.list.length;
+                    const btnHeight = height / numEntries;
+                    used.click((e: { clientX: number; clientY: number; }) => {
+                        const point = used.point(e.clientX, e.clientY);
+                        const yRelative = point.y - top;
+                        const row = Math.floor(yRelative / btnHeight);
+                        if ( (row >= 0) && (row < numEntries) ) {
+                            let value = key.list[row].name;
+                            if (key.list[row].value !== undefined) {
+                                value = key.list[row].value!;
+                            }
+                            this.options.boardClick!(-1, -1, value);
+                        }
+                    });
+                }
+                return xadjust;
+            }
+        }
+        return 0;
     }
 }
 
