@@ -1,4 +1,4 @@
-import { Svg } from "@svgdotjs/svg.js";
+import { Svg, StrokeData } from "@svgdotjs/svg.js";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { IPoint } from "../grids/_base";
@@ -187,7 +187,15 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("fillOpacity" in note) && (note.fillOpacity !== undefined) ) {
                         fillOpacity = note.fillOpacity as number;
                     }
-                    notes.path(note.path as string).stroke({color: stroke, width: strokeWidth, opacity: strokeOpacity}).fill({color: fill, opacity: fillOpacity});
+                    const strokeData: StrokeData = {
+                        color: stroke,
+                        width: strokeWidth,
+                        opacity: strokeOpacity,
+                    };
+                    if ( ("dashed" in note) && (note.dashed !== undefined) && (Array.isArray(note.dashed)) && (note.dashed.length > 0) ) {
+                        strokeData.dasharray = (note.dashed).join(" ");
+                    }
+                    notes.path(note.path as string).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
                 } else if (note.type === "glyph") {
                     const key = note.glyph as string;
                     const piece = field.root().findOne("#" + key) as Svg;
@@ -310,7 +318,15 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("fillOpacity" in marker) && (marker.fillOpacity !== undefined) ) {
                         fillOpacity = marker.fillOpacity;
                     }
-                    field.path(marker.path).stroke({color: stroke, width: strokeWidth, opacity: strokeOpacity}).fill({color: fill, opacity: fillOpacity});
+                    const strokeData: StrokeData = {
+                        color: stroke,
+                        width: strokeWidth,
+                        opacity: strokeOpacity,
+                    };
+                    if ( ("dashed" in marker) && (marker.dashed !== undefined) && (Array.isArray(marker.dashed)) && (marker.dashed.length > 0) ) {
+                        strokeData.dasharray = (marker.dashed).join(" ");
+                    }
+                    field.path(marker.path).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
                 }
             }
         }

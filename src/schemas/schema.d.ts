@@ -451,6 +451,10 @@ export interface APRenderRep {
               stroke?: PositiveInteger | Colourstrings;
               strokeWidth?: number;
               strokeOpacity?: number;
+              /**
+               * A valid `dasharray` appropriate for the game's display.
+               */
+              dashed?: number[];
             }
           | {
               /**
@@ -771,6 +775,10 @@ export interface APRenderRep {
             stroke?: PositiveInteger | Colourstrings;
             strokeWidth?: number;
             strokeOpacity?: number;
+            /**
+             * A valid `dasharray` appropriate for the game's display.
+             */
+            dashed?: number[];
           }
         | {
             /**

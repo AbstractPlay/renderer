@@ -771,6 +771,13 @@
                                                 "minimum": 0,
                                                 "maximum": 1,
                                                 "default": 1
+                                            },
+                                            "dashed": {
+                                                "description": "A valid `dasharray` appropriate for the game's display.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
                                             }
                                         },
                                         "required": ["type", "path"],
@@ -1328,6 +1335,13 @@
                                         "minimum": 0,
                                         "maximum": 1,
                                         "default": 1
+                                    },
+                                    "dashed": {
+                                        "description": "A valid `dasharray` appropriate for the game's display.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number"
+                                        }
                                     }
                                 },
                                 "required": ["type", "path"],
