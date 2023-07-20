@@ -2476,10 +2476,10 @@ export abstract class RendererBase {
                             colour = marker.colour as string;
                         }
                     }
-                    let fontsize = 17;
-                    if ( ("size" in marker) && (marker.size !== undefined) ) {
-                        fontsize = marker.size as number;
-                    }
+                    // let fontsize = 17;
+                    // if ( ("size" in marker) && (marker.size !== undefined) ) {
+                    //    fontsize = marker.size as number;
+                    // }
                     // let opacity = baseOpacity;
                     // if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
                     //     opacity = marker.opacity as number;
@@ -2509,11 +2509,14 @@ export abstract class RendererBase {
                         y1 += (dy * this.cellsize); y2 += (dy * this.cellsize);
                     }
                     const text = svgGroup.text(marker.label as string)
-                        .font({size: fontsize, fill: colour, anchor: "middle"})
+                        .font({ fill: colour, anchor: "middle"})
+                        .attr('style', 'font-size: 50px')
                         .attr("alignment-baseline", "hanging")
-                        .attr("dominant-baseline", "hanging")
+                        .attr("dominant-baseline", "hanging");
+//                        .css("fontSize", `${fontsize}px`)
                     text.path(`M${x1},${y1} L${x2},${y2}`)
-                        .attr("startOffset", "50%");
+                        .attr("startOffset", "50%")
+                        .tspan(marker.label as string).attr('style', 'font-size: 80px; font: Stencil; font-weight: Bold');
                 } else if (marker.type === "edge") {
                     let colour = "#000";
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
