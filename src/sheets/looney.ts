@@ -103,7 +103,7 @@ sheet.glyphs.set("pyramid-flat-medium", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("pyramid-flat-small", (canvas: SVGContainer) => {
     const height = 100;
-    const base = 56.25;
+    const base = 56.17977528; // 56.25;
     const group = canvas.symbol();
     group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)

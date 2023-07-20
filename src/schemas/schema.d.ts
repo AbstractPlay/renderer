@@ -30,7 +30,8 @@ export interface APRenderRep {
     | "stacking-3D"
     | "homeworlds"
     | "homeworlds-orig"
-    | "entropy";
+    | "entropy"
+    | "freespace";
   /**
    * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable.
    */
@@ -243,7 +244,7 @@ export interface APRenderRep {
                 }
               ];
               /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
                */
               colour?: PositiveInteger | Colourstrings;
               /**
@@ -254,6 +255,7 @@ export interface APRenderRep {
                * Stroke width of the line
                */
               width?: number;
+              style?: "solid" | "dashed";
             }
           | {
               /**
@@ -328,6 +330,10 @@ export interface APRenderRep {
                * Expressed as a multiple of the base stroke width
                */
               width?: number;
+              /**
+               * A valid `dasharray` appropriate for the game's display.
+               */
+              dashed?: number[];
             }
           | {
               /**
@@ -412,11 +418,136 @@ export interface APRenderRep {
          */
         strokeOpacity?: number;
         [k: string]: unknown;
+      }
+    | {
+        /**
+         * Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.
+         */
+        width: number;
+        /**
+         * Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.
+         */
+        height: number;
+        /**
+         * Pattern for hex colour strings
+         */
+        backFill?: string;
+        /**
+         * In most cases, you'll want the top-left corner of the field to be 0,0 and generate your render accordingly. But if for some reason you want that origin to be different, change it here.
+         */
+        origin?: {
+          x?: number;
+          y?: number;
+        };
+        /**
+         * Markers are placed before pieces, and thus can be obscured by them.
+         */
+        markers?: (
+          | {
+              type: "path";
+              path: string;
+              fill?: PositiveInteger | Colourstrings;
+              fillOpacity?: number;
+              stroke?: PositiveInteger | Colourstrings;
+              strokeWidth?: number;
+              strokeOpacity?: number;
+              /**
+               * A valid `dasharray` appropriate for the game's display.
+               */
+              dashed?: number[];
+            }
+          | {
+              /**
+               * A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.
+               */
+              type: "label";
+              /**
+               * The string itself you want to display.
+               */
+              label: string;
+              /**
+               * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
+               *
+               * @minItems 2
+               * @maxItems 2
+               */
+              points: [
+                {
+                  x: number;
+                  y: number;
+                },
+                {
+                  x: number;
+                  y: number;
+                }
+              ];
+              /**
+               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour?: PositiveInteger | Colourstrings;
+              /**
+               * Font size in absolute pixels
+               */
+              size?: number;
+            }
+          | {
+              /**
+               * A way of incorporating a glyph from the legend into the board itself.
+               */
+              type: "glyph";
+              /**
+               * The name of the glyph in the `legend`.
+               */
+              glyph: string;
+              orientation?: number;
+              /**
+               * Provide absolute x,y coordinates.
+               *
+               * @minItems 1
+               */
+              points: [
+                {
+                  x: number;
+                  y: number;
+                },
+                ...{
+                  x: number;
+                  y: number;
+                }[]
+              ];
+            }
+        )[];
       };
   /**
    * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards.
    */
-  pieces: null | string | [string[][], ...string[][][]] | [string, ...string[]][];
+  pieces:
+    | null
+    | string
+    | [string[][], ...string[][][]]
+    | [string, ...string[]][]
+    | {
+        /**
+         * The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.
+         */
+        glyph: string;
+        /**
+         * A unique ID that should be passed to the click handler. If not provided, it will just return the glyph name.
+         */
+        id?: string;
+        /**
+         * Absolute x coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
+         */
+        x: number;
+        /**
+         * Absolute y coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
+         */
+        y: number;
+        /**
+         * Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
+         */
+        orientation: number;
+      }[];
   /**
    * Areas are renderer-specific elements that are used and rendered in various ways.
    */
@@ -635,6 +766,46 @@ export interface APRenderRep {
         action: number;
         [k: string]: unknown;
       }
+    | (
+        | {
+            type: "path";
+            path: string;
+            fill?: PositiveInteger | Colourstrings;
+            fillOpacity?: number;
+            stroke?: PositiveInteger | Colourstrings;
+            strokeWidth?: number;
+            strokeOpacity?: number;
+            /**
+             * A valid `dasharray` appropriate for the game's display.
+             */
+            dashed?: number[];
+          }
+        | {
+            /**
+             * A way of incorporating a glyph from the legend into the board itself. This one is specific to the `freespace` renderer.
+             */
+            type: "glyph";
+            /**
+             * The name of the glyph in the `legend`.
+             */
+            glyph: string;
+            /**
+             * Provide absolute x,y coordinates.
+             *
+             * @minItems 1
+             */
+            points: [
+              {
+                x: number;
+                y: number;
+              },
+              ...{
+                x: number;
+                y: number;
+              }[]
+            ];
+          }
+      )
   )[];
   [k: string]: unknown;
 }
