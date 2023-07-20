@@ -160,7 +160,7 @@ interface IKeyEntry {
 /**
  * Internal interface used for generating keys
  */
-interface IKey {
+export interface IKey {
     [k: string]: unknown;
     type: "key";
     list: IKeyEntry[];
@@ -686,6 +686,9 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
         const width: number = this.json.board.width as number;
         const height: number = this.json.board.height as number;
         const cellsize = this.cellsize;
@@ -1120,6 +1123,9 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
         const width: number = this.json.board.width as number;
         const height: number = this.json.board.height as number;
         const cellsize = this.cellsize;
@@ -1543,6 +1549,9 @@ export abstract class RendererBase {
         // Check required properties
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
         }
         const width: number = this.json.board.width as number;
         const height: number = this.json.board.height as number;
@@ -2214,6 +2223,9 @@ export abstract class RendererBase {
             let radius = rIncrement;
             let direction = 1;
             for (const note of this.json.annotations) {
+                if ( (! ("type" in note)) || (note.type === undefined) ) {
+                    throw new Error("Invalid annotation format found.");
+                }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
                     if ((note.targets as any[]).length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");
@@ -2384,6 +2396,9 @@ export abstract class RendererBase {
         }
 
         if ( ("board" in this.json) && (this.json.board !== undefined) && ("markers" in this.json.board!) && (this.json.board.markers !== undefined) && (Array.isArray(this.json.board.markers)) && (this.json.board.markers.length > 0) ) {
+            if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+                throw new Error("This `markBoard` function only works with renderers that include a `style` property.");
+            }
             let baseStroke = 1;
             let baseColour = "#000";
             let baseOpacity = 1;
@@ -2453,6 +2468,14 @@ export abstract class RendererBase {
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
                         width = marker.width as number;
                     }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width,
+                    };
+                    if ( ("style" in marker) && (marker.style !== undefined) && (marker.style === "dashed") ) {
+                        stroke.dasharray = "4";
+                    }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
                     if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
@@ -2466,7 +2489,7 @@ export abstract class RendererBase {
                         const point2 = (marker.points as ITarget[])[1];
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
                     }
-                    svgGroup.line(x1, y1, x2, y2).stroke({width, color: colour, opacity});
+                    svgGroup.line(x1, y1, x2, y2).stroke(stroke);
                 } else if (marker.type === "label") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -2642,6 +2665,14 @@ export abstract class RendererBase {
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
                         multiplier = marker.width as number;
                     }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        width: baseStroke * multiplier,
+                        linecap: "round",
+                    };
+                    if ( ("dashed" in marker) && (marker.dashed !== undefined) && (Array.isArray(marker.dashed)) && (marker.dashed.length > 0) ) {
+                        stroke.dasharray = (marker.dashed as number[]).join(" ");
+                    }
                     const style = this.json.board.style;
                     if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
                         const row = marker.cell.row as number;
@@ -2678,7 +2709,7 @@ export abstract class RendererBase {
                                 yTo = south.y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour, linecap: "round"});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
                         let row = marker.cell.row as number;
                         let col = marker.cell.col as number;
@@ -2698,7 +2729,7 @@ export abstract class RendererBase {
                                 const [idx1, idx2] = edge.corners;
                                 const {x: xFrom, y: yFrom} = hex.corners[idx1];
                                 const {x: xTo, y: yTo} = hex.corners[idx2];
-                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * multiplier, color: colour, linecap: "round"});
+                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke(stroke);
                             }
                         }
                     }
@@ -2725,7 +2756,7 @@ export abstract class RendererBase {
                         if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
                             use.rotate(this.options.rotate);
                         }
-            }
+                    }
                 }
             }
         }
@@ -3131,7 +3162,7 @@ export abstract class RendererBase {
                         markColour = area.ownerMark as string;
                     }
                 }
-                const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth, -1, areaWidth+2+markWidth, areaHeight+2);
+                const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
                 if ("background" in area) {
                     nested.rect(areaWidth,areaHeight).fill(area.background as string);
                 }
@@ -3165,7 +3196,8 @@ export abstract class RendererBase {
 
                 // add marker line if indicated
                 if ( (markWidth > 0) && (markColour !== undefined) ) {
-                    nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
+                    nested.rect(markWidth, nested.bbox().height).fill(markColour).stroke({width: 1, color: "black"}).dmove((markWidth * -1) - 5, 0);
+                    // nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
                 }
 
                 // Add area label

@@ -4,6 +4,12 @@
         <meta charset="utf-8"/>
         <title>Abstract Play: Renderer Playground</title>
         <script src="./APRender.js"></script>
+        <style>
+            svg * text {
+                cursor: default;
+                user-select: none;
+            }
+        </style>
         <script type="text/javascript">
             function handleClick(row, col, piece) {
                 console.log(`Row: ${row}, Col: ${col}, Piece: ${piece}`);

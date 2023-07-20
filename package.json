@@ -16,10 +16,9 @@
         "dist-dev": "rimraf dist && webpack",
         "dist-prod": "rimraf dist && webpack --mode=production",
         "json2ts": "npx json2ts -i src/schemas/schema.json -o src/schemas/schema.d.ts",
-        "full-dev": "npm run test && npm run build && npm run dist-dev",
-        "full-prod": "npm run test && npm run build && npm run dist-prod",
-        "quick": "npm run build-ts && npm run dist-dev && npm run distribute",
-        "quick2": "npm run build-ts && npm run dist-dev && npm run distribute2"
+        "full-dev": "npm run test && npm run build && npm run dist-dev && npm run deploy",
+        "full-prod": "npm run test && npm run build && npm run dist-prod && npm run deploy",
+        "deploy": "shx cp ./test/playground.html ./dist && npx serverless client deploy --no-confirm && aws s3 cp ./dist/APRender.js s3://gameslib.dev.abstractplay.com --profile AbstractPlayDev"
     },
     "author": "Aaron Dalton <aaron@daltons.ca> (https://www.perlkonig.com)",
     "license": "MIT",
@@ -30,7 +29,7 @@
     "dependencies": {
         "@svgdotjs/svg.js": "^3.1.2",
         "ajv": "^8.12.0",
-        "honeycomb-grid": "^4.0.1",
+        "honeycomb-grid": "4.1.1",
         "uuid": "^9.0.0"
     },
     "devDependencies": {
@@ -40,6 +39,7 @@
         "@types/yargs": "^17.0.24",
         "@typescript-eslint/eslint-plugin": "^5.59.1",
         "@typescript-eslint/parser": "^5.59.1",
+        "aws-amplify": "^5.3.3",
         "chai": "^4.3.7",
         "eslint": "^8.39.0",
         "eslint-config-prettier": "^8.8.0",
@@ -51,6 +51,7 @@
         "mocha": "^10.2.0",
         "moment": "^2.29.4",
         "rimraf": "^5.0.1",
+        "serverless-finch": "^4.0.3",
         "shx": "^0.3.4",
         "svgdom": "^0.1.14",
         "ts-loader": "^9.4.2",

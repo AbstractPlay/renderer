@@ -1,0 +1,19 @@
+service: abstractplay-renderer-playground
+
+frameworkVersion: '2 || 3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+  profile: AbstractPlayDev
+
+plugins:
+  - serverless-finch
+
+custom:
+  client:
+    bucketName: renderer.dev.abstractplay.com
+    distributionFolder: ./dist
+    indexDocument: playground.html
