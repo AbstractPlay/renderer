@@ -725,6 +725,14 @@ export abstract class RendererBase {
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = this.rootSvg.group().id("board");
 
+        // Make an expanded grid for markers, to accommodate edge marking and shading
+        // Add one row and one column and shift all points up and to the left by half a cell size
+        let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
+        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
+
+        const gridlines = board.group().id("gridlines");
+        this.markBoard(gridlines, true, grid, gridExpanded);
+
         // create buffer zone first if requested
         let bufferwidth = 0;
         let show: CompassDirection[] = ["N", "E", "S", "W"];
@@ -969,8 +977,6 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = board.group().id("gridlines");
-
         if (style === "squares-beveled") {
             baseOpacity *= 0.15;
         }
@@ -1094,16 +1100,12 @@ export abstract class RendererBase {
             this.rootSvg.click(genericCatcher);
         }
 
-        // Make an expanded grid for markers, to accommodate edge marking and shading
-        // Add one row and one column and shift all points up and to the left by half a cell size
-        let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
-        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
         if (this.options.rotate === 180) {
             gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
-        this.markBoard(gridlines, grid, gridExpanded);
+        this.markBoard(gridlines, false, grid, gridExpanded);
 
         return grid;
     }
@@ -1161,6 +1163,9 @@ export abstract class RendererBase {
         // Get a grid of points
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = this.rootSvg.group().id("board");
+
+        const gridlines = board.group().id("gridlines");
+        this.markBoard(gridlines, true, grid);
 
         // create buffer zone first if requested
         let bufferwidth = 0;
@@ -1301,7 +1306,6 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = board.group().id("gridlines");
 
         // Horizontal, top of each row, then bottom line after loop
         let numcols = 1;
@@ -1529,7 +1533,7 @@ export abstract class RendererBase {
             });
         }
 
-        this.markBoard(gridlines, grid);
+        this.markBoard(gridlines, false, grid);
 
         return grid;
     }
@@ -1596,6 +1600,25 @@ export abstract class RendererBase {
             dimensions: cellsize,
         });
         const grid = new Grid(myHex, rectangle({width, height}));
+        const board = this.rootSvg.group().id("board");
+        let gridPoints: GridPoints = [];
+        // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
+        for (let y = 0; y < height; y++) {
+            const node: IPoint[] = [];
+            for (let x = 0; x < width; x++) {
+                const hex = grid.getHex({col: x, row: y});
+                if (hex === undefined) {
+                    throw new Error();
+                }
+                // const pt = hex.toPoint();
+                // node.push({x: hex.x + cx, y: hex.y + cy} as IPoint);
+                node.push({x: hex.x, y: hex.y} as IPoint);
+            }
+            gridPoints.push(node);
+        }
+
+        this.markBoard(board, true, gridPoints, undefined, grid, width, height);
+
         const corners = grid.getHex({col: 0, row: 0})!.corners;
         let hexFill = "white";
         if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
@@ -1615,7 +1638,6 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
-        const board = this.rootSvg.group().id("board");
         const labels = this.rootSvg.group().id("labels");
         const fontSize = this.cellsize / 5;
         const seenEdges = new Set<string>();
@@ -1692,26 +1714,10 @@ export abstract class RendererBase {
             }
         }
 
-        let gridPoints: GridPoints = [];
-        // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
-        for (let y = 0; y < height; y++) {
-            const node: IPoint[] = [];
-            for (let x = 0; x < width; x++) {
-                const hex = grid.getHex({col: x, row: y});
-                if (hex === undefined) {
-                    throw new Error();
-                }
-                // const pt = hex.toPoint();
-                // node.push({x: hex.x + cx, y: hex.y + cy} as IPoint);
-                node.push({x: hex.x, y: hex.y} as IPoint);
-            }
-            gridPoints.push(node);
-        }
-
         if (this.options.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(board, gridPoints, undefined, grid, width, height);
+        this.markBoard(board, false, gridPoints, undefined, grid, width, height);
 
         return gridPoints;
     }
@@ -1751,6 +1757,9 @@ export abstract class RendererBase {
         // Get a grid of points
         let grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("gridlines");
+
+        this.markBoard(gridlines, true, grid);
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -1787,7 +1796,6 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = board.group().id("gridlines");
         for (let row = 0; row < height; row++) {
             for (let col = 0; col < width; col++) {
                 const curr = grid[row][col];
@@ -1858,7 +1866,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, grid);
+        this.markBoard(gridlines, false, grid);
 
         return grid;
     }
@@ -1899,6 +1907,9 @@ export abstract class RendererBase {
         // Get a grid of points
         let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
         const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("gridlines");
+
+        this.markBoard(gridlines, true, grid);
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -1925,7 +1936,6 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = board.group().id("gridlines");
         const midrow = maxWidth - minWidth;
 
         for (let row = 0; row < grid.length; row++) {
@@ -2003,7 +2013,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, grid);
+        this.markBoard(gridlines, false, grid);
 
         return grid;
     }
@@ -2044,6 +2054,9 @@ export abstract class RendererBase {
         // Get a grid of points
         let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
         const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("circles");
+
+        this.markBoard(gridlines, true, grid);
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -2069,7 +2082,6 @@ export abstract class RendererBase {
         }
 
         // Draw circles
-        const gridlines = board.group().id("circles");
         const circle = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
         circle.circle(cellsize)
             .fill({color: "black", opacity: 0})
@@ -2092,7 +2104,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, grid);
+        this.markBoard(gridlines, false, grid);
 
         return grid;
     }
@@ -2133,6 +2145,9 @@ export abstract class RendererBase {
         // Get a grid of points
         let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
         const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("hexes");
+
+        this.markBoard(gridlines, true, grid);
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -2179,7 +2194,6 @@ export abstract class RendererBase {
         const half = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
-        const gridlines = board.group().id("hexes");
         const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
         hex.polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
             .fill({color: "black", opacity: 0})
@@ -2201,7 +2215,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, grid);
+        this.markBoard(gridlines, false, grid);
 
         return grid;
     }
@@ -2383,6 +2397,19 @@ export abstract class RendererBase {
         }
     }
 
+    private interpolateFromGrid(grid: GridPoints, point: ITarget) : [number, number] {
+        const [x, y] = [point.col, point.row];
+        const col = Math.floor(x);
+        const row = Math.floor(y);
+        let gridx = grid[row][col].x;
+        if (!Number.isInteger(x))
+            gridx += (x - col) * (grid[row][col + 1].x - grid[row][col].x);
+        let gridy = grid[row][col].y;
+        if (!Number.isInteger(y))
+            gridy += (y - row) * (grid[row + 1][col].y - grid[row][col].y);
+        return [gridx, gridy];
+    }
+
     /**
      * Markers are placed right after the board itself is generated, and so are obscured by placed pieces.
      *
@@ -2390,7 +2417,7 @@ export abstract class RendererBase {
      * @param grid - The map of row/column to x/y created by one of the grid point generators.
      * @param gridExpanded - Square maps need to be expanded a little for all the markers to work. If provided, this is what will be used.
      */
-    protected markBoard(svgGroup: SVGG, grid: GridPoints, gridExpanded?: GridPoints, hexGrid?: Grid<Hex>, hexWidth?: number, hexHeight?: number): void {
+    protected markBoard(svgGroup: SVGG, preGridLines: boolean, grid: GridPoints, gridExpanded?: GridPoints, hexGrid?: Grid<Hex>, hexWidth?: number, hexHeight?: number): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -2399,6 +2426,16 @@ export abstract class RendererBase {
             if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
                 throw new Error("This `markBoard` function only works with renderers that include a `style` property.");
             }
+
+            if (preGridLines) {
+                if (this.options.rotate === 180) {
+                    if (gridExpanded !== undefined) {
+                    gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+                    }
+                    grid = grid.map((r) => r.reverse()).reverse();
+                }
+            }
+
             let baseStroke = 1;
             let baseColour = "#000";
             let baseOpacity = 1;
@@ -2413,6 +2450,9 @@ export abstract class RendererBase {
             }
 
             for (const marker of this.json.board.markers) {
+                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)))) {
+                    continue;
+                }
                 if (marker.type === "dots") {
                     const pts: [number, number][] = [];
                     for (const point of marker.points as ITarget[]) {
@@ -2499,30 +2539,18 @@ export abstract class RendererBase {
                             colour = marker.colour as string;
                         }
                     }
-                    // let fontsize = 17;
-                    // if ( ("size" in marker) && (marker.size !== undefined) ) {
-                    //    fontsize = marker.size as number;
-                    // }
-                    // let opacity = baseOpacity;
-                    // if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
-                    //     opacity = marker.opacity as number;
-                    // }
-                    // let width = baseStroke;
-                    // if ( ("width" in marker) && (marker.width !== undefined) ) {
-                    //     width = marker.width as number;
-                    // }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
                     if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
                         const point1 = (marker.points as ITarget[])[0];
-                        [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y]
+                        [x1, y1] = this.interpolateFromGrid(gridExpanded, point1);
                         const point2 = (marker.points as ITarget[])[1];
-                        [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y]
+                        [x2, y2] = this.interpolateFromGrid(gridExpanded, point2);
                     } else {
                         const point1 = (marker.points as ITarget[])[0];
-                        [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y]
+                        [x1, y1] = this.interpolateFromGrid(grid, point1);
                         const point2 = (marker.points as ITarget[])[1];
-                        [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
+                        [x2, y2] = this.interpolateFromGrid(grid, point2);
                     }
 
                     // check for nudging
@@ -2531,15 +2559,19 @@ export abstract class RendererBase {
                         x1 += (dx * this.cellsize); x2 += (dx * this.cellsize);
                         y1 += (dy * this.cellsize); y2 += (dy * this.cellsize);
                     }
-                    const text = svgGroup.text(marker.label as string)
+                    let font = 'font-size: 17px;';
+                    if ( ("size" in marker) && (marker.size !== undefined) ) {
+                        font = `font-size: ${marker.size as number}px;`;
+                    }
+                    font += marker.font ?? '';
+                    const text = svgGroup.text((add) => {
+                            add.tspan(marker.label as string).attr('style', font);
+                        })
                         .font({ fill: colour, anchor: "middle"})
-                        .attr('style', 'font-size: 50px')
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging");
-//                        .css("fontSize", `${fontsize}px`)
                     text.path(`M${x1},${y1} L${x2},${y2}`)
-                        .attr("startOffset", "50%")
-                        .tspan(marker.label as string).attr('style', 'font-size: 80px; font: Stencil; font-weight: Bold');
+                        .attr("startOffset", "50%");
                 } else if (marker.type === "edge") {
                     let colour = "#000";
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -2760,6 +2792,16 @@ export abstract class RendererBase {
                             use.rotate(this.options.rotate);
                         }
                     }
+                }
+            }
+
+            // Undo
+            if (preGridLines) {
+                if (this.options.rotate === 180) {
+                    if (gridExpanded !== undefined) {
+                    gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+                    }
+                    grid = grid.map((r) => r.reverse()).reverse();
                 }
             }
         }
