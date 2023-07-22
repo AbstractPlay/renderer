@@ -320,6 +320,10 @@
                                                 "description": "This is for shading spaces or areas on the board.",
                                                 "enum": ["shading"]
                                             },
+                                            "belowGrid": {
+                                                "description": "If true, the dots will be drawn below the grid lines.",
+                                                "type": "boolean"
+                                            },
                                             "points": {
                                                 "description": "It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.",
                                                 "type": "array",
@@ -424,6 +428,10 @@
                                                 "description": "A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.",
                                                 "enum": ["label"]
                                             },
+                                            "belowGrid": {
+                                                "description": "If true, the dots will be drawn below the grid lines.",
+                                                "type": "boolean"
+                                            },
                                             "label": {
                                                 "description": "The string itself you want to display.",
                                                 "type": "string"
@@ -435,11 +443,11 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "row": {
-                                                            "type": "integer",
+                                                            "type": "number",
                                                             "minimum": 0
                                                         },
                                                         "col": {
-                                                            "type": "integer",
+                                                            "type": "number",
                                                             "minimum": 0
                                                         }
                                                     },
@@ -475,6 +483,11 @@
                                                 "description": "Font size in absolute pixels",
                                                 "type": "number",
                                                 "default": 17
+                                            },
+                                            "font": {
+                                                "description": "Font style, e.g. 'font: Stencil; font-weight: Bold'",
+                                                "type": "string",
+                                                "default": ""
                                             }
                                         },
                                         "required": ["type", "label", "points"],
@@ -554,6 +567,10 @@
                                             "type": {
                                                 "description": "A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.",
                                                 "enum": ["glyph"]
+                                            },
+                                            "belowGrid": {
+                                                "description": "If true, the dots will be drawn below the grid lines.",
+                                                "type": "boolean"
                                             },
                                             "glyph": {
                                                 "description": "The name of the glyph in the `legend`.",
