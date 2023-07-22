@@ -321,7 +321,7 @@
                                                 "enum": ["shading"]
                                             },
                                             "belowGrid": {
-                                                "description": "If true, the dots will be drawn below the grid lines.",
+                                                "description": "If true, the shading will be done below the grid lines.",
                                                 "type": "boolean"
                                             },
                                             "points": {
@@ -429,7 +429,7 @@
                                                 "enum": ["label"]
                                             },
                                             "belowGrid": {
-                                                "description": "If true, the dots will be drawn below the grid lines.",
+                                                "description": "If true, the labels will be drawn below the grid lines.",
                                                 "type": "boolean"
                                             },
                                             "label": {
@@ -569,7 +569,7 @@
                                                 "enum": ["glyph"]
                                             },
                                             "belowGrid": {
-                                                "description": "If true, the dots will be drawn below the grid lines.",
+                                                "description": "If true, the glyph will be drawn below the grid lines.",
                                                 "type": "boolean"
                                             },
                                             "glyph": {
