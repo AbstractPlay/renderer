@@ -927,12 +927,12 @@
                     }
                 },
                 {
-                    "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are not possible because empty systems are not possible.",
+                    "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are allowed because sometimes you need to display an empty home system in the middle of a turn.",
                     "type": "array",
                     "items": {
                         "description": "The actual array of pieces in the given system.",
                         "type": "array",
-                        "minItems": 1,
+                        "minItems": 0,
                         "maxItems": 24,
                         "items": {
                             "type": "string",

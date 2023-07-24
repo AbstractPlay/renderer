@@ -384,7 +384,7 @@ export class HomeworldsRenderer extends RendererBase {
      */
     private genSystem(id: string, sys: ISystem, orientation: "H"|"V" = "H", highlight?: string): Svg {
         const [shipWidth, shipHeight] = HomeworldsRenderer.dimensions(sys);
-        let gridWidth = shipWidth + 1;
+        let gridWidth = Math.max(2, shipWidth + 1);
         let gridHeight = Math.max(shipHeight, sys.stars.length);
         if (orientation === "V") {
             const x = gridWidth;
