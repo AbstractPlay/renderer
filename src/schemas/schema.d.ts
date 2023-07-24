@@ -191,6 +191,10 @@ export interface APRenderRep {
                */
               type: "shading";
               /**
+               * If true, the shading will be done below the grid lines.
+               */
+              belowGrid?: boolean;
+              /**
                * It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.
                *
                * @minItems 3
@@ -263,6 +267,10 @@ export interface APRenderRep {
                */
               type: "label";
               /**
+               * If true, the labels will be drawn below the grid lines.
+               */
+              belowGrid?: boolean;
+              /**
                * The string itself you want to display.
                */
               label: string;
@@ -297,6 +305,10 @@ export interface APRenderRep {
                * Font size in absolute pixels
                */
               size?: number;
+              /**
+               * Font style, e.g. 'font: Stencil; font-weight: Bold'
+               */
+              font?: string;
             }
           | {
               /**
@@ -340,6 +352,10 @@ export interface APRenderRep {
                * A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.
                */
               type: "glyph";
+              /**
+               * If true, the glyph will be drawn below the grid lines.
+               */
+              belowGrid?: boolean;
               /**
                * The name of the glyph in the `legend`.
                */
@@ -525,7 +541,7 @@ export interface APRenderRep {
     | null
     | string
     | [string[][], ...string[][][]]
-    | [string, ...string[]][]
+    | string[][]
     | {
         /**
          * The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.
