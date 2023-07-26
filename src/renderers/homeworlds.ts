@@ -61,6 +61,13 @@ export class HomeworldsRenderer extends RendererBase {
             this.contrastColour = "#000";
         }
 
+        // Base render should have north at the bottom facing up
+        if (this.options.rotate === undefined) {
+            this.options.rotate = 180;
+        } else {
+            this.options.rotate += 180;
+        }
+
         // PIECES
         // Load all the pieces in the legend
         this.loadLegend();
