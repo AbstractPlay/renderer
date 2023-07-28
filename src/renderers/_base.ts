@@ -2263,10 +2263,14 @@ export abstract class RendererBase {
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
                         opacity = note.opacity as number;
                     }
-
+                    let strokeWidth = 0.03;
+                    if ( ("strokeWidth" in note) && (note.strokeWidth !== undefined) ) {
+                        strokeWidth = note.strokeWidth as number;
+                    }
+                    const unit = strokeWidth / 0.03;
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
-                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour));
+                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour));
                     const points: string[] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
@@ -2275,7 +2279,7 @@ export abstract class RendererBase {
                     const stroke: StrokeData = {
                         color: colour,
                         opacity,
-                        width: this.cellsize * 0.03,
+                        width: this.cellsize * strokeWidth,
                     };
                     if (style === "dashed") {
                         stroke.dasharray = "4";
