@@ -191,7 +191,7 @@ export interface APRenderRep {
                */
               type: "shading";
               /**
-               * If true, the dots will be drawn below the grid lines.
+               * If true, the shading will be done below the grid lines.
                */
               belowGrid?: boolean;
               /**
@@ -267,7 +267,7 @@ export interface APRenderRep {
                */
               type: "label";
               /**
-               * If true, the dots will be drawn below the grid lines.
+               * If true, the labels will be drawn below the grid lines.
                */
               belowGrid?: boolean;
               /**
@@ -353,7 +353,7 @@ export interface APRenderRep {
                */
               type: "glyph";
               /**
-               * If true, the dots will be drawn below the grid lines.
+               * If true, the glyph will be drawn below the grid lines.
                */
               belowGrid?: boolean;
               /**
@@ -541,7 +541,7 @@ export interface APRenderRep {
     | null
     | string
     | [string[][], ...string[][][]]
-    | [string, ...string[]][]
+    | string[][]
     | {
         /**
          * The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.
