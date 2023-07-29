@@ -72,6 +72,9 @@ export class StackingOffsetRenderer extends RendererBase {
             case "hex-even-f":
                 gridPoints = this.rectOfHex();
                 break;
+            case "circular-cobweb":
+                gridPoints = this.cobweb();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
