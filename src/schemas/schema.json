@@ -226,14 +226,6 @@
                             "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
                             "$ref": "#/definitions/positiveInteger"
                         },
-                        "clickDeltaX": {
-                            "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "clickDeltaY": {
-                            "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
                         "tileWidth": {
                             "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
                             "$ref": "#/definitions/positiveInteger"
@@ -473,6 +465,13 @@
                                                 "description": "By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.",
                                                 "type": "number",
                                                 "default": 0
+                                            },
+                                            "fill": {
+                                                "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",
+                                                "anyOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ]
                                             }
                                         },
                                         "required": ["type", "segments"],
