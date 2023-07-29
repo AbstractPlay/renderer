@@ -2589,7 +2589,7 @@ export abstract class RendererBase {
             }
 
             for (const marker of this.json.board.markers) {
-                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)))) {
+                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo"))) {
                     continue;
                 }
                 if (marker.type === "dots") {
@@ -2722,50 +2722,64 @@ export abstract class RendererBase {
                             }
                         }
                     }
-                    let width = baseStroke;
-                    if ( ("width" in marker) && (marker.width !== undefined) ) {
-                        width = marker.width as number;
-                    }
-                    radius += width / 2;
-                    let degStart = 0;
-                    if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
-                        degStart = this.json.board["circular-start"] as number;
-                    }
-                    if ( ("offset" in marker) && (marker.offset !== undefined) ) {
-                        degStart += marker.offset as number;
-                    }
-                    const phi = 360 / (marker.segments as any[]).length;
-                    for (let i = 0; i < marker.segments.length; i++) {
-                        const segment: ISegment = marker.segments[i] as ISegment;
-                        let colour = baseColour;
-                        if ( ("colour" in segment) && (segment.colour !== undefined) ) {
-                            if (typeof segment.colour === "number") {
-                                colour = this.options.colours[segment.colour - 1];
+                    if (preGridLines) {
+                        let fill: string|undefined;
+                        if ( ("fill" in marker) && (marker.fill !== undefined) ) {
+                            if (typeof marker.fill === "number") {
+                                fill = this.options.colours[marker.fill - 1];
                             } else {
-                                colour = segment.colour;
+                                fill = marker.fill as string;
                             }
                         }
-                        let opacity = baseOpacity;
-                        if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
-                            opacity = segment.opacity;
+                        if (fill !== undefined) {
+                            svgGroup.circle(radius * 2).fill(fill).center(0,0);
                         }
-                        const stroke: StrokeData = {
-                            color: colour,
-                            opacity,
-                            width,
-                        };
-                        if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
-                            stroke.dasharray = "4";
+                    } else {
+                        let width = baseStroke;
+                        if ( ("width" in marker) && (marker.width !== undefined) ) {
+                            width = marker.width as number;
                         }
-                        // if there's only one segment, draw a full circle
-                        if (phi === 360) {
-                            svgGroup.circle(radius * 2).fill("none").stroke(stroke);
+                        radius += width / 2;
+                        let degStart = 0;
+                        if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
+                            degStart = this.json.board["circular-start"] as number;
                         }
-                        // otherwise, draw an arc
-                        else {
-                            const [lx, ly] = projectPoint(0, 0, radius, degStart + (phi * i));
-                            const [rx, ry] = projectPoint(0, 0, radius, degStart + (phi * (i+1)));
-                            svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).fill("none").stroke(stroke);
+                        if ( ("offset" in marker) && (marker.offset !== undefined) ) {
+                            degStart += marker.offset as number;
+                        }
+                        const phi = 360 / (marker.segments as any[]).length;
+                        for (let i = 0; i < marker.segments.length; i++) {
+                            const segment: ISegment = marker.segments[i] as ISegment;
+                            let colour = baseColour;
+                            if ( ("colour" in segment) && (segment.colour !== undefined) ) {
+                                if (typeof segment.colour === "number") {
+                                    colour = this.options.colours[segment.colour - 1];
+                                } else {
+                                    colour = segment.colour;
+                                }
+                            }
+                            let opacity = baseOpacity;
+                            if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
+                                opacity = segment.opacity;
+                            }
+                            const stroke: StrokeData = {
+                                color: colour,
+                                opacity,
+                                width,
+                            };
+                            if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
+                                stroke.dasharray = "4";
+                            }
+                            // if there's only one segment, draw a full circle
+                            if (phi === 360) {
+                                svgGroup.circle(radius * 2).fill("none").stroke(stroke);
+                            }
+                            // otherwise, draw an arc
+                            else {
+                                const [lx, ly] = projectPoint(0, 0, radius, degStart + (phi * i));
+                                const [rx, ry] = projectPoint(0, 0, radius, degStart + (phi * (i+1)));
+                                svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).fill("none").stroke(stroke);
+                            }
                         }
                     }
                 } else if (marker.type === "label") {

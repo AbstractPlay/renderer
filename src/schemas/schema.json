@@ -465,6 +465,13 @@
                                                 "description": "By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.",
                                                 "type": "number",
                                                 "default": 0
+                                            },
+                                            "fill": {
+                                                "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",
+                                                "anyOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ]
                                             }
                                         },
                                         "required": ["type", "segments"],

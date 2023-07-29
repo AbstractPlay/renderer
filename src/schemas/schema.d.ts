@@ -302,6 +302,10 @@ export interface APRenderRep {
                * By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.
                */
               offset?: number;
+              /**
+               * Fill is drawn before grid lines, segments are drawn after grid lines.
+               */
+              fill?: PositiveInteger | Colourstrings;
             }
           | {
               /**
