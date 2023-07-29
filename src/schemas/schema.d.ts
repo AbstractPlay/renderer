@@ -832,6 +832,10 @@ export interface APRenderRep {
           }[]
         ];
         style?: "solid" | "dashed";
+        /**
+         * The width of the line, expressed as a percentage of cell size.
+         */
+        strokeWidth?: number;
         opacity?: number;
         /**
          * Pattern for hex colour strings
