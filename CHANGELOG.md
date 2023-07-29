@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added `label` marker for drawing arbitrary text to a board. Currently only enabled for `squares*` boards.
 * Added `stacking3D` renderer. Can be useful for stacking games, where stacks can get arbitrarily high. For now used for alternate Volcano display.
 * Added fixed `dashed` property to `line` marker and a customizable `dashed` property to the `fence` marker to allow for customizable dashes.
+* Added `circular-cobweb` board with associated `fill` and `halo` markers.
 
 ### Fixed
 
