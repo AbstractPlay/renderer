@@ -728,6 +728,10 @@ export interface APRenderRep {
                 value: string;
               }[]
             ];
+            /**
+             * Pattern for hex colour strings
+             */
+            fill?: string;
             [k: string]: unknown;
           },
           ...{
@@ -754,6 +758,10 @@ export interface APRenderRep {
                 value: string;
               }[]
             ];
+            /**
+             * Pattern for hex colour strings
+             */
+            fill?: string;
             [k: string]: unknown;
           }[]
         ];

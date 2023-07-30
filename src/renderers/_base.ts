@@ -1,6 +1,6 @@
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare, cobweb } from "../grids";
@@ -3178,7 +3178,7 @@ export abstract class RendererBase {
                     const height = used.height() as number;
                     const numButtons = bar.buttons.length;
                     const btnHeight = height / numButtons;
-                    used.click((e: { clientX: number; clientY: number; }) => {
+                    used.click((e: MouseEvent) => {
                         const point = used.point(e.clientX, e.clientY);
                         const yRelative = point.y - top;
                         const row = Math.floor(yRelative / btnHeight);
@@ -3188,6 +3188,7 @@ export abstract class RendererBase {
                                 value = bar.buttons[row].value!;
                             }
                             this.options.boardClick!(-1, -1, `_btn_${value}`);
+                            e.stopPropagation();
                         }
                     });
                 }
@@ -3255,16 +3256,25 @@ export abstract class RendererBase {
 
         // build the symbol for the rectangle
         const width = maxWidth * 1.5;
-        const symrect = nested.symbol();
-        symrect.rect(width, height).fill({opacity: 0}).stroke({width: 1, color: colour});
-        // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
-        // symrect.viewbox(-1, -1, width + 2, height + 1);
+        const rects: SVGSymbol[] = [];
+        for (const b of bar.buttons) {
+            const symrect = nested.symbol();
+            let fill: FillData = {color: "#fff", opacity: 0};
+            if ( ("fill" in b) && (b.fill !== undefined) ) {
+                fill = {color: b.fill! as string, opacity: 1};
+            }
+            symrect.rect(width, height).fill(fill).stroke({width: 1, color: colour});
+            // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
+            // symrect.viewbox(-1, -1, width + 2, height + 1);
+            rects.push(symrect);
+        }
 
         // Composite each into a group, all at 0,0
         const groups: Svg[] = [];
         for (let i = 0; i < labels.length; i++) {
             const b = bar.buttons[i];
             const symlabel = labels[i];
+            const symrect = rects[i];
             let value = b.label.replace(/\s/g, "");
             if (b.value !== undefined) {
                 value = b.value;

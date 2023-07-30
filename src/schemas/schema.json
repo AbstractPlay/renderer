@@ -1245,6 +1245,11 @@
                                                 "required": ["name", "value"],
                                                 "additionalProperties": false
                                             }
+                                        },
+                                        "fill": {
+                                            "description": "Optional fill for this specific button.",
+                                            "$ref": "#/definitions/colourstrings",
+                                            "default": "#000"
                                         }
                                     },
                                     "required": ["label"]
