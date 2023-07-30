@@ -1,12 +1,14 @@
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare, cobweb } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
+import { ICobwebArgs, cobwebLabels, cobwebPolys, CobwebPoly } from "../grids/cobweb";
+import { projectPoint } from "../common/plotting";
 
 /**
  * Defines the options recognized by the rendering engine.
@@ -96,6 +98,23 @@ export interface IRendererOptionsOut {
     glyphmap: [string,string][];
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
+}
+
+export interface IMarkBoardOptions {
+    svgGroup: SVGG;
+    preGridLines: boolean;
+    grid: GridPoints;
+    gridExpanded?: GridPoints;
+    hexGrid?: Grid<Hex>;
+    hexWidth?: number;
+    hexHeight?: number;
+    cobwebPolys?: CobwebPoly[][];
+}
+
+interface ISegment {
+    colour: string|number;
+    opacity?: number;
+    style?: "solid"|"dashed";
 }
 
 /**
@@ -731,7 +750,7 @@ export abstract class RendererBase {
         gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
 
         const gridlines = board.group().id("gridlines");
-        this.markBoard(gridlines, true, grid, gridExpanded);
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
 
         // create buffer zone first if requested
         let bufferwidth = 0;
@@ -1105,7 +1124,7 @@ export abstract class RendererBase {
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
-        this.markBoard(gridlines, false, grid, gridExpanded);
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
 
         return grid;
     }
@@ -1165,7 +1184,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
 
         const gridlines = board.group().id("gridlines");
-        this.markBoard(gridlines, true, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // create buffer zone first if requested
         let bufferwidth = 0;
@@ -1533,7 +1552,7 @@ export abstract class RendererBase {
             });
         }
 
-        this.markBoard(gridlines, false, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
     }
@@ -1617,7 +1636,7 @@ export abstract class RendererBase {
             gridPoints.push(node);
         }
 
-        this.markBoard(board, true, gridPoints, undefined, grid, width, height);
+        this.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height});
 
         const corners = grid.getHex({col: 0, row: 0})!.corners;
         let hexFill = "white";
@@ -1717,7 +1736,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(board, false, gridPoints, undefined, grid, width, height);
+        this.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height});
 
         return gridPoints;
     }
@@ -1759,7 +1778,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
-        this.markBoard(gridlines, true, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -1866,7 +1885,98 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, false, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates snubsquare boards, which are a unique configuration where each cells is connected to five others.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected cobweb(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
+        const cellsize = this.cellsize;
+        if (width % 2 !== 0) {
+            throw new Error("The number of sections in a cobweb board must be even.");
+        }
+
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+        const strokeAttrs: StrokeData = {color: baseColour, width: baseStroke, opacity: baseOpacity};
+
+        let start = 0;
+        if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
+            start = this.json.board["circular-start"] as number;
+        }
+
+        // Get a grid of points
+        const args: ICobwebArgs = {gridHeight: height, gridWidth: width, cellSize: cellsize, start};
+        const grid = cobweb(args);
+        const polys = cobwebPolys(args);
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("gridlines");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, cobwebPolys: polys});
+
+        // Add board labels
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const labelPts = cobwebLabels(args);
+            const labels = board.group().id("labels");
+            const columnLabels = this.getLabels(width);
+
+            // Columns (letters)
+            for (let col = 0; col < width; col++) {
+                const pt = labelPts[col];
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pt.x, pt.y);
+            }
+        }
+
+        // Draw grid lines
+        for (let y = 0; y < polys.length; y++) {
+            const slice = polys[y];
+            for (let x = 0; x < slice.length; x++) {
+                const cell = slice[x];
+                let ele: SVGElement;
+                switch (cell.type) {
+                    case "circle":
+                        ele = gridlines.circle(cell.r * 2).fill({color: "white", opacity: 0}).stroke(strokeAttrs).center(cell.cx, cell.cy);
+                        break;
+                    case "poly":
+                        ele = gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                        break;
+                    case "path":
+                        ele = gridlines.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                        break;
+                }
+                if (this.options.boardClick !== undefined) {
+                    ele.click(() => this.options.boardClick!(y, x, ""));
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, cobwebPolys: polys});
 
         return grid;
     }
@@ -1909,7 +2019,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
-        this.markBoard(gridlines, true, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -2013,7 +2123,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, false, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
     }
@@ -2056,7 +2166,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
-        this.markBoard(gridlines, true, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -2104,7 +2214,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, false, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
     }
@@ -2147,7 +2257,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
-        this.markBoard(gridlines, true, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -2215,7 +2325,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard(gridlines, false, grid);
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
     }
@@ -2421,7 +2531,32 @@ export abstract class RendererBase {
      * @param grid - The map of row/column to x/y created by one of the grid point generators.
      * @param gridExpanded - Square maps need to be expanded a little for all the markers to work. If provided, this is what will be used.
      */
-    protected markBoard(svgGroup: SVGG, preGridLines: boolean, grid: GridPoints, gridExpanded?: GridPoints, hexGrid?: Grid<Hex>, hexWidth?: number, hexHeight?: number): void {
+    // protected markBoard(svgGroup: SVGG, preGridLines: boolean, grid: GridPoints, gridExpanded?: GridPoints, hexGrid?: Grid<Hex>, hexWidth?: number, hexHeight?: number): void {
+    protected markBoard(opts: IMarkBoardOptions): void {
+        const svgGroup = opts.svgGroup;
+        const preGridLines = opts.preGridLines;
+        let grid = opts.grid;
+        let gridExpanded: GridPoints|undefined;
+        if (opts.gridExpanded !== undefined) {
+            gridExpanded = opts.gridExpanded;
+        }
+        let hexGrid: Grid<Hex>|undefined;
+        if (opts.hexGrid !== undefined) {
+            hexGrid = opts.hexGrid;
+        }
+        let hexWidth: number|undefined;
+        if (opts.hexWidth !== undefined) {
+            hexWidth = opts.hexWidth
+        }
+        let hexHeight: number|undefined;
+        if (opts.hexHeight !== undefined) {
+            hexHeight = opts.hexHeight
+        }
+        let polys: CobwebPoly[][]|undefined;
+        if (opts.cobwebPolys !== undefined) {
+            polys = opts.cobwebPolys;
+        }
+
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -2454,7 +2589,7 @@ export abstract class RendererBase {
             }
 
             for (const marker of this.json.board.markers) {
-                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)))) {
+                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo"))) {
                     continue;
                 }
                 if (marker.type === "dots") {
@@ -2495,6 +2630,39 @@ export abstract class RendererBase {
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
                     svgGroup.polygon(ptstr).fill(colour).opacity(opacity);
+                } else if (marker.type === "flood") {
+                    if (! this.json.board.style.startsWith("circular")) {
+                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board.");
+                    }
+                    if (polys === undefined) {
+                        throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
+                    }
+                    let colour = "#000";
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "number") {
+                            colour = this.options.colours[marker.colour - 1];
+                        } else {
+                            colour = marker.colour as string;
+                        }
+                    }
+                    let opacity = 0.25;
+                    if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                        opacity = marker.opacity as number;
+                    }
+                    for (const point of marker.points as ITarget[]) {
+                        const cell = polys[point.row][point.col];
+                        switch (cell.type) {
+                            case "circle":
+                                svgGroup.circle(cell.r * 2).fill({color: colour, opacity}).center(cell.cx, cell.cy);
+                                break;
+                            case "poly":
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: colour, opacity});
+                                break;
+                            case "path":
+                                svgGroup.path(cell.path).fill({color: colour, opacity});
+                                break;
+                        }
+                    }
                 } else if (marker.type === "line") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -2534,6 +2702,86 @@ export abstract class RendererBase {
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
                     }
                     svgGroup.line(x1, y1, x2, y2).stroke(stroke);
+                } else if (marker.type === "halo") {
+                    if (! this.json.board.style.startsWith("circular")) {
+                        throw new Error("The `halo` marker only works with `circular-*` boards.");
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
+                    let polys: CobwebPoly[][]|undefined;
+                    if (opts.cobwebPolys !== undefined) {
+                        polys = opts.cobwebPolys;
+                    }
+                    if (polys === undefined) {
+                        throw new Error("The `halo` marker requires that the polygons be passed.");
+                    }
+                    let radius = 0;
+                    for (const poly of polys.flat()) {
+                        if (poly.type !== "circle") {
+                            for (const pt of poly.points) {
+                                radius = Math.max(radius, pt.x, pt.y);
+                            }
+                        }
+                    }
+                    if (preGridLines) {
+                        let fill: string|undefined;
+                        if ( ("fill" in marker) && (marker.fill !== undefined) ) {
+                            if (typeof marker.fill === "number") {
+                                fill = this.options.colours[marker.fill - 1];
+                            } else {
+                                fill = marker.fill as string;
+                            }
+                        }
+                        if (fill !== undefined) {
+                            svgGroup.circle(radius * 2).fill(fill).center(0,0);
+                        }
+                    } else {
+                        let width = baseStroke;
+                        if ( ("width" in marker) && (marker.width !== undefined) ) {
+                            width = marker.width as number;
+                        }
+                        radius += width / 2;
+                        let degStart = 0;
+                        if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
+                            degStart = this.json.board["circular-start"] as number;
+                        }
+                        if ( ("offset" in marker) && (marker.offset !== undefined) ) {
+                            degStart += marker.offset as number;
+                        }
+                        const phi = 360 / (marker.segments as any[]).length;
+                        for (let i = 0; i < marker.segments.length; i++) {
+                            const segment: ISegment = marker.segments[i] as ISegment;
+                            let colour = baseColour;
+                            if ( ("colour" in segment) && (segment.colour !== undefined) ) {
+                                if (typeof segment.colour === "number") {
+                                    colour = this.options.colours[segment.colour - 1];
+                                } else {
+                                    colour = segment.colour;
+                                }
+                            }
+                            let opacity = baseOpacity;
+                            if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
+                                opacity = segment.opacity;
+                            }
+                            const stroke: StrokeData = {
+                                color: colour,
+                                opacity,
+                                width,
+                            };
+                            if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
+                                stroke.dasharray = "4";
+                            }
+                            // if there's only one segment, draw a full circle
+                            if (phi === 360) {
+                                svgGroup.circle(radius * 2).fill("none").stroke(stroke);
+                            }
+                            // otherwise, draw an arc
+                            else {
+                                const [lx, ly] = projectPoint(0, 0, radius, degStart + (phi * i));
+                                const [rx, ry] = projectPoint(0, 0, radius, degStart + (phi * (i+1)));
+                                svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).fill("none").stroke(stroke);
+                            }
+                        }
+                    }
                 } else if (marker.type === "label") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -2930,7 +3178,7 @@ export abstract class RendererBase {
                     const height = used.height() as number;
                     const numButtons = bar.buttons.length;
                     const btnHeight = height / numButtons;
-                    used.click((e: { clientX: number; clientY: number; }) => {
+                    used.click((e: MouseEvent) => {
                         const point = used.point(e.clientX, e.clientY);
                         const yRelative = point.y - top;
                         const row = Math.floor(yRelative / btnHeight);
@@ -2940,6 +3188,7 @@ export abstract class RendererBase {
                                 value = bar.buttons[row].value!;
                             }
                             this.options.boardClick!(-1, -1, `_btn_${value}`);
+                            e.stopPropagation();
                         }
                     });
                 }
@@ -3007,16 +3256,25 @@ export abstract class RendererBase {
 
         // build the symbol for the rectangle
         const width = maxWidth * 1.5;
-        const symrect = nested.symbol();
-        symrect.rect(width, height).fill({opacity: 0}).stroke({width: 1, color: colour});
-        // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
-        // symrect.viewbox(-1, -1, width + 2, height + 1);
+        const rects: SVGSymbol[] = [];
+        for (const b of bar.buttons) {
+            const symrect = nested.symbol();
+            let fill: FillData = {color: "#fff", opacity: 0};
+            if ( ("fill" in b) && (b.fill !== undefined) ) {
+                fill = {color: b.fill! as string, opacity: 1};
+            }
+            symrect.rect(width, height).fill(fill).stroke({width: 1, color: colour});
+            // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
+            // symrect.viewbox(-1, -1, width + 2, height + 1);
+            rects.push(symrect);
+        }
 
         // Composite each into a group, all at 0,0
         const groups: Svg[] = [];
         for (let i = 0; i < labels.length; i++) {
             const b = bar.buttons[i];
             const symlabel = labels[i];
+            const symrect = rects[i];
             let value = b.label.replace(/\s/g, "");
             if (b.value !== undefined) {
                 value = b.value;

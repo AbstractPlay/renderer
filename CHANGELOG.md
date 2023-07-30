@@ -31,12 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added `label` marker for drawing arbitrary text to a board. Currently only enabled for `squares*` boards.
 * Added `stacking3D` renderer. Can be useful for stacking games, where stacks can get arbitrarily high. For now used for alternate Volcano display.
 * Added fixed `dashed` property to `line` marker and a customizable `dashed` property to the `fence` marker to allow for customizable dashes.
+* Added `circular-cobweb` board with associated `fill` and `halo` markers.
+* Added `fill` attribute to button bar for individual filling.
 
 ### Fixed
 
 * Fixed bug causing excess whitespace between captured stashes in Volcano games.
 * Rebuilt the Homeworlds renderer to make it work in Firefox. Also tweaked the default renderer so the new `pieces` area would also work in Firefox.
 * More Volcano fixes. Click handler on stash wasn't working in Firefox. Label text was getting truncated.
+* The button bar click handler now stops propagation.
 
 ### Changed
 

@@ -63,7 +63,8 @@ export interface APRenderRep {
           | "hex-of-hex"
           | "hex-of-tri"
           | "hex-of-cir"
-          | "snubsquare";
+          | "snubsquare"
+          | "circular-cobweb";
         /**
          * The base stroke weight of lines drawn to construct the board.
          */
@@ -108,11 +109,11 @@ export interface APRenderRep {
          */
         maxWidth?: number;
         /**
-         * Required for the `squares*`, `vertex`, and `go` styles.
+         * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of slices.
          */
         width?: number;
         /**
-         * Required for the `squares*`, `vertex`, and `go` styles.
+         * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.
          */
         height?: number;
         /**
@@ -143,6 +144,10 @@ export interface APRenderRep {
          * Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.
          */
         stackOffset?: number;
+        /**
+         * By default, circular boards start with a vertical line drawn from the centre straight "north". This lets you choose a different starting degree. In this plane, 0 degrees is towards the top of the screen and increases clockwise.
+         */
+        "circular-start"?: number;
         /**
          * Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.
          */
@@ -225,6 +230,82 @@ export interface APRenderRep {
                * 1 is fully opaque. 0 is fully transparent.
                */
               opacity?: number;
+            }
+          | {
+              /**
+               * Only usable by `circular-*` boards right now. Distinct from shading, this will simply fill the specified cells with a colour.
+               */
+              type: "flood";
+              /**
+               * One or more grid coordinates of spaces to fill.
+               *
+               * @minItems 1
+               */
+              points: [
+                {
+                  row: number;
+                  col: number;
+                },
+                ...{
+                  row: number;
+                  col: number;
+                }[]
+              ];
+              /**
+               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour?: PositiveInteger | Colourstrings;
+              /**
+               * 1 is fully opaque. 0 is fully transparent.
+               */
+              opacity?: number;
+            }
+          | {
+              /**
+               * Only used for `circular-*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments
+               */
+              type: "halo";
+              /**
+               * If only one segment is given, then a single circle will be drawn. Otherwise, the circle will be divided into equal chunks and drawn in the order specified, proceeding clockwise. The first segment will align with the `circular-start` given in `board` (`0` by default).
+               *
+               * @minItems 1
+               */
+              segments: [
+                {
+                  /**
+                   * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+                   */
+                  colour: PositiveInteger | Colourstrings;
+                  /**
+                   * 1 is fully opaque. 0 is fully transparent.
+                   */
+                  opacity?: number;
+                  style?: "solid" | "dashed";
+                },
+                ...{
+                  /**
+                   * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+                   */
+                  colour: PositiveInteger | Colourstrings;
+                  /**
+                   * 1 is fully opaque. 0 is fully transparent.
+                   */
+                  opacity?: number;
+                  style?: "solid" | "dashed";
+                }[]
+              ];
+              /**
+               * Stroke width of the line
+               */
+              width?: number;
+              /**
+               * By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.
+               */
+              offset?: number;
+              /**
+               * Fill is drawn before grid lines, segments are drawn after grid lines.
+               */
+              fill?: PositiveInteger | Colourstrings;
             }
           | {
               /**
@@ -647,6 +728,10 @@ export interface APRenderRep {
                 value: string;
               }[]
             ];
+            /**
+             * Pattern for hex colour strings
+             */
+            fill?: string;
             [k: string]: unknown;
           },
           ...{
@@ -673,6 +758,10 @@ export interface APRenderRep {
                 value: string;
               }[]
             ];
+            /**
+             * Pattern for hex colour strings
+             */
+            fill?: string;
             [k: string]: unknown;
           }[]
         ];
@@ -755,6 +844,10 @@ export interface APRenderRep {
           }[]
         ];
         style?: "solid" | "dashed";
+        /**
+         * The width of the line, expressed as a percentage of cell size.
+         */
+        strokeWidth?: number;
         opacity?: number;
         /**
          * Pattern for hex colour strings
