@@ -575,8 +575,8 @@ export abstract class RendererBase {
 
                 // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                 const cellsize = 500;
-                const nested = this.rootSvg.defs().nested().id(key).size(cellsize, cellsize);
-
+                const nested = this.rootSvg.defs().nested().id(key);
+                let size = 0;
                 // Layer the glyphs, manipulating as you go
                 for (const g of glyphs) {
                     let got: SVGSymbol;
@@ -649,27 +649,26 @@ export abstract class RendererBase {
                     }
 
                     nested.add(clone);
-                    const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol);
+                    const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
 
                     // Rotate if requested
                     if (g.rotate !== undefined) {
-                        use.rotate(g.rotate, cellsize / 2, cellsize / 2);
+                        use.rotate(g.rotate);
                     }
 
                     // Scale it appropriately
-                    let factor: number | undefined;
+                    let factor = 1;
                     if (g.scale !== undefined) {
                         factor = g.scale;
                     }
                     if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "hex-of-hex") ) {
-                        if (factor === undefined) {
-                            factor = 0.85;
-                        } else {
-                            factor *= 0.85;
-                        }
+                        factor *= 0.85;
                     }
-                    if (factor !== undefined) {
-                        use.scale(factor, cellsize / 2, cellsize / 2);
+                    if (factor !== 1) {
+                        use.scale(factor);
+                    }
+                    if (factor * cellsize > size) {
+                        size = factor * cellsize;
                     }
 
                     // Shift if requested
@@ -685,7 +684,9 @@ export abstract class RendererBase {
                         use.dmove(dx, dy);
                     }
                 }
-                nested.viewbox(0, 0, cellsize, cellsize);
+                // Increase size so that rotations won't get cropped
+                size *= Math.sqrt(2);
+                nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
             }
         }
     }
