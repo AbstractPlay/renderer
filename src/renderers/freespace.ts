@@ -234,7 +234,7 @@ export class FreespaceRenderer extends RendererBase {
                         const newx = pt.x - (this.cellsize / 2) + (delta / 2);
                         const newy = pt.y - (this.cellsize / 2) + (delta / 2);
                         use.dmove(newx, newy);
-                        use.scale(factor, newx, newy);
+                        scale(use, factor, newx, newy);
                     }
                 }
             }
@@ -301,9 +301,9 @@ export class FreespaceRenderer extends RendererBase {
                         const newx = pt.x - (this.cellsize / 2) + (delta / 2);
                         const newy = pt.y - (this.cellsize / 2) + (delta / 2);
                         use.dmove(newx, newy);
-                        use.scale(factor, newx, newy);
+                        scale(use, factor, newx, newy);
                         if ( ("orientation" in marker) && (marker.orientation !== undefined) ) {
-                            use.rotate(marker.orientation);
+                            rotate(use, marker.orientation, pt.x, pt.y);
                         }
                     }
                 } else if (marker.type === "path") {
