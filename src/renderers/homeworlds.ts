@@ -533,8 +533,8 @@ export class HomeworldsRenderer extends RendererBase {
         // Add name
         // nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
         let sysLabel = sys.name;
-        if (sys.stars.length > 1) {
-            sysLabel += ` (${sys.seat!})`;
+        if ( (sys.stars.length > 1) && ("seat" in sys) && (sys.seat !== undefined) ) {
+            sysLabel += ` (${sys.seat})`;
         }
         const fontsize = labelHeight;
         nested.text(sysLabel)
