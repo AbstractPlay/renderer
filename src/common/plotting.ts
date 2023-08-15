@@ -1,3 +1,5 @@
+import { Element } from "@svgdotjs/svg.js";
+
 /**
  * Ensures a degree measurement lies [0, 360)
  */
@@ -87,4 +89,29 @@ export const calcBearing = (x1: number, y1: number, x2: number, y2: number): num
     const rad = Math.atan2(dy, dx);
     const deg = rad2deg(rad);
     return toggleFacing(deg);
+}
+
+/**
+ * Scale an element around a point. For some unknown reason element.scale(factor, x, y) sometimes gives the wrong results in Safari.
+ */
+export const scale: (element: Element, factor: number, x: number, y: number) => void = (element, factor, x, y) => {
+    element.transform({a: factor, b: 0, c: 0, d: factor, e: x - factor * x, f: y - factor * y}, true);
+}
+
+/**
+ * Rotate an element around a point. For some unknown reason element.rotate(angle, x, y) sometimes gives the wrong results in Safari.
+ */
+export const rotate: (element: Element, angle: number, x: number, y: number) => void = (element, angle, x, y) => {
+    // Convert t to radians
+    const rad = deg2rad(angle);
+
+    // Calculate the values of a, b, c, d, e, and f
+    const a = Math.cos(rad);
+    const b = Math.sin(rad);
+    const c = -b;
+    const d = a;
+    const e = x - x * a + y * b;
+    const f = y - y * a - x * b;
+
+    element.transform({a, b, c, d, e, f}, true);
 }
