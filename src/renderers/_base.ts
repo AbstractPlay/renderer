@@ -2026,7 +2026,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(maxWidth);
+            let columnLabels = this.getLabels(height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2173,7 +2173,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(maxWidth);
+            let columnLabels = this.getLabels(height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2264,7 +2264,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(maxWidth);
+            let columnLabels = this.getLabels(height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
