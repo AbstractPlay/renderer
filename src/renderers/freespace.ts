@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase, IKey } from "./_base";
