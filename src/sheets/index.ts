@@ -1,7 +1,7 @@
 import { ChessSheet } from "./chess";
 import { CoreSheet } from "./core";
 import { DiceSheet } from "./dice";
-import { ISheet } from "./ISheet";
+import type { ISheet } from "./ISheet";
 import { LooneySheet } from "./looney";
 import { PiecepackSheet } from "./piecepack";
 import { StreetcarSheet } from "./streetcar";

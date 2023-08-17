@@ -1,5 +1,5 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import { ISheet } from "./ISheet";
+import type { ISheet } from "./ISheet";
 
 const sheet: ISheet = {
     name: "core",
