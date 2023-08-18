@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * Fence markers are now rounded by default.
-* Homeworlds: Systems with now ships are now allowed and are displayed properly. Necessary for partial renders.
+* Homeworlds: Systems with no ships are now allowed and are displayed properly. Necessary for partial renders.
 
 ## [1.0.0-beta] - 2023-04-30
 

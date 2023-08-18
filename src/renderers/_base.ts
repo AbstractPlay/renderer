@@ -2010,7 +2010,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, maxWidth);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2157,7 +2157,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, maxWidth);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2248,7 +2248,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, maxWidth);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }

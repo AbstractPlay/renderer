@@ -194,7 +194,14 @@ export class DefaultRenderer extends RendererBase {
                 throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
             }
         }
-        this.rootSvg.use(piece);
+        const use = this.rootSvg.use(piece);
+        const factor = (this.cellsize / sheetCellSize) * 0.9;
+        const newsize = sheetCellSize * factor;
+        const delta = this.cellsize - newsize;
+        const newx = 0 - (this.cellsize / 2) + (delta / 2);
+        const newy = 0 - (this.cellsize / 2) + (delta / 2);
+        use.dmove(newx, newy);
+        scale(use as Svg, factor, newx, newy);
     }
 }
 

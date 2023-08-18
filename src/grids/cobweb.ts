@@ -192,7 +192,7 @@ export const cobwebPolys = (args: ICobwebArgs): CobwebPoly[][] => {
     // currently col/row, but we need row/col
     const rearranged: CobwebPoly[][] = [];
     for (let row = 0; row < gridHeight; row++) {
-        rearranged.push([...polys.map(col => col[3 - row])]);
+        rearranged.push([...polys.map(col => col[gridHeight - 1 - row])]);
     }
     // finally, add the centre circle
     rearranged.push([{type: "circle", cx: 0, cy: 0, r: innerR}]);

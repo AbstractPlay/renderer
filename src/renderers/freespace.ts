@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase, IKey } from "./_base";
 import { IPoint } from "../grids/_base";
+import { scale, rotate } from "../common/plotting";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -123,8 +123,8 @@ export class FreespaceRenderer extends RendererBase {
                 const newx = pc.x - (this.cellsize / 2) + (delta / 2);
                 const newy = pc.y - (this.cellsize / 2) + (delta / 2);
                 use.dmove(newx, newy);
-                use.scale(factor, newx, newy);
-                use.rotate(pc.orientation);
+                scale(use, factor, newx, newy);
+                rotate(use, pc.orientation, pc.x, pc.y);
                 if (this.options.boardClick !== undefined) {
                     use.click((e : Event) => {this.options.boardClick!(pc.x, pc.y, pcid || pc.glyph); e.stopPropagation(); });
                 }
@@ -233,7 +233,7 @@ export class FreespaceRenderer extends RendererBase {
                         const newx = pt.x - (this.cellsize / 2) + (delta / 2);
                         const newy = pt.y - (this.cellsize / 2) + (delta / 2);
                         use.dmove(newx, newy);
-                        use.scale(factor, newx, newy);
+                        scale(use, factor, newx, newy);
                     }
                 }
             }
@@ -300,9 +300,9 @@ export class FreespaceRenderer extends RendererBase {
                         const newx = pt.x - (this.cellsize / 2) + (delta / 2);
                         const newy = pt.y - (this.cellsize / 2) + (delta / 2);
                         use.dmove(newx, newy);
-                        use.scale(factor, newx, newy);
+                        scale(use, factor, newx, newy);
                         if ( ("orientation" in marker) && (marker.orientation !== undefined) ) {
-                            use.rotate(marker.orientation);
+                            rotate(use, marker.orientation, pt.x, pt.y);
                         }
                     }
                 } else if (marker.type === "path") {
