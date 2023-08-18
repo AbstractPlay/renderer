@@ -177,7 +177,7 @@ export class Stacking3DRenderer extends RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(undefined, width);
+            let columnLabels = this.getLabels(width);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }

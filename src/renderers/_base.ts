@@ -8,7 +8,7 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys, CobwebPoly } from "../grids/cobweb";
-import { projectPoint, scale, rotate } from "../common/plotting";
+import { projectPoint } from "../common/plotting";
 
 /**
  * Defines the options recognized by the rendering engine.
@@ -575,8 +575,8 @@ export abstract class RendererBase {
 
                 // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                 const cellsize = 500;
-                const nested = this.rootSvg.defs().nested().id(key);
-                let size = 0;
+                const nested = this.rootSvg.defs().nested().id(key).size(cellsize, cellsize);
+
                 // Layer the glyphs, manipulating as you go
                 for (const g of glyphs) {
                     let got: SVGSymbol;
@@ -614,7 +614,7 @@ export abstract class RendererBase {
                     }
 
                     // const clone = got.clone();
-                    // const clone = got;
+                    const clone = got;
 
                     // Colourize (`player` first, then `colour` if defined)
                     if (g.player !== undefined) {
@@ -629,47 +629,47 @@ export abstract class RendererBase {
                                 fill = fill.clone().id(this.options.patternList[g.player - 1] + "-" + useSize.toString()).scale(useSize / 150);
                                 this.rootSvg.defs().add(fill);
                             }
-                            got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
+                            clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         } else {
                             if (g.player > this.options.colours.length) {
                                 throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                             }
                             const fill = this.options.colours[g.player - 1];
-                            got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
-                            got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); });
+                            clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
+                            clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); });
                         }
                     } else if (g.colour !== undefined) {
-                        got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
-                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); });
+                        clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
+                        clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); });
                     }
 
                     // Apply requested opacity
                     if (g.opacity !== undefined) {
-                        got.fill({opacity: g.opacity});
+                        clone.fill({opacity: g.opacity});
                     }
 
-                    // nested.add(clone);
-                    const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
-                    // const use = nested.use(got).height(cellsize).width(cellsize).x(0).y(0);
+                    nested.add(clone);
+                    const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol);
 
                     // Rotate if requested
                     if (g.rotate !== undefined) {
-                        rotate(use, g.rotate, 0, 0);
+                        use.rotate(g.rotate, cellsize / 2, cellsize / 2);
                     }
 
                     // Scale it appropriately
-                    let factor = 1;
+                    let factor: number | undefined;
                     if (g.scale !== undefined) {
                         factor = g.scale;
                     }
                     if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "hex-of-hex") ) {
-                        factor *= 0.85;
+                        if (factor === undefined) {
+                            factor = 0.85;
+                        } else {
+                            factor *= 0.85;
+                        }
                     }
-                    if (factor !== 1) {
-                        scale(use, factor, 0, 0);
-                    }
-                    if (factor * cellsize > size) {
-                        size = factor * cellsize;
+                    if (factor !== undefined) {
+                        use.scale(factor, cellsize / 2, cellsize / 2);
                     }
 
                     // Shift if requested
@@ -685,9 +685,7 @@ export abstract class RendererBase {
                         use.dmove(dx, dy);
                     }
                 }
-                // Increase size so that rotations won't get cropped
-                size *= Math.sqrt(2);
-                nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
+                nested.viewbox(0, 0, cellsize, cellsize);
             }
         }
     }
@@ -861,7 +859,7 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            let columnLabels = this.getLabels(width);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -874,7 +872,16 @@ export abstract class RendererBase {
             }
 
             // Rows (numbers)
-            const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            const rowLabels: string[] = [];
+            if (this.options.rotate === 180) {
+                for (let row = 0; row < height; row++) {
+                    rowLabels.push((row + 1).toString());
+                }
+            } else {
+                for (let row = 0; row < height; row++) {
+                    rowLabels.push((height - row).toString());
+                }
+            }
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
@@ -1076,8 +1083,8 @@ export abstract class RendererBase {
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
-            const clickDeltaX = (this.json.board.clickDeltaX ?? 0) as number;
-            const clickDeltaY = (this.json.board.clickDeltaX ?? 0) as number;
+            const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0) as number;
+            const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0) as number;
             const root = this.rootSvg;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                 const point = root.point(e.clientX, e.clientY);
@@ -1286,7 +1293,7 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            let columnLabels = this.getLabels(width);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1299,7 +1306,16 @@ export abstract class RendererBase {
             }
 
             // Rows (numbers)
-            const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            const rowLabels: string[] = [];
+            if (this.options.rotate === 180) {
+                for (let row = 0; row < height; row++) {
+                    rowLabels.push((row + 1).toString());
+                }
+            } else {
+                for (let row = 0; row < height; row++) {
+                    rowLabels.push((height - row).toString());
+                }
+            }
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
@@ -1655,9 +1671,9 @@ export abstract class RendererBase {
             const { x, y } = hex;
             const used = board.use(hexSymbol).translate(x, y);
             if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
-                let label = this.coords2algebraicHex(this.json.board.columnLabels, hex.col, hex.row, height);
+                let label = this.coords2algebraicHex(hex.col, hex.row, height);
                 if (this.options.rotate === 180) {
-                    label = this.coords2algebraicHex(this.json.board.columnLabels, width - hex.col - 1, height - hex.row - 1, height);
+                    label = this.coords2algebraicHex(width - hex.col - 1, height - hex.row - 1, height);
                 }
                 let labelX = corners[5].x;
                 let labelY = corners[5].y;
@@ -1767,7 +1783,7 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(undefined, width);
+            let columnLabels = this.getLabels(width);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1928,7 +1944,7 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
             const labels = board.group().id("labels");
-            const columnLabels = this.getLabels(undefined, width);
+            const columnLabels = this.getLabels(width);
 
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -2010,7 +2026,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            let columnLabels = this.getLabels(height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2157,7 +2173,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            let columnLabels = this.getLabels(height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2248,7 +2264,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            let columnLabels = this.getLabels(height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2480,13 +2496,9 @@ export abstract class RendererBase {
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
                         opacity = note.opacity as number;
                     }
-                    let diameter = 0.2;
-                    if ( ("size" in note) && (note.size !== undefined) ) {
-                        diameter = note.size as number;
-                    }
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
-                        notes.circle(this.cellsize * diameter)
+                        notes.circle(this.cellsize * 0.2)
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
@@ -3092,10 +3104,7 @@ export abstract class RendererBase {
      * @param arg2 - If provided, this is the number of labels you want, starting from nth label from the first argument.
      * @returns A list of labels
      */
-    protected getLabels(override: unknown, arg1: number, arg2?: number) : string[] {
-        if (override !== undefined) {
-            return [...(override as string[])];
-        }
+    protected getLabels(arg1: number, arg2?: number) : string[] {
         let start = 0;
         let count = 0;
         if (arg2 === undefined) {
@@ -3116,27 +3125,6 @@ export abstract class RendererBase {
         return labels;
     }
 
-    protected getRowLabels(override: unknown, height: number) : string[] {
-        if (override !== undefined) {
-            if (this.options.rotate === 180) {
-                return [...(override as string[])];
-            } else {
-                return ([...(override as string[])]).reverse();
-            }
-        }
-        const rowLabels: string[] = [];
-        if (this.options.rotate === 180) {
-            for (let row = 0; row < height; row++) {
-                rowLabels.push((row + 1).toString());
-            }
-        } else {
-            for (let row = 0; row < height; row++) {
-                rowLabels.push((height - row).toString());
-            }
-        }
-        return rowLabels;
-    }
-
     /**
      * An internal helper function for producing labels for hex fields.
      *
@@ -3145,8 +3133,8 @@ export abstract class RendererBase {
      * @param height - The total height of the field
      * @returns A string label for the hex
      */
-    protected coords2algebraicHex(columnLabels: unknown, x: number, y: number, height: number): string {
-        const [label] = this.getLabels(columnLabels, height - y - 1, 1);
+    protected coords2algebraicHex(x: number, y: number, height: number): string {
+        const [label] = this.getLabels(height - y - 1, 1);
         return label + (x + 1).toString();
     }
 

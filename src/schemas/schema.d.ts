@@ -125,14 +125,6 @@ export interface APRenderRep {
          */
         clickDeltaY?: number;
         /**
-         * An optional array of strings to override the default column labeling.
-         */
-        columnLabels?: string[];
-        /**
-         * An optional array of strings to override the default row labeling.
-         */
-        rowLabels?: string[];
-        /**
          * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
          */
         tileWidth?: number;
@@ -197,10 +189,6 @@ export interface APRenderRep {
                   col: number;
                 }[]
               ];
-              /**
-               * The size of the diameter of the dot as a fraction of cellsize.
-               */
-              size?: number;
             }
           | {
               /**
