@@ -226,6 +226,20 @@
                             "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
                             "$ref": "#/definitions/positiveInteger"
                         },
+                        "columnLabels": {
+                            "description": "An optional array of strings to override the default column labeling.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "rowLabels": {
+                            "description": "An optional array of strings to override the default row labeling.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
                         "tileWidth": {
                             "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
                             "$ref": "#/definitions/positiveInteger"
@@ -317,6 +331,11 @@
                                                     "additionalProperties": false
                                                 },
                                                 "minItems": 1
+                                            },
+                                            "size": {
+                                                "description": "The size of the diameter of the dot as a fraction of cellsize.",
+                                                "type": "number",
+                                                "default": 0.2
                                             }
                                         },
                                         "required": ["type", "points"],

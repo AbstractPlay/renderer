@@ -2,6 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
+import { scale, rotate } from "../common/plotting";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -132,16 +133,14 @@ export class DefaultRenderer extends RendererBase {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                             }
-                            const use = group.use(piece).x(sheetCellSize / 2 - (piece.width() as number / 2)).y(sheetCellSize / 2 - (piece.height() as number / 2));
-                            const factor = (this.cellsize / sheetCellSize) * 0.85;
-                            const newsize = sheetCellSize * factor;
-                            const delta = this.cellsize - newsize;
-                            const newx = point.x - (this.cellsize / 2) + (delta / 2);
-                            const newy = point.y - (this.cellsize / 2) + (delta / 2);
-                            use.dmove(newx, newy);
-                            use.scale(factor, newx, newy);
+                            const factor = 0.85;
+                            const newsize = this.cellsize * factor * piece.viewbox().h / sheetCellSize;
+                            const newx = point.x - newsize / 2;
+                            const newy = point.y - newsize / 2;
+                            const use = group.use(piece).move(newx, newy);
+                            scale(use, this.cellsize * factor / sheetCellSize, newx, newy);
                             if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
-                                use.rotate(options.rotate);
+                                rotate(use, options.rotate, point.x, point.y);
                             if (this.options.boardClick !== undefined) {
                                 if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
