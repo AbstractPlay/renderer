@@ -126,21 +126,19 @@ export class DefaultRenderer extends RendererBase {
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            let sheetCellSize = piece.viewbox().h;
+                            let sheetCellSize = 500; // piece.viewbox().h;
                             if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                 sheetCellSize = piece.attr("data-cellsize") as number;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                             }
-                            const use = group.use(piece);
-                            const factor = (this.cellsize / sheetCellSize) * 0.85;
-                            const newsize = sheetCellSize * factor;
-                            const delta = this.cellsize - newsize;
-                            const newx = point.x - (this.cellsize / 2) + (delta / 2);
-                            const newy = point.y - (this.cellsize / 2) + (delta / 2);
-                            use.dmove(newx, newy);
-                            scale(use as Svg, factor, newx, newy);
+                            const factor = 0.85;
+                            const newsize = this.cellsize * factor * piece.viewbox().h / sheetCellSize;
+                            const newx = point.x - newsize / 2;
+                            const newy = point.y - newsize / 2;
+                            const use = group.use(piece).move(newx, newy);
+                            scale(use, this.cellsize * factor / sheetCellSize, newx, newy);
                             if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
                                 rotate(use, options.rotate, point.x, point.y);
                             if (this.options.boardClick !== undefined) {
