@@ -1,4 +1,4 @@
-import { Element } from "@svgdotjs/svg.js";
+import { Container, Element, Use } from "@svgdotjs/svg.js";
 
 /**
  * Ensures a degree measurement lies [0, 360)
@@ -114,4 +114,18 @@ export const rotate: (element: Element, angle: number, x: number, y: number) => 
     const f = y - y * a - x * b;
 
     element.transform({a, b, c, d, e, f}, true);
+}
+
+/**
+ * Place (use) piece in svg with center at (x,y), scaling it to fit a cell of size cellsize and further scaling it by scalingFactor.
+ * This assumes that the piece was loaded with loadLegend (in particular that it was "designed" for a cell of size 500).
+*/
+export const usePieceAt: (svg: Container, piece: Element, cellsize: number, x: number, y: number, scalingFactor: number) => Use = (svg, piece, cellsize, x, y, scalingFactor) => {
+    const factor = cellsize / 500 * scalingFactor;
+    const newsize = factor * (piece.height() as number);
+    const newx = x - newsize / 2;
+    const newy = y - newsize / 2;
+    const use = svg.use(piece).move(newx, newy);
+    scale(use, factor, newx, newy);
+    return use;
 }

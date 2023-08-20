@@ -3,6 +3,7 @@ import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rectOfRects } from "../grids";
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
+import { usePieceAt } from "../common/plotting";
 
 interface ILocalStash {
     [k: string]: unknown;
@@ -631,23 +632,9 @@ export class Stacking3DRenderer extends RendererBase {
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            let sheetCellSize = piece.viewbox().h;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize") as number;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                            }
-                            let [newx, newy] = this.project(point.x, point.y);
+                            const [newx, newy] = this.project(point.x, point.y);
                             const ps = this.scaleAt(newx, newy);
-                            const use = group.use(piece);
-                            const factor = ps * this.cellsize / sheetCellSize;
-                            const newsize = sheetCellSize * factor;
-                            const delta = this.cellsize - newsize;
-                            newx = newx - (this.cellsize / 2) + (delta / 2);
-                            newy = newy - (this.cellsize / 2) + (delta / 2) - ps * (offset * i);
-                            use.dmove(newx, newy);
-                            use.scale(factor, newx, newy);
+                            const use = usePieceAt(group, piece, this.cellsize, newx, newy - ps * (offset * i), ps);
                             if (this.options.boardClick !== undefined) {
                                 use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                             }
@@ -676,22 +663,12 @@ export class Stacking3DRenderer extends RendererBase {
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                                 }
-                                let sheetCellSize = piece.viewbox().h;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    sheetCellSize = piece.attr("data-cellsize") as number;
-                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                        throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                    }
-                                }
-                                const use = this.rootSvg.use(piece);
+                                const newx = gridPoints[start][start].x - cellsize + iStack * cellsize;
+                                const newy = placeY + cellsize / 2 + textHeight + (maxHeight - i) * stackoffest - 0.1 * cellsize;
+                                const use = usePieceAt(this.rootSvg, piece, cellsize, newx, newy, 1);
                                 if (this.options.boardClick !== undefined) {
                                     use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                                 }
-                                const factor = (cellsize / sheetCellSize);
-                                const newx = gridPoints[start][start].x - this.cellsize + iStack * cellsize;
-                                const newy = placeY + textHeight + (maxHeight - i) * stackoffest - 0.1 * cellsize;
-                                use.dmove(newx, newy);
-                                use.scale(factor, newx, newy);
                             }
                         }
                     }

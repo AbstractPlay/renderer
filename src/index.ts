@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import { G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
+import { NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 import { IRendererOptionsIn } from "./renderers/_base";
@@ -135,8 +135,6 @@ export const renderglyph = (glyphid: string, colour: number | string, opts = {} 
     node.setAttribute("id", uid);
     opts.divelem = node;
     const canvas = render(obj, opts);
-    const a = canvas.findOne("#A") as SVGG;
-    canvas.viewbox(`0 0 ${a.width() as number} ${a.height() as number}`);
     return canvas.svg();
 }
 
