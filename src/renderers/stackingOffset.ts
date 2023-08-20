@@ -2,6 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
+import { usePieceAt } from "../common/plotting";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -140,14 +141,7 @@ export class StackingOffsetRenderer extends RendererBase {
                                         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                     }
                                 }
-                                const use = group.use(piece);
-                                const factor = (this.cellsize / sheetCellSize) * 0.85;
-                                const newsize = sheetCellSize * factor;
-                                const delta = this.cellsize - newsize;
-                                const newx = point.x - (this.cellsize / 2) + (delta / 2);
-                                const newy = point.y - (this.cellsize / 2) + (delta / 2) - (offset * i);
-                                use.dmove(newx, newy);
-                                use.scale(factor, newx, newy);
+                                const use = usePieceAt(group, piece, this.cellsize, point.x, point.y - (offset * i), 0.85);
                                 if (this.options.boardClick !== undefined) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                                 }
@@ -173,14 +167,7 @@ export class StackingOffsetRenderer extends RendererBase {
                                         throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                     }
                                 }
-                                const use = group.use(piece);
-                                const factor = (this.cellsize / sheetCellSize) * 0.85;
-                                const newsize = sheetCellSize * factor;
-                                const delta = this.cellsize - newsize;
-                                const newx = point.x - (this.cellsize / 2) + (delta / 2);
-                                const newy = point.y - (this.cellsize / 2) + (delta / 2) - (offset * i);
-                                use.dmove(newx, newy);
-                                use.scale(factor, newx, newy);
+                                const use = usePieceAt(group, piece, this.cellsize, point.x, point.y - (offset * i), 0.85);
                                 if (this.options.boardClick !== undefined) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                                 }

@@ -2,7 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
-import { scale, rotate } from "../common/plotting";
+import { rotate, usePieceAt } from "../common/plotting";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -126,19 +126,8 @@ export class DefaultRenderer extends RendererBase {
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            let sheetCellSize = 500; // piece.viewbox().h;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize") as number;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                            }
                             const factor = 0.85;
-                            const newsize = this.cellsize * factor * piece.viewbox().h / sheetCellSize;
-                            const newx = point.x - newsize / 2;
-                            const newy = point.y - newsize / 2;
-                            const use = group.use(piece).move(newx, newy);
-                            scale(use, this.cellsize * factor / sheetCellSize, newx, newy);
+                            const use = usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
                             if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
                                 rotate(use, options.rotate, point.x, point.y);
                             if (this.options.boardClick !== undefined) {
@@ -187,14 +176,8 @@ export class DefaultRenderer extends RendererBase {
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
-        let sheetCellSize = piece.viewbox().h;
-        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-            sheetCellSize = piece.attr("data-cellsize") as number;
-            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-            }
-        }
-        this.rootSvg.use(piece);
+        this.rootSvg.viewbox(0, 0, this.cellsize, this.cellsize);
+        usePieceAt(this.rootSvg, piece, this.cellsize, this.cellsize / 2, this.cellsize / 2, 0.9);
     }
 }
 

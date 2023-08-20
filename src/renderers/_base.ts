@@ -8,7 +8,7 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys, CobwebPoly } from "../grids/cobweb";
-import { projectPoint, scale, rotate } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt } from "../common/plotting";
 
 /**
  * Defines the options recognized by the rendering engine.
@@ -3014,22 +3014,11 @@ export abstract class RendererBase {
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
-                    let sheetCellSize = piece.viewbox().h;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = piece.attr("data-cellsize") as number;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                        }
-                    }
                     for (const pt of marker.points as ITarget[]) {
                         const point = grid[pt.row][pt.col];
-                        const use = svgGroup.use(piece);
-                        const newx = point.x - this.cellsize / 2;
-                        const newy = point.y - this.cellsize / 2;
-                        use.dmove(newx, newy);
-                        use.scale(this.cellsize / sheetCellSize, newx, newy);
+                        const use = usePieceAt(svgGroup, piece, this.cellsize, point.x, point.y, 1);
                         if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
-                            use.rotate(this.options.rotate);
+                            rotate(use, this.options.rotate, point.x, point.y);
                         }
                     }
                 }
@@ -3428,7 +3417,7 @@ export abstract class RendererBase {
                 id = `_key_${k.value}`;
             }
             const g = nested.nested().id(id);
-            g.use(piece).size(height, height);
+            usePieceAt(g, piece, height, height / 2, height / 2, 1);
             // Have to manually calculate the width so Firefox will render it properly.
             const factor = height / symlabel.viewbox().h;
             const usedLabel = g.use(symlabel).size(symlabel.viewbox().w * factor, height).dx(height * 1.1);
@@ -3459,7 +3448,7 @@ export abstract class RendererBase {
         }
         if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const areas = this.json.areas.filter((x) => x.type === "pieces") as IPiecesArea[];
-            const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
+            const boardBottom = Math.max(gridPoints[0][0].y, gridPoints[gridPoints.length - 1][0].y) + this.cellsize;
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.max(...gridPoints.map(r => r.length));
             let placeY = boardBottom + (this.cellsize / 2);
@@ -3486,7 +3475,6 @@ export abstract class RendererBase {
                     nested.rect(areaWidth,areaHeight).fill(area.background as string);
                 }
                 for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
-                    const used: [SVGUse, number][] = [];
                     const p = area.pieces[iPiece];
                     const row = Math.floor(iPiece / boardWidth);
                     const col = iPiece % boardWidth;
@@ -3494,23 +3482,12 @@ export abstract class RendererBase {
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                     }
-                    let sheetCellSize = piece.viewbox().h;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = piece.attr("data-cellsize") as number;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                        }
-                    }
-                    const use = nested.use(piece);
+                    const newx = col * cellsize + cellsize / 2;
+                    const newy = (textHeight * 2) + (row * cellsize) + cellsize / 2;
+                    const use = usePieceAt(nested, piece, cellsize, newx, newy, 1);
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                     }
-                    used.push([use, piece.viewbox().h]);
-                    const factor = (cellsize / sheetCellSize);
-                    const newx = col * cellsize;
-                    const newy = (textHeight * 2) + (row * cellsize);
-                    use.dmove(newx, newy);
-                    use.scale(factor, newx, newy);
                 }
 
                 // add marker line if indicated
@@ -3532,7 +3509,7 @@ export abstract class RendererBase {
 
                 // Now place the whole group below the board
                 // const placed = this.rootSvg.use(nested);
-                nested.move(gridPoints[0][0].x, placeY);
+                nested.move(Math.min(...gridPoints.map(r => Math.min(r[0].x, r[r.length - 1].x))), placeY);
                 placeY += nested.bbox().height + (this.cellsize * 0.5);
             }
         }
