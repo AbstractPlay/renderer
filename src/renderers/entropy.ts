@@ -98,7 +98,7 @@ export class EntropyRenderer extends RendererBase {
 
             // Add board labels
             const labels = board.group().id("labels");
-            const colLabels = this.getLabels(width);
+            const colLabels = this.getLabels(undefined, width);
             // Columns (letters)
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
