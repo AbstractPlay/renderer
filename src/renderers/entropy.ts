@@ -3,6 +3,7 @@ import { rectOfRects } from "../grids";
 import { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
+import { usePieceAt } from "../common/plotting";
 
 /**
  * This is the Entropy-specific renderer that handles the side-by-side rendering and optional occlusion.
@@ -213,22 +214,7 @@ export class EntropyRenderer extends RendererBase {
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-
-                            let sheetCellSize = piece.viewbox().h;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize") as number;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                            }
-                            const use = group.use(piece);
-                            const factor = (this.cellsize / sheetCellSize) * 0.85;
-                            const newsize = sheetCellSize * factor;
-                            const delta = this.cellsize - newsize;
-                            const newx = point.x - (this.cellsize / 2) + (delta / 2);
-                            const newy = point.y - (this.cellsize / 2) + (delta / 2);
-                            use.dmove(newx, newy);
-                            use.scale(factor, newx, newy);
+                            usePieceAt(group, piece, this.cellsize, point.x, point.y, 0.85);
                         }
                     }
                 }
