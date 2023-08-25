@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Rebuilt the Homeworlds renderer to make it work in Firefox. Also tweaked the default renderer so the new `pieces` area would also work in Firefox.
 * More Volcano fixes. Click handler on stash wasn't working in Firefox. Label text was getting truncated.
 * The button bar click handler now stops propagation.
+* Renderer did strange things in WebKit browsers (e.g. Safari on iOS). This should be fixed now. loadLegend can now also load pieces that are bigger than their cells. New usePieceAt function for placing pieces that should be used for 'use'ing pieces loaded by loadLegend.
 
 ### Changed
 

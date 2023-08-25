@@ -1,9 +1,8 @@
-/* eslint-disable no-console */
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase, IKey } from "./_base";
 import { IPoint } from "../grids/_base";
-import { scale, rotate } from "../common/plotting";
+import { rotate, usePieceAt } from "../common/plotting";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -107,24 +106,7 @@ export class FreespaceRenderer extends RendererBase {
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${pc.glyph}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
-                let sheetCellSize = piece.viewbox().h;
-                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                    sheetCellSize = piece.attr("data-cellsize") as number;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        throw new Error(`The glyph you requested (${pc.glyph}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                    }
-                }
-                const use = field.use(piece);
-                if (pcid !== undefined) {
-                    use.id(pcid);
-                }
-                const factor = (this.cellsize / sheetCellSize);
-                const newsize = sheetCellSize * factor;
-                const delta = this.cellsize - newsize;
-                const newx = pc.x - (this.cellsize / 2) + (delta / 2);
-                const newy = pc.y - (this.cellsize / 2) + (delta / 2);
-                use.dmove(newx, newy);
-                scale(use, factor, newx, newy);
+                const use = usePieceAt(field, piece, this.cellsize, pc.x, pc.y, 1);
                 rotate(use, pc.orientation, pc.x, pc.y);
                 if (this.options.boardClick !== undefined) {
                     use.click((e : Event) => {this.options.boardClick!(pc.x, pc.y, pcid || pc.glyph); e.stopPropagation(); });
@@ -219,22 +201,8 @@ export class FreespaceRenderer extends RendererBase {
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
-                    let sheetCellSize = piece.viewbox().h;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = piece.attr("data-cellsize") as number;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                        }
-                    }
                     for (const pt of note.points as IPoint[]) {
-                        const use = field.use(piece);
-                        const factor = (this.cellsize / sheetCellSize);
-                        const newsize = sheetCellSize * factor;
-                        const delta = this.cellsize - newsize;
-                        const newx = pt.x - (this.cellsize / 2) + (delta / 2);
-                        const newy = pt.y - (this.cellsize / 2) + (delta / 2);
-                        use.dmove(newx, newy);
-                        scale(use, factor, newx, newy);
+                        usePieceAt(field, piece, this.cellsize, pt.x, pt.y, 1);
                     }
                 }
             }
@@ -294,14 +262,7 @@ export class FreespaceRenderer extends RendererBase {
                         }
                     }
                     for (const pt of marker.points as IPoint[]) {
-                        const use = field.use(piece);
-                        const factor = (this.cellsize / sheetCellSize);
-                        const newsize = sheetCellSize * factor;
-                        const delta = this.cellsize - newsize;
-                        const newx = pt.x - (this.cellsize / 2) + (delta / 2);
-                        const newy = pt.y - (this.cellsize / 2) + (delta / 2);
-                        use.dmove(newx, newy);
-                        scale(use, factor, newx, newy);
+                        const use = usePieceAt(field, piece, this.cellsize, pt.x, pt.y, 1);
                         if ( ("orientation" in marker) && (marker.orientation !== undefined) ) {
                             rotate(use, marker.orientation, pt.x, pt.y);
                         }

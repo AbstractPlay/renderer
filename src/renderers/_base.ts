@@ -8,7 +8,7 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys, CobwebPoly } from "../grids/cobweb";
-import { projectPoint } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt } from "../common/plotting";
 
 /**
  * Defines the options recognized by the rendering engine.
@@ -575,8 +575,8 @@ export abstract class RendererBase {
 
                 // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                 const cellsize = 500;
-                const nested = this.rootSvg.defs().nested().id(key).size(cellsize, cellsize);
-
+                const nested = this.rootSvg.defs().nested().id(key);
+                let size = 0;
                 // Layer the glyphs, manipulating as you go
                 for (const g of glyphs) {
                     let got: SVGSymbol;
@@ -614,7 +614,7 @@ export abstract class RendererBase {
                     }
 
                     // const clone = got.clone();
-                    const clone = got;
+                    // const clone = got;
 
                     // Colourize (`player` first, then `colour` if defined)
                     if (g.player !== undefined) {
@@ -629,47 +629,47 @@ export abstract class RendererBase {
                                 fill = fill.clone().id(this.options.patternList[g.player - 1] + "-" + useSize.toString()).scale(useSize / 150);
                                 this.rootSvg.defs().add(fill);
                             }
-                            clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
+                            got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         } else {
                             if (g.player > this.options.colours.length) {
                                 throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                             }
                             const fill = this.options.colours[g.player - 1];
-                            clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
-                            clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); });
+                            got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
+                            got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); });
                         }
                     } else if (g.colour !== undefined) {
-                        clone.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
-                        clone.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); });
+                        got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
+                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); });
                     }
 
                     // Apply requested opacity
                     if (g.opacity !== undefined) {
-                        clone.fill({opacity: g.opacity});
+                        got.fill({opacity: g.opacity});
                     }
 
-                    nested.add(clone);
-                    const use = nested.use(nested.findOne("#" + clone.id()) as SVGSymbol);
+                    // nested.add(clone);
+                    const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
+                    // const use = nested.use(got).height(cellsize).width(cellsize).x(0).y(0);
 
                     // Rotate if requested
                     if (g.rotate !== undefined) {
-                        use.rotate(g.rotate, cellsize / 2, cellsize / 2);
+                        rotate(use, g.rotate, 0, 0);
                     }
 
                     // Scale it appropriately
-                    let factor: number | undefined;
+                    let factor = 1;
                     if (g.scale !== undefined) {
                         factor = g.scale;
                     }
                     if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "hex-of-hex") ) {
-                        if (factor === undefined) {
-                            factor = 0.85;
-                        } else {
-                            factor *= 0.85;
-                        }
+                        factor *= 0.85;
                     }
-                    if (factor !== undefined) {
-                        use.scale(factor, cellsize / 2, cellsize / 2);
+                    if (factor !== 1) {
+                        scale(use, factor, 0, 0);
+                    }
+                    if (factor * cellsize > size) {
+                        size = factor * cellsize;
                     }
 
                     // Shift if requested
@@ -685,7 +685,9 @@ export abstract class RendererBase {
                         use.dmove(dx, dy);
                     }
                 }
-                nested.viewbox(0, 0, cellsize, cellsize);
+                // Increase size so that rotations won't get cropped
+                size *= Math.sqrt(2);
+                nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
             }
         }
     }
@@ -859,7 +861,7 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(width);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -872,16 +874,7 @@ export abstract class RendererBase {
             }
 
             // Rows (numbers)
-            const rowLabels: string[] = [];
-            if (this.options.rotate === 180) {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((row + 1).toString());
-                }
-            } else {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((height - row).toString());
-                }
-            }
+            const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
@@ -1083,8 +1076,8 @@ export abstract class RendererBase {
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
-            const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0) as number;
-            const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0) as number;
+            const clickDeltaX = (this.json.board.clickDeltaX ?? 0) as number;
+            const clickDeltaY = (this.json.board.clickDeltaX ?? 0) as number;
             const root = this.rootSvg;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                 const point = root.point(e.clientX, e.clientY);
@@ -1293,7 +1286,7 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(width);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1306,16 +1299,7 @@ export abstract class RendererBase {
             }
 
             // Rows (numbers)
-            const rowLabels: string[] = [];
-            if (this.options.rotate === 180) {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((row + 1).toString());
-                }
-            } else {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((height - row).toString());
-                }
-            }
+            const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
@@ -1671,9 +1655,9 @@ export abstract class RendererBase {
             const { x, y } = hex;
             const used = board.use(hexSymbol).translate(x, y);
             if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
-                let label = this.coords2algebraicHex(hex.col, hex.row, height);
+                let label = this.coords2algebraicHex(this.json.board.columnLabels, hex.col, hex.row, height);
                 if (this.options.rotate === 180) {
-                    label = this.coords2algebraicHex(width - hex.col - 1, height - hex.row - 1, height);
+                    label = this.coords2algebraicHex(this.json.board.columnLabels, width - hex.col - 1, height - hex.row - 1, height);
                 }
                 let labelX = corners[5].x;
                 let labelY = corners[5].y;
@@ -1783,7 +1767,7 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(width);
+            let columnLabels = this.getLabels(undefined, width);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1944,7 +1928,7 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
             const labels = board.group().id("labels");
-            const columnLabels = this.getLabels(width);
+            const columnLabels = this.getLabels(undefined, width);
 
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -2026,7 +2010,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(height);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2173,7 +2157,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(height);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2264,7 +2248,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(height);
+            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2496,9 +2480,13 @@ export abstract class RendererBase {
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
                         opacity = note.opacity as number;
                     }
+                    let diameter = 0.2;
+                    if ( ("size" in note) && (note.size !== undefined) ) {
+                        diameter = note.size as number;
+                    }
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
-                        notes.circle(this.cellsize * 0.2)
+                        notes.circle(this.cellsize * diameter)
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
@@ -3026,22 +3014,11 @@ export abstract class RendererBase {
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
-                    let sheetCellSize = piece.viewbox().h;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = piece.attr("data-cellsize") as number;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                        }
-                    }
                     for (const pt of marker.points as ITarget[]) {
                         const point = grid[pt.row][pt.col];
-                        const use = svgGroup.use(piece);
-                        const newx = point.x - this.cellsize / 2;
-                        const newy = point.y - this.cellsize / 2;
-                        use.dmove(newx, newy);
-                        use.scale(this.cellsize / sheetCellSize, newx, newy);
+                        const use = usePieceAt(svgGroup, piece, this.cellsize, point.x, point.y, 1);
                         if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
-                            use.rotate(this.options.rotate);
+                            rotate(use, this.options.rotate, point.x, point.y);
                         }
                     }
                 }
@@ -3104,7 +3081,10 @@ export abstract class RendererBase {
      * @param arg2 - If provided, this is the number of labels you want, starting from nth label from the first argument.
      * @returns A list of labels
      */
-    protected getLabels(arg1: number, arg2?: number) : string[] {
+    protected getLabels(override: unknown, arg1: number, arg2?: number) : string[] {
+        if (override !== undefined) {
+            return [...(override as string[])];
+        }
         let start = 0;
         let count = 0;
         if (arg2 === undefined) {
@@ -3125,6 +3105,27 @@ export abstract class RendererBase {
         return labels;
     }
 
+    protected getRowLabels(override: unknown, height: number) : string[] {
+        if (override !== undefined) {
+            if (this.options.rotate === 180) {
+                return [...(override as string[])];
+            } else {
+                return ([...(override as string[])]).reverse();
+            }
+        }
+        const rowLabels: string[] = [];
+        if (this.options.rotate === 180) {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((row + 1).toString());
+            }
+        } else {
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
+            }
+        }
+        return rowLabels;
+    }
+
     /**
      * An internal helper function for producing labels for hex fields.
      *
@@ -3133,8 +3134,8 @@ export abstract class RendererBase {
      * @param height - The total height of the field
      * @returns A string label for the hex
      */
-    protected coords2algebraicHex(x: number, y: number, height: number): string {
-        const [label] = this.getLabels(height - y - 1, 1);
+    protected coords2algebraicHex(columnLabels: unknown, x: number, y: number, height: number): string {
+        const [label] = this.getLabels(columnLabels, height - y - 1, 1);
         return label + (x + 1).toString();
     }
 
@@ -3416,7 +3417,7 @@ export abstract class RendererBase {
                 id = `_key_${k.value}`;
             }
             const g = nested.nested().id(id);
-            g.use(piece).size(height, height);
+            usePieceAt(g, piece, height, height / 2, height / 2, 1);
             // Have to manually calculate the width so Firefox will render it properly.
             const factor = height / symlabel.viewbox().h;
             const usedLabel = g.use(symlabel).size(symlabel.viewbox().w * factor, height).dx(height * 1.1);
@@ -3447,7 +3448,7 @@ export abstract class RendererBase {
         }
         if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const areas = this.json.areas.filter((x) => x.type === "pieces") as IPiecesArea[];
-            const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
+            const boardBottom = Math.max(gridPoints[0][0].y, gridPoints[gridPoints.length - 1][0].y) + this.cellsize;
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.max(...gridPoints.map(r => r.length));
             let placeY = boardBottom + (this.cellsize / 2);
@@ -3474,7 +3475,6 @@ export abstract class RendererBase {
                     nested.rect(areaWidth,areaHeight).fill(area.background as string);
                 }
                 for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
-                    const used: [SVGUse, number][] = [];
                     const p = area.pieces[iPiece];
                     const row = Math.floor(iPiece / boardWidth);
                     const col = iPiece % boardWidth;
@@ -3482,23 +3482,12 @@ export abstract class RendererBase {
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                     }
-                    let sheetCellSize = piece.viewbox().h;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = piece.attr("data-cellsize") as number;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                        }
-                    }
-                    const use = nested.use(piece);
+                    const newx = col * cellsize + cellsize / 2;
+                    const newy = (textHeight * 2) + (row * cellsize) + cellsize / 2;
+                    const use = usePieceAt(nested, piece, cellsize, newx, newy, 1);
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                     }
-                    used.push([use, piece.viewbox().h]);
-                    const factor = (cellsize / sheetCellSize);
-                    const newx = col * cellsize;
-                    const newy = (textHeight * 2) + (row * cellsize);
-                    use.dmove(newx, newy);
-                    use.scale(factor, newx, newy);
                 }
 
                 // add marker line if indicated
@@ -3520,7 +3509,7 @@ export abstract class RendererBase {
 
                 // Now place the whole group below the board
                 // const placed = this.rootSvg.use(nested);
-                nested.move(gridPoints[0][0].x, placeY);
+                nested.move(Math.min(...gridPoints.map(r => Math.min(r[0].x, r[r.length - 1].x))), placeY);
                 placeY += nested.bbox().height + (this.cellsize * 0.5);
             }
         }

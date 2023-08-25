@@ -1,13 +1,14 @@
 import { ChessSheet } from "./chess";
 import { CoreSheet } from "./core";
 import { DiceSheet } from "./dice";
-import { ISheet } from "./ISheet";
+import type { ISheet } from "./ISheet";
 import { LooneySheet } from "./looney";
 import { PiecepackSheet } from "./piecepack";
 import { StreetcarSheet } from "./streetcar";
 import { Box } from "@svgdotjs/svg.js";
 
-export { ISheet, CoreSheet, ChessSheet, DiceSheet, LooneySheet, PiecepackSheet, StreetcarSheet };
+export { CoreSheet, ChessSheet, DiceSheet, LooneySheet, PiecepackSheet, StreetcarSheet };
+export type { ISheet };
 
 const sheets = new Map<string, ISheet>();
 // Manually add each sheet to the following array

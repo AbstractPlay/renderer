@@ -2,6 +2,7 @@ import { Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
+import { usePieceAt } from "../common/plotting";
 
 interface ILocalStash {
     [k: string]: unknown;
@@ -47,17 +48,8 @@ export class StackingExpandingRenderer extends RendererBase {
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
-                        let sheetCellSize = piece.viewbox().h;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            sheetCellSize = piece.attr("data-cellsize") as number;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                            }
-                        }
-                        const use = nested.use(piece);
-                        used.push([use, piece.viewbox().h]);
-                        const factor = (columnWidth / sheetCellSize) * 0.95;
-                        use.scale(factor, 0, 0);
+                        const use = usePieceAt(nested, piece, columnWidth, columnWidth / 2, columnWidth / 2, 0.95);
+                        used.push([use, 500]);
                     }
 
                     // Now go through each piece and shift them down
@@ -138,22 +130,7 @@ export class StackingExpandingRenderer extends RendererBase {
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }
-                                let sheetCellSize = piece.viewbox().h;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    sheetCellSize = piece.attr("data-cellsize") as number;
-                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                    }
-                                }
-
-                                const use = group.use(piece);
-                                const factor = (this.cellsize / sheetCellSize) * 0.85;
-                                const newsize = sheetCellSize * factor;
-                                const delta = this.cellsize - newsize;
-                                const newx = point.x - (this.cellsize / 2) + (delta / 2);
-                                const newy = point.y - (this.cellsize / 2) + (delta / 2);
-                                use.dmove(newx, newy);
-                                use.scale(factor, newx, newy);
+                                usePieceAt(group, piece, this.cellsize, point.x, point.y, 0.85);
                             }
                         }
                     }
@@ -189,17 +166,8 @@ export class StackingExpandingRenderer extends RendererBase {
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
-                        let sheetCellSize = piece.viewbox().h;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            sheetCellSize = piece.attr("data-cellsize") as number;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                            }
-                        }
-                        const use = nested.use(piece);
-                        used.push([use, piece.viewbox().h]);
-                        const factor = (columnWidth / sheetCellSize) * 0.95;
-                        use.scale(factor, 0, 0);
+                        const use = usePieceAt(nested, piece, columnWidth, columnWidth / 2, columnWidth / 2, 0.95);
+                        used.push([use, columnWidth]);
                     }
 
                     // Now go through each piece and shift them down
@@ -254,15 +222,12 @@ export class StackingExpandingRenderer extends RendererBase {
                                     throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                             }
-                            const use = this.rootSvg.use(piece);
+                            const newx = gridPoints[0][0].x - this.cellsize + iStack * cellsize + (cellsize / 2);
+                            const newy = placeY + textHeight + (maxHeight - i) * offset + 0.15 * cellsize + (cellsize / 2);
+                            const use = usePieceAt(this.rootSvg, piece, cellsize, newx, newy, 1);
                             if (this.options.boardClick !== undefined) {
                                 use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                             }
-                            const factor = (cellsize / sheetCellSize);
-                            const newx = gridPoints[0][0].x - this.cellsize + iStack * cellsize;
-                            const newy = placeY + textHeight + (maxHeight - i) * offset + 0.15 * cellsize;
-                            use.dmove(newx, newy);
-                            use.scale(factor, newx, newy);
                         }
                     }
 

@@ -3,6 +3,7 @@ import { rectOfRects } from "../grids";
 import type { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
+import { usePieceAt } from "../common/plotting";
 
 type Seat = "N" | "E" | "S" | "W";
 
@@ -268,18 +269,6 @@ export class HomeworldsRenderer extends RendererBase {
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
-                let sheetCellSize = piece.viewbox().h;
-                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                    sheetCellSize = piece.attr("data-cellsize") as number;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                    }
-                }
-                const use = pcgroup.use(piece);
-                if (this.options.boardClick !== undefined) {
-                    use.click((e : Event) => {this.options.boardClick!(-1, -1, `${colour}${size}`); e.stopPropagation();});
-                }
-                const factor = (stashCellSize / sheetCellSize);
 
                 // Shift pieces up 20% to simulate stacking
                 const stackingOffset = count * (stashCellSize * 0.2);
@@ -294,10 +283,12 @@ export class HomeworldsRenderer extends RendererBase {
                     realcx = point.x + evenSpacing + (stashCellSize * 0.9);
                 }
 
-                const newx = point.x + evenSpacing;
-                const newy = point.y - stackingOffset;
-                use.dmove(newx, newy);
-                use.scale(factor, newx, newy);
+                const newx = point.x + evenSpacing + 0.3 * stashCellSize;
+                const newy = point.y - stackingOffset + 0.3 * stashCellSize;
+                const use = usePieceAt(pcgroup, piece, stashCellSize, newx, newy, 1);
+                if (this.options.boardClick !== undefined) {
+                    use.click((e : Event) => {this.options.boardClick!(-1, -1, `${colour}${size}`); e.stopPropagation();});
+                }
             }
         }
         const cxBox = realcx;
@@ -555,21 +546,12 @@ export class HomeworldsRenderer extends RendererBase {
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
-        let sheetCellSize = piece.viewbox().h;
-        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-            sheetCellSize = piece.attr("data-cellsize") as number;
-            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                throw new Error(`The glyph you requested (${ship}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-            }
-        }
-        const use = nested.use(piece);
-        const factor = (50 / sheetCellSize);
-        use.dmove(point.x, point.y);
-        use.scale(factor, point.x, point.y);
+        const cellsize = 50;
+        const use = usePieceAt(nested, piece, cellsize, point.x + cellsize / 2, point.y + cellsize / 2, 1);
         if (this.options.boardClick !== undefined) {
             use.click(() => this.options.boardClick!(0, 0, clickName));
         }
-        return [use, factor];
+        return [use, cellsize / 500];
     }
 }
 
