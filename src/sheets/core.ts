@@ -380,7 +380,7 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("X", (canvas: SVGContainer) => {
+sheet.glyphs.set("x", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const stroke = 8;
     group.line(stroke, stroke, sheet.cellsize - stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" });
