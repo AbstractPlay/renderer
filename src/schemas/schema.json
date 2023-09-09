@@ -226,6 +226,10 @@
                             "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
                             "$ref": "#/definitions/positiveInteger"
                         },
+                        "startLight": {
+                            "description": "Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.",
+                            "type": "boolean"
+                        },
                         "columnLabels": {
                             "description": "An optional array of strings to override the default column labeling.",
                             "type": "array",

@@ -125,6 +125,10 @@ export interface APRenderRep {
          */
         clickDeltaY?: number;
         /**
+         * Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.
+         */
+        startLight?: boolean;
+        /**
          * An optional array of strings to override the default column labeling.
          */
         columnLabels?: string[];
