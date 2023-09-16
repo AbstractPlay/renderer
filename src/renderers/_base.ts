@@ -915,6 +915,13 @@ export abstract class RendererBase {
             if (height % 2 === 0) {
                 startLight = 0;
             }
+            if ( ("startLight" in this.json.board) ) {
+                if (this.json.board.startLight) {
+                    startLight = 0;
+                } else {
+                    startLight = 1;
+                }
+            }
 
             // Place them
             for (let row = 0; row < height; row++) {
