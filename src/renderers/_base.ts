@@ -597,7 +597,7 @@ export abstract class RendererBase {
                             size: fontsize,
                         });
                         const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
-                        group.viewbox(temptext.bbox());
+                        group.viewbox(temptext.bbox().x, temptext.bbox().y - 0.9, temptext.bbox().width, temptext.bbox().height);
                         group.attr("data-cellsize", squaresize);
                         temptext.remove();
                         got = group;
@@ -2370,8 +2370,8 @@ export abstract class RendererBase {
                     }
                     const unit = strokeWidth / 0.03;
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour));
-                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour));
+                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour)).attr({ 'pointer-events': 'none' });
+                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour)).attr({ 'pointer-events': 'none' });
                     const points: string[] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
@@ -2385,7 +2385,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.polyline(points.join(" ")).stroke(stroke).fill("none");
+                    const line = notes.polyline(points.join(" ")).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -2417,8 +2417,8 @@ export abstract class RendererBase {
                     }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
-                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).attr({ 'pointer-events': 'none' });
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).attr({ 'pointer-events': 'none' });
                     const [from, to] = note.targets as ITarget[];
                     const ptFrom = grid[from.row][from.col];
                     const ptTo = grid[to.row][to.col];
@@ -2431,7 +2431,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none");
+                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -2460,7 +2460,8 @@ export abstract class RendererBase {
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
-                            .center(pt.x, pt.y);
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' });
                     }
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
                     let colour = "#000";
@@ -2474,7 +2475,8 @@ export abstract class RendererBase {
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
-                            .center(pt.x, pt.y);
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' });
                     }
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
                     let colour = "#000";
@@ -2497,7 +2499,8 @@ export abstract class RendererBase {
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
-                            .center(pt.x, pt.y);
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' });
                     }
                 } else {
                     throw new Error(`The requested annotation (${ note.type as string }) is not supported.`);
