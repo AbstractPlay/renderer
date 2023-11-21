@@ -1,4 +1,4 @@
-import { RendererBase } from "./_base";
+import { RendererBase, type Poly } from "./_base";
 import { DefaultRenderer } from "./default";
 import { EntropyRenderer } from "./entropy";
 import { HomeworldsOrigRenderer } from "./homeworldsOrig";
@@ -9,7 +9,7 @@ import { StackingOffsetRenderer } from "./stackingOffset";
 import { StackingTilesRenderer } from "./stackingTiles";
 import { FreespaceRenderer } from "./freespace";
 
-export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer };
+export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer, type Poly };
 
 const renderers: (name: string) => RendererBase = (name) =>{
   switch(name) {

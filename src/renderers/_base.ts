@@ -7,7 +7,7 @@ import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare, cobweb } from ".
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
-import { ICobwebArgs, cobwebLabels, cobwebPolys, CobwebPoly } from "../grids/cobweb";
+import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt } from "../common/plotting";
 
 /**
@@ -100,6 +100,23 @@ export interface IRendererOptionsOut {
     boardHover?: (row: number, col: number, piece: string) => void;
 }
 
+export interface IPolyPath {
+    type: "path";
+    path: string;
+    points: IPoint[];
+}
+export interface IPolyPolygon {
+    type: "poly";
+    points: IPoint[];
+}
+export interface IPolyCircle {
+    type: "circle";
+    cx: number;
+    cy: number;
+    r: number;
+}
+export type Poly = IPolyCircle|IPolyPath|IPolyPolygon;
+
 export interface IMarkBoardOptions {
     svgGroup: SVGG;
     preGridLines: boolean;
@@ -108,7 +125,7 @@ export interface IMarkBoardOptions {
     hexGrid?: Grid<Hex>;
     hexWidth?: number;
     hexHeight?: number;
-    cobwebPolys?: CobwebPoly[][];
+    polys?: Poly[][];
 }
 
 interface ISegment {
@@ -597,7 +614,7 @@ export abstract class RendererBase {
                             size: fontsize,
                         });
                         const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
-                        group.viewbox(temptext.bbox());
+                        group.viewbox(temptext.bbox().x, temptext.bbox().y - 0.9, temptext.bbox().width, temptext.bbox().height);
                         group.attr("data-cellsize", squaresize);
                         temptext.remove();
                         got = group;
@@ -1613,7 +1630,9 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         let gridPoints: GridPoints = [];
         // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
+        const polys: Poly[][] = [];
         for (let y = 0; y < height; y++) {
+            const rowPolys: Poly[] = [];
             const node: IPoint[] = [];
             for (let x = 0; x < width; x++) {
                 const hex = grid.getHex({col: x, row: y});
@@ -1623,11 +1642,16 @@ export abstract class RendererBase {
                 // const pt = hex.toPoint();
                 // node.push({x: hex.x + cx, y: hex.y + cy} as IPoint);
                 node.push({x: hex.x, y: hex.y} as IPoint);
+                rowPolys.push({
+                    type: "poly",
+                    points: hex.corners
+                });
             }
             gridPoints.push(node);
+            polys.push(rowPolys);
         }
 
-        this.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height});
+        this.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
         const corners = grid.getHex({col: 0, row: 0})!.corners;
         let hexFill = "white";
@@ -1727,7 +1751,7 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
-        this.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height});
+        this.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
         return gridPoints;
     }
@@ -1929,7 +1953,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, cobwebPolys: polys});
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -1967,7 +1991,7 @@ export abstract class RendererBase {
             }
         }
 
-        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, cobwebPolys: polys});
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return grid;
     }
@@ -2295,15 +2319,29 @@ export abstract class RendererBase {
         const half = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
+        let hexFill = "white";
+        if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            hexFill = this.json.board.hexFill;
+        }
         const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
-        hex.polygon(`${triHeight},0 ${triHeight * 2},${half} ${triHeight * 2},${half + triWidth} ${triHeight},${triWidth * 2} 0,${half + triWidth} 0,${half}`)
-            .fill({color: "black", opacity: 0})
+        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:half}, {x:triHeight * 2,y:half + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:half + triWidth}, {x:0,y:half}];
+        hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+            .fill(hexFill).opacity(1)
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
+        const polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
+            const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
                 const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
+                const {cx, cy} = c.bbox();
+                const dx = cx - triHeight; const dy = cy - 25;
+                rowPolys.push({
+                    type: "poly",
+                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
+                });
                 if (this.options.boardClick !== undefined) {
                     if (this.options.rotate === 180) {
                         c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
@@ -2312,11 +2350,12 @@ export abstract class RendererBase {
                     }
                 }
             }
+            polys.push(rowPolys);
         }
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
         }
-        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return grid;
     }
@@ -2370,8 +2409,8 @@ export abstract class RendererBase {
                     }
                     const unit = strokeWidth / 0.03;
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour));
-                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour));
+                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour)).attr({ 'pointer-events': 'none' });
+                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour)).attr({ 'pointer-events': 'none' });
                     const points: string[] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
@@ -2385,7 +2424,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.polyline(points.join(" ")).stroke(stroke).fill("none");
+                    const line = notes.polyline(points.join(" ")).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -2417,8 +2456,8 @@ export abstract class RendererBase {
                     }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
-                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).attr({ 'pointer-events': 'none' });
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).attr({ 'pointer-events': 'none' });
                     const [from, to] = note.targets as ITarget[];
                     const ptFrom = grid[from.row][from.col];
                     const ptTo = grid[to.row][to.col];
@@ -2431,7 +2470,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none");
+                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -2460,7 +2499,8 @@ export abstract class RendererBase {
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
-                            .center(pt.x, pt.y);
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' });
                     }
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
                     let colour = "#000";
@@ -2474,7 +2514,8 @@ export abstract class RendererBase {
                         notes.rect(this.cellsize, this.cellsize)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
-                            .center(pt.x, pt.y);
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' });
                     }
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
                     let colour = "#000";
@@ -2497,7 +2538,8 @@ export abstract class RendererBase {
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
-                            .center(pt.x, pt.y);
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' });
                     }
                 } else {
                     throw new Error(`The requested annotation (${ note.type as string }) is not supported.`);
@@ -2547,9 +2589,9 @@ export abstract class RendererBase {
         if (opts.hexHeight !== undefined) {
             hexHeight = opts.hexHeight
         }
-        let polys: CobwebPoly[][]|undefined;
-        if (opts.cobwebPolys !== undefined) {
-            polys = opts.cobwebPolys;
+        let polys: Poly[][]|undefined;
+        if (opts.polys !== undefined) {
+            polys = opts.polys;
         }
 
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
@@ -2626,8 +2668,8 @@ export abstract class RendererBase {
                     const ptstr = points.map((p) => p.join(",")).join(" ");
                     svgGroup.polygon(ptstr).fill(colour).opacity(opacity);
                 } else if (marker.type === "flood") {
-                    if (! this.json.board.style.startsWith("circular")) {
-                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board.");
+                    if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even"))  ) {
+                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board and hex fields.");
                     }
                     if (polys === undefined) {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
@@ -2702,9 +2744,9 @@ export abstract class RendererBase {
                         throw new Error("The `halo` marker only works with `circular-*` boards.");
                     }
                     // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
-                    let polys: CobwebPoly[][]|undefined;
-                    if (opts.cobwebPolys !== undefined) {
-                        polys = opts.cobwebPolys;
+                    let polys: Poly[][]|undefined;
+                    if (opts.polys !== undefined) {
+                        polys = opts.polys;
                     }
                     if (polys === undefined) {
                         throw new Error("The `halo` marker requires that the polygons be passed.");

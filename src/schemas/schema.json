@@ -175,7 +175,7 @@
                             "default": 1
                         },
                         "hexFill": {
-                            "description": "Only affects rect of hex maps. Used to fill hexes with a colour.",
+                            "description": "Only affects hex fields. Used to fill hexes with a colour.",
                             "$ref": "#/definitions/colourstrings"
                         },
                         "backFill": {
@@ -397,7 +397,7 @@
                                     {
                                         "properties": {
                                             "type": {
-                                                "description": "Only usable by `circular-*` boards right now. Distinct from shading, this will simply fill the specified cells with a colour.",
+                                                "description": "Only usable by `circular-*` boards and hex fields. Distinct from shading, this will simply fill the specified cells with a colour.",
                                                 "enum": ["flood"]
                                             },
                                             "points": {
