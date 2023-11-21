@@ -78,7 +78,7 @@ export interface APRenderRep {
          */
         strokeOpacity?: number;
         /**
-         * Only affects rect of hex maps. Used to fill hexes with a colour.
+         * Only affects hex fields. Used to fill hexes with a colour.
          */
         hexFill?: string;
         /**
@@ -249,7 +249,7 @@ export interface APRenderRep {
             }
           | {
               /**
-               * Only usable by `circular-*` boards right now. Distinct from shading, this will simply fill the specified cells with a colour.
+               * Only usable by `circular-*` boards and hex fields. Distinct from shading, this will simply fill the specified cells with a colour.
                */
               type: "flood";
               /**

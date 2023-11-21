@@ -1,5 +1,6 @@
 import { projectPoint } from "../common/plotting";
 import { GridPoints, IGeneratorArgs, IPoint } from "./_base";
+import type { Poly } from "../renderers";
 
 export interface ICobwebArgs extends IGeneratorArgs {
     straight?: boolean;
@@ -46,24 +47,7 @@ export const cobweb = (args: ICobwebArgs): GridPoints => {
     return grid;
 }
 
-interface ICobwebPath {
-    type: "path";
-    path: string;
-    points: IPoint[];
-}
-interface ICobwebPolygon {
-    type: "poly";
-    points: IPoint[];
-}
-interface ICobwebCircle {
-    type: "circle";
-    cx: number;
-    cy: number;
-    r: number;
-}
-export type CobwebPoly = ICobwebCircle|ICobwebPolygon|ICobwebPath;
-
-export const cobwebPolys = (args: ICobwebArgs): CobwebPoly[][] => {
+export const cobwebPolys = (args: ICobwebArgs): Poly[][] => {
     let cellSize = 50;
     if (args.cellSize !== undefined) {
         cellSize = args.cellSize;
@@ -113,11 +97,11 @@ export const cobwebPolys = (args: ICobwebArgs): CobwebPoly[][] => {
     pts.push(pts[0].map(pt => {return {...pt}}));
 
     // construct polys, section by section, from inside to outside
-    const polys: CobwebPoly[][] = [];
+    const polys: Poly[][] = [];
     for (let slice = 0; slice < pts.length - 1; slice++) {
         const left = pts[slice];
         const right = pts[slice + 1];
-        const slicePolys: CobwebPoly[] = [];
+        const slicePolys: Poly[] = [];
         for (let cell = 0; cell < gridHeight; cell++) {
             // for the inner cells, these are correct
             let bottom = cell * 2;
@@ -190,7 +174,7 @@ export const cobwebPolys = (args: ICobwebArgs): CobwebPoly[][] => {
         polys.push(slicePolys);
     }
     // currently col/row, but we need row/col
-    const rearranged: CobwebPoly[][] = [];
+    const rearranged: Poly[][] = [];
     for (let row = 0; row < gridHeight; row++) {
         rearranged.push([...polys.map(col => col[gridHeight - 1 - row])]);
     }
