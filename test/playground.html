@@ -103,6 +103,16 @@
                     "description": "We only have one type of circular board currently: the cobweb style. This render is quite comprehensive, showing the \"flood\" and \"halo\" markers as well. The \"pieces\" property can be difficult at first. It starts with the outermost ring and works inward, starting from column \"a\" through to the end. The center is a single cell in a row all by itself, at the very end.",
                     "render": "{\"renderer\":\"stacking-offset\",\"board\":{\"style\":\"circular-cobweb\",\"width\":8,\"height\":4,\"markers\":[{\"type\":\"halo\",\"width\":10,\"segments\":[{\"colour\":1},{\"colour\":2},{\"colour\":1},{\"colour\":2},{\"colour\":1},{\"colour\":2},{\"colour\":1},{\"colour\":2}],\"offset\":-22.5,\"fill\":\"#000\"},{\"type\":\"flood\",\"colour\":1,\"points\":[{\"row\":0,\"col\":4},{\"row\":0,\"col\":5},{\"row\":0,\"col\":7},{\"row\":1,\"col\":4},{\"row\":1,\"col\":6},{\"row\":2,\"col\":6},{\"row\":3,\"col\":2},{\"row\":3,\"col\":7}],\"opacity\":0.5},{\"type\":\"flood\",\"colour\":2,\"points\":[{\"row\":0,\"col\":3},{\"row\":1,\"col\":1},{\"row\":1,\"col\":3},{\"row\":1,\"col\":7},{\"row\":2,\"col\":0},{\"row\":2,\"col\":1},{\"row\":2,\"col\":2},{\"row\":4,\"col\":0}],\"opacity\":0.5}],\"strokeColour\":\"#666\"},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1,\"scale\":0.75},\"B\":{\"name\":\"piece\",\"player\":2,\"scale\":0.75}},\"pieces\":\"-,-,-,B,A,A,-,ABA\\n-,AB,-,BAB,A,-,BA,B\\nB,AB,AB,-,-,-,BA,-\\n-,-,A,-,-,-,-,A\\nB\",\"annotations\":[{\"type\":\"enter\",\"targets\":[{\"row\":0,\"col\":3}],\"colour\":\"#fff\"}]}"
                 },
+                "boards-sowing-pips": {
+                    "name": "Boards: Sowing (Pips)",
+                    "description": "This is the pips view of a Bao board with different numbers of stacking stones. This renderer can accommodate up to 30 stones in a pit.",
+                    "render": "{\"renderer\":\"sowing-pips\",\"board\":{\"style\":\"sowing\",\"width\":8,\"height\":4,\"showEndPits\":false,\"squarePits\":[{\"row\":1,\"col\":3},{\"row\":2,\"col\":4}],\"markers\":[{\"type\":\"edge\",\"edge\":\"N\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"S\",\"colour\":1}]},\"pieces\":\"_\\n,2,12,16,,,,\\n,,,,24,26,30,\\n_\"}"
+                },
+                "boards-sowing-numerals": {
+                    "name": "Boards: Sowing (Numerals)",
+                    "description": "You can also view sowing boards with numerals. This is a standard Mancala board, showing end pits.",
+                    "render": "{\"renderer\":\"sowing-numerals\",\"board\":{\"style\":\"sowing\",\"width\":6,\"height\":2,\"markers\":[{\"type\":\"edge\",\"edge\":\"N\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"S\",\"colour\":1}]},\"pieces\":\"5,5,4,,5,5\\n5,,4,4,4,5\\n1,1\"}"
+                },
                 "formatting-strokes": {
                     "name": "Formatting: Different strokes",
                     "description": "Adjusting the attributes of the lines used to draw the board and labels",

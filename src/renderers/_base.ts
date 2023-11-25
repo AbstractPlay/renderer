@@ -2336,9 +2336,8 @@ export abstract class RendererBase {
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
-                const {cx, cy} = c.bbox();
-                const dx = cx - triHeight; const dy = cy - 25;
+                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+                const dx = p.x - triHeight; const dy = p.y - 25;
                 rowPolys.push({
                     type: "poly",
                     points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
