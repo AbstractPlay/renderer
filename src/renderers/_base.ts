@@ -614,7 +614,8 @@ export abstract class RendererBase {
                             size: fontsize,
                         });
                         const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
-                        group.viewbox(temptext.bbox().x, temptext.bbox().y - 0.9, temptext.bbox().width, temptext.bbox().height);
+                        // group.viewbox(temptext.bbox().x, temptext.bbox().y - 0.9, temptext.bbox().width, temptext.bbox().height);
+                        group.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
                         group.attr("data-cellsize", squaresize);
                         temptext.remove();
                         got = group;
@@ -2361,6 +2362,198 @@ export abstract class RendererBase {
     }
 
     /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates grids for sowing boards. Points are the centre of each square.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected sowing(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
+        const cellsize = this.cellsize;
+        let endpits = true;
+        if ( ("showEndPits" in this.json.board) && (this.json.board.showEndPits === false) )  {
+            endpits = false;
+        }
+        let squarePits: {row: number; col: number}[] = [];
+        if ( ("squarePits" in this.json.board) && (this.json.board.squarePits !== undefined) && (Array.isArray(this.json.board.squarePits)) )  {
+            squarePits = this.json.board.squarePits as [{row: number; col: number}, ...{row: number; col: number}[]];
+        }
+
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const board = this.rootSvg.group().id("board");
+
+        // Make an expanded grid for markers, to accommodate edge marking and shading
+        // Add one row and one column and shift all points up and to the left by half a cell size
+        let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
+        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
+
+        // add endpits to the grid if present (after it's expanded)
+        if (endpits) {
+            const {x: lx, y: ly} = grid[0][0];
+            const {x: rx, y: ry} = grid[0][width - 1];
+            const lst: IPoint[] = [];
+            // left
+            lst.push({x: lx - cellsize, y: ly + (cellsize / 2)});
+            // right
+            lst.push({x: rx + cellsize, y: ry + (cellsize / 2)});
+            grid.push(lst);
+        }
+
+        const gridlines = board.group().id("gridlines");
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
+
+        const shrinkage = 0.75;
+        // Add board labels
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const labels = board.group().id("labels");
+            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            if (this.options.rotate === 180) {
+                columnLabels = columnLabels.reverse();
+            }
+            // Columns (letters)
+            for (let col = 0; col < width; col++) {
+                const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
+                const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows (numbers)
+            const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            for (let row = 0; row < height; row++) {
+                const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+                const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+                if (endpits) {
+                    pointL.x -= cellsize * shrinkage;
+                    pointR.x += cellsize * shrinkage;
+                }
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            }
+        }
+
+        // Now the tiles
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        const tilePit = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+        tilePit.circle(cellsize * shrinkage)
+            .center(cellsize / 2, cellsize / 2)
+            .fill({color: "#fff", opacity: 0})
+            .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+        const tileSquare = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+        tileSquare.rect(cellsize * shrinkage, cellsize * shrinkage)
+            .center(cellsize / 2, cellsize / 2)
+            .fill({color: "#fff", opacity: 0})
+            .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+        const tileEnd = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize * height);
+        tileEnd.rect(cellsize * shrinkage, cellsize * height * 0.95)
+            .radius(10)
+            .center(cellsize / 2, (cellsize * height) / 2)
+            .fill({color: "#fff", opacity: 0})
+            .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+
+        const tiles = board.group().id("tiles");
+        // Place them
+        for (let row = 0; row < height; row++) {
+            for (let col = 0; col < width; col++) {
+                // skip blocked cells
+                if ( (blocked !== undefined) && (blocked.find(o => o.row === row && o.col === col) !== undefined) ) {
+                    continue;
+                }
+                let tile = tilePit;
+                if (squarePits.find(o => o.row === row && o.col === col) !== undefined) {
+                    tile = tileSquare;
+                }
+
+                const {x, y} = grid[row][col];
+                const used = tiles.use(tile).size(cellsize, cellsize).center(x, y);
+                if (this.options.boardClick !== undefined) {
+                    used.click(() => this.options.boardClick!(row, col, ""));
+                }
+            }
+        }
+        // place end pits if appropriate
+        if (endpits) {
+            // lefthand
+            let {x, y} = grid[0][0];
+            const left = tiles.use(tileEnd).size(cellsize, cellsize * height).move(x - (cellsize * 1.5), y - (cellsize / 2));
+            if (this.options.boardClick !== undefined) {
+                let name = "_east";
+                if (this.options.rotate === 180) {
+                    name = "_west";
+                }
+                left.click(() => this.options.boardClick!(-1, -1, name));
+            }
+
+            // righthand
+            ({x, y} = grid[0][width - 1]);
+            const right = tiles.use(tileEnd).size(cellsize, cellsize * height).move(x + (cellsize / 2), y - (cellsize / 2));
+            if (this.options.boardClick !== undefined) {
+                let name = "_west";
+                if (this.options.rotate === 180) {
+                    name = "_east";
+                }
+                right.click(() => this.options.boardClick!(-1, -1, name));
+            }
+        }
+
+        // Draw exterior grid lines
+        // Draw square around entire board
+        gridlines.rect(width * cellsize, height * cellsize)
+            .move(0 - (cellsize / 2), 0 - (cellsize / 2))
+            .fill({color: "#fff", opacity: 0})
+            .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        // if even number of rows, draw line between the halves
+        if (height % 2 === 0) {
+            const x1 = 0 - (cellsize / 2);
+            const y1 = x1 + ((height * cellsize) / 2);
+            const x2 = x1 + (width * cellsize);
+            const y2 = y1;
+            gridlines.line(x1, y1, x2, y2)
+                .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+        }
+
+        if (this.options.rotate === 180) {
+            gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
+
+        return grid;
+    }
+
+    /**
      * This is what applies annotations to a finished board.
      * Annotations are applied at the end, and so overlay pieces.
      *
@@ -2902,7 +3095,7 @@ export abstract class RendererBase {
                                 break;
                         }
                         svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
-                    } else if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                    } else if ( ( (style.startsWith("squares")) || (style === "sowing") ) && (gridExpanded !== undefined) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         switch (marker.edge) {

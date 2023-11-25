@@ -65,6 +65,7 @@ Now for the game board itself. This is rendered first, followed by the pieces.
   hex-of-tri:: A hex-shaped board composed of triangles.
   hex-of-cir:: A hex-shaped board composed of circles.
   snubsquare:: A basic https://en.wikipedia.org/wiki/Snub_square_tiling[snub square grid].
+  sowing:: A generic board for games like Mancala with customizable width and height and optional end pits.
 
 These boards are adjustable using the following properties:
 
