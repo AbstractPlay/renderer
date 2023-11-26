@@ -8,8 +8,10 @@ import { Stacking3DRenderer } from "./stacking3D";
 import { StackingOffsetRenderer } from "./stackingOffset";
 import { StackingTilesRenderer } from "./stackingTiles";
 import { FreespaceRenderer } from "./freespace";
+import { SowingNumeralsRenderer } from "./sowingNumerals";
+import { SowingPipsRenderer } from "./sowingPips";
 
-export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer, type Poly };
+export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer, SowingNumeralsRenderer, SowingPipsRenderer, type Poly };
 
 const renderers: (name: string) => RendererBase = (name) =>{
   switch(name) {
@@ -31,6 +33,10 @@ const renderers: (name: string) => RendererBase = (name) =>{
       return new EntropyRenderer();
     case FreespaceRenderer.rendererName:
         return new FreespaceRenderer();
+    case SowingNumeralsRenderer.rendererName:
+        return new SowingNumeralsRenderer();
+    case SowingPipsRenderer.rendererName:
+        return new SowingPipsRenderer();
     default:
       throw new Error(`Don't know a renderer called ${name}`);
   }

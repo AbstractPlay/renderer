@@ -2,7 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
-import { rotate, usePieceAt } from "../common/plotting";
+import { usePieceAt } from "../common/plotting";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -14,9 +14,9 @@ export interface IPiecesArea {
  * This is the default renderer used for most games.
  *
  */
-export class DefaultRenderer extends RendererBase {
+export class SowingPipsRenderer extends RendererBase {
 
-    public static readonly rendererName: string = "default";
+    public static readonly rendererName: string = "sowing-pips";
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
@@ -37,48 +37,14 @@ export class DefaultRenderer extends RendererBase {
 
         let gridPoints: GridPoints;
         if (! ("style" in this.json.board)) {
-            throw new Error(`This 'board' schema cannot be handled by the '${ DefaultRenderer.rendererName }' renderer.`);
+            throw new Error(`This 'board' schema cannot be handled by the '${ SowingPipsRenderer.rendererName }' renderer.`);
         }
         switch (this.json.board.style) {
-            case "squares-beveled":
-            case "squares-checkered":
-            case "squares":
-                gridPoints = this.squares();
-                break;
-            case "go":
-                this.json.board.width = 19;
-                this.json.board.height = 19;
-            case "vertex":
-            case "vertex-cross":
-            case "vertex-fanorona":
-                gridPoints = this.vertex();
-                break;
-            case "snubsquare":
-                gridPoints = this.snubSquare();
-                break;
-            case "hex-of-hex":
-                gridPoints = this.hexOfHex();
-                break;
-            case "hex-of-tri":
-                gridPoints = this.hexOfTri();
-                break;
-            case "hex-of-cir":
-                gridPoints = this.hexOfCir();
-                break;
-            case "hex-odd-p":
-            case "hex-even-p":
-            case "hex-odd-f":
-            case "hex-even-f":
-                gridPoints = this.rectOfHex();
-                break;
-            case "circular-cobweb":
-                gridPoints = this.cobweb();
-                break;
             case "sowing":
                 gridPoints = this.sowing();
                 break;
             default:
-                throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
+                throw new Error(`The requested board style (${ this.json.board.style }) is not supported by this renderer.`);
         }
 
         // PIECES
@@ -119,25 +85,91 @@ export class DefaultRenderer extends RendererBase {
                 throw new Error("Unrecognized `pieces` property.");
             }
 
+            // generate pip glyphs for each unique pit size
+            const sizes = new Set<string>(pieces.flat().flat());
+            for (const key of sizes) {
+                const num = parseInt(key, 10);
+                if (isNaN(num)) {
+                    continue;
+                }
+                if (num > 30) {
+                    throw new Error("This renderer can only display 30 stones in a single pit. Please switch to numeric view.");
+                }
+                const cellsize = 500;
+                const r = (cellsize * 0.75) / 2;
+                const innerSize = r * Math.sqrt(2);
+                const tlxInner = (cellsize - innerSize) / 2;
+                const tlyInner = (cellsize - innerSize) / 2;
+                // const brxInner = tlxInner + innerSize;
+                const bryInner = tlyInner + innerSize;
+                const innerCell = innerSize / 4;
+                const innerD = innerCell * 0.75;
+                // console.log(`Cellsize: ${cellsize}, r: ${r}, innerSize: ${innerSize}, tlxInner: ${tlxInner}, tlyInner: ${tlyInner}, bryInner: ${bryInner}, innerCell: ${innerCell}, innerD: ${innerD}`);
+                const nested = this.rootSvg.defs().nested().id(`_pips_${key}`);
+                const symbol1 = nested.symbol();
+                symbol1.circle(innerD).stroke({color: "#000", width: innerD * 0.15}).fill({color: "#fff"}).center(0,0);
+                symbol1.viewbox(0 - (innerCell / 2), 0 - (innerCell / 2), innerCell, innerCell);
+                const symbol2 = nested.symbol();
+                symbol2.circle(innerD).stroke({color: "#000", width: innerD * 0.15}).fill({color: "#aaa"}).center(0,0);
+                symbol2.viewbox(0 - (innerCell / 2), 0 - (innerCell / 2), innerCell, innerCell);
+                const symbol3 = nested.symbol();
+                symbol3.circle(innerD).stroke({color: "#000", width: innerD * 0.15}).fill({color: "#555"}).center(0,0);
+                symbol3.viewbox(0 - (innerCell / 2), 0 - (innerCell / 2), innerCell, innerCell);
+                const symbol4 = nested.symbol();
+                symbol4.circle(innerD).stroke({color: "#000", width: innerD * 0.15}).fill({color: "#000"}).center(0,0);
+                symbol4.viewbox(0 - (innerCell / 2), 0 - (innerCell / 2), innerCell, innerCell);
+                for (let i = 0; i < num; i++) {
+                    let symbol = symbol1;
+                    let row: number; let col: number;
+                    if (i < 16) {
+                        row = Math.floor(i / 4);
+                        col = i % 4;
+                    } else if (i < 25) {
+                        symbol = symbol2;
+                        row = Math.floor((i - 16) / 3) + 0.5;
+                        col = ((i - 16) % 3) + 0.5;
+                    } else if (i < 29) {
+                        symbol = symbol3;
+                        row = Math.floor((i - 25) / 2) + 1;
+                        col = ((i - 25) % 2) + 1;
+                    } else {
+                        symbol = symbol4;
+                        row = 1.5;
+                        col = 1.5;
+                    }
+                    nested.use(symbol).width(innerCell).height(innerCell).move(tlxInner + (innerCell * col), bryInner - (innerCell * (row + 1)));
+                }
+                nested.attr("data-cellsize", 500);
+
+                let sheetCellSize = nested.viewbox().height;
+                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                    sheetCellSize = nested.attr("data-cellsize") as number;
+                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                    }
+                }
+
+                // const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
+
+                // Scale it appropriately
+                // scale(use, 0.75, 0, 0);
+                // const size = 0.75 * cellsize;
+                const size = cellsize;
+                nested.viewbox(0, 0, size, size).size(size, size);
+            }
+
             // Place the pieces according to the grid
             for (let row = 0; row < pieces.length; row++) {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
                             const point = gridPoints[row][col];
-                            const piece = this.rootSvg.findOne("#" + key) as Svg;
+                            const piece = this.rootSvg.findOne(`#_pips_${key}`) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            const factor = 0.85;
-                            const use = usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
-                            if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
-                                rotate(use, options.rotate, point.x, point.y);
-                            if (this.options.boardClick !== undefined) {
-                                if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
-                                    use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
-                                }
-                            }
+                            const factor = 1; // 0.85;
+                            usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
                         }
                     }
                 }

@@ -31,7 +31,9 @@ export interface APRenderRep {
     | "homeworlds"
     | "homeworlds-orig"
     | "entropy"
-    | "freespace";
+    | "freespace"
+    | "sowing-numerals"
+    | "sowing-pips";
   /**
    * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable.
    */
@@ -64,7 +66,8 @@ export interface APRenderRep {
           | "hex-of-tri"
           | "hex-of-cir"
           | "snubsquare"
-          | "circular-cobweb";
+          | "circular-cobweb"
+          | "sowing";
         /**
          * The base stroke weight of lines drawn to construct the board.
          */
@@ -116,6 +119,25 @@ export interface APRenderRep {
          * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.
          */
         height?: number;
+        /**
+         * Only applies to the `sowing` board style. Determines whether to include full-height end pits on the board.
+         */
+        showEndPits?: boolean;
+        /**
+         * Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.
+         *
+         * @minItems 1
+         */
+        squarePits?: [
+          {
+            row: number;
+            col: number;
+          },
+          ...{
+            row: number;
+            col: number;
+          }[]
+        ];
         /**
          * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.
          */
@@ -632,7 +654,7 @@ export interface APRenderRep {
         )[];
       };
   /**
-   * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards.
+   * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).
    */
   pieces:
     | null

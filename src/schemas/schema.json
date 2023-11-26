@@ -92,7 +92,9 @@
                 "homeworlds",
                 "homeworlds-orig",
                 "entropy",
-                "freespace"
+                "freespace",
+                "sowing-numerals",
+                "sowing-pips"
             ],
             "default": "default"
         },
@@ -154,7 +156,8 @@
                                 "hex-of-tri",
                                 "hex-of-cir",
                                 "snubsquare",
-                                "circular-cobweb"
+                                "circular-cobweb",
+                                "sowing"
                             ]
                         },
                         "strokeWeight": {
@@ -217,6 +220,31 @@
                         "height": {
                             "description": "Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.",
                             "$ref": "#/definitions/positiveInteger"
+                        },
+                        "showEndPits": {
+                            "description": "Only applies to the `sowing` board style. Determines whether to include full-height end pits on the board.",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "squarePits": {
+                            "description": "Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "row": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                    },
+                                    "col": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                    }
+                                },
+                                "required": ["row", "col"],
+                                "additionalProperties": false
+                            },
+                            "minItems": 1
                         },
                         "clickDeltaX": {
                             "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.",
@@ -1028,7 +1056,7 @@
             ]
         },
         "pieces": {
-            "description": "Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards.",
+            "description": "Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).",
             "anyOf": [
                 {
                     "description": "If the board is completely empty.",

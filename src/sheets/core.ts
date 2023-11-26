@@ -98,7 +98,7 @@ sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
         .stroke({width: 5, color: "black"})
         .fill("none")
         .attr("data-playerfill", true);
-    group.viewbox(0, 0, 512, 512);
+    group.viewbox(36, 39.236, 440, 440);
     return group;
 });
 
