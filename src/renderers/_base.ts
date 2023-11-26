@@ -2497,7 +2497,11 @@ export abstract class RendererBase {
                 const {x, y} = grid[row][col];
                 const used = tiles.use(tile).size(cellsize, cellsize).center(x, y);
                 if (this.options.boardClick !== undefined) {
-                    used.click(() => this.options.boardClick!(row, col, ""));
+                    if (this.options.rotate === 180) {
+                        used.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
+                    } else {
+                        used.click(() => this.options.boardClick!(row, col, ""));
+                    }
                 }
             }
         }
@@ -2543,8 +2547,18 @@ export abstract class RendererBase {
         }
 
         if (this.options.rotate === 180) {
+            // GridExpanded is fine because it does not contain the end pit coords.
             gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+            // The grid however, if there are end pits, we need to hold the
+            // last row aside and reinsert it after reversing.
+            let holding: IPoint[]|undefined;
+            if (endpits) {
+                holding = grid.splice(-1, 1)[0];
+            }
             grid = grid.map((r) => r.reverse()).reverse();
+            if (holding !== undefined) {
+                grid.push(holding.reverse());
+            }
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
