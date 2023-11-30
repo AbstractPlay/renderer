@@ -89,7 +89,7 @@ export class SowingPipsRenderer extends RendererBase {
             const sizes = new Set<string>(pieces.flat().flat());
             for (const key of sizes) {
                 const num = parseInt(key, 10);
-                if (isNaN(num)) {
+                if ( (isNaN(num)) || (num === 0) ) {
                     continue;
                 }
                 if (num > 30) {
@@ -162,7 +162,7 @@ export class SowingPipsRenderer extends RendererBase {
             for (let row = 0; row < pieces.length; row++) {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (const key of pieces[row][col]) {
-                        if ( (key !== null) && (key !== "-") ) {
+                        if ( (key !== null) && (key !== "-") && (key !== "0") ) {
                             const point = gridPoints[row][col];
                             const piece = this.rootSvg.findOne(`#_pips_${key}`) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
