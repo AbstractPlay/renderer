@@ -88,7 +88,7 @@ export class SowingNumeralsRenderer extends RendererBase {
             // generate numerical glyphs for each unique pit size
             const sizes = new Set<string>(pieces.flat().flat());
             for (const key of sizes) {
-                if (isNaN(parseInt(key, 10))) {
+                if ( (isNaN(parseInt(key, 10))) || (parseInt(key, 10) === 0) ) {
                     continue;
                 }
                 const cellsize = 500;
@@ -132,7 +132,7 @@ export class SowingNumeralsRenderer extends RendererBase {
             for (let row = 0; row < pieces.length; row++) {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (const key of pieces[row][col]) {
-                        if ( (key !== null) && (key !== "-") ) {
+                        if ( (key !== null) && (key !== "-") && (key !== "0") ) {
                             const point = gridPoints[row][col];
                             const piece = this.rootSvg.findOne(`#_pips_${key}`) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
