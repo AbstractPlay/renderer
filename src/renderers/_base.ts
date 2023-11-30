@@ -2061,6 +2061,13 @@ export abstract class RendererBase {
             }
         }
 
+        // load blocked nodes
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
         // Draw grid lines
         const midrow = maxWidth - minWidth;
 
@@ -2068,45 +2075,61 @@ export abstract class RendererBase {
             const currRow = grid[row];
             for (let col = 0; col < grid[row].length; col++) {
                 const curr = currRow[col];
-
+                const isBlocked = blocked?.find(b => b.row === row && b.col === col);
+                if (isBlocked !== undefined) {
+                    continue;
+                }
                 // always connect to cell to the left
                 if (col > 0) {
-                    const prev = currRow[col - 1];
-                    const x1 = curr.x;
-                    const y1 = curr.y;
-                    const x2 = prev.x;
-                    const y2 = prev.y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                    // skip if blocked
+                    const found = blocked?.find(b => b.row === row && b.col === col - 1);
+                    if (found === undefined) {
+                        const prev = currRow[col - 1];
+                        const x1 = curr.x;
+                        const y1 = curr.y;
+                        const x2 = prev.x;
+                        const y2 = prev.y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                    }
                 }
 
-                // connections are build upward, so only continue with rows after the first
+                // connections are built upward, so only continue with rows after the first
                 if (row > 0) {
                     // always connect to the cell directly above, if one exists
                     if (col <= grid[row - 1].length - 1) {
-                        const prev = grid[row - 1][col];
-                        const x1 = curr.x;
-                        const y1 = curr.y;
-                        const x2 = prev.x;
-                        const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                        const found = blocked?.find(b => b.row === row-1 && b.col === col);
+                        if (found === undefined) {
+                            const prev = grid[row - 1][col];
+                            const x1 = curr.x;
+                            const y1 = curr.y;
+                            const x2 = prev.x;
+                            const y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                        }
                     }
                     // up to and including the midline, connect to the above-previous cell if there is one
                     if ( (row <= midrow) && (col > 0) ) {
-                        const prev = grid[row - 1][col - 1];
-                        const x1 = curr.x;
-                        const y1 = curr.y;
-                        const x2 = prev.x;
-                        const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                        const found = blocked?.find(b => b.row === row-1 && b.col === col-1);
+                        if (found === undefined) {
+                            const prev = grid[row - 1][col - 1];
+                            const x1 = curr.x;
+                            const y1 = curr.y;
+                            const x2 = prev.x;
+                            const y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                        }
                     }
                     // after the midline, connect to the above-next cell instead
                     if (row > midrow) {
-                        const prev = grid[row - 1][col + 1];
-                        const x1 = curr.x;
-                        const y1 = curr.y;
-                        const x2 = prev.x;
-                        const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                        const found = blocked?.find(b => b.row === row-1 && b.col === col+1);
+                        if (found === undefined) {
+                            const prev = grid[row - 1][col + 1];
+                            const x1 = curr.x;
+                            const y1 = curr.y;
+                            const x2 = prev.x;
+                            const y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                        }
                     }
                 }
             }
@@ -2122,6 +2145,10 @@ export abstract class RendererBase {
                 for (let row = 0; row < grid.length; row++) {
                     const currRow = grid[row];
                     for (let col = 0; col < grid[row].length; col++) {
+                        const found = blocked?.find(b => b.row === row && b.col === col);
+                        if (found !== undefined) {
+                            continue;
+                        }
                         const curr = currRow[col];
                         const dist2 = Math.pow(point.x - curr.x, 2.0) + Math.pow(point.y - curr.y, 2.0);
                         if (dist2 < min) {
