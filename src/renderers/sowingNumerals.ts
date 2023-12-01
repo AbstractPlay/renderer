@@ -92,7 +92,7 @@ export class SowingNumeralsRenderer extends RendererBase {
                     continue;
                 }
                 const cellsize = 500;
-                const nested = this.rootSvg.defs().nested().id(`_pips_${key}`);
+                const nested = this.rootSvg.defs().nested().id(`_pips_${key}`).attr({ 'pointer-events': 'none' });
                 const nestedGroup = nested.symbol();
                 const fontsize = 17;
                 const text = nestedGroup.text(key).font({
