@@ -105,7 +105,7 @@ export class SowingPipsRenderer extends RendererBase {
                 const innerCell = innerSize / 4;
                 const innerD = innerCell * 0.75;
                 // console.log(`Cellsize: ${cellsize}, r: ${r}, innerSize: ${innerSize}, tlxInner: ${tlxInner}, tlyInner: ${tlyInner}, bryInner: ${bryInner}, innerCell: ${innerCell}, innerD: ${innerD}`);
-                const nested = this.rootSvg.defs().nested().id(`_pips_${key}`);
+                const nested = this.rootSvg.defs().nested().id(`_pips_${key}`).attr({ 'pointer-events': 'none' });
                 const symbol1 = nested.symbol();
                 symbol1.circle(innerD).stroke({color: "#000", width: innerD * 0.15}).fill({color: "#fff"}).center(0,0);
                 symbol1.viewbox(0 - (innerCell / 2), 0 - (innerCell / 2), innerCell, innerCell);
