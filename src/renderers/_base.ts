@@ -2491,6 +2491,21 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
+        // need to create reversed points now for the square pits to be placed correctly
+        let reversed: GridPoints = [...grid.map(l => [...l])];
+        if (this.options.rotate === 180) {
+            // The grid however, if there are end pits, we need to hold the
+            // last row aside and reinsert it after reversing.
+            let holding: IPoint[]|undefined;
+            if (endpits) {
+                holding = grid.splice(-1, 1)[0];
+            }
+            reversed = reversed.map((r) => r.reverse()).reverse();
+            if (holding !== undefined) {
+                reversed.push(holding.reverse());
+            }
+        }
+
         const tilePit = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
         tilePit.circle(cellsize * shrinkage)
             .center(cellsize / 2, cellsize / 2)
@@ -2521,7 +2536,7 @@ export abstract class RendererBase {
                     tile = tileSquare;
                 }
 
-                const {x, y} = grid[row][col];
+                const {x, y} = reversed[row][col];
                 const used = tiles.use(tile).size(cellsize, cellsize).center(x, y);
                 if (this.options.boardClick !== undefined) {
                     if (this.options.rotate === 180) {
