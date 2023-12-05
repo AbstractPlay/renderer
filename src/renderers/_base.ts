@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
@@ -2491,20 +2492,20 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
-        // need to create reversed points now for the square pits to be placed correctly
-        let reversed: GridPoints = [...grid.map(l => [...l])];
-        if (this.options.rotate === 180) {
-            // The grid however, if there are end pits, we need to hold the
-            // last row aside and reinsert it after reversing.
-            let holding: IPoint[]|undefined;
-            if (endpits) {
-                holding = grid.splice(-1, 1)[0];
-            }
-            reversed = reversed.map((r) => r.reverse()).reverse();
-            if (holding !== undefined) {
-                reversed.push(holding.reverse());
-            }
-        }
+        // // need to create reversed points now for the square pits to be placed correctly
+        // let reversed: GridPoints = [...grid.map(l => [...l])];
+        // if (this.options.rotate === 180) {
+        //     // The grid however, if there are end pits, we need to hold the
+        //     // last row aside and reinsert it after reversing.
+        //     let holding: IPoint[]|undefined;
+        //     if (endpits) {
+        //         holding = grid.splice(-1, 1)[0];
+        //     }
+        //     reversed = reversed.map((r) => r.reverse()).reverse();
+        //     if (holding !== undefined) {
+        //         reversed.push(holding.reverse());
+        //     }
+        // }
 
         const tilePit = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
         tilePit.circle(cellsize * shrinkage)
@@ -2536,14 +2537,16 @@ export abstract class RendererBase {
                     tile = tileSquare;
                 }
 
-                const {x, y} = reversed[row][col];
+                let pxrow = row;
+                let pxcol = col;
+                if (this.options.rotate === 180) {
+                    pxrow = height - row - 1;
+                    pxcol = width - col - 1;
+                }
+                const {x, y} = grid[pxrow][pxcol];
                 const used = tiles.use(tile).size(cellsize, cellsize).center(x, y);
                 if (this.options.boardClick !== undefined) {
-                    if (this.options.rotate === 180) {
-                        used.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
-                    } else {
-                        used.click(() => this.options.boardClick!(row, col, ""));
-                    }
+                    used.click(() => this.options.boardClick!(row, col, ""));
                 }
             }
         }
