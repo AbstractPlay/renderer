@@ -2881,14 +2881,28 @@ export abstract class RendererBase {
                     continue;
                 }
                 if (marker.type === "dots") {
+                    let colour = baseColour;
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        colour = marker.colour as string;
+                    } else if ( ("player" in marker) && (marker.player !== undefined) ) {
+                        colour = this.options.colours[(marker.player as number) - 1];
+                    }
+                    let opacity = baseOpacity;
+                    if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                        opacity = marker.opacity as number;
+                    }
+                    let diameter = 0.2;
+                    if ( ("size" in marker) && (marker.size !== undefined) ) {
+                        diameter = marker.size as number;
+                    }
                     const pts: [number, number][] = [];
                     for (const point of marker.points as ITarget[]) {
                         pts.push([point.row, point.col]);
                         pts.forEach((p) => {
                             const pt = grid[p[0]][p[1]];
-                            svgGroup.circle(baseStroke * 10)
-                                .fill(baseColour)
-                                .opacity(baseOpacity)
+                            svgGroup.circle(this.cellsize * diameter)
+                                .fill(colour)
+                                .opacity(opacity)
                                 .stroke({width: 0})
                                 .center(pt.x, pt.y);
                         });
