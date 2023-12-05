@@ -369,6 +369,21 @@
                                                 "description": "The size of the diameter of the dot as a fraction of cellsize.",
                                                 "type": "number",
                                                 "default": 0.2
+                                            },
+                                            "colour": {
+                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                                "anyOf": [
+                                                    {"$ref": "#/definitions/positiveInteger"},
+                                                    {"$ref": "#/definitions/colourstrings"}
+                                                ],
+                                                "default": "#000"
+                                            },
+                                            "opacity": {
+                                                "description": "1 is fully opaque. 0 is fully transparent.",
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 1,
+                                                "default": 1
                                             }
                                         },
                                         "required": ["type", "points"],
