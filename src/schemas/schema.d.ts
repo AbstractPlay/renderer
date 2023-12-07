@@ -912,6 +912,14 @@ export interface APRenderRep {
         [k: string]: unknown;
       }
     | {
+        type: "deltas";
+        deltas: {
+          row: number;
+          col: number;
+          delta: number;
+        }[];
+      }
+    | {
         /**
          * Name of the system
          */

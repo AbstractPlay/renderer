@@ -1488,6 +1488,35 @@
                         "required": ["type", "targets"]
                     },
                     {
+                        "description": "Delta annotations for the `sowing-*` renderers",
+                        "properties": {
+                            "type": {
+                                "enum": ["deltas"]
+                            },
+                            "deltas": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "row": {
+                                            "type": "integer"
+                                        },
+                                        "col": {
+                                            "type": "integer"
+                                        },
+                                        "delta": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": ["row", "col", "delta"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["type", "deltas"],
+                        "additionalProperties": false
+                    },
+                    {
                         "properties": {
                             "system": {
                                 "description": "Name of the system",

@@ -2792,6 +2792,75 @@ export abstract class RendererBase {
                             .center(pt.x, pt.y)
                             .attr({ 'pointer-events': 'none' });
                     }
+                } else if ( (note.type !== undefined) && (note.type === "deltas") ) {
+                    type Delta = {
+                        row: number;
+                        col: number;
+                        delta: number;
+                    };
+                    // generate numerical glyphs for each unique delta
+                    const deltas = new Set<number>((note.deltas as Delta[]).map(d => d.delta));
+                    for (const delta of deltas) {
+                        if (delta === 0) {
+                            continue;
+                        }
+                        const strDelta = `${delta > 0 ? "+" : ""}${delta}`;
+                        const cellsize = 500;
+                        const nested = this.rootSvg.defs().nested().id(`_delta_${delta < 0 ? `n${Math.abs(delta)}` : delta}`).attr({ 'pointer-events': 'none' });
+                        nested.rect(cellsize, cellsize).fill({color: "#fff", opacity: 1}).move(-cellsize / 2, -cellsize / 2);
+                        const nestedGroup = nested.symbol();
+                        const fontsize = 17;
+                        const text = nestedGroup.text(strDelta).font({
+                            anchor: "start",
+                            fill: "#000",
+                            size: fontsize,
+                            opacity: 0.5,
+                        });
+                        text.attr("data-playerfill", true);
+                        text.attr("font-weight", "bold");
+                        const temptext = this.rootSvg.text(strDelta).font({
+                            anchor: "start",
+                            fill: "#000",
+                            size: fontsize,
+                            opacity: 0.5,
+                        });
+                        const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
+                        nestedGroup.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
+                        nestedGroup.attr("data-cellsize", squaresize);
+                        temptext.remove();
+                        const got = nestedGroup;
+
+                        let sheetCellSize = got.viewbox().height;
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            sheetCellSize = got.attr("data-cellsize") as number;
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${delta}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            }
+                        }
+
+                        const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
+
+                        // Scale it appropriately
+                        scale(use, 0.5, 0, 0);
+                        const size = 0.75 * cellsize;
+                        nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
+                    }
+
+                    // Place each delta
+                    for (const delta of note.deltas as Delta[]) {
+                        if (delta.delta !== 0) {
+                            const key = `_delta_${delta.delta < 0 ? `n${Math.abs(delta.delta)}` : delta.delta}`;
+                            const point = grid[delta.row][delta.col];
+                            const piece = this.rootSvg.findOne(`#${key}`) as Svg;
+                            if ( (piece === null) || (piece === undefined) ) {
+                                throw new Error(`Could not find the requested delta (${key}).`);
+                            }
+                            const factor = 0.33; // 0.85;
+                            const cornerX = point.x + (this.cellsize / 2) - (this.cellsize / 5);
+                            const cornerY = point.y - (this.cellsize / 2) + (this.cellsize / 5);
+                            usePieceAt(notes, piece, this.cellsize, cornerX, cornerY, factor);
+                        }
+                    }
                 } else {
                     throw new Error(`The requested annotation (${ note.type as string }) is not supported.`);
                 }
