@@ -881,6 +881,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1313,6 +1316,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1801,6 +1807,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1961,7 +1970,10 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
             const labels = board.group().id("labels");
-            const columnLabels = this.getLabels(undefined, width);
+            let columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
 
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -2016,7 +2028,12 @@ export abstract class RendererBase {
         const minWidth: number = this.json.board.minWidth as number;
         const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
-        const height = ((maxWidth - minWidth) * 2) + 1;
+        let height = ((maxWidth - minWidth) * 2) + 1;
+        let half: "top"|"bottom"|undefined;
+        if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
+            half = this.json.board.half as ("top"|"bottom");
+            height = maxWidth - minWidth + 1;
+        }
 
         let baseStroke = 1;
         let baseColour = "#000";
@@ -2032,7 +2049,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -2044,6 +2061,9 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2070,7 +2090,10 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const midrow = maxWidth - minWidth;
+        let midrow = maxWidth - minWidth;
+        if (half === "bottom") {
+            midrow = 0;
+        }
 
         for (let row = 0; row < grid.length; row++) {
             const currRow = grid[row];
@@ -2190,7 +2213,12 @@ export abstract class RendererBase {
         const minWidth: number = this.json.board.minWidth as number;
         const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
-        const height = ((maxWidth - minWidth) * 2) + 1;
+        let height = ((maxWidth - minWidth) * 2) + 1;
+        let half: "top"|"bottom"|undefined;
+        if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
+            half = this.json.board.half as ("top"|"bottom");
+            height = maxWidth - minWidth + 1;
+        }
 
         let baseStroke = 1;
         let baseColour = "#000";
@@ -2206,7 +2234,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
@@ -2218,6 +2246,9 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2281,7 +2312,12 @@ export abstract class RendererBase {
         const minWidth: number = this.json.board.minWidth as number;
         const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
-        const height = ((maxWidth - minWidth) * 2) + 1;
+        let height = ((maxWidth - minWidth) * 2) + 1;
+        let half: "top"|"bottom"|undefined;
+        if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
+            half = this.json.board.half as ("top"|"bottom");
+            height = maxWidth - minWidth + 1;
+        }
 
         let baseStroke = 1;
         let baseColour = "#000";
@@ -2297,7 +2333,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
@@ -2309,6 +2345,9 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2345,7 +2384,7 @@ export abstract class RendererBase {
 
         // Draw hexes
         const triWidth = 50 / 2;
-        const half = triWidth / 2;
+        const halfhex = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
         let hexFill = "white";
@@ -2354,7 +2393,7 @@ export abstract class RendererBase {
             hexFill = this.json.board.hexFill;
         }
         const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
-        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:half}, {x:triHeight * 2,y:half + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:half + triWidth}, {x:0,y:half}];
+        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
             .fill(hexFill).opacity(1)
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
@@ -2460,6 +2499,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2791,6 +2833,75 @@ export abstract class RendererBase {
                             .stroke({width: 0})
                             .center(pt.x, pt.y)
                             .attr({ 'pointer-events': 'none' });
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "deltas") ) {
+                    type Delta = {
+                        row: number;
+                        col: number;
+                        delta: number;
+                    };
+                    // generate numerical glyphs for each unique delta
+                    const deltas = new Set<number>((note.deltas as Delta[]).map(d => d.delta));
+                    for (const delta of deltas) {
+                        if (delta === 0) {
+                            continue;
+                        }
+                        const strDelta = `${delta > 0 ? "+" : ""}${delta}`;
+                        const cellsize = 500;
+                        const nested = this.rootSvg.defs().nested().id(`_delta_${delta < 0 ? `n${Math.abs(delta)}` : delta}`).attr({ 'pointer-events': 'none' });
+                        nested.rect(cellsize, cellsize).fill({color: "#fff", opacity: 1}).move(-cellsize / 2, -cellsize / 2);
+                        const nestedGroup = nested.symbol();
+                        const fontsize = 17;
+                        const text = nestedGroup.text(strDelta).font({
+                            anchor: "start",
+                            fill: "#000",
+                            size: fontsize,
+                            opacity: 0.5,
+                        });
+                        text.attr("data-playerfill", true);
+                        text.attr("font-weight", "bold");
+                        const temptext = this.rootSvg.text(strDelta).font({
+                            anchor: "start",
+                            fill: "#000",
+                            size: fontsize,
+                            opacity: 0.5,
+                        });
+                        const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
+                        nestedGroup.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
+                        nestedGroup.attr("data-cellsize", squaresize);
+                        temptext.remove();
+                        const got = nestedGroup;
+
+                        let sheetCellSize = got.viewbox().height;
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            sheetCellSize = got.attr("data-cellsize") as number;
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${delta}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                            }
+                        }
+
+                        const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
+
+                        // Scale it appropriately
+                        scale(use, 0.5, 0, 0);
+                        const size = 0.75 * cellsize;
+                        nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
+                    }
+
+                    // Place each delta
+                    for (const delta of note.deltas as Delta[]) {
+                        if (delta.delta !== 0) {
+                            const key = `_delta_${delta.delta < 0 ? `n${Math.abs(delta.delta)}` : delta.delta}`;
+                            const point = grid[delta.row][delta.col];
+                            const piece = this.rootSvg.findOne(`#${key}`) as Svg;
+                            if ( (piece === null) || (piece === undefined) ) {
+                                throw new Error(`Could not find the requested delta (${key}).`);
+                            }
+                            const factor = 0.33; // 0.85;
+                            const cornerX = point.x + (this.cellsize / 2) - (this.cellsize / 5);
+                            const cornerY = point.y - (this.cellsize / 2) + (this.cellsize / 5);
+                            usePieceAt(notes, piece, this.cellsize, cornerX, cornerY, factor);
+                        }
                     }
                 } else {
                     throw new Error(`The requested annotation (${ note.type as string }) is not supported.`);

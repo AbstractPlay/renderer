@@ -84,6 +84,12 @@ export interface IGeneratorArgs {
      *
      */
     readonly tileSpacing?: number;
+    /**
+     * Used by `hex-of-*` generators if you just want the top or bottom half of the hex
+     * (e.g., for making simple triangular shapes, and even some rhomboids).
+     *
+     */
+    readonly half?: "top"|"bottom";
 }
 
 /**

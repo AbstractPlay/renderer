@@ -35,9 +35,17 @@ export interface APRenderRep {
     | "sowing-numerals"
     | "sowing-pips";
   /**
-   * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable.
+   * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable. The option `reverse-columns` labels the columns with "a" at the top instead of at the bottom.
    */
-  options?: ("rotate-pieces" | "hide-labels" | "no-border" | "hw-light" | "hw-no-buttons" | "clickable-edges")[];
+  options?: (
+    | "rotate-pieces"
+    | "hide-labels"
+    | "no-border"
+    | "hw-light"
+    | "hw-no-buttons"
+    | "clickable-edges"
+    | "reverse-columns"
+  )[];
   /**
    * Map each `piece` to an actual glyph with possible options.
    */
@@ -112,6 +120,10 @@ export interface APRenderRep {
          * Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board.
          */
         maxWidth?: number;
+        /**
+         * Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids.
+         */
+        half?: "top" | "bottom";
         /**
          * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of slices.
          */
@@ -910,6 +922,14 @@ export interface APRenderRep {
          */
         static?: boolean & string;
         [k: string]: unknown;
+      }
+    | {
+        type: "deltas";
+        deltas: {
+          row: number;
+          col: number;
+          delta: number;
+        }[];
       }
     | {
         /**
