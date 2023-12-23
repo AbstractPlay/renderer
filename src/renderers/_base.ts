@@ -881,6 +881,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1313,6 +1316,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1801,6 +1807,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1961,7 +1970,10 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
             const labels = board.group().id("labels");
-            const columnLabels = this.getLabels(undefined, width);
+            let columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
 
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -2016,7 +2028,12 @@ export abstract class RendererBase {
         const minWidth: number = this.json.board.minWidth as number;
         const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
-        const height = ((maxWidth - minWidth) * 2) + 1;
+        let height = ((maxWidth - minWidth) * 2) + 1;
+        let half: "top"|"bottom"|undefined;
+        if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
+            half = this.json.board.half as ("top"|"bottom");
+            height = maxWidth - minWidth + 1;
+        }
 
         let baseStroke = 1;
         let baseColour = "#000";
@@ -2032,7 +2049,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -2044,6 +2061,9 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2070,7 +2090,10 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        const midrow = maxWidth - minWidth;
+        let midrow = maxWidth - minWidth;
+        if (half === "bottom") {
+            midrow = 0;
+        }
 
         for (let row = 0; row < grid.length; row++) {
             const currRow = grid[row];
@@ -2190,7 +2213,12 @@ export abstract class RendererBase {
         const minWidth: number = this.json.board.minWidth as number;
         const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
-        const height = ((maxWidth - minWidth) * 2) + 1;
+        let height = ((maxWidth - minWidth) * 2) + 1;
+        let half: "top"|"bottom"|undefined;
+        if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
+            half = this.json.board.half as ("top"|"bottom");
+            height = maxWidth - minWidth + 1;
+        }
 
         let baseStroke = 1;
         let baseColour = "#000";
@@ -2206,7 +2234,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
@@ -2218,6 +2246,9 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2281,7 +2312,12 @@ export abstract class RendererBase {
         const minWidth: number = this.json.board.minWidth as number;
         const maxWidth: number = this.json.board.maxWidth as number;
         const cellsize = this.cellsize;
-        const height = ((maxWidth - minWidth) * 2) + 1;
+        let height = ((maxWidth - minWidth) * 2) + 1;
+        let half: "top"|"bottom"|undefined;
+        if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
+            half = this.json.board.half as ("top"|"bottom");
+            height = maxWidth - minWidth + 1;
+        }
 
         let baseStroke = 1;
         let baseColour = "#000";
@@ -2297,7 +2333,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize});
+        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
@@ -2309,6 +2345,9 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2345,7 +2384,7 @@ export abstract class RendererBase {
 
         // Draw hexes
         const triWidth = 50 / 2;
-        const half = triWidth / 2;
+        const halfhex = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
         let hexFill = "white";
@@ -2354,7 +2393,7 @@ export abstract class RendererBase {
             hexFill = this.json.board.hexFill;
         }
         const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
-        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:half}, {x:triHeight * 2,y:half + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:half + triWidth}, {x:0,y:half}];
+        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
             .fill(hexFill).opacity(1)
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
@@ -2460,6 +2499,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                columnLabels = columnLabels.reverse();
+            }
             if (this.options.rotate === 180) {
                 columnLabels = columnLabels.reverse();
             }

@@ -27,7 +27,7 @@ export const hexOfHex = (args: IGeneratorArgs): GridPoints => {
         throw new Error("The maximum width must be greater than the minimum width.");
     }
 
-    const grid: GridPoints = [];
+    let grid: GridPoints = [];
     // Generate the top half, including the middle row
     for (let row = 0; row < maxWidth - minWidth + 1; row ++) {
         const startX: number = (halfCell * -1) * row;
@@ -48,6 +48,15 @@ export const hexOfHex = (args: IGeneratorArgs): GridPoints => {
             node.push(newp);
         });
         grid.push(node);
+    }
+
+    // if `half` is specified, drop rows
+    if (args.half === "top") {
+        const lastrow = maxWidth - minWidth;
+        grid = grid.slice(0, lastrow + 1);
+    } else if (args.half === "bottom") {
+        const firstrow = maxWidth - minWidth;
+        grid = grid.slice(firstrow);
     }
 
     // Shift entire grid so it fits in positive space

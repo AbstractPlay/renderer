@@ -93,6 +93,16 @@
                     "description": "A hexagon of circles, with pieces placed on the intersections.",
                     "render": "{\"board\":{\"style\":\"hex-of-cir\",\"minWidth\":5,\"maxWidth\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2}},\"pieces\":\"-----\\n------\\n---B---\\n-A------\\n--A------\\n--------\\n-------\\n-B----\\n----A\"}"
                 },
+                "board-hexhalftop": {
+                    "name": "Boards: Hex of * - Top",
+                    "description": "You can tell the `hex-of-*` boards to only render half of the board to generate shapes like triangles. In this case, the row labels have been reversed.",
+                    "render": `{"options":["reverse-columns"],"renderer":"stacking-offset","board":{"style":"hex-of-hex","minWidth":1,"maxWidth":7, "half":"top"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
+                },
+                "board-hexhalfbot": {
+                    "name": "Boards: Hex of * - Bottom",
+                    "description": "You can render the bottom half as well. Note you can generate quadrilaterlas this way as well.",
+                    "render": `{"options":["reverse-columns"],"renderer":"stacking-offset","board":{"style":"hex-of-tri","minWidth":3,"maxWidth":7, "half":"bottom"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
+                },
                 "board-hexfield": {
                     "name": "Boards: Hex field",
                     "description": "A rectangular grid of hexes. The center \"chamber\" is here annotated as a piece. See later examples of how to use markers.",
