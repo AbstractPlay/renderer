@@ -10,6 +10,8 @@ import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt } from "../common/plotting";
+// import { customAlphabet } from 'nanoid'
+// const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
 /**
  * Defines the options recognized by the rendering engine.
@@ -215,6 +217,22 @@ export interface IPiecesArea {
     pieces: [string, ...string[]];
     label: string;
 }
+
+type OutlineMarker = {
+    type: "outline";
+    points: [
+        {
+            row: number;
+            col: number;
+        },
+        ...{
+            row: number;
+            col: number;
+        }[]
+    ];
+    colour?: number|string;
+    opacity?: number;
+  }
 
 /** Helper functions for drawing edge click handlers */
 const sortPoints = (a: [number,number], b: [number,number]) => {
@@ -2554,22 +2572,33 @@ export abstract class RendererBase {
             .center(cellsize / 2, cellsize / 2)
             .fill({color: "#fff", opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+            .attr("data-outlined", true)
         const tileSquare = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
         tileSquare.rect(cellsize * shrinkage, cellsize * shrinkage)
             .center(cellsize / 2, cellsize / 2)
             .fill({color: "#fff", opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+            .attr("data-outlined", true)
         const tileEnd = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize * height);
         tileEnd.rect(cellsize * shrinkage, cellsize * height * 0.95)
             .radius(10)
             .center(cellsize / 2, (cellsize * height) / 2)
             .fill({color: "#fff", opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+            .attr("data-outlined", true)
+
+        // check for cells with `outline` marker
+        let outlines: OutlineMarker[] = [];
+        if ( ("markers" in this.json.board) && (this.json.board.markers !== undefined) ) {
+            outlines = (this.json.board.markers as {type: string; [k:string]: any}[]).filter(m => m.type === "outline") as OutlineMarker[];
+        }
 
         const tiles = board.group().id("tiles");
         // Place them
         for (let row = 0; row < height; row++) {
             for (let col = 0; col < width; col++) {
+                const outlined = outlines.find(o => o.points.find(p => p.col === col && p.row === row) !== undefined);
+
                 // skip blocked cells
                 if ( (blocked !== undefined) && (blocked.find(o => o.row === row && o.col === col) !== undefined) ) {
                     continue;
@@ -2577,6 +2606,24 @@ export abstract class RendererBase {
                 let tile = tilePit;
                 if (squarePits.find(o => o.row === row && o.col === col) !== undefined) {
                     tile = tileSquare;
+                }
+                if (outlined !== undefined) {
+                    const outWidth = baseStroke;
+                    let outColor = baseColour;
+                    let outOpacity = baseOpacity;
+                    if (outlined.colour !== undefined) {
+                        if (/^\d+$/.test(`${outlined.colour}`)) {
+                            outColor = this.options.colours[(outlined.colour as number) - 1];
+                        } else {
+                            outColor = outlined.colour as string;
+                        }
+                    }
+                    if (outlined.opacity !== undefined) {
+                        outOpacity = outlined.opacity;
+                    }
+                    tile = tile.clone();
+                    tile.find("[data-outlined=true]").each(function(this: SVGElement) { this.stroke({width: outWidth, color: outColor, opacity: outOpacity}); });
+                    this.rootSvg.defs().add(tile);
                 }
 
                 let pxrow = row;
@@ -2596,7 +2643,27 @@ export abstract class RendererBase {
         if (endpits) {
             // lefthand
             let {x, y} = grid[0][0];
-            const left = tiles.use(tileEnd).size(cellsize, cellsize * height).move(x - (cellsize * 1.5), y - (cellsize / 2));
+            let tileToUse = tileEnd;
+            let outlined = outlines.find(o => o.points.find(p => p.col === 0 && p.row === height) !== undefined);
+            if (outlined !== undefined) {
+                const outWidth = baseStroke;
+                let outColor = baseColour;
+                let outOpacity = baseOpacity;
+                if (outlined.colour !== undefined) {
+                    if (/^\d+$/.test(`${outlined.colour}`)) {
+                        outColor = this.options.colours[(outlined.colour as number) - 1];
+                    } else {
+                        outColor = outlined.colour as string;
+                    }
+                }
+                if (outlined.opacity !== undefined) {
+                    outOpacity = outlined.opacity;
+                }
+                tileToUse = tileEnd.clone();
+                tileToUse.find("[data-outlined=true]").each(function(this: SVGElement) { this.stroke({width: outWidth, color: outColor, opacity: outOpacity}); });
+                this.rootSvg.defs().add(tileToUse);
+            }
+            const left = tiles.use(tileToUse).size(cellsize, cellsize * height).move(x - (cellsize * 1.5), y - (cellsize / 2));
             if (this.options.boardClick !== undefined) {
                 let name = "_east";
                 if (this.options.rotate === 180) {
@@ -2607,7 +2674,27 @@ export abstract class RendererBase {
 
             // righthand
             ({x, y} = grid[0][width - 1]);
-            const right = tiles.use(tileEnd).size(cellsize, cellsize * height).move(x + (cellsize / 2), y - (cellsize / 2));
+            tileToUse = tileEnd;
+            outlined = outlines.find(o => o.points.find(p => p.col === 1 && p.row === height) !== undefined);
+            if (outlined !== undefined) {
+                const outWidth = baseStroke;
+                let outColor = baseColour;
+                let outOpacity = baseOpacity;
+                if (outlined.colour !== undefined) {
+                    if (/^\d+$/.test(`${outlined.colour}`)) {
+                        outColor = this.options.colours[(outlined.colour as number) - 1];
+                    } else {
+                        outColor = outlined.colour as string;
+                    }
+                }
+                if (outlined.opacity !== undefined) {
+                    outOpacity = outlined.opacity;
+                }
+                tileToUse = tileEnd.clone();
+                tileToUse.find("[data-outlined=true]").each(function(this: SVGElement) { this.stroke({width: outWidth, color: outColor, opacity: outOpacity}); });
+                this.rootSvg.defs().add(tileToUse);
+            }
+            const right = tiles.use(tileToUse).size(cellsize, cellsize * height).move(x + (cellsize / 2), y - (cellsize / 2));
             if (this.options.boardClick !== undefined) {
                 let name = "_west";
                 if (this.options.rotate === 180) {
