@@ -320,6 +320,35 @@ export interface APRenderRep {
             }
           | {
               /**
+               * Only usable by boards constructed out of premade shapes (e.g., `hex-of-hex`, `sowing`). Uses the given colour as the outline of the given cell shape.
+               */
+              type: "outline";
+              /**
+               * One or more grid coordinates of spaces to fill.
+               *
+               * @minItems 1
+               */
+              points: [
+                {
+                  row: number;
+                  col: number;
+                },
+                ...{
+                  row: number;
+                  col: number;
+                }[]
+              ];
+              /**
+               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+               */
+              colour?: PositiveInteger | Colourstrings;
+              /**
+               * 1 is fully opaque. 0 is fully transparent.
+               */
+              opacity?: number;
+            }
+          | {
+              /**
                * Only used for `circular-*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments
                */
               type: "halo";
