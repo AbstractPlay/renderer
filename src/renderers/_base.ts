@@ -2644,7 +2644,11 @@ export abstract class RendererBase {
             // lefthand
             let {x, y} = grid[0][0];
             let tileToUse = tileEnd;
-            let outlined = outlines.find(o => o.points.find(p => p.col === 0 && p.row === height) !== undefined);
+            let leftCol = 0;
+            if (this.options.rotate === 180) {
+                leftCol = 1;
+            }
+            let outlined = outlines.find(o => o.points.find(p => p.col === leftCol && p.row === height) !== undefined);
             if (outlined !== undefined) {
                 const outWidth = baseStroke;
                 let outColor = baseColour;
@@ -2675,7 +2679,11 @@ export abstract class RendererBase {
             // righthand
             ({x, y} = grid[0][width - 1]);
             tileToUse = tileEnd;
-            outlined = outlines.find(o => o.points.find(p => p.col === 1 && p.row === height) !== undefined);
+            let rightCol = 1;
+            if (this.options.rotate === 180) {
+                rightCol = 0;
+            }
+            outlined = outlines.find(o => o.points.find(p => p.col === rightCol && p.row === height) !== undefined);
             if (outlined !== undefined) {
                 const outWidth = baseStroke;
                 let outColor = baseColour;
