@@ -43,7 +43,7 @@ Array.from(sheets.values()).forEach((sheet) => {
         const tile = nstSheet.nested().size(tileSizeOuter, tileSizeOuter);
         const symbol = glyph(tile);
 
-        const used = tile.use(symbol);
+        const used = tile.use(symbol).size(tileSizeInner,tileSizeInner);
         // Scale it appropriately
         used.move(innerTL, innerTL);
         used.scale(factor, factor, innerTL, innerTL);
