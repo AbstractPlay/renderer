@@ -67,6 +67,9 @@ export class StackingOffsetRenderer extends RendererBase {
             case "hex-of-cir":
                 gridPoints = this.hexOfCir();
                 break;
+            case "hex-slanted":
+                gridPoints = this.hexSlanted();
+                break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":

@@ -66,6 +66,7 @@ export interface APRenderRep {
           | "vertex-cross"
           | "vertex-fanorona"
           | "go"
+          | "hex-slanted"
           | "hex-odd-p"
           | "hex-even-p"
           | "hex-odd-f"

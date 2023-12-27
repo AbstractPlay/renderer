@@ -3,7 +3,7 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { hexOfCir, hexOfHex, hexOfTri, rectOfRects, snubsquare, cobweb } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
@@ -897,7 +897,11 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1332,7 +1336,11 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
                 columnLabels = columnLabels.reverse();
             }
@@ -1711,9 +1719,13 @@ export abstract class RendererBase {
             const { x, y } = hex;
             const used = board.use(hexSymbol).translate(x, y);
             if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
-                let label = this.coords2algebraicHex(this.json.board.columnLabels, hex.col, hex.row, height);
+                let customLabels: string[]|undefined;
+                if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                    customLabels = this.json.board.columnLabels as string[];
+                }
+                let label = this.coords2algebraicHex(customLabels, hex.col, hex.row, height);
                 if (this.options.rotate === 180) {
-                    label = this.coords2algebraicHex(this.json.board.columnLabels, width - hex.col - 1, height - hex.row - 1, height);
+                    label = this.coords2algebraicHex(customLabels, width - hex.col - 1, height - hex.row - 1, height);
                 }
                 let labelX = corners[5].x;
                 let labelY = corners[5].y;
@@ -2077,7 +2089,11 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            let columnLabels = this.getLabels(customLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2262,7 +2278,11 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            let columnLabels = this.getLabels(customLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2361,7 +2381,11 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
 
             // Rows (numbers)
-            let columnLabels = this.getLabels(this.json.board.columnLabels, height);
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            let columnLabels = this.getLabels(customLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
                 columnLabels = columnLabels.reverse();
             }
@@ -2406,6 +2430,143 @@ export abstract class RendererBase {
 
         let hexFill = "white";
         if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            hexFill = this.json.board.hexFill;
+        }
+        const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
+        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
+        hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+            .fill(hexFill).opacity(1)
+            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
+        const polys: Poly[][] = [];
+        for (let iRow = 0; iRow < grid.length; iRow++) {
+            const row = grid[iRow];
+            const rowPolys: Poly[] = [];
+            for (let iCol = 0; iCol < row.length; iCol++) {
+                const p = row[iCol];
+                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+                const dx = p.x - triHeight; const dy = p.y - 25;
+                rowPolys.push({
+                    type: "poly",
+                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
+                });
+                if (this.options.boardClick !== undefined) {
+                    if (this.options.rotate === 180) {
+                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                    } else {
+                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
+                    }
+                }
+            }
+            polys.push(rowPolys);
+        }
+        if (this.options.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+        }
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a rectangular field of hexes slanted to the left. Unlike {@link rectOfHex}, this does not require any third-party library.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected hexSlanted(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const gridWidth: number = this.json.board.width as number;
+        const gridHeight: number = this.json.board.height as number;
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        let grid = hexSlanted({gridWidth, gridHeight, cellSize: cellsize});
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("hexes");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+
+        // Add board labels
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const labels = board.group().id("labels");
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            const columnLabels = this.getLabels(customLabels, gridWidth);
+            // Columns (letters)
+            for (let col = 0; col < gridWidth; col++) {
+                const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
+                const pointBottom = {x: grid[gridHeight - 1][col].x, y: grid[gridHeight - 1][col].y + cellsize};
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows (numbers)
+            customLabels = undefined
+            if ( ("rowLabels" in this.json.board) && (this.json.board.rowLabels !== undefined) ) {
+                customLabels = this.json.board.rowLabels as string[];
+            }
+            let rowLabels = this.getRowLabels(customLabels, gridHeight);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+                rowLabels = rowLabels.reverse();
+            }
+            if (this.options.rotate === 180) {
+                rowLabels = rowLabels.reverse();
+            }
+            for (let row = 0; row < gridHeight; row++) {
+                const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+                const pointR = {x: grid[row][gridWidth - 1].x + cellsize, y: grid[row][gridWidth - 1].y};
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+            }
+        }
+
+        /*
+        Flat-topped hexes:
+            half, 0
+            (half+width), 0
+            (width*2), height
+            (half+width), (height*2)
+            half, (height*2)
+            0, height
+        Pointy-topped hexes:
+            height, 0
+            (height*2), half
+            (height*2), (half+width)
+            height, (width*2)
+            0, (half+width)
+            0 half
+        */
+
+        // Draw hexes
+        const triWidth = 50 / 2;
+        const halfhex = triWidth / 2;
+        const triHeight = (triWidth * Math.sqrt(3)) / 2;
+
+        let hexFill = "white";
+        if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
@@ -2515,7 +2676,11 @@ export abstract class RendererBase {
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(this.json.board.columnLabels, width);
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
                 columnLabels = columnLabels.reverse();
             }
@@ -3532,6 +3697,170 @@ export abstract class RendererBase {
                         for (const line of lines) {
                             svgGroup.line(...line).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
+                    } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
+                        /*
+                         * Polys is populated.
+                         * Point 0 is the top point (pointy topped).
+                         * Corners need to share edges.
+                         * N: 5-0, 0-1
+                         * NE: 0-1, 1-2
+                         * SE: 1-2, 2-3
+                         * S: 2-3, 3-4
+                         * SW: 3-4, 4-5
+                         * NW: 4-5, 5-0
+                         */
+                        const midrow = Math.floor(grid.length / 2);
+                        let hexes: Poly[];
+                        let idxs: [[number,number],[number,number]];
+                        switch (marker.edge) {
+                            case "N":
+                                hexes = polys[0];
+                                idxs = [[5,0],[0,1]];
+                                break;
+                            case "NE":
+                                hexes = [];
+                                for (let row = 0; row <= midrow; row++) {
+                                    hexes.push(polys[row][polys[row].length - 1]);
+                                }
+                                idxs = [[0,1],[1,2]];
+                                break;
+                            case "SE":
+                                hexes = [];
+                                for (let row = midrow; row < grid.length; row++) {
+                                    hexes.push(polys[row][polys[row].length - 1]);
+                                }
+                                idxs = [[1,2],[2,3]];
+                                break;
+                            case "S":
+                                hexes = [...polys[polys.length - 1]];
+                                hexes.reverse();
+                                idxs = [[2,3],[3,4]];
+                                break;
+                            case "SW":
+                                hexes = [];
+                                for (let row = midrow; row < grid.length; row++) {
+                                    hexes.push(polys[row][0]);
+                                }
+                                hexes.reverse();
+                                idxs = [[3,4],[4,5]];
+                                break;
+                            case "NW":
+                                hexes = [];
+                                for (let row = 0; row <= midrow; row++) {
+                                    hexes.push(polys[row][0]);
+                                }
+                                hexes.reverse();
+                                idxs = [[4,5],[5,0]];
+                                break;
+                            default:
+                                throw new Error(`(hex-of-hex edge markings) Invalid edge direction given: ${marker.edge as string}`);
+                        }
+                        const lines: [number,number,number,number][] = [];
+                        for (let i = 0; i < hexes.length; i++) {
+                            const hex = hexes[i] as IPolyPolygon;
+                            const pt1 = hex.points[idxs[0][0]];
+                            const pt2 = hex.points[idxs[0][1]];
+                            const pt3 = hex.points[idxs[1][1]];
+                            // first corner
+                            if (i === 0) {
+                                const midx = (pt1.x + pt2.x) / 2;
+                                const midy = (pt1.y + pt2.y) / 2;
+                                lines.push([midx, midy, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                            }
+                            // last corner
+                            else if (i === hexes.length - 1) {
+                                const midx = (pt2.x + pt3.x) / 2;
+                                const midy = (pt2.y + pt3.y) / 2;
+                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, midx, midy]);
+                            }
+                            // everything in between
+                            else {
+                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                            }
+                        }
+                        for (const line of lines) {
+                            svgGroup.line(...line).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        }
+                    } else if ( (style === "hex-slanted") && (polys !== undefined) ) {
+                        /*
+                         * Polys is populated.
+                         * Point 0 is the top point (pointy topped).
+                         * Corners need to share edges.
+                         * N: 5-0, 0-1
+                         * E: 0-1, 1-2
+                         * S: 2-3, 3-4
+                         * W: 3-4, 4-5
+                         */
+                        let hexes: Poly[];
+                        let idxs: [[number,number],[number,number]];
+                        switch (marker.edge) {
+                            case "N":
+                                hexes = polys[0];
+                                idxs = [[5,0],[0,1]];
+                                break;
+                            case "E":
+                                hexes = polys.map(p => p[p.length - 1]);
+                                idxs = [[0,1],[1,2]];
+                                break;
+                            case "S":
+                                hexes = [...polys[polys.length - 1]];
+                                hexes.reverse();
+                                idxs = [[2,3],[3,4]];
+                                break;
+                            case "W":
+                                hexes = polys.map(p => p[0]);
+                                hexes.reverse();
+                                idxs = [[3,4],[4,5]];
+                                break;
+                            default:
+                                throw new Error(`(hex-slanted edge markings) Invalid edge direction given: ${marker.edge as string}`);
+                        }
+                        const lines: [number,number,number,number][] = [];
+                        for (let i = 0; i < hexes.length; i++) {
+                            const hex = hexes[i] as IPolyPolygon;
+                            const pt1 = hex.points[idxs[0][0]];
+                            const pt2 = hex.points[idxs[0][1]];
+                            const pt3 = hex.points[idxs[1][1]];
+                            // top right N
+                            if ( (marker.edge === "N") && (i === hexes.length - 1) ) {
+                                const midx = (pt2.x + pt3.x) / 2;
+                                const midy = (pt2.y + pt3.y) / 2;
+                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                lines.push([midx, midy, pt3.x, pt3.y]);
+                            }
+                            // top right E
+                            else if ( (marker.edge === "E") && (i === 0) ) {
+                                const midx = (pt1.x + pt2.x) / 2;
+                                const midy = (pt1.y + pt2.y) / 2;
+                                lines.push([midx, midy, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                            }
+                            // bottom left S
+                            else if ( (marker.edge === "S") && (i === hexes.length - 1) ) {
+                                const midx = (pt2.x + pt3.x) / 2;
+                                const midy = (pt2.y + pt3.y) / 2;
+                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, midx, midy]);
+                            }
+                            // bottom left W
+                            else if ( (marker.edge === "W") && (i === 0) ) {
+                                const midx = (pt1.x + pt2.x) / 2;
+                                const midy = (pt1.y + pt2.y) / 2;
+                                lines.push([midx, midy, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                            }
+                            // everything else
+                            else {
+                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                            }
+                        }
+                        for (const line of lines) {
+                            svgGroup.line(...line).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        }
                     }
                 } else if (marker.type === "fence") {
                     let colour = "#000";
@@ -3687,9 +4016,9 @@ export abstract class RendererBase {
      * @param arg2 - If provided, this is the number of labels you want, starting from nth label from the first argument.
      * @returns A list of labels
      */
-    protected getLabels(override: unknown, arg1: number, arg2?: number) : string[] {
+    protected getLabels(override: string[]|undefined, arg1: number, arg2?: number) : string[] {
         if (override !== undefined) {
-            return [...(override as string[])];
+            return [...override];
         }
         let start = 0;
         let count = 0;
@@ -3740,7 +4069,7 @@ export abstract class RendererBase {
      * @param height - The total height of the field
      * @returns A string label for the hex
      */
-    protected coords2algebraicHex(columnLabels: unknown, x: number, y: number, height: number): string {
+    protected coords2algebraicHex(columnLabels: string[]|undefined, x: number, y: number, height: number): string {
         const [label] = this.getLabels(columnLabels, height - y - 1, 1);
         return label + (x + 1).toString();
     }
