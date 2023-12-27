@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
@@ -3446,6 +3445,93 @@ export abstract class RendererBase {
                                 break;
                         }
                         svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
+                    } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
+                        /*
+                         * Polys is populated.
+                         * Point 0 is the top point (pointy topped).
+                         * Corners need to share edges.
+                         * N: 5-0, 0-1
+                         * NE: 0-1, 1-2
+                         * SE: 1-2, 2-3
+                         * S: 2-3, 3-4
+                         * SW: 3-4, 4-5
+                         * NW: 4-5, 5-0
+                         */
+                        const midrow = Math.floor(grid.length / 2);
+                        let hexes: Poly[];
+                        let idxs: [[number,number],[number,number]];
+                        switch (marker.edge) {
+                            case "N":
+                                hexes = polys[0];
+                                idxs = [[5,0],[0,1]];
+                                break;
+                            case "NE":
+                                hexes = [];
+                                for (let row = 0; row <= midrow; row++) {
+                                    hexes.push(polys[row][polys[row].length - 1]);
+                                }
+                                idxs = [[0,1],[1,2]];
+                                break;
+                            case "SE":
+                                hexes = [];
+                                for (let row = midrow; row < grid.length; row++) {
+                                    hexes.push(polys[row][polys[row].length - 1]);
+                                }
+                                idxs = [[1,2],[2,3]];
+                                break;
+                            case "S":
+                                hexes = [...polys[polys.length - 1]];
+                                hexes.reverse();
+                                idxs = [[2,3],[3,4]];
+                                break;
+                            case "SW":
+                                hexes = [];
+                                for (let row = midrow; row < grid.length; row++) {
+                                    hexes.push(polys[row][0]);
+                                }
+                                hexes.reverse();
+                                idxs = [[3,4],[4,5]];
+                                break;
+                            case "NW":
+                                hexes = [];
+                                for (let row = 0; row <= midrow; row++) {
+                                    hexes.push(polys[row][0]);
+                                }
+                                hexes.reverse();
+                                idxs = [[4,5],[5,0]];
+                                break;
+                            default:
+                                throw new Error(`(hex-of-hex edge markings) Invalid edge direction given: ${marker.edge as string}`);
+                        }
+                        const lines: [number,number,number,number][] = [];
+                        for (let i = 0; i < hexes.length; i++) {
+                            const hex = hexes[i] as IPolyPolygon;
+                            const pt1 = hex.points[idxs[0][0]];
+                            const pt2 = hex.points[idxs[0][1]];
+                            const pt3 = hex.points[idxs[1][1]];
+                            // first corner
+                            if (i === 0) {
+                                const midx = (pt1.x + pt2.x) / 2;
+                                const midy = (pt1.y + pt2.y) / 2;
+                                lines.push([midx, midy, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                            }
+                            // last corner
+                            else if (i === hexes.length - 1) {
+                                const midx = (pt2.x + pt3.x) / 2;
+                                const midy = (pt2.y + pt3.y) / 2;
+                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, midx, midy]);
+                            }
+                            // everything in between
+                            else {
+                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                            }
+                        }
+                        for (const line of lines) {
+                            svgGroup.line(...line).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        }
                     }
                 } else if (marker.type === "fence") {
                     let colour = "#000";
