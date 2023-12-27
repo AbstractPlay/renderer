@@ -35,6 +35,60 @@ sheet.glyphs.set("cannon-town", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("circle", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 15;
+    group.circle(sheet.cellsize)
+        .attr("data-playerstroke", true)
+        .fill("none")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("cross-diag", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.line(-10, -10, 110, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.line(110, -10, -10, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.viewbox(0,0,100,100);
+    return group;
+});
+
+sheet.glyphs.set("cross-omni", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.line(-10, -10, 110, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.line(110, -10, -10, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.line(50, -10, 50, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.line(-10, 50, 110, 50)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.viewbox(0,0,100,100);
+    return group;
+});
+
+sheet.glyphs.set("cross-orth", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.line(50, -10, 50, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.line(-10, 50, 110, 50)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.viewbox(0,0,100,100);
+    return group;
+});
+
 sheet.glyphs.set("dragon", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const dragon = group.group();

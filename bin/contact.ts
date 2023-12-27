@@ -42,10 +42,11 @@ Array.from(sheets.values()).forEach((sheet) => {
         const glyph = glyphs[idx];
         const tile = nstSheet.nested().size(tileSizeOuter, tileSizeOuter);
         const symbol = glyph(tile);
+
         const used = tile.use(symbol);
         // Scale it appropriately
-        used.dmove(innerTL, innerTL);
-        used.scale(factor, innerTL, innerTL);
+        used.move(innerTL, innerTL);
+        used.scale(factor, factor, innerTL, innerTL);
         tile.plain(name).move(0, tileSizeOuter - innerTL);
         tiles.push(tile);
     }
