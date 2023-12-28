@@ -3830,7 +3830,7 @@ export abstract class RendererBase {
                                 const midx = (pt2.x + pt3.x) / 2;
                                 const midy = (pt2.y + pt3.y) / 2;
                                 lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
-                                lines.push([midx, midy, pt3.x, pt3.y]);
+                                lines.push([pt2.x, pt2.y, midx, midy]);
                             }
                             // top right E
                             else if ( (marker.edge === "E") && (i === 0) ) {
