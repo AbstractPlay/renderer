@@ -424,9 +424,10 @@ export abstract class RendererBase {
 
         // Validate colour list if given
         if ( (opts.colours !== undefined) && (opts.colours.length > 0) ) {
-            const re = new RegExp(/^\#[a-f0-9]{6}$/, "i");
+            const re3 = new RegExp(/^\#[a-f0-9]{3}$/, "i");
+            const re6 = new RegExp(/^\#[a-f0-9]{6}$/, "i");
             for (const c of opts.colours) {
-                if (! re.test(c)) {
+                if ( (! re3.test(c)) && (! re6.test(c)) ) {
                     throw new Error(`One of the colours you requested is malformed: ${ c }`);
                 }
             }
