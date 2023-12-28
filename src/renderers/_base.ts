@@ -3293,7 +3293,7 @@ export abstract class RendererBase {
                         opacity = marker.opacity as number;
                     }
                     const points: [number, number][] = [];
-                    if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                    if ( ( (this.json.board.style.startsWith("squares")) || (this.json.board.style.startsWith("sowing")) ) && (gridExpanded !== undefined) ) {
                         for (const point of marker.points as ITarget[]) {
                             points.push([gridExpanded[point.row][point.col].x, gridExpanded[point.row][point.col].y]);
                         }
