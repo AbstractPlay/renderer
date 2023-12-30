@@ -2439,7 +2439,7 @@ export abstract class RendererBase {
         hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
             .fill(hexFill).opacity(1)
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
-        const polys: Poly[][] = [];
+        let polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
@@ -2463,6 +2463,7 @@ export abstract class RendererBase {
         }
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
+            polys = polys.map(l => l.reverse()).reverse();
         }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
@@ -3326,13 +3327,14 @@ export abstract class RendererBase {
                         const cell = polys[point.row][point.col];
                         switch (cell.type) {
                             case "circle":
-                                svgGroup.circle(cell.r * 2).fill({color: colour, opacity}).center(cell.cx, cell.cy);
+                                svgGroup.circle(cell.r * 2).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                                ;
                                 break;
                             case "poly":
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: colour, opacity});
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
-                                svgGroup.path(cell.path).fill({color: colour, opacity});
+                                svgGroup.path(cell.path).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                     }
