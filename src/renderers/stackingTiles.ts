@@ -115,6 +115,7 @@ export class StackingTilesRenderer extends RendererBase {
                                 if (idx > 0) {
                                     const color = this.options.colours[idx - 1];
                                     const tile = group.rect(tileWidth, tileHeight)
+                                        .addClass(`aprender-tile-${idx}`)
                                         .move(x, y)
                                         .fill(color)
                                         .stroke({width: tileHeight * 0.2, color: "#fff"});
@@ -124,6 +125,7 @@ export class StackingTilesRenderer extends RendererBase {
                                 // overflow piece (there should only be one)
                                 } else {
                                     group.line(x, y + (tileHeight / 2), x + tileWidth, y + (tileHeight / 2))
+                                        .addClass("aprender-tile-overflow")
                                         .fill("#000")
                                         .stroke({width: tileHeight, color: "#000", dasharray: "4"});
                                 }

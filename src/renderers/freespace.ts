@@ -3,6 +3,7 @@ import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase, IKey } from "./_base";
 import { IPoint } from "../grids/_base";
 import { rotate, usePieceAt } from "../common/plotting";
+import { x2uid} from "../common/glyph2uid";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -81,7 +82,7 @@ export class FreespaceRenderer extends RendererBase {
 
         // clickable background field
         const field = this.rootSvg.nested().id("pieces").viewbox(ox - borderBuffer, oy - borderBuffer, width + (borderBuffer*2), height + (borderBuffer*2)).move(ox, oy);
-        field.rect(width, height).move(ox, oy).fill(backFill).back();
+        field.rect(width, height).id("aprender-backfill").move(ox, oy).fill(backFill).back();
         if (this.options.boardClick !== undefined) {
             const originX = field.x() as number;
             const originY = field.y() as number;
@@ -194,7 +195,7 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("dashed" in note) && (note.dashed !== undefined) && (Array.isArray(note.dashed)) && (note.dashed.length > 0) ) {
                         strokeData.dasharray = (note.dashed).join(" ");
                     }
-                    notes.path(note.path as string).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
+                    notes.path(note.path as string).addClass(`aprender-annotation-${x2uid(note)}`).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
                 } else if (note.type === "glyph") {
                     const key = note.glyph as string;
                     const piece = field.root().findOne("#" + key) as Svg;
@@ -243,6 +244,7 @@ export class FreespaceRenderer extends RendererBase {
                     const [{x: x1, y: y1}, {x: x2, y: y2}] = marker.points
 
                     const text = field.text(marker.label)
+                        .addClass(`aprender-marker-${x2uid(marker)}`)
                         .font({size: fontsize, fill: colour, anchor: "middle"})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging")
@@ -304,7 +306,7 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("dashed" in marker) && (marker.dashed !== undefined) && (Array.isArray(marker.dashed)) && (marker.dashed.length > 0) ) {
                         strokeData.dasharray = (marker.dashed).join(" ");
                     }
-                    field.path(marker.path).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
+                    field.path(marker.path).addClass(`aprender-marker-${x2uid(marker)}`).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
                 }
             }
         }

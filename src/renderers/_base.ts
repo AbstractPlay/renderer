@@ -10,6 +10,7 @@ import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt } from "../common/plotting";
+import { glyph2uid, x2uid} from "../common/glyph2uid";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -642,6 +643,8 @@ export abstract class RendererBase {
                     } else {
                         throw new Error(`Could not load one of the components of the glyph '${key}': ${JSON.stringify(g)}.`);
                     }
+                    // tag glyph symbol for styling
+                    got.id(glyph2uid(g));
 
                     let sheetCellSize = got.viewbox().height;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
@@ -937,18 +940,18 @@ export abstract class RendererBase {
 
         if (style === "squares-checkered") {
             // Load glyphs for light and dark squares
-            const tileDark = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileDark = this.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
             tileDark.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill(baseColour)
                 .opacity(baseOpacity * 0.25)
                 .stroke({width: 0});
-            const tileLight = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileLight = this.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
             tileLight.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill({color: "#ffffff", opacity: 0})
                 .stroke({width: 0});
-            const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill({color: baseColour, opacity: baseOpacity})
@@ -996,11 +999,11 @@ export abstract class RendererBase {
                 }
             }
         } else if (tileSpace > 0) {
-            const tileLight = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileLight = this.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
             tileLight.rect(cellsize, cellsize)
                 .fill({color: "#ffffff", opacity: 0})
                 .stroke({width: 0});
-            const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill({color: baseColour, opacity: baseOpacity})
@@ -1029,7 +1032,7 @@ export abstract class RendererBase {
             }
         } else if (blocked !== undefined) {
             const tiles = board.group().id("tiles");
-            const tileBlocked = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+            const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
                 .fill({color: baseColour, opacity: baseOpacity})
@@ -1665,7 +1668,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         let gridPoints: GridPoints = [];
         // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
-        const polys: Poly[][] = [];
+        let polys: Poly[][] = [];
         for (let y = 0; y < height; y++) {
             const rowPolys: Poly[] = [];
             const node: IPoint[] = [];
@@ -1694,7 +1697,7 @@ export abstract class RendererBase {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hexSymbol = this.rootSvg.symbol()
+        const hexSymbol = this.rootSvg.symbol().id("hex-symbol")
             .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
             .fill(hexFill).opacity(1)
         if (! clickEdges) {
@@ -1789,6 +1792,7 @@ export abstract class RendererBase {
 
         if (this.options.rotate === 180) {
             gridPoints = gridPoints.map((r) => r.reverse()).reverse();
+            polys = polys.map((r) => r.reverse()).reverse();
         }
         this.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
@@ -2306,7 +2310,7 @@ export abstract class RendererBase {
         }
 
         // Draw circles
-        const circle = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+        const circle = this.rootSvg.defs().symbol().id("circle-symbol").viewbox(0, 0, cellsize, cellsize);
         circle.circle(cellsize)
             .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
@@ -2435,7 +2439,7 @@ export abstract class RendererBase {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
+        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
             .fill(hexFill).opacity(1)
@@ -2464,7 +2468,7 @@ export abstract class RendererBase {
         }
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
-            polys = polys.map(l => l.reverse()).reverse();
+            polys = polys.map((r) => r.reverse()).reverse();
         }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
@@ -2573,12 +2577,12 @@ export abstract class RendererBase {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hex = this.rootSvg.defs().symbol().viewbox(-3.3493649053890344, 0, 50, 50);
+        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
             .fill(hexFill).opacity(1)
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
-        const polys: Poly[][] = [];
+        let polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
@@ -2602,6 +2606,7 @@ export abstract class RendererBase {
         }
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
+            polys = polys.map((r) => r.reverse()).reverse();
         }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
@@ -2734,19 +2739,19 @@ export abstract class RendererBase {
         //     }
         // }
 
-        const tilePit = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+        const tilePit = this.rootSvg.defs().symbol().id("pit-symbol").viewbox(0, 0, cellsize, cellsize);
         tilePit.circle(cellsize * shrinkage)
             .center(cellsize / 2, cellsize / 2)
             .fill({color: "#fff", opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
             .attr("data-outlined", true)
-        const tileSquare = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize);
+        const tileSquare = this.rootSvg.defs().symbol().id("square-pit-symbol").viewbox(0, 0, cellsize, cellsize);
         tileSquare.rect(cellsize * shrinkage, cellsize * shrinkage)
             .center(cellsize / 2, cellsize / 2)
             .fill({color: "#fff", opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
             .attr("data-outlined", true)
-        const tileEnd = this.rootSvg.defs().symbol().viewbox(0, 0, cellsize, cellsize * height);
+        const tileEnd = this.rootSvg.defs().symbol().id("end-pit-symbol").viewbox(0, 0, cellsize, cellsize * height);
         tileEnd.rect(cellsize * shrinkage, cellsize * height * 0.95)
             .radius(10)
             .center(cellsize / 2, (cellsize * height) / 2)
@@ -2771,8 +2776,10 @@ export abstract class RendererBase {
                     continue;
                 }
                 let tile = tilePit;
+                let isSquare = false;
                 if (squarePits.find(o => o.row === row && o.col === col) !== undefined) {
                     tile = tileSquare;
+                    isSquare = true;
                 }
                 if (outlined !== undefined) {
                     const outWidth = baseStroke;
@@ -2788,7 +2795,7 @@ export abstract class RendererBase {
                     if (outlined.opacity !== undefined) {
                         outOpacity = outlined.opacity;
                     }
-                    tile = tile.clone();
+                    tile = tile.clone().id(`tile-${isSquare ? "square-" : ""}outlined-${outColor}`);
                     tile.find("[data-outlined=true]").each(function(this: SVGElement) { this.stroke({width: outWidth, color: outColor, opacity: outOpacity}); });
                     this.rootSvg.defs().add(tile);
                 }
@@ -2830,7 +2837,7 @@ export abstract class RendererBase {
                 if (outlined.opacity !== undefined) {
                     outOpacity = outlined.opacity;
                 }
-                tileToUse = tileEnd.clone();
+                tileToUse = tileEnd.clone().id(`tile-end-outlined-${outColor}`);
                 tileToUse.find("[data-outlined=true]").each(function(this: SVGElement) { this.stroke({width: outWidth, color: outColor, opacity: outOpacity}); });
                 this.rootSvg.defs().add(tileToUse);
             }
@@ -2865,7 +2872,7 @@ export abstract class RendererBase {
                 if (outlined.opacity !== undefined) {
                     outOpacity = outlined.opacity;
                 }
-                tileToUse = tileEnd.clone();
+                tileToUse = tileEnd.clone().id(`tile-end-outlined-${outColor}`);
                 tileToUse.find("[data-outlined=true]").each(function(this: SVGElement) { this.stroke({width: outWidth, color: outColor, opacity: outOpacity}); });
                 this.rootSvg.defs().add(tileToUse);
             }
@@ -2979,7 +2986,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.polyline(points.join(" ")).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(note)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -3025,7 +3032,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).addClass(`aprender-annotation-${x2uid(note)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -3052,6 +3059,7 @@ export abstract class RendererBase {
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
+                            .addClass(`aprender-annotation-${x2uid(note)}`)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
                             .center(pt.x, pt.y)
@@ -3067,6 +3075,7 @@ export abstract class RendererBase {
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
+                            .addClass(`aprender-annotation-${x2uid(note)}`)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
                             .center(pt.x, pt.y)
@@ -3090,6 +3099,7 @@ export abstract class RendererBase {
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.circle(this.cellsize * diameter)
+                            .addClass(`aprender-annotation-${x2uid(note)}`)
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
@@ -3277,7 +3287,9 @@ export abstract class RendererBase {
                                 .fill(colour)
                                 .opacity(opacity)
                                 .stroke({width: 0})
-                                .center(pt.x, pt.y);
+                                .center(pt.x, pt.y)
+                                .attr({ 'pointer-events': 'none' })
+                                .addClass(`aprender-marker-${x2uid(marker)}`);
                         });
                     }
                 } else if (marker.type === "shading") {
@@ -3304,7 +3316,7 @@ export abstract class RendererBase {
                         }
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
-                    svgGroup.polygon(ptstr).fill(colour).opacity(opacity);
+                    svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(marker)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
                     if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even"))  ) {
                         throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board and hex fields.");
@@ -3328,14 +3340,13 @@ export abstract class RendererBase {
                         const cell = polys[point.row][point.col];
                         switch (cell.type) {
                             case "circle":
-                                svgGroup.circle(cell.r * 2).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
-                                ;
+                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(marker)}`).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(marker)}`).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
-                                svgGroup.path(cell.path).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(marker)}`).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                     }
@@ -3377,7 +3388,7 @@ export abstract class RendererBase {
                         const point2 = (marker.points as ITarget[])[1];
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
                     }
-                    svgGroup.line(x1, y1, x2, y2).stroke(stroke);
+                    svgGroup.line(x1, y1, x2, y2).stroke(stroke).attr({ 'pointer-events': 'none' }).addClass(`aprender-marker-${x2uid(marker)}`);
                 } else if (marker.type === "halo") {
                     if (! this.json.board.style.startsWith("circular")) {
                         throw new Error("The `halo` marker only works with `circular-*` boards.");
@@ -3448,13 +3459,13 @@ export abstract class RendererBase {
                             }
                             // if there's only one segment, draw a full circle
                             if (phi === 360) {
-                                svgGroup.circle(radius * 2).fill("none").stroke(stroke);
+                                svgGroup.circle(radius * 2).addClass(`aprender-marker-${x2uid(marker)}-segment${i+1}`).fill("none").stroke(stroke);
                             }
                             // otherwise, draw an arc
                             else {
                                 const [lx, ly] = projectPoint(0, 0, radius, degStart + (phi * i));
                                 const [rx, ry] = projectPoint(0, 0, radius, degStart + (phi * (i+1)));
-                                svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).fill("none").stroke(stroke);
+                                svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).addClass(`aprender-marker-${x2uid(marker)}-segment${i+1}`).fill("none").stroke(stroke);
                             }
                         }
                     }
@@ -3495,6 +3506,7 @@ export abstract class RendererBase {
                     const text = svgGroup.text((add) => {
                             add.tspan(marker.label as string).attr('style', font);
                         })
+                        .addClass(`aprender-marker-${x2uid(marker)}`)
                         .font({ fill: colour, anchor: "middle"})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging");
@@ -3540,7 +3552,7 @@ export abstract class RendererBase {
                                 yTo = grid[grid.length - 1][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity});
                     } else if ( ( (style.startsWith("squares")) || (style === "sowing") ) && (gridExpanded !== undefined) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
@@ -3570,7 +3582,7 @@ export abstract class RendererBase {
                                 yTo = gridExpanded[gridExpanded.length - 1][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity});
                     } else if (style === "hex-of-tri") {
                         const midrow = Math.floor(grid.length / 2);
                         let xFrom = 0; let yFrom = 0;
@@ -3613,7 +3625,7 @@ export abstract class RendererBase {
                                 yTo = grid[0][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke({width: baseStroke * 3, color: colour, opacity});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity});
                     } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
                         /*
                          * Polys is populated.
@@ -3699,7 +3711,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
                         /*
@@ -3786,7 +3798,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if ( (style === "hex-slanted") && (polys !== undefined) ) {
                         /*
@@ -3863,7 +3875,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     }
                 } else if (marker.type === "fence") {
@@ -3923,7 +3935,7 @@ export abstract class RendererBase {
                                 yTo = south.y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).stroke(stroke);
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
                         let row = marker.cell.row as number;
                         let col = marker.cell.col as number;
@@ -3943,7 +3955,7 @@ export abstract class RendererBase {
                                 const [idx1, idx2] = edge.corners;
                                 const {x: xFrom, y: yFrom} = hex.corners[idx1];
                                 const {x: xTo, y: yTo} = hex.corners[idx2];
-                                svgGroup.line(xFrom, yFrom, xTo, yTo).stroke(stroke);
+                                svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke(stroke);
                             }
                         }
                     }
@@ -4464,7 +4476,7 @@ export abstract class RendererBase {
         if (this.json.board !== null) {
             if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
                 const bbox = this.rootSvg.bbox();
-                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).move(bbox.x - 10, bbox.y - 10).fill(this.json.board.backFill).back();
+                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill(this.json.board.backFill).back();
             }
         }
     }
