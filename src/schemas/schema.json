@@ -529,7 +529,7 @@
                                                 "default": 0.25
                                             }
                                         },
-                                        "required": ["type", "points"],
+                                        "required": ["type", "points", "colour"],
                                         "additionalProperties": false
                                     },
                                     {

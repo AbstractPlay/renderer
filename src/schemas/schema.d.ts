@@ -342,7 +342,7 @@ export interface APRenderRep {
               /**
                * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
                */
-              colour?: PositiveInteger | Colourstrings;
+              colour: PositiveInteger | Colourstrings;
               /**
                * 1 is fully opaque. 0 is fully transparent.
                */
