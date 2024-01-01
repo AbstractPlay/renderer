@@ -335,7 +335,7 @@ sheet.glyphs.set("tower", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -348,7 +348,7 @@ sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -362,7 +362,7 @@ sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -377,7 +377,7 @@ sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -393,7 +393,7 @@ sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -410,7 +410,7 @@ sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -428,7 +428,7 @@ sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
