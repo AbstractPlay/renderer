@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
@@ -1697,14 +1698,17 @@ export abstract class RendererBase {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(corners[5].x - 1, corners[0].y - 1, corners[1].x - corners[5].x + 2, corners[3].y - corners[0].y + 2);
-        const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
-                            .fill("white").opacity(0);
+        const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol")
+            .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+            .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
+        // const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(corners[4].x - 1, corners[5].y - 1, corners[0].x - corners[4].x + 2, corners[2].y - corners[5].y + 2);
+        // const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+        //                     .fill("white").opacity(0).id("hex-symbol-poly");
         if (hexFill !== undefined) {
-            symbolPoly.fill(hexFill).opacity(1);
+            hexSymbol.fill({color: hexFill, opacity: 1});
         }
         if (! clickEdges) {
-            symbolPoly.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
+            hexSymbol.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
         }
 
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -1725,10 +1729,7 @@ export abstract class RendererBase {
                 }
             }
             const { x, y } = hex;
-            // TODO: Really this should be using hexSymbol, but it was erroneously using symbolPoly
-            // all this time and working, and as soon as I tried to do it "right," it broke.
-            // So leaving it pointint to symbolPoly until I can figure out what's going on.
-            const used = board.use(symbolPoly).translate(x, y);
+            const used = board.use(hexSymbol).size(cellsize, cellsize).translate(x, y);
             if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
                 let customLabels: string[]|undefined;
                 if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
@@ -2448,10 +2449,10 @@ export abstract class RendererBase {
         const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
-                           .fill("white").opacity(0)
+                           .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
                            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         if (hexFill !== undefined) {
-            symbolPoly.fill(hexFill).opacity(1);
+            symbolPoly.fill({color: hexFill, opacity: 1});
         }
         let polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
@@ -2459,8 +2460,8 @@ export abstract class RendererBase {
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 const dx = p.x - triHeight; const dy = p.y - 25;
+                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 rowPolys.push({
                     type: "poly",
                     points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
@@ -2589,10 +2590,10 @@ export abstract class RendererBase {
         const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
-                            .fill("white").opacity(0)
+                            .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
                             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
         if (hexFill !== undefined) {
-            symbolPoly.fill(hexFill).opacity(1);
+            symbolPoly.fill({color: hexFill, opacity: 1});
         }
         let polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
@@ -2600,7 +2601,7 @@ export abstract class RendererBase {
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+                const c = gridlines.use(symbolPoly).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 const dx = p.x - triHeight; const dy = p.y - 25;
                 rowPolys.push({
                     type: "poly",
