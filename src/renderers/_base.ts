@@ -1693,22 +1693,26 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
         const corners = grid.getHex({col: 0, row: 0})!.corners;
+        const vbx = Math.min(...corners.map(pt => pt.x));
+        const vby = Math.min(...corners.map(pt => pt.y));
+        const vbWidth = Math.max(...corners.map(pt => pt.x)) - vbx;
+        const vbHeight = Math.max(...corners.map(pt => pt.y)) - vby;
         let hexFill: string|undefined;
         if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol")
-            .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
-            .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
-        // const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(corners[4].x - 1, corners[5].y - 1, corners[0].x - corners[4].x + 2, corners[2].y - corners[5].y + 2);
-        // const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
-        //                     .fill("white").opacity(0).id("hex-symbol-poly");
+        // const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol")
+        //     .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+        //     .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
+        const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(vbx, vby, vbWidth, vbHeight);
+        const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+                            .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
         if (hexFill !== undefined) {
-            hexSymbol.fill({color: hexFill, opacity: 1});
+            symbolPoly.fill({color: hexFill, opacity: 1});
         }
         if (! clickEdges) {
-            hexSymbol.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
+            symbolPoly.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
         }
 
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -1729,7 +1733,7 @@ export abstract class RendererBase {
                 }
             }
             const { x, y } = hex;
-            const used = board.use(hexSymbol).size(cellsize, cellsize).translate(x, y);
+            const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
             if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
                 let customLabels: string[]|undefined;
                 if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
@@ -2461,7 +2465,7 @@ export abstract class RendererBase {
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
                 const dx = p.x - triHeight; const dy = p.y - 25;
-                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 rowPolys.push({
                     type: "poly",
                     points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
@@ -2601,7 +2605,7 @@ export abstract class RendererBase {
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const c = gridlines.use(symbolPoly).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 const dx = p.x - triHeight; const dy = p.y - 25;
                 rowPolys.push({
                     type: "poly",
