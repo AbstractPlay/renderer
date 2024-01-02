@@ -704,7 +704,7 @@ export abstract class RendererBase {
                     if (g.scale !== undefined) {
                         factor = g.scale;
                     }
-                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "hex-of-hex") ) {
+                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && ( (this.json.board.style === "hex-of-hex") || (this.json.board.style === "hex-slanted") ) ) {
                         factor *= 0.85;
                     }
                     if (factor !== 1) {
