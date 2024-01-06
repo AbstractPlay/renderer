@@ -1,5 +1,6 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import type { ISheet } from "./ISheet";
+import { Orientation, defineHex } from "honeycomb-grid";
 
 const sheet: ISheet = {
     name: "core",
@@ -128,6 +129,40 @@ sheet.glyphs.set("dragon", (canvas: SVGContainer) => {
     dragon.flip("x", {x: 0, y: 0});
     group.viewbox(-475.9079999999999, 36.31599999999999, 426.3689999999998, 426.3689999999998);
     return group;
+});
+
+sheet.glyphs.set("hex-flat", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group();
+    const pHex = defineHex({orientation: Orientation.FLAT, dimensions: 100});
+    const hex = new pHex();
+    group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .stroke({width: 5, color: "black"})
+        .fill("none")
+        .attr("data-playerfill", true);
+    const vbx = Math.min(...hex.corners.map(pt => pt.x));
+    const vby = Math.min(...hex.corners.map(pt => pt.y));
+    const vbWidth = hex.corners[1].x - hex.corners[4].x;
+    const vbHeight = hex.corners[2].y - hex.corners[0].y;
+    symbol.viewbox(vbx, vby, vbWidth, vbHeight);
+    return symbol;
+});
+
+sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group();
+    const pHex = defineHex({orientation: Orientation.POINTY, dimensions: 100});
+    const hex = new pHex();
+    group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .stroke({width: 5, color: "black"})
+        .fill("none")
+        .attr("data-playerfill", true);
+    const vbx = Math.min(...hex.corners.map(pt => pt.x));
+    const vby = Math.min(...hex.corners.map(pt => pt.y));
+    const vbWidth = hex.corners[0].x - hex.corners[4].x;
+    const vbHeight = hex.corners[2].y - hex.corners[5].y;
+    symbol.viewbox(vbx, vby, vbWidth, vbHeight);
+    return symbol;
 });
 
 sheet.glyphs.set("house", (canvas: SVGContainer) => {
