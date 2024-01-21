@@ -10,8 +10,9 @@ import { StackingTilesRenderer } from "./stackingTiles";
 import { FreespaceRenderer } from "./freespace";
 import { SowingNumeralsRenderer } from "./sowingNumerals";
 import { SowingPipsRenderer } from "./sowingPips";
+import { ConhexRenderer } from "./conhex";
 
-export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer, SowingNumeralsRenderer, SowingPipsRenderer, type Poly };
+export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer, SowingNumeralsRenderer, SowingPipsRenderer, ConhexRenderer, type Poly };
 
 const renderers: (name: string) => RendererBase = (name) =>{
   switch(name) {
@@ -32,11 +33,21 @@ const renderers: (name: string) => RendererBase = (name) =>{
     case EntropyRenderer.rendererName:
       return new EntropyRenderer();
     case FreespaceRenderer.rendererName:
+<<<<<<< HEAD
         return new FreespaceRenderer();
     case SowingNumeralsRenderer.rendererName:
         return new SowingNumeralsRenderer();
     case SowingPipsRenderer.rendererName:
         return new SowingPipsRenderer();
+=======
+      return new FreespaceRenderer();
+    case SowingNumeralsRenderer.rendererName:
+      return new SowingNumeralsRenderer();
+    case SowingPipsRenderer.rendererName:
+      return new SowingPipsRenderer();
+    case ConhexRenderer.rendererName:
+      return new ConhexRenderer();
+>>>>>>> develop
     default:
       throw new Error(`Don't know a renderer called ${name}`);
   }

@@ -94,7 +94,8 @@
                 "entropy",
                 "freespace",
                 "sowing-numerals",
-                "sowing-pips"
+                "sowing-pips",
+                "conhex"
             ],
             "default": "default"
         },
@@ -159,7 +160,9 @@
                                 "hex-of-cir",
                                 "snubsquare",
                                 "circular-cobweb",
-                                "sowing"
+                                "sowing",
+                                "conhex-dots",
+                                "conhex-cells"
                             ]
                         },
                         "strokeWeight": {

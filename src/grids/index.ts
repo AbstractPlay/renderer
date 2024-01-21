@@ -6,4 +6,6 @@ import { rectOfRects } from "./rectOfRects";
 import { snubsquare } from "./snubsquare";
 import { cobweb } from "./cobweb";
 
-export {hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb};
+import { GridPoints, IPoint } from "./_base";
+
+export {GridPoints, IPoint, hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb};

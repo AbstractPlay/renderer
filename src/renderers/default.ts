@@ -80,6 +80,9 @@ export class DefaultRenderer extends RendererBase {
             case "sowing":
                 gridPoints = this.sowing();
                 break;
+            case "conhex-cells":
+                gridPoints = this.conhex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }
