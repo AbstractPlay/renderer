@@ -79,6 +79,9 @@ export class StackingOffsetRenderer extends RendererBase {
             case "circular-cobweb":
                 gridPoints = this.cobweb();
                 break;
+            case "conhex-cells":
+                gridPoints = this.conhex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }

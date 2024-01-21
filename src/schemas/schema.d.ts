@@ -33,7 +33,8 @@ export interface APRenderRep {
     | "entropy"
     | "freespace"
     | "sowing-numerals"
-    | "sowing-pips";
+    | "sowing-pips"
+    | "conhex";
   /**
    * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable. The option `reverse-columns` labels the columns with "a" at the top instead of at the bottom.
    */
@@ -76,7 +77,9 @@ export interface APRenderRep {
           | "hex-of-cir"
           | "snubsquare"
           | "circular-cobweb"
-          | "sowing";
+          | "sowing"
+          | "conhex-dots"
+          | "conhex-cells";
         /**
          * The base stroke weight of lines drawn to construct the board.
          */

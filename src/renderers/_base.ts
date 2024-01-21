@@ -9,7 +9,7 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixSquareRotN90 } from "../common/plotting";
 import { glyph2uid, x2uid} from "../common/glyph2uid";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
@@ -732,6 +732,85 @@ export abstract class RendererBase {
                 nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
             }
         }
+    }
+
+    public getConhexCells(boardsize: number, cellsize: number): IPolyPolygon[][] {
+        const numLayers = Math.floor(boardsize / 2);
+        let grid = rectOfRects({gridHeight: boardsize, gridWidth: boardsize, cellSize: cellsize});
+
+        const polys: IPolyPolygon[][] = [];
+        // for each layer (except the last one)
+        for (let layer = 0; layer < numLayers - 1; layer++) {
+            const tlx = layer;
+            const tly = layer;
+            const row: IPolyPolygon[] = [];
+            // do the following four times, rotating after each time
+            for (let i = 0; i < 4; i++) {
+                for (let segment = 0; segment < numLayers - 1 - layer; segment++) {
+                    // corner
+                    if (segment === 0) {
+                        // outer layer corners are unique
+                        if (layer === 0) {
+                            row.push({
+                                type: "poly",
+                                points: [
+                                    grid[tly][tlx],
+                                    grid[tly][tlx+2],
+                                    grid[tly+1][tlx+2],
+                                    grid[tly+2][tlx+1],
+                                    grid[tly+2][tlx],
+                                ]
+                            });
+                        }
+                        // interior corner
+                        else {
+                            row.push({
+                                type: "poly",
+                                points: [
+                                    grid[tly][tlx+1],
+                                    grid[tly][tlx+2],
+                                    grid[tly+1][tlx+2],
+                                    grid[tly+2][tlx+1],
+                                    grid[tly+2][tlx],
+                                    grid[tly+1][tlx],
+                                ]
+                            });
+                        }
+                    }
+                    // everything else
+                    else {
+                        const xoffset = tlx + (2 * segment);
+                        row.push({
+                            type: "poly",
+                            points: [
+                                grid[tly][xoffset],
+                                grid[tly][xoffset+2],
+                                grid[tly+1][xoffset+2],
+                                grid[tly+1][xoffset],
+                            ]
+                        });
+                    }
+                }
+
+                // rotate after each pass
+                grid = matrixSquareRotN90(grid) as GridPoints;
+            }
+            polys.push(row);
+        }
+        // now add the center diamond poly
+        const ctr = Math.floor(boardsize / 2);
+        polys.push([{
+            type: "poly",
+            points: [
+                grid[ctr-1][ctr],
+                grid[ctr][ctr+1],
+                grid[ctr+1][ctr],
+                grid[ctr][ctr-1],
+            ],
+        }]);
+
+        // all done
+        return polys;
     }
 
     /**
@@ -2940,6 +3019,113 @@ export abstract class RendererBase {
     }
 
     /**
+     * This draws the `conhex-cells` board and then returns a map of row/column coordinates
+     * to x/y coordinates of the centroid of each polygon.
+     * Rows represent layers, starting from the outside in, with each column starting at the
+     * top-left corner.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected conhex(): GridPoints {
+        if ( (this.json === undefined) || (this.json.board === null) || ( (! ("width" in this.json.board)) && (! ("height" in this.json.board)) ) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        let width = this.json.board.width as number|undefined;
+        let height = this.json.board.height as number|undefined;
+        if (width === undefined && height === undefined) {
+            throw new Error("You must provide at least one of `width` or `height`");
+        }
+        if (width !== undefined && height !== undefined && width !== height) {
+            throw new Error("ConHex boards must be square.");
+        }
+        const boardsize = (width !== undefined ? width : height) as number;
+        if (boardsize % 2 === 0) {
+            throw new Error("ConHex board size must be odd.");
+        }
+        if (boardsize < 5) {
+            throw new Error("The minimum ConHex board size is 5.");
+        }
+        if (width === undefined) {
+            width = height;
+        } else if (height === undefined) {
+            height = width;
+        }
+
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get cell polys
+        const conhexCells = this.getConhexCells(boardsize, cellsize);
+        const poly2point = (poly: IPolyPolygon): IPoint => {
+            const sumx = poly.points.map(pt => pt.x).reduce((prev, curr) => prev + curr, 0);
+            const sumy = poly.points.map(pt => pt.y).reduce((prev, curr) => prev + curr, 0);
+            return {
+                x: sumx / poly.points.length,
+                y: sumy / poly.points.length,
+            };
+        }
+        const grid: GridPoints = [];
+        for (const row of conhexCells) {
+            const pts: IPoint[] = [];
+            for (const poly of row) {
+                pts.push(poly2point(poly));
+            }
+            grid.push(pts);
+        }
+        const board = this.rootSvg.group().id("board");
+
+        // Make an expanded grid for markers, to accommodate edge marking and shading
+        // Add one row and one column and shift all points up and to the left by half a cell size
+        let gridExpanded = rectOfRects({gridHeight: boardsize + 1, gridWidth: boardsize + 1, cellSize: cellsize});
+        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
+
+        const gridlines = board.group().id("gridlines");
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
+
+        // no board labels
+
+        // Now the tiles
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( ("blocked" in this.json.board) && (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        // place cells and give them a base, empty fill
+        const cells = this.getConhexCells(boardsize, cellsize);
+        for (let row = 0; row < cells.length; row++) {
+            for (let col = 0; col < cells[row].length; col++) {
+                if (blocked !== undefined && blocked.find(obj => obj.col === col && obj.row === row) !== undefined) {
+                    continue;
+                }
+                const poly = cells[row][col];
+                const p = board.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity}).fill({color: "white", opacity: 0});
+                if (this.options.boardClick !== undefined) {
+                    p.click(() => this.options.boardClick!(row, col, "cell"))
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
+
+        return grid;
+    }
+
+    /**
      * This is what applies annotations to a finished board.
      * Annotations are applied at the end, and so overlay pieces.
      *
@@ -3343,8 +3529,8 @@ export abstract class RendererBase {
                     const ptstr = points.map((p) => p.join(",")).join(" ");
                     svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
-                    if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even"))  ) {
-                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board and hex fields.");
+                    if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even")) && (! this.json.board.style.startsWith("conhex")) ) {
+                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board, the `conhex-*` boards, and hex fields.");
                     }
                     if (polys === undefined) {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
@@ -3365,13 +3551,13 @@ export abstract class RendererBase {
                         const cell = polys[point.row][point.col];
                         switch (cell.type) {
                             case "circle":
-                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
-                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                     }
@@ -3548,7 +3734,7 @@ export abstract class RendererBase {
                     }
                     const opacity = baseOpacity + ((1 - baseOpacity) / 2);
                     const style = this.json.board.style;
-                    if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") ) {
+                    if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") || (style.startsWith("conhex")) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         switch (marker.edge) {
