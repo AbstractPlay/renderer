@@ -33,13 +33,6 @@ const renderers: (name: string) => RendererBase = (name) =>{
     case EntropyRenderer.rendererName:
       return new EntropyRenderer();
     case FreespaceRenderer.rendererName:
-<<<<<<< HEAD
-        return new FreespaceRenderer();
-    case SowingNumeralsRenderer.rendererName:
-        return new SowingNumeralsRenderer();
-    case SowingPipsRenderer.rendererName:
-        return new SowingPipsRenderer();
-=======
       return new FreespaceRenderer();
     case SowingNumeralsRenderer.rendererName:
       return new SowingNumeralsRenderer();
@@ -47,7 +40,6 @@ const renderers: (name: string) => RendererBase = (name) =>{
       return new SowingPipsRenderer();
     case ConhexRenderer.rendererName:
       return new ConhexRenderer();
->>>>>>> develop
     default:
       throw new Error(`Don't know a renderer called ${name}`);
   }
