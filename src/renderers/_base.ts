@@ -4334,11 +4334,11 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = grid[0][0].x - (this.cellsize * 2) - barimg.viewbox().w;
+                    x = grid[0][0].x - (this.cellsize * 1.5) - barimg.viewbox().w;
                 } else {
-                    x = grid[0][grid.length - 1].x + (this.cellsize * 2);
+                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 1.5);
                 }
-                const used = this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).dmove(x, y);
+                const used = this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).move(x, y);
                 if (this.options.boardClick !== undefined) {
                     const top = used.y() as number;
                     const height = used.height() as number;
@@ -4496,9 +4496,9 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = grid[0][0].x - (this.cellsize * 2) - keyimg.viewbox().w;
+                    x = grid[0][0].x - (this.cellsize * 1.5) - keyimg.viewbox().w;
                 } else {
-                    x = grid[0][grid.length - 1].x + (this.cellsize * 2);
+                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 1.5);
                 }
                 const used = this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
                 let clickable = true;
