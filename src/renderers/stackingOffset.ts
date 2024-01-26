@@ -190,18 +190,19 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // rotate gridpoints if necessary
+        let modGrid = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
         if (this.options.rotate === 180) {
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
+            modGrid = modGrid.map((r) => r.reverse()).reverse();
         }
 
         // `pieces` area, if present
-        this.piecesArea(gridPoints);
+        this.piecesArea(modGrid);
 
         // button bar
-        this.placeButtonBar(gridPoints);
+        this.placeButtonBar(modGrid);
 
         // key
-        this.placeKey(gridPoints);
+        this.placeKey(modGrid);
 
         this.backFill();
     }
