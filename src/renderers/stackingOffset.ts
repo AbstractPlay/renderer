@@ -184,14 +184,14 @@ export class StackingOffsetRenderer extends RendererBase {
             }
         }
 
-        // rotate gridpoints if necessary
-        if (this.options.rotate === 180) {
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
-        }
-
         // annotations
         if (this.options.showAnnotations) {
             this.annotateBoard(gridPoints);
+        }
+
+        // rotate gridpoints if necessary
+        if (this.options.rotate === 180) {
+            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
         }
 
         // `pieces` area, if present
