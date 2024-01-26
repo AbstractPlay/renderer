@@ -1045,9 +1045,9 @@ export abstract class RendererBase {
             }
             if ( ("startLight" in this.json.board) ) {
                 if (this.json.board.startLight) {
-                    startLight = 0;
+                    startLight = this.options.rotate === 180 ? 1 : 0;
                 } else {
-                    startLight = 1;
+                    startLight = this.options.rotate === 180 ? 0 : 1;
                 }
             }
 
