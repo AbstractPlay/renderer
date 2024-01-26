@@ -1045,9 +1045,16 @@ export abstract class RendererBase {
             }
             if ( ("startLight" in this.json.board) ) {
                 if (this.json.board.startLight) {
-                    startLight = this.options.rotate === 180 ? 1 : 0;
+                    startLight = 0;
                 } else {
-                    startLight = this.options.rotate === 180 ? 0 : 1;
+                    startLight = 1;
+                }
+            }
+            // This setting is based on the upright board
+            // and needs to be adjusted based on rotation, but not blindly.
+            if (this.options.rotate === 180) {
+                if ( (width !== height) && (height % 2 !== 0) ) {
+                    startLight = startLight === 0 ? 1 : 0;
                 }
             }
 
