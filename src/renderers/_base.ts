@@ -1049,12 +1049,12 @@ export abstract class RendererBase {
                 } else {
                     startLight = 1;
                 }
-                // This setting is based on the upright board
-                // and needs to be adjusted based on rotation, but not blindly.
-                if (this.options.rotate === 180) {
-                    if ( (width !== height) && (height % 2 === 0) ) {
-                        startLight = startLight === 0 ? 1 : 0;
-                    }
+            }
+            // This setting is based on the upright board
+            // and needs to be adjusted based on rotation, but not blindly.
+            if (this.options.rotate === 180) {
+                if ( (width !== height) && (height % 2 !== 0) ) {
+                    startLight = startLight === 0 ? 1 : 0;
                 }
             }
 
