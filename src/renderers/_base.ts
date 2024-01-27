@@ -2162,9 +2162,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2181,7 +2187,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -2204,7 +2210,7 @@ export abstract class RendererBase {
                 columnLabels = columnLabels.reverse();
             }
 
-            for (let row = 0; row < height; row++) {
+            for (let row = 0; row < grid.length; row++) {
                 let leftNum = "1";
                 let rightNum = grid[row].length.toString();
                 if (this.options.rotate === 180) {
@@ -2351,9 +2357,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2370,7 +2382,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
@@ -2454,9 +2466,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2473,7 +2491,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 

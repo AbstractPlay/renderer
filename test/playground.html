@@ -103,6 +103,11 @@
                     "description": "You can render the bottom half as well. Note you can generate quadrilaterlas this way as well.",
                     "render": `{"options":["reverse-columns"],"renderer":"stacking-offset","board":{"style":"hex-of-tri","minWidth":3,"maxWidth":7, "half":"bottom"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
                 },
+                "board-hexAlternating": {
+                    "name": "Boards: Hex of * - Alternating Symmetry",
+                    "description": "Creates a field where sides alternate between two different lengths.",
+                    "render": `{"board":{"style":"hex-of-tri","minWidth":4,"maxWidth":9,"alternatingSymmetry":true},"pieces":null}`
+                },
                 "board-hexfield": {
                     "name": "Boards: Hex field",
                     "description": "A rectangular grid of hexes. The center \"chamber\" is here annotated as a piece. See later examples of how to use markers.",
