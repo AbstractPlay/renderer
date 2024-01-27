@@ -125,7 +125,7 @@ export interface APRenderRep {
          */
         maxWidth?: number;
         /**
-         * Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids.
+         * Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids. Mutually exclusive with `alternatingSymmetry`.
          */
         half?: "top" | "bottom";
         /**
@@ -167,6 +167,10 @@ export interface APRenderRep {
          * Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.
          */
         startLight?: boolean;
+        /**
+         * Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.
+         */
+        alternatingSymmetry?: boolean;
         /**
          * An optional array of strings to override the default column labeling.
          */

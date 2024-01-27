@@ -2162,9 +2162,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2181,7 +2187,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -2204,7 +2210,7 @@ export abstract class RendererBase {
                 columnLabels = columnLabels.reverse();
             }
 
-            for (let row = 0; row < height; row++) {
+            for (let row = 0; row < grid.length; row++) {
                 let leftNum = "1";
                 let rightNum = grid[row].length.toString();
                 if (this.options.rotate === 180) {
@@ -2351,9 +2357,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2370,7 +2382,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
@@ -2454,9 +2466,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2473,7 +2491,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
@@ -2531,6 +2549,12 @@ export abstract class RendererBase {
         const halfhex = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
         let hexFill: string|undefined;
         if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -2549,6 +2573,9 @@ export abstract class RendererBase {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
+                if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
+                    continue;
+                }
                 const p = row[iCol];
                 const dx = p.x - triHeight; const dy = p.y - 25;
                 const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
