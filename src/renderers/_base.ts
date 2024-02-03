@@ -564,7 +564,7 @@ export abstract class RendererBase {
      * It deals with text glyphs and composite glyphs, including filling with colours, rotating, and scaling.
      *
      */
-    protected loadLegend() {
+    protected loadLegend(args: {preserve: boolean} = {preserve: true}) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -615,6 +615,9 @@ export abstract class RendererBase {
                 // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                 const cellsize = 500;
                 const nested = this.rootSvg.defs().nested().id(key);
+                if (! args.preserve) {
+                    nested.attr("preserveAspectRatio", "none");
+                }
                 let size = 0;
                 // Layer the glyphs, manipulating as you go
                 for (const g of glyphs) {
