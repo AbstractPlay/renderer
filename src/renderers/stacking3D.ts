@@ -4,6 +4,7 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rectOfRects } from "../grids";
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
 import { usePieceAt } from "../common/plotting";
+import { x2uid } from "../common/glyph2uid";
 
 interface ILocalStash {
     [k: string]: unknown;
@@ -357,6 +358,10 @@ export class Stacking3DRenderer extends RendererBase {
                 if ( (! ("type" in note)) || (note.type === undefined) ) {
                     throw new Error("Invalid annotation format found.");
                 }
+                const cloned = {...note};
+                if ("targets" in cloned) {
+                    delete cloned.targets;
+                }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
                     if ((note.targets as any[]).length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");
@@ -381,8 +386,8 @@ export class Stacking3DRenderer extends RendererBase {
                         opacity = note.opacity as number;
                     }
 
-                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
-                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const points: [number, number][] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
@@ -397,7 +402,7 @@ export class Stacking3DRenderer extends RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.polyline(points).stroke(stroke).fill("none");
+                    const line = notes.polyline(points).stroke(stroke).fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`);
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -429,8 +434,8 @@ export class Stacking3DRenderer extends RendererBase {
                     }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour));
-                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour));
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const [from, to] = note.targets as ITarget[];
                     const ptFrom = grid[from.row][from.col];
                     const ptTo = grid[to.row][to.col];
@@ -443,7 +448,7 @@ export class Stacking3DRenderer extends RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none");
+                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).stroke(stroke).fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`);
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -475,16 +480,16 @@ export class Stacking3DRenderer extends RendererBase {
                         const y1 = center.y - this.cellsize / 2;
                         const y2 = center.y + this.cellsize / 2;
                         notes.line(x1, y1, x2, y1).transform(this.transformAt2(x1, y1, x2, y1))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                         notes.line(x2, y1, x2, y2).transform(this.transformAt2(x2, y1, x2, y2))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                         notes.line(x2, y2, x1, y2).transform(this.transformAt2(x2, y2, x1, y2))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                         notes.line(x1, y2, x1, y1).transform(this.transformAt2(x1, y2, x1, y1))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                     }
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
@@ -501,16 +506,16 @@ export class Stacking3DRenderer extends RendererBase {
                         const y1 = center.y - this.cellsize / 2;
                         const y2 = center.y + this.cellsize / 2;
                         notes.line(x1, y1, x2, y1).transform(this.transformAt2(x1, y1, x2, y1))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                         notes.line(x2, y1, x2, y2).transform(this.transformAt2(x2, y1, x2, y2))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                         notes.line(x2, y2, x1, y2).transform(this.transformAt2(x2, y2, x1, y2))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                         notes.line(x1, y2, x1, y1).transform(this.transformAt2(x1, y2, x1, y1))
-                            .fill("none")
+                            .fill("none").addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                     }
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
@@ -526,7 +531,7 @@ export class Stacking3DRenderer extends RendererBase {
                     }
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
-                        notes.circle(this.cellsize * 0.2)
+                        notes.circle(this.cellsize * 0.2).addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})

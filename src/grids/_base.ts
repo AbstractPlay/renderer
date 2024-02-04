@@ -90,6 +90,10 @@ export interface IGeneratorArgs {
      *
      */
     readonly half?: "top"|"bottom";
+    /**
+     * Used by `hex-of-*` generators to create boards with alternating side lengths.
+     */
+    readonly alternating?: boolean;
 }
 
 /**

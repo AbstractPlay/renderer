@@ -79,6 +79,9 @@ export class StackingOffsetRenderer extends RendererBase {
             case "circular-cobweb":
                 gridPoints = this.cobweb();
                 break;
+            case "conhex-cells":
+                gridPoints = this.conhex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
@@ -186,14 +189,20 @@ export class StackingOffsetRenderer extends RendererBase {
             this.annotateBoard(gridPoints);
         }
 
+        // rotate gridpoints if necessary
+        let modGrid = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+        if (this.options.rotate === 180) {
+            modGrid = modGrid.map((r) => r.reverse()).reverse();
+        }
+
         // `pieces` area, if present
-        this.piecesArea(gridPoints);
+        this.piecesArea(modGrid);
 
         // button bar
-        this.placeButtonBar(gridPoints);
+        this.placeButtonBar(modGrid);
 
         // key
-        this.placeKey(gridPoints);
+        this.placeKey(modGrid);
 
         this.backFill();
     }

@@ -1,5 +1,6 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import type { ISheet } from "./ISheet";
+import { Orientation, defineHex } from "honeycomb-grid";
 
 const sheet: ISheet = {
     name: "core",
@@ -128,6 +129,40 @@ sheet.glyphs.set("dragon", (canvas: SVGContainer) => {
     dragon.flip("x", {x: 0, y: 0});
     group.viewbox(-475.9079999999999, 36.31599999999999, 426.3689999999998, 426.3689999999998);
     return group;
+});
+
+sheet.glyphs.set("hex-flat", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group();
+    const pHex = defineHex({orientation: Orientation.FLAT, dimensions: 100});
+    const hex = new pHex();
+    group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .stroke({width: 5, color: "black"})
+        .fill("none")
+        .attr("data-playerfill", true);
+    const vbx = Math.min(...hex.corners.map(pt => pt.x));
+    const vby = Math.min(...hex.corners.map(pt => pt.y));
+    const vbWidth = hex.corners[1].x - hex.corners[4].x;
+    const vbHeight = hex.corners[2].y - hex.corners[0].y;
+    symbol.viewbox(vbx, vby, vbWidth, vbHeight);
+    return symbol;
+});
+
+sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group();
+    const pHex = defineHex({orientation: Orientation.POINTY, dimensions: 100});
+    const hex = new pHex();
+    group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .stroke({width: 5, color: "black"})
+        .fill("none")
+        .attr("data-playerfill", true);
+    const vbx = Math.min(...hex.corners.map(pt => pt.x));
+    const vby = Math.min(...hex.corners.map(pt => pt.y));
+    const vbWidth = hex.corners[0].x - hex.corners[4].x;
+    const vbHeight = hex.corners[2].y - hex.corners[5].y;
+    symbol.viewbox(vbx, vby, vbWidth, vbHeight);
+    return symbol;
 });
 
 sheet.glyphs.set("house", (canvas: SVGContainer) => {
@@ -354,6 +389,189 @@ sheet.glyphs.set("plane", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("ring-00", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    group.circle(sheet.cellsize)
+        .attr("data-playerstroke", true)
+        .fill({color: "#fff", opacity: 0})
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-10", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.9)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-20", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.8)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-30", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.7)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-40", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.6)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-50", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.5)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-60", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.4)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-70", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.3)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-80", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.2)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+sheet.glyphs.set("ring-90", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    const hole = group.circle(sheet.cellsize * 0.1)
+                      .stroke({width: 0})
+                      .fill("#000")
+                      .center(sheet.cellsize / 2, sheet.cellsize / 2)
+    const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
+    const mask = group.mask().add(bg).add(hole);
+    group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2)
+        .maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
 sheet.glyphs.set("sphere-spiral", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const sphere = group.group();
@@ -389,7 +607,7 @@ sheet.glyphs.set("tower", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -402,7 +620,7 @@ sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -416,7 +634,7 @@ sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -431,7 +649,7 @@ sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -447,7 +665,7 @@ sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -464,7 +682,7 @@ sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
@@ -482,7 +700,7 @@ sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const rectsym = group.symbol();
+    const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)

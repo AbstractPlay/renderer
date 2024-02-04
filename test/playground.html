@@ -103,6 +103,11 @@
                     "description": "You can render the bottom half as well. Note you can generate quadrilaterlas this way as well.",
                     "render": `{"options":["reverse-columns"],"renderer":"stacking-offset","board":{"style":"hex-of-tri","minWidth":3,"maxWidth":7, "half":"bottom"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
                 },
+                "board-hexAlternating": {
+                    "name": "Boards: Hex of * - Alternating Symmetry",
+                    "description": "Creates a field where sides alternate between two different lengths.",
+                    "render": `{"board":{"style":"hex-of-tri","minWidth":4,"maxWidth":9,"alternatingSymmetry":true},"pieces":null}`
+                },
                 "board-hexfield": {
                     "name": "Boards: Hex field",
                     "description": "A rectangular grid of hexes. The center \"chamber\" is here annotated as a piece. See later examples of how to use markers.",
@@ -127,6 +132,16 @@
                     "name": "Boards: Sowing (Numerals)",
                     "description": "You can also view sowing boards with numerals. This is a standard Mancala board, showing end pits.",
                     "render": "{\"renderer\":\"sowing-numerals\",\"board\":{\"style\":\"sowing\",\"width\":6,\"height\":2,\"markers\":[{\"type\":\"edge\",\"edge\":\"N\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"S\",\"colour\":1}]},\"pieces\":\"5,5,4,,5,5\\n5,,4,4,4,5\\n1,1\"}"
+                },
+                "boards-conhex-dots": {
+                    "name": "Boards: ConHex (Dots)",
+                    "description": "A usual game of ConHex where you interact with the dots and the cells get filled in incidentally. This board only works with the `conhex` renderer. Dots are labelled and indexed as a normal grid. Cells are filled by the `flood` marker and are indexed like a circle, with the first row being the outermost ring, starting from the top-left corner and proceeding clockwise.",
+                    "render": "{\"renderer\":\"conhex\",\"board\":{\"style\":\"conhex-dots\",\"width\":11,\"markers\":[{\"type\":\"flood\",\"points\":[{\"row\":0,\"col\":0}],\"colour\":1},{\"type\":\"flood\",\"points\":[{\"row\":0,\"col\":1}],\"colour\":2},{\"type\":\"edge\",\"edge\":\"N\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"S\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"E\",\"colour\":1},{\"type\":\"edge\",\"edge\":\"W\",\"colour\":1}]},\"pieces\":\"1---------1\\n--122------\"}"
+                },
+                "boards-conhex-cells": {
+                    "name": "Boards: ConHex (Cells)",
+                    "description": "This lets you use the `default` or `stacking-offset` renderer to simply place pieces on the cells. Cells are indexed like a circle, with the first row being the outermost ring, starting from the top-left corner and proceeding clockwise.",
+                    "render": "{\"renderer\":\"stacking-offset\",\"board\":{\"style\":\"conhex-cells\",\"height\":11},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2}},\"pieces\":\"-,-,-,-,B\\n-,-,-,B,A,B\\n-,-,A,-,A,BA,B\\nABA\\nBAAB\"}"
                 },
                 "formatting-custom-labels": {
                     "name": "Formatting: Custom Labels",

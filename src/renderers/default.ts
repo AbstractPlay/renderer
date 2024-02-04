@@ -80,6 +80,9 @@ export class DefaultRenderer extends RendererBase {
             case "sowing":
                 gridPoints = this.sowing();
                 break;
+            case "conhex-cells":
+                gridPoints = this.conhex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }
@@ -152,14 +155,20 @@ export class DefaultRenderer extends RendererBase {
             this.annotateBoard(gridPoints);
         }
 
+        // rotate gridpoints if necessary
+        let modGrid = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+        if (this.options.rotate === 180) {
+            modGrid = modGrid.map((r) => r.reverse()).reverse();
+        }
+
         // `pieces` area, if present
-        this.piecesArea(gridPoints);
+        this.piecesArea(modGrid);
 
         // button bar
-        this.placeButtonBar(gridPoints);
+        this.placeButtonBar(modGrid);
 
         // key
-        this.placeKey(gridPoints);
+        this.placeKey(modGrid);
 
         this.backFill();
     }

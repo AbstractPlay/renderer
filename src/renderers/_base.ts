@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
@@ -8,7 +9,7 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixSquareRotN90 } from "../common/plotting";
 import { glyph2uid, x2uid} from "../common/glyph2uid";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
@@ -171,6 +172,7 @@ interface IButton {
     label: string;
     value?: string;
     attributes?: INameValuePair[];
+    fill?: string;
 }
 
 /**
@@ -562,7 +564,7 @@ export abstract class RendererBase {
      * It deals with text glyphs and composite glyphs, including filling with colours, rotating, and scaling.
      *
      */
-    protected loadLegend() {
+    protected loadLegend(args: {preserve: boolean} = {preserve: true}) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -613,6 +615,9 @@ export abstract class RendererBase {
                 // Create a new SVG.Nested to represent the composite piece and add it to <defs>
                 const cellsize = 500;
                 const nested = this.rootSvg.defs().nested().id(key);
+                if (! args.preserve) {
+                    nested.attr("preserveAspectRatio", "none");
+                }
                 let size = 0;
                 // Layer the glyphs, manipulating as you go
                 for (const g of glyphs) {
@@ -702,7 +707,7 @@ export abstract class RendererBase {
                     if (g.scale !== undefined) {
                         factor = g.scale;
                     }
-                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "hex-of-hex") ) {
+                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && ( (this.json.board.style === "hex-of-hex") || (this.json.board.style === "hex-slanted") ) ) {
                         factor *= 0.85;
                     }
                     if (factor !== 1) {
@@ -730,6 +735,85 @@ export abstract class RendererBase {
                 nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
             }
         }
+    }
+
+    public getConhexCells(boardsize: number, cellsize: number): IPolyPolygon[][] {
+        const numLayers = Math.floor(boardsize / 2);
+        let grid = rectOfRects({gridHeight: boardsize, gridWidth: boardsize, cellSize: cellsize});
+
+        const polys: IPolyPolygon[][] = [];
+        // for each layer (except the last one)
+        for (let layer = 0; layer < numLayers - 1; layer++) {
+            const tlx = layer;
+            const tly = layer;
+            const row: IPolyPolygon[] = [];
+            // do the following four times, rotating after each time
+            for (let i = 0; i < 4; i++) {
+                for (let segment = 0; segment < numLayers - 1 - layer; segment++) {
+                    // corner
+                    if (segment === 0) {
+                        // outer layer corners are unique
+                        if (layer === 0) {
+                            row.push({
+                                type: "poly",
+                                points: [
+                                    grid[tly][tlx],
+                                    grid[tly][tlx+2],
+                                    grid[tly+1][tlx+2],
+                                    grid[tly+2][tlx+1],
+                                    grid[tly+2][tlx],
+                                ]
+                            });
+                        }
+                        // interior corner
+                        else {
+                            row.push({
+                                type: "poly",
+                                points: [
+                                    grid[tly][tlx+1],
+                                    grid[tly][tlx+2],
+                                    grid[tly+1][tlx+2],
+                                    grid[tly+2][tlx+1],
+                                    grid[tly+2][tlx],
+                                    grid[tly+1][tlx],
+                                ]
+                            });
+                        }
+                    }
+                    // everything else
+                    else {
+                        const xoffset = tlx + (2 * segment);
+                        row.push({
+                            type: "poly",
+                            points: [
+                                grid[tly][xoffset],
+                                grid[tly][xoffset+2],
+                                grid[tly+1][xoffset+2],
+                                grid[tly+1][xoffset],
+                            ]
+                        });
+                    }
+                }
+
+                // rotate after each pass
+                grid = matrixSquareRotN90(grid) as GridPoints;
+            }
+            polys.push(row);
+        }
+        // now add the center diamond poly
+        const ctr = Math.floor(boardsize / 2);
+        polys.push([{
+            type: "poly",
+            points: [
+                grid[ctr-1][ctr],
+                grid[ctr][ctr+1],
+                grid[ctr+1][ctr],
+                grid[ctr][ctr-1],
+            ],
+        }]);
+
+        // all done
+        return polys;
     }
 
     /**
@@ -967,6 +1051,13 @@ export abstract class RendererBase {
                     startLight = 0;
                 } else {
                     startLight = 1;
+                }
+            }
+            // This setting is based on the upright board
+            // and needs to be adjusted based on rotation, but not blindly.
+            if (this.options.rotate === 180) {
+                if ( (width !== height) && (height % 2 !== 0) ) {
+                    startLight = startLight === 0 ? 1 : 0;
                 }
             }
 
@@ -1691,16 +1782,26 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
         const corners = grid.getHex({col: 0, row: 0})!.corners;
-        let hexFill = "white";
+        const vbx = Math.min(...corners.map(pt => pt.x));
+        const vby = Math.min(...corners.map(pt => pt.y));
+        const vbWidth = Math.max(...corners.map(pt => pt.x)) - vbx;
+        const vbHeight = Math.max(...corners.map(pt => pt.y)) - vby;
+        let hexFill: string|undefined;
         if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hexSymbol = this.rootSvg.symbol().id("hex-symbol")
-            .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
-            .fill(hexFill).opacity(1)
+        // const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol")
+        //     .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+        //     .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
+        const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(vbx, vby, vbWidth, vbHeight);
+        const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+                            .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
+        if (hexFill !== undefined) {
+            symbolPoly.fill({color: hexFill, opacity: 1});
+        }
         if (! clickEdges) {
-            hexSymbol.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
+            symbolPoly.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity });
         }
 
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -1721,7 +1822,7 @@ export abstract class RendererBase {
                 }
             }
             const { x, y } = hex;
-            const used = board.use(hexSymbol).translate(x, y);
+            const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
             if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
                 let customLabels: string[]|undefined;
                 if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
@@ -2064,9 +2165,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2083,7 +2190,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -2106,7 +2213,7 @@ export abstract class RendererBase {
                 columnLabels = columnLabels.reverse();
             }
 
-            for (let row = 0; row < height; row++) {
+            for (let row = 0; row < grid.length; row++) {
                 let leftNum = "1";
                 let rightNum = grid[row].length.toString();
                 if (this.options.rotate === 180) {
@@ -2253,9 +2360,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2272,7 +2385,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
@@ -2356,9 +2469,15 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
+        let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
             half = this.json.board.half as ("top"|"bottom");
             height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
         }
 
         let baseStroke = 1;
@@ -2375,7 +2494,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half});
+        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
@@ -2433,24 +2552,36 @@ export abstract class RendererBase {
         const halfhex = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
-        let hexFill = "white";
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        let hexFill: string|undefined;
         if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
         const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
-        hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
-            .fill(hexFill).opacity(1)
-            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
+        const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+                           .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
+                           .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
+        if (hexFill !== undefined) {
+            symbolPoly.fill({color: hexFill, opacity: 1});
+        }
         let polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
+                if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
+                    continue;
+                }
                 const p = row[iCol];
-                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 const dx = p.x - triHeight; const dy = p.y - 25;
+                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 rowPolys.push({
                     type: "poly",
                     points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
@@ -2571,23 +2702,26 @@ export abstract class RendererBase {
         const halfhex = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
-        let hexFill = "white";
+        let hexFill: string|undefined;
         if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
         const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
-        hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
-            .fill(hexFill).opacity(1)
-            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
+        const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+                            .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
+                            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
+        if (hexFill !== undefined) {
+            symbolPoly.fill({color: hexFill, opacity: 1});
+        }
         let polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const c = gridlines.use(hex).size(cellsize, cellsize).move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 const dx = p.x - triHeight; const dy = p.y - 25;
                 rowPolys.push({
                     type: "poly",
@@ -2922,6 +3056,113 @@ export abstract class RendererBase {
     }
 
     /**
+     * This draws the `conhex-cells` board and then returns a map of row/column coordinates
+     * to x/y coordinates of the centroid of each polygon.
+     * Rows represent layers, starting from the outside in, with each column starting at the
+     * top-left corner.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected conhex(): GridPoints {
+        if ( (this.json === undefined) || (this.json.board === null) || ( (! ("width" in this.json.board)) && (! ("height" in this.json.board)) ) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        let width = this.json.board.width as number|undefined;
+        let height = this.json.board.height as number|undefined;
+        if (width === undefined && height === undefined) {
+            throw new Error("You must provide at least one of `width` or `height`");
+        }
+        if (width !== undefined && height !== undefined && width !== height) {
+            throw new Error("ConHex boards must be square.");
+        }
+        const boardsize = (width !== undefined ? width : height) as number;
+        if (boardsize % 2 === 0) {
+            throw new Error("ConHex board size must be odd.");
+        }
+        if (boardsize < 5) {
+            throw new Error("The minimum ConHex board size is 5.");
+        }
+        if (width === undefined) {
+            width = height;
+        } else if (height === undefined) {
+            height = width;
+        }
+
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get cell polys
+        const conhexCells = this.getConhexCells(boardsize, cellsize);
+        const poly2point = (poly: IPolyPolygon): IPoint => {
+            const sumx = poly.points.map(pt => pt.x).reduce((prev, curr) => prev + curr, 0);
+            const sumy = poly.points.map(pt => pt.y).reduce((prev, curr) => prev + curr, 0);
+            return {
+                x: sumx / poly.points.length,
+                y: sumy / poly.points.length,
+            };
+        }
+        const grid: GridPoints = [];
+        for (const row of conhexCells) {
+            const pts: IPoint[] = [];
+            for (const poly of row) {
+                pts.push(poly2point(poly));
+            }
+            grid.push(pts);
+        }
+        const board = this.rootSvg.group().id("board");
+
+        // Make an expanded grid for markers, to accommodate edge marking and shading
+        // Add one row and one column and shift all points up and to the left by half a cell size
+        let gridExpanded = rectOfRects({gridHeight: boardsize + 1, gridWidth: boardsize + 1, cellSize: cellsize});
+        gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
+
+        const gridlines = board.group().id("gridlines");
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
+
+        // no board labels
+
+        // Now the tiles
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( ("blocked" in this.json.board) && (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        // place cells and give them a base, empty fill
+        const cells = this.getConhexCells(boardsize, cellsize);
+        for (let row = 0; row < cells.length; row++) {
+            for (let col = 0; col < cells[row].length; col++) {
+                if (blocked !== undefined && blocked.find(obj => obj.col === col && obj.row === row) !== undefined) {
+                    continue;
+                }
+                const poly = cells[row][col];
+                const p = board.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity}).fill({color: "white", opacity: 0});
+                if (this.options.boardClick !== undefined) {
+                    p.click(() => this.options.boardClick!(row, col, "cell"))
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
+
+        return grid;
+    }
+
+    /**
      * This is what applies annotations to a finished board.
      * Annotations are applied at the end, and so overlay pieces.
      *
@@ -2940,6 +3181,10 @@ export abstract class RendererBase {
             for (const note of this.json.annotations) {
                 if ( (! ("type" in note)) || (note.type === undefined) ) {
                     throw new Error("Invalid annotation format found.");
+                }
+                const cloned = {...note};
+                if ("targets" in cloned) {
+                    delete cloned.targets;
                 }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
                     if ((note.targets as any[]).length < 2) {
@@ -2970,8 +3215,8 @@ export abstract class RendererBase {
                     }
                     const unit = strokeWidth / 0.03;
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour)).attr({ 'pointer-events': 'none' });
-                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour)).attr({ 'pointer-events': 'none' });
+                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const points: string[] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
@@ -2985,7 +3230,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(note)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -3017,8 +3262,8 @@ export abstract class RendererBase {
                     }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).attr({ 'pointer-events': 'none' });
-                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).attr({ 'pointer-events': 'none' });
+                    const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const [from, to] = note.targets as ITarget[];
                     const ptFrom = grid[from.row][from.col];
                     const ptTo = grid[to.row][to.col];
@@ -3031,7 +3276,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                     }
-                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).addClass(`aprender-annotation-${x2uid(note)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -3058,7 +3303,7 @@ export abstract class RendererBase {
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
-                            .addClass(`aprender-annotation-${x2uid(note)}`)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
                             .center(pt.x, pt.y)
@@ -3074,7 +3319,7 @@ export abstract class RendererBase {
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.rect(this.cellsize, this.cellsize)
-                            .addClass(`aprender-annotation-${x2uid(note)}`)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill("none")
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"})
                             .center(pt.x, pt.y)
@@ -3098,7 +3343,7 @@ export abstract class RendererBase {
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         notes.circle(this.cellsize * diameter)
-                            .addClass(`aprender-annotation-${x2uid(note)}`)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
@@ -3262,6 +3507,10 @@ export abstract class RendererBase {
                 if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo"))) {
                     continue;
                 }
+                const cloned = {...marker as {[k:string]: any}};
+                if ("points" in cloned) {
+                    delete cloned.points;
+                }
                 if (marker.type === "dots") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
@@ -3288,7 +3537,7 @@ export abstract class RendererBase {
                                 .stroke({width: 0})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' })
-                                .addClass(`aprender-marker-${x2uid(marker)}`);
+                                .addClass(`aprender-marker-${x2uid(cloned)}`);
                         });
                     }
                 } else if (marker.type === "shading") {
@@ -3315,10 +3564,10 @@ export abstract class RendererBase {
                         }
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
-                    svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(marker)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
+                    svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
-                    if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even"))  ) {
-                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board and hex fields.");
+                    if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even")) && (! this.json.board.style.startsWith("conhex")) ) {
+                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board, the `conhex-*` boards, and hex fields.");
                     }
                     if (polys === undefined) {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
@@ -3339,13 +3588,13 @@ export abstract class RendererBase {
                         const cell = polys[point.row][point.col];
                         switch (cell.type) {
                             case "circle":
-                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(marker)}`).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(marker)}`).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
-                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(marker)}`).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                     }
@@ -3387,7 +3636,7 @@ export abstract class RendererBase {
                         const point2 = (marker.points as ITarget[])[1];
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
                     }
-                    svgGroup.line(x1, y1, x2, y2).stroke(stroke).attr({ 'pointer-events': 'none' }).addClass(`aprender-marker-${x2uid(marker)}`);
+                    svgGroup.line(x1, y1, x2, y2).stroke(stroke).attr({ 'pointer-events': 'none' }).addClass(`aprender-marker-${x2uid(cloned)}`);
                 } else if (marker.type === "halo") {
                     if (! this.json.board.style.startsWith("circular")) {
                         throw new Error("The `halo` marker only works with `circular-*` boards.");
@@ -3458,13 +3707,13 @@ export abstract class RendererBase {
                             }
                             // if there's only one segment, draw a full circle
                             if (phi === 360) {
-                                svgGroup.circle(radius * 2).addClass(`aprender-marker-${x2uid(marker)}-segment${i+1}`).fill("none").stroke(stroke);
+                                svgGroup.circle(radius * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
                             }
                             // otherwise, draw an arc
                             else {
                                 const [lx, ly] = projectPoint(0, 0, radius, degStart + (phi * i));
                                 const [rx, ry] = projectPoint(0, 0, radius, degStart + (phi * (i+1)));
-                                svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).addClass(`aprender-marker-${x2uid(marker)}-segment${i+1}`).fill("none").stroke(stroke);
+                                svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
                             }
                         }
                     }
@@ -3505,7 +3754,7 @@ export abstract class RendererBase {
                     const text = svgGroup.text((add) => {
                             add.tspan(marker.label as string).attr('style', font);
                         })
-                        .addClass(`aprender-marker-${x2uid(marker)}`)
+                        .addClass(`aprender-marker-${x2uid(cloned)}`)
                         .font({ fill: colour, anchor: "middle"})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging");
@@ -3522,7 +3771,7 @@ export abstract class RendererBase {
                     }
                     const opacity = baseOpacity + ((1 - baseOpacity) / 2);
                     const style = this.json.board.style;
-                    if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") ) {
+                    if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") || (style.startsWith("conhex")) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         switch (marker.edge) {
@@ -3551,7 +3800,7 @@ export abstract class RendererBase {
                                 yTo = grid[grid.length - 1][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity});
                     } else if ( ( (style.startsWith("squares")) || (style === "sowing") ) && (gridExpanded !== undefined) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
@@ -3581,7 +3830,7 @@ export abstract class RendererBase {
                                 yTo = gridExpanded[gridExpanded.length - 1][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity});
                     } else if (style === "hex-of-tri") {
                         const midrow = Math.floor(grid.length / 2);
                         let xFrom = 0; let yFrom = 0;
@@ -3624,7 +3873,7 @@ export abstract class RendererBase {
                                 yTo = grid[0][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity});
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity});
                     } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
                         /*
                          * Polys is populated.
@@ -3710,7 +3959,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
                         /*
@@ -3797,7 +4046,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if ( (style === "hex-slanted") && (polys !== undefined) ) {
                         /*
@@ -3874,7 +4123,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(marker)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     }
                 } else if (marker.type === "fence") {
@@ -3934,7 +4183,10 @@ export abstract class RendererBase {
                                 yTo = south.y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke(stroke);
+                        const newclone = {...cloned};
+                        delete newclone.cell;
+                        delete newclone.side;
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
                         let row = marker.cell.row as number;
                         let col = marker.cell.col as number;
@@ -3954,7 +4206,7 @@ export abstract class RendererBase {
                                 const [idx1, idx2] = edge.corners;
                                 const {x: xFrom, y: yFrom} = hex.corners[idx1];
                                 const {x: xTo, y: yTo} = hex.corners[idx2];
-                                svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(marker)}`).stroke(stroke);
+                                svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke(stroke);
                             }
                         }
                     }
@@ -4119,11 +4371,11 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = grid[0][0].x - (this.cellsize * 2) - barimg.viewbox().w;
+                    x = grid[0][0].x - (this.cellsize * 1.5) - barimg.viewbox().w;
                 } else {
-                    x = grid[0][grid.length - 1].x + (this.cellsize * 2);
+                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 1.5);
                 }
-                const used = this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).dmove(x, y);
+                const used = this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).move(x, y);
                 if (this.options.boardClick !== undefined) {
                     const top = used.y() as number;
                     const height = used.height() as number;
@@ -4182,6 +4434,7 @@ export abstract class RendererBase {
         let maxWidth = minWidth;
         let maxHeight = 0;
         for (const b of bar.buttons) {
+            const cloned = {attributes: b.attributes, fill: b.fill};
             const tmptxt = this.rootSvg.text(b.label).font({size: 17, fill: colour, anchor: "start"});
             if (b.attributes !== undefined) {
                 for (const a of b.attributes) {
@@ -4190,7 +4443,7 @@ export abstract class RendererBase {
             }
             maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
             maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
-            const symtxt = nested.symbol();
+            const symtxt = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
             const realtxt = symtxt.text(b.label).font({size: 17, fill: colour, anchor: "start"});
             if (b.attributes !== undefined) {
                 for (const a of b.attributes) {
@@ -4209,10 +4462,11 @@ export abstract class RendererBase {
         const width = maxWidth * 1.5;
         const rects: SVGSymbol[] = [];
         for (const b of bar.buttons) {
-            const symrect = nested.symbol();
+            const cloned = {attributes: b.attributes, fill: b.fill};
+            const symrect = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
             let fill: FillData = {color: "#fff", opacity: 0};
             if ( ("fill" in b) && (b.fill !== undefined) ) {
-                fill = {color: b.fill! as string, opacity: 1};
+                fill = {color: b.fill, opacity: 1};
             }
             symrect.rect(width, height).fill(fill).stroke({width: 1, color: colour});
             // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
@@ -4279,9 +4533,9 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = grid[0][0].x - (this.cellsize * 2) - keyimg.viewbox().w;
+                    x = grid[0][0].x - (this.cellsize * 1.5) - keyimg.viewbox().w;
                 } else {
-                    x = grid[0][grid.length - 1].x + (this.cellsize * 2);
+                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 1.5);
                 }
                 const used = this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
                 let clickable = true;
@@ -4451,7 +4705,7 @@ export abstract class RendererBase {
                 const txtWidth = tmptxt.bbox().w;
                 tmptxt.remove();
                 nested.width(Math.max(areaWidth, txtWidth));
-                const txt = nested.text(area.label);
+                const txt = nested.text(area.label).addClass(`aprender-area-label`);
                 txt.font({size: textHeight, anchor: "start", fill: "#000"})
                     .attr("alignment-baseline", "hanging")
                     .attr("dominant-baseline", "hanging")
