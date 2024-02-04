@@ -34,7 +34,8 @@ export interface APRenderRep {
     | "freespace"
     | "sowing-numerals"
     | "sowing-pips"
-    | "conhex";
+    | "conhex"
+    | "multicell-square";
   /**
    * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides the external row/column labels. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable. The option `reverse-columns` labels the columns with "a" at the top instead of at the bottom.
    */
@@ -714,33 +715,7 @@ export interface APRenderRep {
   /**
    * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).
    */
-  pieces:
-    | null
-    | string
-    | [string[][], ...string[][][]]
-    | string[][]
-    | {
-        /**
-         * The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.
-         */
-        glyph: string;
-        /**
-         * A unique ID that should be passed to the click handler. If not provided, it will just return the glyph name.
-         */
-        id?: string;
-        /**
-         * Absolute x coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
-         */
-        x: number;
-        /**
-         * Absolute y coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
-         */
-        y: number;
-        /**
-         * Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
-         */
-        orientation: number;
-      }[];
+  pieces: null | string | [string[][], ...string[][][]] | string[][] | Freepiece[] | Multipiece[];
   /**
    * Areas are renderer-specific elements that are used and rendered in various ways.
    */
@@ -1067,4 +1042,62 @@ export interface Glyph {
      */
     dy?: number;
   };
+}
+/**
+ * Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.
+ */
+export interface Freepiece {
+  /**
+   * The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.
+   */
+  glyph: string;
+  /**
+   * A unique ID that should be passed to the click handler. If not provided, it will just return the glyph name.
+   */
+  id?: string;
+  /**
+   * Absolute x coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
+   */
+  x: number;
+  /**
+   * Absolute y coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
+   */
+  y: number;
+  /**
+   * Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
+   */
+  orientation: number;
+}
+/**
+ * Schema for the `multicell-square` renderer. This deforms glyphs from the legend into rectangular areas anchored from the top-left cell (the x,y coordinates closest to 0,0) and in a given width and height. Pieces can be overlapped, with an order decided by z index (higher z indices will overlap lower ones).
+ */
+export interface Multipiece {
+  /**
+   * The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.
+   */
+  glyph: string;
+  /**
+   * A unique ID that should be passed to the click handler. If not provided, it will return an ID based on the other attributes.
+   */
+  id?: string;
+  /**
+   * The column of the top-left corner of the rectangle (the column closest to 0).
+   */
+  col: number;
+  /**
+   * The row of the top-left corner of the rectangle (the closest row to 0).
+   */
+  row: number;
+  /**
+   * The width of the rectangle.
+   */
+  width?: number;
+  /**
+   * The height of the rectangle.
+   */
+  height?: number;
+  /**
+   * Determines the order of overlap. Higher z values will overlap lower ones. Objects with equal z values will be rendered in the order of declaration (later objects will overlap earlier ones).
+   */
+  z?: number;
 }

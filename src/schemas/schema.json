@@ -77,6 +77,73 @@
                 }
             },
             "additionalProperties": false
+        },
+        "multipiece": {
+            "description": "Schema for the `multicell-square` renderer. This deforms glyphs from the legend into rectangular areas anchored from the top-left cell (the x,y coordinates closest to 0,0) and in a given width and height. Pieces can be overlapped, with an order decided by z index (higher z indices will overlap lower ones).",
+            "type": "object",
+            "properties": {
+                "glyph": {
+                    "description": "The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "A unique ID that should be passed to the click handler. If not provided, it will return an ID based on the other attributes.",
+                    "type": "string"
+                },
+                "col": {
+                    "description": "The column of the top-left corner of the rectangle (the column closest to 0).",
+                    "type": "number"
+                },
+                "row": {
+                    "description": "The row of the top-left corner of the rectangle (the closest row to 0).",
+                    "type": "number"
+                },
+                "width": {
+                    "description": "The width of the rectangle.",
+                    "type": "number",
+                    "default": 1
+                },
+                "height": {
+                    "description": "The height of the rectangle.",
+                    "type": "number",
+                    "default": 1
+                },
+                "z": {
+                    "description": "Determines the order of overlap. Higher z values will overlap lower ones. Objects with equal z values will be rendered in the order of declaration (later objects will overlap earlier ones).",
+                    "type": "number",
+                    "default": 0
+                }
+            },
+            "required": ["glyph", "col", "row"],
+            "additionalProperties": false
+        },
+        "freepiece": {
+            "description": "Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.",
+            "type": "object",
+            "properties": {
+                "glyph": {
+                    "description": "The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "A unique ID that should be passed to the click handler. If not provided, it will just return the glyph name.",
+                    "type": "string"
+                },
+                "x": {
+                    "description": "Absolute x coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.",
+                    "type": "number"
+                },
+                "y": {
+                    "description": "Absolute y coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.",
+                    "type": "number"
+                },
+                "orientation": {
+                    "description": "Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.",
+                    "type": "number"
+                }
+            },
+            "required": ["glyph", "x", "y", "orientation"],
+            "additionalProperties": false
         }
     },
     "type": "object",
@@ -95,7 +162,8 @@
                 "freespace",
                 "sowing-numerals",
                 "sowing-pips",
-                "conhex"
+                "conhex",
+                "multicell-square"
             ],
             "default": "default"
         },
@@ -1179,34 +1247,15 @@
                     }
                 },
                 {
-                    "description": "Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.",
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "glyph": {
-                                "description": "The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.",
-                                "type": "string"
-                            },
-                            "id": {
-                                "description": "A unique ID that should be passed to the click handler. If not provided, it will just return the glyph name.",
-                                "type": "string"
-                            },
-                            "x": {
-                                "description": "Absolute x coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.",
-                                "type": "number"
-                            },
-                            "y": {
-                                "description": "Absolute y coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.",
-                                "type": "number"
-                            },
-                            "orientation": {
-                                "description": "Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.",
-                                "type": "number"
-                            }
-                        },
-                        "required": ["glyph", "x", "y", "orientation"],
-                        "additionalProperties": false
+                        "$ref": "#/definitions/freepiece"
+                    }
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/multipiece"
                     }
                 }
             ]
