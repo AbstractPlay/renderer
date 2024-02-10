@@ -868,6 +868,28 @@ export abstract class RendererBase {
 
         // Get a grid of points
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
+
+        // create polys for flood fills and other potential uses
+        let polys: Poly[][] = [];
+        for (let y = 0; y < height; y++) {
+            const rowPolys: Poly[] = [];
+            for (let x = 0; x < width; x++) {
+                const {x: cx, y: cy} = grid[y][x];
+                const half = cellsize / 2;
+                const node: IPoint[] = [
+                    {x: cx - half, y: cy - half},
+                    {x: cx + half, y: cy - half},
+                    {x: cx + half, y: cy + half},
+                    {x: cx - half, y: cy + half},
+                ];
+                rowPolys.push({
+                    type: "poly",
+                    points: node,
+                });
+            }
+            polys.push(rowPolys);
+        }
+
         const board = this.rootSvg.group().id("board");
 
         // Make an expanded grid for markers, to accommodate edge marking and shading
@@ -876,7 +898,7 @@ export abstract class RendererBase {
         gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
 
         const gridlines = board.group().id("gridlines");
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys});
 
         // create buffer zone first if requested
         let bufferwidth = 0;
@@ -1260,9 +1282,10 @@ export abstract class RendererBase {
         if (this.options.rotate === 180) {
             gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
             grid = grid.map((r) => r.reverse()).reverse();
+            polys = polys.map((r) => r.reverse()).reverse();
         }
 
-        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded, polys});
 
         return grid;
     }
@@ -3566,9 +3589,9 @@ export abstract class RendererBase {
                     const ptstr = points.map((p) => p.join(",")).join(" ");
                     svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
-                    if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even")) && (! this.json.board.style.startsWith("conhex")) ) {
-                        throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board, the `conhex-*` boards, and hex fields.");
-                    }
+                    // if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even")) && (! this.json.board.style.startsWith("conhex")) ) {
+                    //     throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board, the `conhex-*` boards, and hex fields.");
+                    // }
                     if (polys === undefined) {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
                     }
