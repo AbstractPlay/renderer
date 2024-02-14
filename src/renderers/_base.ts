@@ -1006,6 +1006,10 @@ export abstract class RendererBase {
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
@@ -1022,7 +1026,9 @@ export abstract class RendererBase {
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize - (show.includes("N") ? bufferwidth : 0)};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize + (show.includes("S") ? bufferwidth : 0)};
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                }
                 labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
@@ -1032,7 +1038,9 @@ export abstract class RendererBase {
                 const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
                 labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                }
             }
         }
 
@@ -1453,6 +1461,10 @@ export abstract class RendererBase {
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
@@ -1469,7 +1481,9 @@ export abstract class RendererBase {
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                }
                 labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
@@ -1479,7 +1493,9 @@ export abstract class RendererBase {
                 const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
                 labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                }
             }
         }
 
@@ -1963,6 +1979,10 @@ export abstract class RendererBase {
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
             const labels = board.group().id("labels");
             let columnLabels = this.getLabels(undefined, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
@@ -1975,7 +1995,9 @@ export abstract class RendererBase {
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                }
                 labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
@@ -1994,7 +2016,9 @@ export abstract class RendererBase {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
                 labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                }
             }
         }
 
@@ -3237,9 +3261,10 @@ export abstract class RendererBase {
                         strokeWidth = note.strokeWidth as number;
                     }
                     const unit = strokeWidth / 0.03;
+                    const s = this.cellsize * strokeWidth / 2;
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
-                    const markerArrow = notes.marker(4 * unit, 4 * unit, (add) => add.path(`M0,0 L${4 * unit},${2 * unit} 0,${4 * unit}`).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
-                    const markerCircle = notes.marker(2 * unit, 2 * unit, (add) => add.circle(2 * unit).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerArrow = notes.marker(4 * unit + 3 * s, 4 * unit + 2 * s, (add) => add.path(`M${s},${s} L${s + 4 * unit},${s + 2 * unit} ${s},${s + 4 * unit} Z`).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = notes.marker(2 * unit + 2 * s, 2 * unit + 2 * s, (add) => add.circle(2 * unit).center(unit + s, unit + s).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const points: string[] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
