@@ -11,6 +11,10 @@ export type PositiveInteger = number;
  */
 export type Colourstrings = string;
 /**
+ * Schema for the `matrix` part of a polyomino-related feature
+ */
+export type Polymatrix = (PositiveInteger | Colourstrings | 0 | null)[][];
+/**
  * Pattern for the global stash definitions for the `homeworlds` renderer.
  */
 export type Stashstrings = string;
@@ -35,7 +39,8 @@ export interface APRenderRep {
     | "sowing-numerals"
     | "sowing-pips"
     | "conhex"
-    | "multicell-square";
+    | "multicell-square"
+    | "polyomino";
   /**
    * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex boards and makes the individual edges clickable. The option `reverse-columns` labels the columns with "a" at the top instead of at the bottom.
    */
@@ -53,7 +58,7 @@ export interface APRenderRep {
    * Map each `piece` to an actual glyph with possible options.
    */
   legend?: {
-    [k: string]: string | Glyph | [Glyph, ...Glyph[]];
+    [k: string]: string | Glyph | [Glyph, ...Glyph[]] | Polymatrix;
   };
   /**
    * This is the game board itself.
@@ -88,7 +93,7 @@ export interface APRenderRep {
          */
         strokeWeight?: number;
         /**
-         * The colour for lines drawn to construct the board, includes the labels.
+         * Pattern for hex colour strings
          */
         strokeColour?: string;
         /**
@@ -96,11 +101,11 @@ export interface APRenderRep {
          */
         strokeOpacity?: number;
         /**
-         * Only affects hex fields. Used to fill hexes with a colour.
+         * Pattern for hex colour strings
          */
         hexFill?: string;
         /**
-         * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
+         * Pattern for hex colour strings
          */
         backFill?: string;
         /**
@@ -716,7 +721,7 @@ export interface APRenderRep {
   /**
    * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).
    */
-  pieces: null | string | [string[][], ...string[][][]] | string[][] | Freepiece[] | Multipiece[];
+  pieces: null | string | [string[][], ...string[][][]] | string[][] | Freepiece[] | Multipiece[] | Polypiece[];
   /**
    * Areas are renderer-specific elements that are used and rendered in various ways.
    */
@@ -734,6 +739,10 @@ export interface APRenderRep {
          */
         label: string;
         /**
+         * By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.
+         */
+        width?: number;
+        /**
          * Pattern for hex colour strings
          */
         background?: string;
@@ -741,6 +750,15 @@ export interface APRenderRep {
          * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
          */
         ownerMark?: PositiveInteger | Colourstrings;
+      }
+    | {
+        type: "polyomino";
+        label: string;
+        matrix: Polymatrix;
+        /**
+         * Pattern for hex colour strings
+         */
+        background?: string;
       }
     | {
         type: "globalStash";
@@ -895,9 +913,9 @@ export interface APRenderRep {
   annotations?: (
     | {
         /**
-         * The type of annotation
+         * The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.
          */
-        type: "move" | "eject" | "enter" | "exit" | "dots";
+        type: "move" | "eject" | "enter" | "exit" | "dots" | "outline";
         /**
          * The cells involved in the annotation
          *
@@ -1097,6 +1115,28 @@ export interface Multipiece {
    * The height of the rectangle.
    */
   height?: number;
+  /**
+   * Determines the order of overlap. Higher z values will overlap lower ones. Objects with equal z values will be rendered in the order of declaration (later objects will overlap earlier ones).
+   */
+  z?: number;
+}
+/**
+ * Schema for the `polyomino` renderer.
+ */
+export interface Polypiece {
+  /**
+   * A unique ID that should be passed to the click handler. If not provided, it will return an ID based on the other attributes.
+   */
+  id?: string;
+  /**
+   * The column of the top-left corner of the matrix (the column closest to 0).
+   */
+  col: number;
+  /**
+   * The row of the top-left corner of the matrix (the closest row to 0).
+   */
+  row: number;
+  matrix: Polymatrix;
   /**
    * Determines the order of overlap. Higher z values will overlap lower ones. Objects with equal z values will be rendered in the order of declaration (later objects will overlap earlier ones).
    */

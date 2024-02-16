@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Container, Element, Use } from "@svgdotjs/svg.js";
 
 /**
@@ -130,38 +132,38 @@ export const usePieceAt: (svg: Container, piece: Element, cellsize: number, x: n
     return use;
 }
 
-/**
- * To rotate -90, reverse rows then transpose
- * Assumes the matrix is square
- */
-export const matrixSquareRotN90 = (lst: any[][]): any[][] => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment
-    const reversed = lst.map(l => [...l].reverse());
-    const transposed: any[][] = [];
-    for (let y = 0; y < reversed.length; y++) {
-        const row: any[] = [];
-        for (let x = 0; x < reversed[y].length; x++) {
-            // intentionally wrong order
-            row.push(reversed[x][y]);
+// Assumes each row is the same width
+export const transposeRect = (lst: any[][]): any[][] => {
+    if (lst.length === 0) {
+        return [];
+    }
+    const newWidth = lst.length;
+    const newHeight = lst[0].length;
+    const transposed: any[][] = Array.from({length: newHeight}, () => Array(newWidth));
+
+    for (let i = 0; i < lst.length; i++) {
+        for (let j = 0; j < lst[i].length; j++) {
+            transposed[j][i] = lst[i][j];
         }
-        transposed.push(row)
     }
     return transposed;
 }
 
 /**
- * To rotate +90, transpose then reverse rows
- * Assumes the matrix is square
+ * To rotate -90, reverse rows then transpose
+ * Assumes the matrix is rectangular
  */
-export const matrixSquareRot90 = (lst: any[][]): any[][] => {
-    const transposed: any[][] = [];
-    for (let y = 0; y < lst.length; y++) {
-        const row: any[] = [];
-        for (let x = 0; x < lst[y].length; x++) {
-            // intentionally wrong order
-            row.push(lst[x][y]);
-        }
-        transposed.push(row.reverse())
-    }
-    return transposed;
+export const matrixRectRotN90 = (lst: any[][]): any[][] => {
+    const reversed = lst.map(l => [...l].reverse());
+    return transposeRect(reversed);
 }
+
+/**
+ * To rotate +90, transpose then reverse rows
+ * Assumes the matrix is rectangular
+ */
+export const matrixRectRot90 = (lst: any[][]): any[][] => {
+    const transposed: any[][] = transposeRect(lst);
+    return transposed.map(row => [...row].reverse());
+}
+

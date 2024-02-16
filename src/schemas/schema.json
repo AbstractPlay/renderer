@@ -78,6 +78,54 @@
             },
             "additionalProperties": false
         },
+        "polymatrix": {
+            "description": "Schema for the `matrix` part of a polyomino-related feature",
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"},
+                        {
+                            "type": "number",
+                            "enum": [0]
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            }
+        },
+        "polypiece": {
+            "description": "Schema for the `polyomino` renderer.",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "A unique ID that should be passed to the click handler. If not provided, it will return an ID based on the other attributes.",
+                    "type": "string"
+                },
+                "col": {
+                    "description": "The column of the top-left corner of the matrix (the column closest to 0).",
+                    "type": "number"
+                },
+                "row": {
+                    "description": "The row of the top-left corner of the matrix (the closest row to 0).",
+                    "type": "number"
+                },
+                "matrix": {
+                    "$ref": "#/definitions/polymatrix"
+                },
+                "z": {
+                    "description": "Determines the order of overlap. Higher z values will overlap lower ones. Objects with equal z values will be rendered in the order of declaration (later objects will overlap earlier ones).",
+                    "type": "number",
+                    "default": 0
+                }
+            },
+            "required": ["col", "row", "matrix"],
+            "additionalProperties": false
+        },
         "multipiece": {
             "description": "Schema for the `multicell-square` renderer. This deforms glyphs from the legend into rectangular areas anchored from the top-left cell (the x,y coordinates closest to 0,0) and in a given width and height. Pieces can be overlapped, with an order decided by z index (higher z indices will overlap lower ones).",
             "type": "object",
@@ -163,7 +211,8 @@
                 "sowing-numerals",
                 "sowing-pips",
                 "conhex",
-                "multicell-square"
+                "multicell-square",
+                "polyomino"
             ],
             "default": "default"
         },
@@ -193,6 +242,9 @@
                         "items": {
                             "$ref": "#/definitions/glyph"
                         }
+                    },
+                    {
+                        "$ref": "#/definitions/polymatrix"
                     }
                 ]
             }
@@ -1257,6 +1309,12 @@
                     "items": {
                         "$ref": "#/definitions/multipiece"
                     }
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polypiece"
+                    }
                 }
             ]
         },
@@ -1284,6 +1342,10 @@
                                 "description": "The text that will appear at the top left of the area",
                                 "type": "string"
                             },
+                            "width": {
+                                "description": "By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.",
+                                "$ref": "#/definitions/positiveInteger"
+                            },
                             "background": {
                                 "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
                                 "$ref": "#/definitions/colourstrings",
@@ -1298,6 +1360,28 @@
                             }
                         },
                         "required": ["type", "pieces", "label"],
+                        "additionalProperties": false
+                    },
+                    {
+                        "description": "Used by the `polyomino` renderer to display a selected piece and provide UI for manipulating it. Current maninpulations are rotating in 90-degree increments and flipping horizontally and vertically.",
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "enum": ["polyomino"]
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "matrix": {
+                                "$ref": "#/definitions/polymatrix"
+                            },
+                            "background": {
+                                "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
+                                "$ref": "#/definitions/colourstrings",
+                                "default": "#fff"
+                            }
+                        },
+                        "required": ["type", "matrix", "label"],
                         "additionalProperties": false
                     },
                     {
@@ -1525,13 +1609,14 @@
                     {
                         "properties": {
                             "type": {
-                                "description": "The type of annotation",
+                                "description": "The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.",
                                 "enum": [
                                     "move",
                                     "eject",
                                     "enter",
                                     "exit",
-                                    "dots"
+                                    "dots",
+                                    "outline"
                                 ]
                             },
                             "targets": {

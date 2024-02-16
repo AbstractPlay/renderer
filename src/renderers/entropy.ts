@@ -239,12 +239,12 @@ export class EntropyRenderer extends RendererBase {
         if (occlude1) {
             const topleft: IPoint = {x: grid1[0][0].x - (cellsize / 2), y: grid1[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid1[6][6].x + (cellsize / 2), y: grid1[6][6].y + (cellsize / 2)};
-            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.5);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.25);
         }
         if (occlude2) {
             const topleft: IPoint = {x: grid2[0][0].x - (cellsize / 2), y: grid2[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid2[6][6].x + (cellsize / 2), y: grid2[6][6].y + (cellsize / 2)};
-            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.5);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.25);
         }
 
         // Finally, annotations
