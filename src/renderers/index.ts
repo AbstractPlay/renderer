@@ -12,8 +12,14 @@ import { SowingNumeralsRenderer } from "./sowingNumerals";
 import { SowingPipsRenderer } from "./sowingPips";
 import { ConhexRenderer } from "./conhex";
 import { MulticellSquareRenderer } from "./multicellSquare";
+import { PolyominoRenderer } from "./polyomino";
 
-export { RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer, StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer, FreespaceRenderer, SowingNumeralsRenderer, SowingPipsRenderer, ConhexRenderer, MulticellSquareRenderer, type Poly };
+export {
+    RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer,
+    StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer,
+    FreespaceRenderer, SowingNumeralsRenderer, SowingPipsRenderer, ConhexRenderer,
+    MulticellSquareRenderer, PolyominoRenderer, type Poly
+};
 
 const renderers: (name: string) => RendererBase = (name) =>{
   switch(name) {
@@ -43,6 +49,8 @@ const renderers: (name: string) => RendererBase = (name) =>{
       return new ConhexRenderer();
     case MulticellSquareRenderer.rendererName:
       return new MulticellSquareRenderer();
+    case PolyominoRenderer.rendererName:
+      return new PolyominoRenderer();
     default:
       throw new Error(`Don't know a renderer called ${name}`);
   }
