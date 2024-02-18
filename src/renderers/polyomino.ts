@@ -172,7 +172,7 @@ export class PolyominoRenderer extends RendererBase {
                     }
                     const numPieces = area.pieces.length;
                     const numRows = Math.ceil(numPieces / desiredWidth);
-                    const textHeight = 10; // the allowance for the label
+                    const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                     const cellsize = this.cellsize; //  * 0.75;
                     const areaWidth = cellsize * desiredWidth;
                     const areaHeight = (textHeight * 2) + (cellsize * numRows);
@@ -231,8 +231,8 @@ export class PolyominoRenderer extends RendererBase {
                 } else {
                     const numRows = 5;
                     const desiredWidth = 5;
-                    const textHeight = 10; // the allowance for the label
-                    const cellsize = 40; // this.cellsize;
+                    const textHeight = this.cellsize / 3; // 10; // the allowance for the label
+                    const cellsize = this.cellsize;
                     const areaWidth = cellsize * desiredWidth;
                     const areaHeight = (textHeight * 2) + (cellsize * numRows);
                     const nested = this.rootSvg.nested().id(`_polyomino`).size(areaWidth+2, areaHeight+2).viewbox(-1 - 5, -1, areaWidth+2+10, areaHeight+2);
@@ -270,7 +270,7 @@ export class PolyominoRenderer extends RendererBase {
                     const realwidth = (width * this.cellsize);
                     const realheight = (height * this.cellsize);
                     const poly = this.rootSvg.defs().nested().id(`_polyomino-area-${uid}`).viewbox(0, 0, realwidth, realheight);
-                    this.buildPoly(poly, area.matrix, true);
+                    this.buildPoly(poly, area.matrix, {divided: true, tlmark: true});
                     // place it
                     nested.use(poly).size(areaWidth, cellsize * (numRows - 1)).move(0, (textHeight * 2) + cellsize);
 
