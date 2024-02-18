@@ -162,7 +162,7 @@ export class PolyominoRenderer extends RendererBase {
             const boardBottom = Math.max(gridPoints[0][0].y, gridPoints[gridPoints.length - 1][0].y) + this.cellsize;
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.max(...gridPoints.map(r => r.length));
-            let placeY = boardBottom + (this.cellsize / 2);
+            let placeY = boardBottom + (this.cellsize * 0.33);
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea] as IPiecesArea|IPolyArea;
                 if (area.type === "pieces") {
@@ -173,7 +173,7 @@ export class PolyominoRenderer extends RendererBase {
                     const numPieces = area.pieces.length;
                     const numRows = Math.ceil(numPieces / desiredWidth);
                     const textHeight = 10; // the allowance for the label
-                    const cellsize = this.cellsize * 0.75;
+                    const cellsize = this.cellsize; //  * 0.75;
                     const areaWidth = cellsize * desiredWidth;
                     const areaHeight = (textHeight * 2) + (cellsize * numRows);
                     let markWidth = 0;
@@ -288,7 +288,7 @@ export class PolyominoRenderer extends RendererBase {
                     // Now place the whole group below the board
                     // const placed = this.rootSvg.use(nested);
                     nested.move(Math.min(...gridPoints.map(r => Math.min(r[0].x, r[r.length - 1].x))), placeY);
-                    placeY += nested.bbox().height + (this.cellsize * 0.5);
+                    placeY += nested.bbox().height + (this.cellsize * 0.33);
                 }
             }
         }
