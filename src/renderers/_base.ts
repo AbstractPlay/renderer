@@ -747,6 +747,8 @@ export abstract class RendererBase {
             }
 
             // now look for and build polymatrices
+            // we want them to be proportional, so load them *all* to determine max height and width
+            let maxWidth = 0; let maxHeight = 0;
             // eslint-disable-next-line guard-for-in
             for (const key in this.json.legend) {
                 if (Array.isArray(this.json.legend[key]) && Array.isArray((this.json.legend[key] as unknown[])[0])) {
@@ -758,10 +760,28 @@ export abstract class RendererBase {
                     }
                     const realwidth = (width * this.cellsize);
                     const realheight = (height * this.cellsize);
+                    maxWidth = Math.max(maxWidth, realwidth);
+                    maxHeight = Math.max(maxHeight, realheight);
+                }
+            }
+            // now build them properly, adjusting the viewbox so they're proportional and centred
+            // eslint-disable-next-line guard-for-in
+            for (const key in this.json.legend) {
+                if (Array.isArray(this.json.legend[key]) && Array.isArray((this.json.legend[key] as unknown[])[0])) {
+                    const matrix = this.json.legend[key] as Polymatrix;
+                    const height = matrix.length;
+                    let width = 0;
+                    if (height > 0) {
+                        width = matrix[0].length;
+                    }
+                    const realwidth = (width * this.cellsize);
+                    const realheight = (height * this.cellsize);
+                    const deltax = (maxWidth - realwidth) / 2 * -1;
+                    const deltay = (maxHeight - realheight) / 2 * -1;
 
                     // create nested SVG of the piece, with border
-                    const nested = this.rootSvg.defs().nested().id(key).viewbox(0, 0, realwidth, realheight);
-                    this.buildPoly(nested, matrix, true);
+                    const nested = this.rootSvg.defs().nested().id(key).viewbox(deltax, deltay, maxWidth, maxHeight);
+                    this.buildPoly(nested, matrix, {divided: true});
                 }
             }
         }
@@ -4865,7 +4885,7 @@ export abstract class RendererBase {
                     desiredWidth = area.width;
                 }
                 const numRows = Math.ceil(numPieces / desiredWidth);
-                const textHeight = 10; // the allowance for the label
+                const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                 const cellsize = this.cellsize * 0.75;
                 const areaWidth = cellsize * desiredWidth;
                 const areaHeight = (textHeight * 2) + (cellsize * numRows);
@@ -4940,7 +4960,7 @@ export abstract class RendererBase {
     }
 
     // These functions let the base class build polyominoes
-    protected buildPoly(svg: Svg, matrix: Polymatrix, divided = false): void {
+    protected buildPoly(svg: Svg, matrix: Polymatrix, {divided = false, tlmark = false} = {}): void {
         if (this.json === undefined || this.json.board === null) {
             throw new Error("Invalid JSON");
         }
@@ -4989,6 +5009,11 @@ export abstract class RendererBase {
                     this.drawBorder(svg, (x+1) * this.cellsize, y * this.cellsize, (x+1) * this.cellsize, (y+1) * this.cellsize);
                 }
             }
+        }
+
+        // mark top-left cell if requested
+        if (tlmark) {
+            svg.circle(this.cellsize / 5).center(this.cellsize / 2, this.cellsize / 2).stroke({width: 1, color: "#000"}).fill("#000");
         }
     }
 
