@@ -882,6 +882,11 @@ export abstract class RendererBase {
             baseOpacity = this.json.board.strokeOpacity;
         }
 
+        let clickEdges = false;
+        if ( (this.json.options !== undefined) && (this.json.options.includes("clickable-edges")) ) {
+            clickEdges = (this.options.boardClick !== undefined);
+        }
+
         // Check for tiling
         let tilex = 0;
         let tiley = 0;
@@ -1315,6 +1320,100 @@ export abstract class RendererBase {
                 });
             }
             this.rootSvg.click(genericCatcher);
+        }
+
+        // Add edge click handlers if requested
+        // Only *internal* edges are clickable
+        if (clickEdges) {
+            const seenEdges = new Set<string>();
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    // ignore blocked cells
+                    if (blocked !== undefined) {
+                        const found = blocked.find(e => e.row === row && e.col === col);
+                        if (found !== undefined) {
+                            continue;
+                        }
+                    }
+                    for (const dir of ["N","E","S","W"] as const) {
+                        let newCol: number; let newRow: number;
+                        switch (dir) {
+                            case "N":
+                                newCol = col;
+                                newRow = row - 1;
+                                break;
+                            case "S":
+                                newCol = col;
+                                newRow = row + 1;
+                                break;
+                            case "E":
+                                newCol = col + 1;
+                                newRow = row;
+                                break;
+                            case "W":
+                                newCol = col - 1;
+                                newRow = row;
+                                break;
+                        }
+                        // ignore if off the board
+                        if (newCol < 0 || newCol >= grid[row].length || newRow < 0 || newRow >= grid.length) {
+                            continue;
+                        }
+                        // ignore if blocked
+                        if (blocked !== undefined) {
+                            const found = blocked.find(e => e.row === row && e.col === col);
+                            if (found !== undefined) {
+                                continue;
+                            }
+                        }
+                        let edgeId = `${col},${row}|${newCol},${newRow}`;
+                        if (this.options.rotate === 180) {
+                            edgeId = `${width - col - 1},${height - row - 1}|${width - newCol - 1},${height - newRow - 1}`;
+                        }
+                        // don't duplicate edges
+                        if (seenEdges.has(edgeId)) {
+                            continue;
+                        }
+                        seenEdges.add(edgeId);
+
+                        // draw line
+                        let x1: number; let y1: number;
+                        let x2: number; let y2: number;
+                        const halfcell = this.cellsize / 2;
+                        switch (dir) {
+                            case "N":
+                                x1 = grid[row][col].x - halfcell;
+                                y1 = grid[row][col].y - halfcell;
+                                x2 = grid[row][col].x + halfcell;
+                                y2 = y1;
+                                break;
+                            case "S":
+                                x1 = grid[row][col].x - halfcell;
+                                y1 = grid[row][col].y + halfcell;
+                                x2 = grid[row][col].x + halfcell;
+                                y2 = y1;
+                                break;
+                            case "E":
+                                x1 = grid[row][col].x + halfcell;
+                                y1 = grid[row][col].y - halfcell;
+                                x2 = x1;
+                                y2 = grid[row][col].y + halfcell;
+                                break;
+                            case "W":
+                                x1 = grid[row][col].x - halfcell;
+                                y1 = grid[row][col].y - halfcell;
+                                x2 = x1;
+                                y2 = grid[row][col].y + halfcell;
+                                break;
+                        }
+                        const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke * 5, color: baseColour, opacity: 0, linecap: "round" });
+                        edgeLine.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, edgeId);
+                            e.stopPropagation();
+                        });
+                    }
+                }
+            }
         }
 
         if (this.options.rotate === 180) {
