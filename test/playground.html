@@ -96,12 +96,12 @@
                 "board-hexhalftop": {
                     "name": "Boards: Hex of * - Top",
                     "description": "You can tell the `hex-of-*` boards to only render half of the board to generate shapes like triangles. In this case, the row labels have been reversed.",
-                    "render": `{"options":["reverse-columns"],"renderer":"stacking-offset","board":{"style":"hex-of-hex","minWidth":1,"maxWidth":7, "half":"top"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
+                    "render": `{"options":["reverse-letters"],"renderer":"stacking-offset","board":{"style":"hex-of-hex","minWidth":1,"maxWidth":7, "half":"top"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
                 },
                 "board-hexhalfbot": {
                     "name": "Boards: Hex of * - Bottom",
                     "description": "You can render the bottom half as well. Note you can generate quadrilaterlas this way as well.",
-                    "render": `{"options":["reverse-columns"],"renderer":"stacking-offset","board":{"style":"hex-of-tri","minWidth":3,"maxWidth":7, "half":"bottom"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
+                    "render": `{"options":["reverse-letters"],"renderer":"stacking-offset","board":{"style":"hex-of-tri","minWidth":3,"maxWidth":7, "half":"bottom"},"legend":{"A":{"name":"piece","player":1},"B":{"name":"piece","player":2}},"pieces":null}`
                 },
                 "board-hexAlternating": {
                     "name": "Boards: Hex of * - Alternating Symmetry",
@@ -146,7 +146,7 @@
                 "boards-pegboard": {
                     "name": "Boards: Peg board",
                     "description": "A simulation of peg boards of the type used for the game Twixt. This also demonstrates clickable lines.",
-                    "render": `{\"board\":{\"style\":\"pegboard\",\"width\":24,\"height\":24,\"blocked\":[{\"row\":0,\"col\":0},{\"row\":0,\"col\":23},{\"row\":23,\"col\":0},{\"row\":23,\"col\":23}],\"markers\":[{\"type\":\"line\",\"points\":[{\"row\":1,\"col\":1},{\"row\":1,\"col\":23}],\"colour\":1,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":23,\"col\":1},{\"row\":23,\"col\":23}],\"colour\":1,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":1,\"col\":1},{\"row\":23,\"col\":1}],\"colour\":2,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":1,\"col\":23},{\"row\":23,\"col\":23}],\"colour\":2,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":8,\"col\":9},{\"row\":10,\"col\":10}],\"colour\":1,\"width\":5,\"centered\":true,\"clickable\":true},{\"type\":\"line\",\"points\":[{\"row\":7,\"col\":9},{\"row\":9,\"col\":10}],\"colour\":2,\"width\":5,\"centered\":true,\"clickable\":true}]},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1,\"scale\":0.75},\"B\":{\"name\":\"piece\",\"player\":2,\"scale\":0.75}},\"pieces\":\"_\\n_\\n_\\n_\\n_\\n_\\n_\\n---------B\\n---------A\\n----------B\\n----------A\"}`
+                    "render": `{\"options\":[\"reverse-numbers\"],\"board\":{\"style\":\"pegboard\",\"width\":24,\"height\":24,\"blocked\":[{\"row\":0,\"col\":0},{\"row\":0,\"col\":23},{\"row\":23,\"col\":0},{\"row\":23,\"col\":23}],\"markers\":[{\"type\":\"line\",\"points\":[{\"row\":1,\"col\":1},{\"row\":1,\"col\":23}],\"colour\":1,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":23,\"col\":1},{\"row\":23,\"col\":23}],\"colour\":1,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":1,\"col\":1},{\"row\":23,\"col\":1}],\"colour\":2,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":1,\"col\":23},{\"row\":23,\"col\":23}],\"colour\":2,\"width\":5},{\"type\":\"line\",\"points\":[{\"row\":8,\"col\":9},{\"row\":10,\"col\":10}],\"colour\":1,\"width\":5,\"centered\":true,\"clickable\":true},{\"type\":\"line\",\"points\":[{\"row\":7,\"col\":9},{\"row\":9,\"col\":10}],\"colour\":2,\"width\":5,\"centered\":true,\"clickable\":true}]},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1,\"scale\":0.75},\"B\":{\"name\":\"piece\",\"player\":2,\"scale\":0.75}},\"pieces\":\"_\\n_\\n_\\n_\\n_\\n_\\n_\\n---------B\\n---------A\\n----------B\\n----------A\"}`
                 },
                 "formatting-custom-labels": {
                     "name": "Formatting: Custom Labels",

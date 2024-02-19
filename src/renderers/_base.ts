@@ -1072,12 +1072,12 @@ export abstract class RendererBase {
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
                 customLabels = this.json.board.columnLabels as string[];
             }
-            let columnLabels = this.getLabels(customLabels, width);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(customLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
+                columnLabels.reverse();
             }
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -1091,6 +1091,10 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
+
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
@@ -1634,12 +1638,12 @@ export abstract class RendererBase {
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
                 customLabels = this.json.board.columnLabels as string[];
             }
-            let columnLabels = this.getLabels(customLabels, width);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(customLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
+                columnLabels.reverse();
             }
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -1653,6 +1657,9 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
@@ -2147,12 +2154,12 @@ export abstract class RendererBase {
                 hideHalf = true;
             }
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(undefined, width);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
+                columnLabels.reverse();
             }
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -2174,6 +2181,9 @@ export abstract class RendererBase {
                 for (let row = 0; row < height; row++) {
                     rowLabels.push((height - row).toString());
                 }
+            }
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
             }
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
@@ -2315,9 +2325,9 @@ export abstract class RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(undefined, width);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
 
             // Columns (letters)
@@ -2415,12 +2425,12 @@ export abstract class RendererBase {
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
                 customLabels = this.json.board.columnLabels as string[];
             }
-            let columnLabels = this.getLabels(customLabels, height);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(customLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
+                columnLabels.reverse();
             }
 
             for (let row = 0; row < grid.length; row++) {
@@ -2430,6 +2440,12 @@ export abstract class RendererBase {
                     leftNum = rightNum;
                     rightNum = "1";
                 }
+                if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                    const scratch = leftNum;
+                    leftNum = rightNum;
+                    rightNum = scratch;
+                }
+
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
                 labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
@@ -2610,12 +2626,12 @@ export abstract class RendererBase {
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
                 customLabels = this.json.board.columnLabels as string[];
             }
-            let columnLabels = this.getLabels(customLabels, height);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(customLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
+                columnLabels.reverse();
             }
             for (let row = 0; row < height; row++) {
                 let leftNum = "1";
@@ -2624,6 +2640,12 @@ export abstract class RendererBase {
                     leftNum = rightNum;
                     rightNum = "1";
                 }
+                if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                    const scratch = leftNum;
+                    leftNum = rightNum;
+                    rightNum = scratch;
+                }
+
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
                 labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
@@ -2719,12 +2741,12 @@ export abstract class RendererBase {
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
                 customLabels = this.json.board.columnLabels as string[];
             }
-            let columnLabels = this.getLabels(customLabels, height);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(customLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
+                columnLabels.reverse();
             }
             for (let row = 0; row < height; row++) {
                 let leftNum = "1";
@@ -2733,6 +2755,12 @@ export abstract class RendererBase {
                     leftNum = rightNum;
                     rightNum = "1";
                 }
+                if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                    const scratch = leftNum;
+                    leftNum = rightNum;
+                    rightNum = scratch;
+                }
+
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
                 labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
@@ -2862,6 +2890,10 @@ export abstract class RendererBase {
                 customLabels = this.json.board.columnLabels as string[];
             }
             const columnLabels = this.getLabels(customLabels, gridWidth);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                columnLabels.reverse();
+            }
+
             // Columns (letters)
             for (let col = 0; col < gridWidth; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
@@ -2875,12 +2907,12 @@ export abstract class RendererBase {
             if ( ("rowLabels" in this.json.board) && (this.json.board.rowLabels !== undefined) ) {
                 customLabels = this.json.board.rowLabels as string[];
             }
-            let rowLabels = this.getRowLabels(customLabels, gridHeight);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                rowLabels = rowLabels.reverse();
+            const rowLabels = this.getRowLabels(customLabels, gridHeight);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                rowLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                rowLabels = rowLabels.reverse();
+                rowLabels.reverse();
             }
             for (let row = 0; row < gridHeight; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
@@ -3031,12 +3063,12 @@ export abstract class RendererBase {
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
                 customLabels = this.json.board.columnLabels as string[];
             }
-            let columnLabels = this.getLabels(customLabels, width);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
-                columnLabels = columnLabels.reverse();
+            const columnLabels = this.getLabels(customLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
             }
             if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
+                columnLabels.reverse();
             }
             // Columns (letters)
             for (let col = 0; col < width; col++) {
@@ -3048,6 +3080,10 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             const rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
+
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
