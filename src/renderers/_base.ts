@@ -952,6 +952,8 @@ export abstract class RendererBase {
         let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
         gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
 
+        // define "tiles" earlier so clickable gridlines are viable
+        const tiles = board.group().id("tiles");
         const gridlines = board.group().id("gridlines");
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys});
 
@@ -1125,7 +1127,6 @@ export abstract class RendererBase {
                 .fill({color: baseColour, opacity: baseOpacity})
                 .stroke({width: 0});
 
-            const tiles = board.group().id("tiles");
             // Determine whether the first row starts with a light or dark square
             let startLight = 1;
             if (height % 2 === 0) {
@@ -1173,18 +1174,29 @@ export abstract class RendererBase {
                     }
                 }
             }
-        } else if (tileSpace > 0) {
+        } else if (tileSpace > 0 || style === "pegboard" ) {
             const tileLight = this.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
             tileLight.rect(cellsize, cellsize)
                 .fill({color: "#ffffff", opacity: 0})
                 .stroke({width: 0});
+            if (style === "pegboard") {
+                tileLight.circle(cellsize / 5)
+                    .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+                    .fill({color: baseColour, opacity: baseOpacity})
+                    .center(cellsize / 2, cellsize / 2);
+            }
             const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
-            tileBlocked.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill({color: baseColour, opacity: baseOpacity})
-                .stroke({width: 0});
+            if (style === "pegboard") {
+                tileBlocked.rect(cellsize, cellsize)
+                    .fill({color: "#ffffff", opacity: 0})
+                    .stroke({width: 0});
+            } else {
+                tileBlocked.rect(cellsize, cellsize)
+                    .move(0, 0)
+                    .fill({color: baseColour, opacity: baseOpacity})
+                    .stroke({width: 0});
+            }
 
-            const tiles = board.group().id("tiles");
             for (let row = 0; row < height; row++) {
                 for (let col = 0; col < width; col++) {
                     let idx = -1;
@@ -1206,7 +1218,6 @@ export abstract class RendererBase {
                 }
             }
         } else if (blocked !== undefined) {
-            const tiles = board.group().id("tiles");
             const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
@@ -1219,91 +1230,93 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
-        if (style === "squares-beveled") {
-            baseOpacity *= 0.15;
-        }
-        // Horizontal, top of each row, then bottom line after loop
-        let numcols = 1;
-        if (tilex > 0) {
-            numcols = Math.floor(width / tilex);
-        }
-        for (let tileCol = 0; tileCol < numcols; tileCol++) {
-            let idxLeft = 0;
-            if (tilex > 0) {
-                idxLeft = tileCol * tilex;
+        if (style !== "pegboard") {
+            if (style === "squares-beveled") {
+                baseOpacity *= 0.15;
             }
-            let idxRight = width - 1;
+            // Horizontal, top of each row, then bottom line after loop
+            let numcols = 1;
             if (tilex > 0) {
-                idxRight = idxLeft + tilex - 1;
+                numcols = Math.floor(width / tilex);
             }
-            for (let row = 0; row < height; row++) {
-                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
-                    if ( (row === 0) || (row === height - 1) ) {
-                        continue;
+            for (let tileCol = 0; tileCol < numcols; tileCol++) {
+                let idxLeft = 0;
+                if (tilex > 0) {
+                    idxLeft = tileCol * tilex;
+                }
+                let idxRight = width - 1;
+                if (tilex > 0) {
+                    idxRight = idxLeft + tilex - 1;
+                }
+                for (let row = 0; row < height; row++) {
+                    if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                        if ( (row === 0) || (row === height - 1) ) {
+                            continue;
+                        }
+                    }
+                    let thisStroke = baseStroke;
+                    if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    }
+                    const x1 = grid[row][idxLeft].x - (cellsize / 2);
+                    const y1 = grid[row][idxLeft].y - (cellsize / 2);
+                    const x2 = grid[row][idxRight].x + (cellsize / 2);
+                    const y2 = grid[row][idxRight].y - (cellsize / 2);
+                    gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+
+                    if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && ( (row > 0) || (tiley === 1) ) && (row % tiley === tiley - 1) ) ) {
+                        const lastx1 = grid[row][idxLeft].x - (cellsize / 2);
+                        const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
+                        const lastx2 = grid[row][idxRight].x + (cellsize / 2);
+                        const lasty2 = grid[row][idxRight].y + (cellsize / 2);
+                        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
-                let thisStroke = baseStroke;
-                if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
-                    thisStroke = baseStroke * 3;
-                }
-                const x1 = grid[row][idxLeft].x - (cellsize / 2);
-                const y1 = grid[row][idxLeft].y - (cellsize / 2);
-                const x2 = grid[row][idxRight].x + (cellsize / 2);
-                const y2 = grid[row][idxRight].y - (cellsize / 2);
-                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+            }
 
-                if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && ( (row > 0) || (tiley === 1) ) && (row % tiley === tiley - 1) ) ) {
-                    const lastx1 = grid[row][idxLeft].x - (cellsize / 2);
-                    const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
-                    const lastx2 = grid[row][idxRight].x + (cellsize / 2);
-                    const lasty2 = grid[row][idxRight].y + (cellsize / 2);
-                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+            // Vertical, left of each column, then right line after loop
+            let numrows = 1;
+            if (tiley > 0) {
+                numrows = Math.floor(height / tiley);
+            }
+            for (let tileRow = 0; tileRow < numrows; tileRow++) {
+                let idxTop = 0;
+                if (tiley > 0) {
+                    idxTop = tileRow * tiley;
                 }
-            }
-        }
+                let idxBottom = height - 1;
+                if (tiley > 0) {
+                    idxBottom = idxTop + tiley - 1;
+                }
+                for (let col = 0; col < width; col++) {
+                    if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                        if ( (col === 0) || (col === width - 1) ) {
+                            continue;
+                        }
+                    }
 
-        // Vertical, left of each column, then right line after loop
-        let numrows = 1;
-        if (tiley > 0) {
-            numrows = Math.floor(height / tiley);
-        }
-        for (let tileRow = 0; tileRow < numrows; tileRow++) {
-            let idxTop = 0;
-            if (tiley > 0) {
-                idxTop = tileRow * tiley;
-            }
-            let idxBottom = height - 1;
-            if (tiley > 0) {
-                idxBottom = idxTop + tiley - 1;
-            }
-            for (let col = 0; col < width; col++) {
-                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
-                    if ( (col === 0) || (col === width - 1) ) {
-                        continue;
+                    let thisStroke = baseStroke;
+                    if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    }
+                    const x1 = grid[idxTop][col].x - (cellsize / 2);
+                    const y1 = grid[idxTop][col].y - (cellsize / 2);
+                    const x2 = grid[idxBottom][col].x - (cellsize / 2);
+                    const y2 = grid[idxBottom][col].y + (cellsize / 2);
+                    gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+
+                    if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && ( (col > 0) || (tilex === 1) ) && (col % tilex === tilex - 1) ) ) {
+                        const lastx1 = grid[idxTop][col].x + (cellsize / 2);
+                        const lasty1 = grid[idxTop][col].y - (cellsize / 2);
+                        const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
+                        const lasty2 = grid[idxBottom][col].y + (cellsize / 2);
+                        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
-
-                let thisStroke = baseStroke;
-                if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
-                    thisStroke = baseStroke * 3;
-                }
-                const x1 = grid[idxTop][col].x - (cellsize / 2);
-                const y1 = grid[idxTop][col].y - (cellsize / 2);
-                const x2 = grid[idxBottom][col].x - (cellsize / 2);
-                const y2 = grid[idxBottom][col].y + (cellsize / 2);
-                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-
-                if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && ( (col > 0) || (tilex === 1) ) && (col % tilex === tilex - 1) ) ) {
-                    const lastx1 = grid[idxTop][col].x + (cellsize / 2);
-                    const lasty1 = grid[idxTop][col].y - (cellsize / 2);
-                    const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
-                    const lasty2 = grid[idxBottom][col].y + (cellsize / 2);
-                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-                }
             }
         }
 
-        if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
+        if ( (this.options.boardClick !== undefined) && (tileSpace === 0) && (style !== "pegboard") ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
             const clickDeltaX = (this.json.board.clickDeltaX ?? 0) as number;
@@ -1501,6 +1514,8 @@ export abstract class RendererBase {
         let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = this.rootSvg.group().id("board");
 
+        // have to define tiles early for clickable markers to work
+        const tiles = board.group().id("tiles");
         const gridlines = board.group().id("gridlines");
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
@@ -1841,7 +1856,6 @@ export abstract class RendererBase {
                 this.rootSvg.click(genericCatcher);
             } else {
                 const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill("#fff").opacity(0).id("_clickCatcher");
-                const tiles = this.rootSvg.group().id("tiles");
                 for (let row = 0; row < grid.length; row++) {
                     for (let col = 0; col < grid[row].length; col++) {
                         const {x, y} = grid[row][col];
@@ -3772,7 +3786,7 @@ export abstract class RendererBase {
                         opacity = marker.opacity as number;
                     }
                     const points: [number, number][] = [];
-                    if ( ( (this.json.board.style.startsWith("squares")) || (this.json.board.style.startsWith("sowing")) ) && (gridExpanded !== undefined) ) {
+                    if ( ( (this.json.board.style.startsWith("squares")) || (this.json.board.style.startsWith("sowing")) || this.json.board.style === "pegboard") && (gridExpanded !== undefined) ) {
                         for (const point of marker.points as ITarget[]) {
                             points.push([gridExpanded[point.row][point.col].x, gridExpanded[point.row][point.col].y]);
                         }
@@ -3842,20 +3856,35 @@ export abstract class RendererBase {
                     if ( ("style" in marker) && (marker.style !== undefined) && (marker.style === "dashed") ) {
                         stroke.dasharray = "4";
                     }
+                    let centered = false;
+                    if ( "centered" in marker && marker.centered !== undefined && marker.centered) {
+                        centered = true;
+                    }
+                    let clickable = false;
+                    if ( "clickable" in marker && marker.clickable !== undefined && marker.clickable && this.options.boardClick !== undefined) {
+                        clickable = true;
+                    }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
-                    if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
-                        const point1 = (marker.points as ITarget[])[0];
-                        [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y]
-                        const point2 = (marker.points as ITarget[])[1];
-                        [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y]
+                    const point1 = (marker.points as ITarget[])[0];
+                    const point2 = (marker.points as ITarget[])[1];
+                    if ( (this.json.board.style.startsWith("squares") || this.json.board.style === "pegboard") && (gridExpanded !== undefined) && (! centered) ) {
+                        [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y];
+                        [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y];
                     } else {
-                        const point1 = (marker.points as ITarget[])[0];
-                        [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y]
-                        const point2 = (marker.points as ITarget[])[1];
-                        [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y]
+                        [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y];
+                        [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y];
                     }
-                    svgGroup.line(x1, y1, x2, y2).stroke(stroke).attr({ 'pointer-events': 'none' }).addClass(`aprender-marker-${x2uid(cloned)}`);
+                    const line = svgGroup.line(x1, y1, x2, y2).stroke(stroke).addClass(`aprender-marker-${x2uid(cloned)}`);
+                    if (clickable) {
+                        const id = `${point1.col},${point1.row}|${point2.col},${point2.row}`;
+                        line.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, id);
+                            e.stopPropagation();
+                        });
+                    } else {
+                        line.attr({ 'pointer-events': 'none' });
+                    }
                 } else if (marker.type === "halo") {
                     if (! this.json.board.style.startsWith("circular")) {
                         throw new Error("The `halo` marker only works with `circular-*` boards.");
@@ -3948,7 +3977,7 @@ export abstract class RendererBase {
                     }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
-                    if ( (this.json.board.style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                    if ( (this.json.board.style.startsWith("squares") || this.json.board.style === "pegboard") && (gridExpanded !== undefined) ) {
                         const point1 = (marker.points as ITarget[])[0];
                         [x1, y1] = this.interpolateFromGrid(gridExpanded, point1);
                         const point2 = (marker.points as ITarget[])[1];
@@ -4021,7 +4050,7 @@ export abstract class RendererBase {
                                 break;
                         }
                         svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
-                    } else if ( ( (style.startsWith("squares")) || (style === "sowing") ) && (gridExpanded !== undefined) ) {
+                    } else if ( ( (style.startsWith("squares")) || (style === "sowing") || style === "pegboard" ) && (gridExpanded !== undefined) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         switch (marker.edge) {
@@ -4369,7 +4398,7 @@ export abstract class RendererBase {
                         stroke.dasharray = (marker.dashed as number[]).join(" ");
                     }
                     const style = this.json.board.style;
-                    if ( (style.startsWith("squares")) && (gridExpanded !== undefined) ) {
+                    if ( (style.startsWith("squares") || style === "pegboard") && (gridExpanded !== undefined) ) {
                         const row = marker.cell.row as number;
                         const col = marker.cell.col as number;
                         let xFrom = 0; let yFrom = 0;

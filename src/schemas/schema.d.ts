@@ -73,6 +73,7 @@ export interface APRenderRep {
           | "vertex"
           | "vertex-cross"
           | "vertex-fanorona"
+          | "pegboard"
           | "go"
           | "hex-slanted"
           | "hex-odd-p"
@@ -443,6 +444,18 @@ export interface APRenderRep {
                */
               width?: number;
               style?: "solid" | "dashed";
+              /**
+               * By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.
+               */
+              centered?: boolean;
+              /**
+               * Adds a click handler to the line. This can get in the way of regular clicks, depending on how your board is configured.
+               */
+              clickable?: boolean & string;
+              /**
+               * If true, the labels will be drawn below the grid lines.
+               */
+              belowGrid?: boolean;
             }
           | {
               /**
