@@ -187,7 +187,7 @@ export class ConhexRenderer extends RendererBase {
                 customLabels = this.json.board.columnLabels;
             }
             let columnLabels = this.getLabels(customLabels, boardsize);
-            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-columns")) ) {
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels = columnLabels.reverse();
             }
             // if (this.options.rotate === 180) {
