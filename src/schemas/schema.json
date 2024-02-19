@@ -268,6 +268,7 @@
                                 "vertex",
                                 "vertex-cross",
                                 "vertex-fanorona",
+                                "pegboard",
                                 "go",
                                 "hex-slanted",
                                 "hex-odd-p",
@@ -775,6 +776,20 @@
                                                     "dashed"
                                                 ],
                                                 "default": "solid"
+                                            },
+                                            "centered": {
+                                                "description": "By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.",
+                                                "type": "boolean",
+                                                "default": false
+                                            },
+                                            "clickable": {
+                                                "description": "Adds a click handler to the line. This can get in the way of regular clicks, depending on how your board is configured.",
+                                                "type": "boolean",
+                                                "default": "false"
+                                            },
+                                            "belowGrid": {
+                                                "description": "If true, the labels will be drawn below the grid lines.",
+                                                "type": "boolean"
                                             }
                                         },
                                         "required": ["type", "points"],

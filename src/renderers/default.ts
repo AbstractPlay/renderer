@@ -43,6 +43,7 @@ export class DefaultRenderer extends RendererBase {
             case "squares-beveled":
             case "squares-checkered":
             case "squares":
+            case "pegboard":
                 gridPoints = this.squares();
                 break;
             case "go":
