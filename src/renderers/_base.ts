@@ -1360,59 +1360,18 @@ export abstract class RendererBase {
         }
 
         // Add edge click handlers if requested
-        // Only *internal* edges are clickable
+        // All cells have E and S edges. Only first row and column have N and W.
         if (clickEdges) {
-            const seenEdges = new Set<string>();
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
-                    // ignore blocked cells
-                    if (blocked !== undefined) {
-                        const found = blocked.find(e => e.row === row && e.col === col);
-                        if (found !== undefined) {
-                            continue;
-                        }
+                    const dirs: CompassDirection[] = ["E","S"];
+                    if (row === 0) {
+                        dirs.push("N");
                     }
-                    for (const dir of ["N","E","S","W"] as const) {
-                        let newCol: number; let newRow: number;
-                        switch (dir) {
-                            case "N":
-                                newCol = col;
-                                newRow = row - 1;
-                                break;
-                            case "S":
-                                newCol = col;
-                                newRow = row + 1;
-                                break;
-                            case "E":
-                                newCol = col + 1;
-                                newRow = row;
-                                break;
-                            case "W":
-                                newCol = col - 1;
-                                newRow = row;
-                                break;
-                        }
-                        // ignore if off the board
-                        if (newCol < 0 || newCol >= grid[row].length || newRow < 0 || newRow >= grid.length) {
-                            continue;
-                        }
-                        // ignore if blocked
-                        if (blocked !== undefined) {
-                            const found = blocked.find(e => e.row === row && e.col === col);
-                            if (found !== undefined) {
-                                continue;
-                            }
-                        }
-                        let edgeId = `${col},${row}|${newCol},${newRow}`;
-                        if (this.options.rotate === 180) {
-                            edgeId = `${width - col - 1},${height - row - 1}|${width - newCol - 1},${height - newRow - 1}`;
-                        }
-                        // don't duplicate edges
-                        if (seenEdges.has(edgeId)) {
-                            continue;
-                        }
-                        seenEdges.add(edgeId);
-
+                    if (col === 0) {
+                        dirs.push("W");
+                    }
+                    for (const dir of dirs) {
                         // draw line
                         let x1: number; let y1: number;
                         let x2: number; let y2: number;
@@ -1442,12 +1401,21 @@ export abstract class RendererBase {
                                 x2 = x1;
                                 y2 = grid[row][col].y + halfcell;
                                 break;
+                            default:
+                                throw new Error(`Invalid direction passed: ${dir}`);
                         }
                         const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke * 5, color: baseColour, opacity: 0, linecap: "round" });
-                        edgeLine.click((e: MouseEvent) => {
-                            this.options.boardClick!(-1, -1, edgeId);
-                            e.stopPropagation();
-                        });
+                        if (this.options.rotate === 180) {
+                            edgeLine.click((e: MouseEvent) => {
+                                this.options.boardClick!(height - row - 1, width - col - 1, oppDir.get(dir)!);
+                                e.stopPropagation();
+                            });
+                        } else {
+                            edgeLine.click((e: MouseEvent) => {
+                                this.options.boardClick!(row, col, dir);
+                                e.stopPropagation();
+                            });
+                        }
                     }
                 }
             }
@@ -2814,16 +2782,16 @@ export abstract class RendererBase {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
-                if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
-                    continue;
-                }
                 const p = row[iCol];
                 const dx = p.x - triHeight; const dy = p.y - 25;
-                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 rowPolys.push({
                     type: "poly",
                     points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
                 });
+                if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
+                    continue;
+                }
+                const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 if (this.options.boardClick !== undefined) {
                     if (this.options.rotate === 180) {
                         c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
