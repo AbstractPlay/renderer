@@ -429,7 +429,6 @@ sheet.glyphs.set("ring-12", (canvas: SVGContainer) => {
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.3)
-        .attr("data-playerstroke", true)
         .fill({color: "#fff", opacity: 0})
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -453,7 +452,6 @@ sheet.glyphs.set("ring-13", (canvas: SVGContainer) => {
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.3)
-        .attr("data-playerstroke", true)
         .fill({color: "#fff", opacity: 0})
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -477,7 +475,6 @@ sheet.glyphs.set("ring-23", (canvas: SVGContainer) => {
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.65)
-        .attr("data-playerstroke", true)
         .fill({color: "#fff", opacity: 0})
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
