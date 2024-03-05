@@ -4320,6 +4320,19 @@ export abstract class RendererBase {
                         [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y];
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y];
                     }
+
+                    if ("shorten" in marker && marker.shorten > 0) {
+                        // https://math.stackexchange.com/questions/3058210/how-to-shorten-a-line-but-maintain-its-angle
+                        const t0 = marker.shorten as number;
+                        const t1 = 1 - (marker.shorten as number);
+                        const newx1 = x1 + (t0 * (x2 - x1));
+                        const newy1 = y1 + (t0 * (y2 - y1));
+                        const newx2 = x1 + (t1 * (x2 - x1));
+                        const newy2 = y1 + (t1 * (y2 - y1));
+                        x1 = newx1; y1 = newy1;
+                        x2 = newx2; y2 = newy2;
+                    }
+
                     const line = svgGroup.line(x1, y1, x2, y2).stroke(stroke).addClass(`aprender-marker-${x2uid(cloned)}`);
                     if (clickable) {
                         const id = `${point1.col},${point1.row}|${point2.col},${point2.row}`;
