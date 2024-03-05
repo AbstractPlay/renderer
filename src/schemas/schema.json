@@ -798,6 +798,13 @@
                                             "belowGrid": {
                                                 "description": "If true, the labels will be drawn below the grid lines.",
                                                 "type": "boolean"
+                                            },
+                                            "shorten": {
+                                                "description": "Let's you trim the ends of a line. Expressed as a percentage of total length.",
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "exclusiveMaximum": 1,
+                                                "default": 0
                                             }
                                         },
                                         "required": ["type", "points"],

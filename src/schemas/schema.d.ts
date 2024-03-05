@@ -464,6 +464,10 @@ export interface APRenderRep {
                * If true, the labels will be drawn below the grid lines.
                */
               belowGrid?: boolean;
+              /**
+               * Let's you trim the ends of a line. Expressed as a percentage of total length.
+               */
+              shorten?: number;
             }
           | {
               /**
