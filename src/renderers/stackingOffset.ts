@@ -82,6 +82,12 @@ export class StackingOffsetRenderer extends RendererBase {
             case "conhex-cells":
                 gridPoints = this.conhex();
                 break;
+            case "cairo-collinear":
+                gridPoints = this.cairoCollinear();
+                break;
+            case "cairo-catalan":
+                gridPoints = this.cairoCatalan();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }

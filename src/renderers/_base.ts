@@ -1,10 +1,9 @@
-/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
@@ -130,6 +129,7 @@ export interface IMarkBoardOptions {
     hexWidth?: number;
     hexHeight?: number;
     polys?: Poly[][];
+    cairoStart?: "H"|"V";
 }
 
 interface ISegment {
@@ -3377,6 +3377,447 @@ export abstract class RendererBase {
     }
 
     /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a collinear Cairo tiling of pentagons.
+     * Each pair of cells is indexed with the left or top cell coming before the right or bottom cell.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected cairoCollinear(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        // Width and Height are in number of two-cell pairs
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
+        const cellsize = this.cellsize;
+        type PentagonOrientation = "H"|"V";
+        let startOrientation: PentagonOrientation = "H";
+        if ( ("cairoStart" in this.json.board) && (this.json.board.cairoStart !== undefined) ) {
+            startOrientation = this.json.board.cairoStart as PentagonOrientation;
+        }
+        // flip starting orientation when rotated, if necessary
+        if (this.options.rotate === 180) {
+            if (width % 2 !== height % 2) {
+                if (startOrientation === "H") {
+                    startOrientation = "V";
+                } else {
+                    startOrientation = "H";
+                }
+            }
+        }
+
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        let grid = cairo({gridWidth: width, gridHeight: height, cellSize: cellsize, cairoStart: startOrientation});
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("pentagons");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+
+        // NO BOARD LABELS
+
+        /*
+          Pentagon points (N-facing):
+            0, -half
+            widest, -quarter
+            half, half
+            -half, half
+            -widest, -quarter
+        */
+
+        // Draw hexes
+        const half = cellsize / 2;
+        const quarter = cellsize / 4;
+        const widest = half + quarter;
+
+        // type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        // let blocked: Blocked|undefined;
+        // if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+        //     blocked = [...(this.json.board.blocked as Blocked)];
+        // }
+
+        let hexFill: string|undefined;
+        if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
+            hexFill = this.json.board.hexFill;
+        }
+        const pentN = this.rootSvg.defs().symbol().id("pentagon-symbol-N").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
+        const ptsN: IPoint[] = [{x: 0, y: 0 - half}, {x: widest, y: 0 - quarter}, {x: half, y: half}, {x: 0 - half, y: half}, {x: 0 - widest, y: 0 - quarter}];
+        const symbolPolyN = pentN.polygon(ptsN.map(pt => `${pt.x},${pt.y}`).join(" "))
+                           .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-N")
+                           .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        if (hexFill !== undefined) {
+            symbolPolyN.fill({color: hexFill, opacity: 1});
+        }
+        const pentS = this.rootSvg.defs().symbol().id("pentagon-symbol-S").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
+        const ptsS: IPoint[] = [{x: 0, y: half}, {x: 0 - widest, y: quarter}, {x: 0 - half, y: 0 - half}, {x: half, y: 0 - half}, {x: widest, y: quarter}];
+        const symbolPolyS = pentS.polygon(ptsS.map(pt => `${pt.x},${pt.y}`).join(" "))
+                           .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-S")
+                           .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        if (hexFill !== undefined) {
+            symbolPolyS.fill({color: hexFill, opacity: 1});
+        }
+        const pentE = this.rootSvg.defs().symbol().id("pentagon-symbol-E").viewbox(0 - half - 1, 0 - widest - 1, cellsize + 2, (cellsize * 1.5) + 2);
+        const ptsE: IPoint[] = [{x: half, y: 0}, {x: quarter, y: widest}, {x: 0 - half, y: half}, {x: 0 - half, y: 0 - half}, {x: quarter, y: 0 - widest}];
+        const symbolPolyE = pentE.polygon(ptsE.map(pt => `${pt.x},${pt.y}`).join(" "))
+                           .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-E")
+                           .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        if (hexFill !== undefined) {
+            symbolPolyE.fill({color: hexFill, opacity: 1});
+        }
+        const pentW = this.rootSvg.defs().symbol().id("pentagon-symbol-W").viewbox(0 - half - 1, 0 - widest - 1, cellsize + 2, (cellsize * 1.5) + 2);
+        const ptsW: IPoint[] = [{x: 0 - half, y: 0}, {x: 0 - quarter, y: 0 - widest}, {x: half, y: 0 - half}, {x: half, y: half}, {x: 0 - quarter, y: widest}];
+        const symbolPolyW = pentW.polygon(ptsW.map(pt => `${pt.x},${pt.y}`).join(" "))
+                           .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-W")
+                           .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        if (hexFill !== undefined) {
+            symbolPolyW.fill({color: hexFill, opacity: 1});
+        }
+
+        let polys: Poly[][] = [];
+        let orientation = startOrientation;
+        for (let iRow = 0; iRow < height; iRow++) {
+            const row = grid[iRow];
+            if (iRow % 2 === 0) {
+                orientation = startOrientation;
+            } else if (startOrientation === "H") {
+                orientation = "V";
+            } else {
+                orientation = "H";
+            }
+            const rowPolys: Poly[] = [];
+            for (let iCol = 0; iCol < width; iCol++) {
+                const pairs: {pt: IPoint, w: number, h: number, col: number, sym: SVGSymbol, verts: IPoint[]}[] = [];
+                if (orientation === "H") {
+                    pairs.push({
+                        pt: row[iCol * 2],
+                        col: iCol * 2,
+                        w: cellsize + 2,
+                        h: (cellsize * 1.5) + 2,
+                        sym: pentW,
+                        verts: ptsW,
+                    });
+                    pairs.push({
+                        pt: row[(iCol * 2) + 1],
+                        col: (iCol * 2) + 1,
+                        w: cellsize + 2,
+                        h: (cellsize * 1.5) + 2,
+                        sym: pentE,
+                        verts: ptsE,
+                    });
+                } else {
+                    pairs.push({
+                        pt: row[iCol * 2],
+                        col: iCol * 2,
+                        w: (cellsize * 1.5) + 2,
+                        h: cellsize + 2,
+                        sym: pentN,
+                        verts: ptsN,
+                    });
+                    pairs.push({
+                        pt: row[(iCol * 2) + 1],
+                        col: (iCol * 2) + 1,
+                        w: (cellsize * 1.5) + 2,
+                        h: cellsize + 2,
+                        sym: pentS,
+                        verts: ptsS,
+                    });
+                }
+                for (const {pt, col, w, h, sym, verts} of pairs) {
+                    rowPolys.push({
+                        type: "poly",
+                        points: verts.map(vpt => { return {x: vpt.x + pt.x, y: vpt.y + pt.y}}),
+                    });
+                    const c = gridlines.use(sym).size(w, h).center(pt.x, pt.y);
+                    if (this.options.boardClick !== undefined) {
+                        if (this.options.rotate === 180) {
+                            c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - col - 1, ""));
+                        } else {
+                            c.click(() => this.options.boardClick!(iRow, col, ""));
+                        }
+                    }
+                }
+                if (orientation === "H") {
+                    orientation = "V";
+                } else {
+                    orientation = "H";
+                }
+            }
+            polys.push(rowPolys);
+        }
+        if (this.options.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+            polys = polys.map((r) => r.reverse()).reverse();
+        }
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates the Cairo tiling of pentagons that is dual to the snubsquare board.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected cairoCatalan(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
+        if (width < 2 || height < 2) {
+            throw new Error(`The 'cairo-catalan' board must be at least two cells wide and two cells high.`);
+        }
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = "#000";
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of snubsquare points that is 2 larger than requested
+        const ssGrid = snubsquare({gridWidth: width + 2, gridHeight: height + 2, cellSize: cellsize});
+
+        // build the list of polys
+        // there are four different shapes
+        const centroid = (pts: IPoint[]): IPoint|undefined => {
+            if (pts.length === 0) {
+                return undefined;
+            }
+            const cx = pts.reduce((prev, curr) => prev + curr.x, 0) / pts.length;
+            const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
+            return {x: cx, y: cy};
+        }
+        let polys: IPolyPolygon[][] = [];
+        for (let ssRow = 0; ssRow < height; ssRow++) {
+            const polyRow: IPolyPolygon[] = [];
+            for (let ssCol = 0; ssCol < width; ssCol++) {
+                const pts: IPoint[] = [];
+                if (ssRow % 2 === 0) {
+                    if (ssCol % 2 === 0) {
+                        pts.push(centroid([ssGrid[ssRow][ssCol], ssGrid[ssRow][ssCol + 1], ssGrid[ssRow + 1][ssCol], ssGrid[ssRow + 1][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow][ssCol + 1], ssGrid[ssRow][ssCol + 2], ssGrid[ssRow + 1][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow][ssCol + 2], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 1][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 2][ssCol + 2], ssGrid[ssRow + 2][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 2][ssCol + 1], ssGrid[ssRow + 1][ssCol]])!);
+                    } else {
+                        pts.push(centroid([ssGrid[ssRow][ssCol + 1], ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 1][ssCol]])!);
+                        pts.push(centroid([ssGrid[ssRow][ssCol + 1], ssGrid[ssRow][ssCol + 2], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 1][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 2][ssCol + 2]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 2][ssCol + 2], ssGrid[ssRow + 2][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol], ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 2][ssCol + 1], ssGrid[ssRow + 2][ssCol]])!);
+                    }
+                } else {
+                    if (ssCol % 2 === 0) {
+                        pts.push(centroid([ssGrid[ssRow][ssCol], ssGrid[ssRow][ssCol + 1], ssGrid[ssRow + 1][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow][ssCol + 1], ssGrid[ssRow][ssCol + 2], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 1][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 2][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol], ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 2][ssCol + 1], ssGrid[ssRow + 2][ssCol]])!);
+                        pts.push(centroid([ssGrid[ssRow][ssCol], ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 1][ssCol]])!);
+                    } else {
+                        pts.push(centroid([ssGrid[ssRow][ssCol], ssGrid[ssRow][ssCol + 1], ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 1][ssCol]])!);
+                        pts.push(centroid([ssGrid[ssRow][ssCol + 1], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 1][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 1][ssCol + 2], ssGrid[ssRow + 2][ssCol + 2], ssGrid[ssRow + 2][ssCol + 1]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 2][ssCol + 1], ssGrid[ssRow + 2][ssCol]])!);
+                        pts.push(centroid([ssGrid[ssRow + 1][ssCol], ssGrid[ssRow + 1][ssCol + 1], ssGrid[ssRow + 2][ssCol]])!);
+                    }
+                }
+                polyRow.push({
+                    type: "poly",
+                    points: pts,
+                });
+            }
+            polys.push(polyRow);
+        }
+
+        // build the final grid of points from the centroids of the polys
+        let grid: GridPoints = [];
+        for (const row of polys) {
+            const rowNode: IPoint[] = [];
+            for (const poly of row) {
+                rowNode.push(centroid(poly.points)!)
+            }
+            grid.push(rowNode);
+        }
+
+        // now render the board
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("pentagons");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+
+        // Add board labels
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
+            const labels = board.group().id("labels");
+            const columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+            if (this.options.rotate === 180) {
+                columnLabels.reverse();
+            }
+            // Columns (letters)
+            for (let col = 0; col < width; col++) {
+                const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
+                const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                }
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows (numbers)
+            const rowLabels: string[] = [];
+            if (this.options.rotate === 180) {
+                for (let row = 0; row < height; row++) {
+                    rowLabels.push((row + 1).toString());
+                }
+            } else {
+                for (let row = 0; row < height; row++) {
+                    rowLabels.push((height - row).toString());
+                }
+            }
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
+            for (let row = 0; row < height; row++) {
+                const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+                const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                }
+            }
+        }
+
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( ("blocked" in this.json.board) && (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        let hexFill: string|undefined;
+        if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
+            hexFill = this.json.board.hexFill;
+        }
+
+        // let minX = Math.min(...polys[0][0].points.map(p => p.x));
+        // let minY = Math.min(...polys[0][0].points.map(p => p.y));
+        // let maxX = Math.max(...polys[0][0].points.map(p => p.x));
+        // let maxY = Math.max(...polys[0][0].points.map(p => p.y));
+        // const pentEE = this.rootSvg.defs().symbol().id("pentagon-symbol-EE").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
+        // const symbolPolyEE = pentEE.polygon(polys[0][0].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-EE")
+        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        // if (hexFill !== undefined) {
+        //     symbolPolyEE.fill({color: hexFill, opacity: 1});
+        // }
+
+        // minX = Math.min(...polys[0][1].points.map(p => p.x));
+        // minY = Math.min(...polys[0][1].points.map(p => p.y));
+        // maxX = Math.max(...polys[0][1].points.map(p => p.x));
+        // maxY = Math.max(...polys[0][1].points.map(p => p.y));
+        // const pentEO = this.rootSvg.defs().symbol().id("pentagon-symbol-EO").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
+        // const symbolPolyEO = pentEO.polygon(polys[0][1].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-EO")
+        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        // if (hexFill !== undefined) {
+        //     symbolPolyEO.fill({color: hexFill, opacity: 1});
+        // }
+
+        // minX = Math.min(...polys[1][0].points.map(p => p.x));
+        // minY = Math.min(...polys[1][0].points.map(p => p.y));
+        // maxX = Math.max(...polys[1][0].points.map(p => p.x));
+        // maxY = Math.max(...polys[1][0].points.map(p => p.y));
+        // const pentOE = this.rootSvg.defs().symbol().id("pentagon-symbol-OE").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
+        // const symbolPolyOE = pentOE.polygon(polys[0][1].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-OE")
+        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        // if (hexFill !== undefined) {
+        //     symbolPolyOE.fill({color: hexFill, opacity: 1});
+        // }
+
+        // minX = Math.min(...polys[1][1].points.map(p => p.x));
+        // minY = Math.min(...polys[1][1].points.map(p => p.y));
+        // maxX = Math.max(...polys[1][1].points.map(p => p.x));
+        // maxY = Math.max(...polys[1][1].points.map(p => p.y));
+        // const pentOO = this.rootSvg.defs().symbol().id("pentagon-symbol-OO").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
+        // const symbolPolyOO = pentOO.polygon(polys[0][1].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-OO")
+        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+        // if (hexFill !== undefined) {
+        //     symbolPolyOO.fill({color: hexFill, opacity: 1});
+        // }
+
+        for (let iRow = 0; iRow < height; iRow++) {
+            const row = grid[iRow];
+            for (let iCol = 0; iCol < width; iCol++) {
+                if (blocked !== undefined) {
+                    if (blocked.find(p => p.row === iRow && p.col === iCol) !== undefined) {
+                        continue;
+                    }
+                }
+                const c = gridlines.polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+                                   .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-OO")
+                                   .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});;
+                if (hexFill !== undefined) {
+                    c.fill({color: hexFill, opacity: 1});
+                }
+                if (this.options.boardClick !== undefined) {
+                    if (this.options.rotate === 180) {
+                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                    } else {
+                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
+                    }
+                }
+            }
+        }
+
+        if (this.options.rotate === 180) {
+            grid = grid.map((r) => r.reverse()).reverse();
+            polys = polys.map((r) => r.reverse()).reverse();
+        }
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return grid;
+    }
+
+    /**
      * This is what applies annotations to a finished board.
      * Annotations are applied at the end, and so overlay pieces.
      *
@@ -4214,93 +4655,6 @@ export abstract class RendererBase {
                         for (const line of lines) {
                             svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
-                    } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
-                        /*
-                         * Polys is populated.
-                         * Point 0 is the top point (pointy topped).
-                         * Corners need to share edges.
-                         * N: 5-0, 0-1
-                         * NE: 0-1, 1-2
-                         * SE: 1-2, 2-3
-                         * S: 2-3, 3-4
-                         * SW: 3-4, 4-5
-                         * NW: 4-5, 5-0
-                         */
-                        const midrow = Math.floor(grid.length / 2);
-                        let hexes: Poly[];
-                        let idxs: [[number,number],[number,number]];
-                        switch (marker.edge) {
-                            case "N":
-                                hexes = polys[0];
-                                idxs = [[5,0],[0,1]];
-                                break;
-                            case "NE":
-                                hexes = [];
-                                for (let row = 0; row <= midrow; row++) {
-                                    hexes.push(polys[row][polys[row].length - 1]);
-                                }
-                                idxs = [[0,1],[1,2]];
-                                break;
-                            case "SE":
-                                hexes = [];
-                                for (let row = midrow; row < grid.length; row++) {
-                                    hexes.push(polys[row][polys[row].length - 1]);
-                                }
-                                idxs = [[1,2],[2,3]];
-                                break;
-                            case "S":
-                                hexes = [...polys[polys.length - 1]];
-                                hexes.reverse();
-                                idxs = [[2,3],[3,4]];
-                                break;
-                            case "SW":
-                                hexes = [];
-                                for (let row = midrow; row < grid.length; row++) {
-                                    hexes.push(polys[row][0]);
-                                }
-                                hexes.reverse();
-                                idxs = [[3,4],[4,5]];
-                                break;
-                            case "NW":
-                                hexes = [];
-                                for (let row = 0; row <= midrow; row++) {
-                                    hexes.push(polys[row][0]);
-                                }
-                                hexes.reverse();
-                                idxs = [[4,5],[5,0]];
-                                break;
-                            default:
-                                throw new Error(`(hex-of-hex edge markings) Invalid edge direction given: ${marker.edge as string}`);
-                        }
-                        const lines: [number,number,number,number][] = [];
-                        for (let i = 0; i < hexes.length; i++) {
-                            const hex = hexes[i] as IPolyPolygon;
-                            const pt1 = hex.points[idxs[0][0]];
-                            const pt2 = hex.points[idxs[0][1]];
-                            const pt3 = hex.points[idxs[1][1]];
-                            // first corner
-                            if (i === 0) {
-                                const midx = (pt1.x + pt2.x) / 2;
-                                const midy = (pt1.y + pt2.y) / 2;
-                                lines.push([midx, midy, pt2.x, pt2.y]);
-                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
-                            }
-                            // last corner
-                            else if (i === hexes.length - 1) {
-                                const midx = (pt2.x + pt3.x) / 2;
-                                const midy = (pt2.y + pt3.y) / 2;
-                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
-                                lines.push([pt2.x, pt2.y, midx, midy]);
-                            }
-                            // everything in between
-                            else {
-                                lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
-                                lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
-                            }
-                        }
-                        for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
-                        }
                     } else if ( (style === "hex-slanted") && (polys !== undefined) ) {
                         /*
                          * Polys is populated.
@@ -4375,6 +4729,181 @@ export abstract class RendererBase {
                                 lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
                             }
                         }
+                        for (const line of lines) {
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        }
+                    } else if (style === "cairo-catalan" && polys !== undefined) {
+                        const lines: [number,number,number,number][] = [];
+                        if (marker.edge === "N") {
+                            for (let i = 0; i < polys[0].length; i++) {
+                                const poly = polys[0][i] as IPolyPolygon;
+                                if (i % 2 === 0) {
+                                    const pt1 = poly.points[0];
+                                    const pt2 = poly.points[1];
+                                    const pt3 = poly.points[2];
+                                    lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                    lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                                } else {
+                                    const pt1 = poly.points[0];
+                                    const pt2 = poly.points[1];
+                                    lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                }
+                            }
+                        } else if (marker.edge === "S") {
+                            for (let i = 0; i < polys[polys.length - 1].length; i++) {
+                                const poly = polys[polys.length - 1][i] as IPolyPolygon;
+                                if (polys.length % 2 === 0) {
+                                    if (i % 2 === 0) {
+                                        const pt1 = poly.points[2];
+                                        const pt2 = poly.points[3];
+                                        lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                    } else {
+                                        const pt1 = poly.points[2];
+                                        const pt2 = poly.points[3];
+                                        const pt3 = poly.points[4];
+                                        lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                        lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                                    }
+                                } else {
+                                    if (i % 2 === 0) {
+                                        const pt1 = poly.points[3];
+                                        const pt2 = poly.points[4];
+                                        lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                    } else {
+                                        const pt1 = poly.points[2];
+                                        const pt2 = poly.points[3];
+                                        const pt3 = poly.points[4];
+                                        lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                        lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                                    }
+                                }
+                            }
+                        } else if (marker.edge === "W") {
+                            for (let i = 0; i < polys.length; i++) {
+                                const poly = polys[i][0] as IPolyPolygon;
+                                if (i % 2 === 0) {
+                                    const pt1 = poly.points[4];
+                                    const pt2 = poly.points[0];
+                                    lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                } else {
+                                    const pt1 = poly.points[0];
+                                    const pt2 = poly.points[4];
+                                    const pt3 = poly.points[3];
+                                    lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                    lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                                }
+                            }
+                        } else {
+                            for (let i = 0; i < polys.length; i++) {
+                                const rowWidth = polys[i].length;
+                                const poly = polys[i][rowWidth - 1] as IPolyPolygon;
+                                if (rowWidth % 2 === 0) {
+                                    if (i % 2 === 0) {
+                                        const pt1 = poly.points[1];
+                                        const pt2 = poly.points[2];
+                                        const pt3 = poly.points[3];
+                                        lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                        lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                                    } else {
+                                        const pt1 = poly.points[1];
+                                        const pt2 = poly.points[2];
+                                        lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                    }
+                                } else {
+                                    if (i % 2 === 0) {
+                                        const pt1 = poly.points[1];
+                                        const pt2 = poly.points[2];
+                                        const pt3 = poly.points[3];
+                                        if (i !== 0) {
+                                            lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                        }
+                                        lines.push([pt2.x, pt2.y, pt3.x, pt3.y]);
+                                    } else {
+                                        const pt1 = poly.points[1];
+                                        const pt2 = poly.points[2];
+                                        lines.push([pt1.x, pt1.y, pt2.x, pt2.y]);
+                                    }
+                                }
+                            }
+                        }
+                        for (const line of lines) {
+                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        }
+                    } else if (style === "cairo-collinear" && polys !== undefined) {
+                        const lines: [number,number,number,number][] = [];
+                        let startOrientation: "H"|"V" = "H";
+                        if (opts.cairoStart !== undefined) {
+                            startOrientation = opts.cairoStart;
+                        }
+                        const orientations: ("H"|"V")[] = [startOrientation];
+                        if (startOrientation === "H") {
+                            orientations.push("V");
+                        } else {
+                            orientations.push("H");
+                        }
+
+                        if (marker.edge === "N") {
+                            const row = polys[0] as IPolyPolygon[];
+                            for (let i = 0; i < row.length / 2; i++) {
+                                const poly1 = row[i * 2];
+                                const poly2 = row[(i * 2) + 1];
+                                const orientation = orientations[i % 2];
+                                if (orientation === "H") {
+                                    lines.push([poly1.points[1].x, poly1.points[1].y, poly1.points[2].x, poly1.points[2].y]);
+                                    lines.push([poly2.points[3].x, poly2.points[3].y, poly2.points[4].x, poly2.points[4].y])
+                                } else {
+                                    lines.push([poly1.points[4].x, poly1.points[4].y, poly1.points[0].x, poly1.points[0].y]);
+                                    lines.push([poly1.points[0].x, poly1.points[0].y, poly1.points[1].x, poly1.points[1].y]);
+                                }
+                            }
+                        } else if (marker.edge === "S") {
+                            if (polys.length % 2 === 0) {
+                                orientations.reverse();
+                            }
+                            const row = polys[polys.length - 1] as IPolyPolygon[];
+                            for (let i = 0; i < row.length / 2; i++) {
+                                const poly1 = row[i * 2];
+                                const poly2 = row[(i * 2) + 1];
+                                const orientation = orientations[i % 2];
+                                if (orientation === "H") {
+                                    lines.push([poly1.points[3].x, poly1.points[3].y, poly1.points[4].x, poly1.points[4].y]);
+                                    lines.push([poly2.points[1].x, poly2.points[1].y, poly2.points[2].x, poly2.points[2].y])
+                                } else {
+                                    lines.push([poly2.points[4].x, poly2.points[4].y, poly2.points[0].x, poly2.points[0].y]);
+                                    lines.push([poly2.points[0].x, poly2.points[0].y, poly2.points[1].x, poly2.points[1].y]);
+                                }
+                            }
+                        } else if (marker.edge === "W") {
+                            for (let i = 0; i < polys.length; i++) {
+                                const poly1 = polys[i][0] as IPolyPolygon;
+                                const poly2 = polys[i][1] as IPolyPolygon;
+                                const orientation = orientations[i % 2];
+                                if (orientation === "H") {
+                                    lines.push([poly1.points[1].x, poly1.points[1].y, poly1.points[0].x, poly1.points[0].y]);
+                                    lines.push([poly1.points[0].x, poly1.points[0].y, poly1.points[4].x, poly1.points[4].y]);
+                                } else {
+                                    lines.push([poly1.points[3].x, poly1.points[3].y, poly1.points[4].x, poly1.points[4].y]);
+                                    lines.push([poly2.points[1].x, poly2.points[1].y, poly2.points[2].x, poly2.points[2].y])
+                                }
+                            }
+                        } else {
+                            if (Math.floor(polys[0].length / 2) % 2 === 0) {
+                                orientations.reverse();
+                            }
+                            for (let i = 0; i < polys.length; i++) {
+                                const poly1 = polys[i][polys[i].length - 1] as IPolyPolygon;
+                                const poly2 = polys[i][polys[i].length - 2] as IPolyPolygon;
+                                const orientation = orientations[i % 2];
+                                if (orientation === "H") {
+                                    lines.push([poly1.points[1].x, poly1.points[1].y, poly1.points[0].x, poly1.points[0].y]);
+                                    lines.push([poly1.points[0].x, poly1.points[0].y, poly1.points[4].x, poly1.points[4].y]);
+                                } else {
+                                    lines.push([poly1.points[3].x, poly1.points[3].y, poly1.points[4].x, poly1.points[4].y]);
+                                    lines.push([poly2.points[1].x, poly2.points[1].y, poly2.points[2].x, poly2.points[2].y]);
+                                }
+                            }
+                        }
+
                         for (const line of lines) {
                             svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
