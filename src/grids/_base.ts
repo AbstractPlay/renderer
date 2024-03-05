@@ -10,6 +10,8 @@ export interface IPoint {
     readonly y: number;
 }
 
+export type PentagonOrientation = "H"|"V";
+
 /**
  * Defines the options accepted by every grid point generator.
  *
@@ -94,6 +96,10 @@ export interface IGeneratorArgs {
      * Used by `hex-of-*` generators to create boards with alternating side lengths.
      */
     readonly alternating?: boolean;
+    /**
+     * Only used by the cairo generator to determine starting orientation
+     */
+    readonly cairoStart?: PentagonOrientation;
 }
 
 /**

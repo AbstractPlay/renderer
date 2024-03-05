@@ -283,7 +283,9 @@
                                 "circular-cobweb",
                                 "sowing",
                                 "conhex-dots",
-                                "conhex-cells"
+                                "conhex-cells",
+                                "cairo-collinear",
+                                "cairo-catalan"
                             ]
                         },
                         "strokeWeight": {
@@ -439,6 +441,12 @@
                             "minimum": -360,
                             "maximum": 360,
                             "default": 0
+                        },
+                        "cairoStart": {
+                            "description": "For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.",
+                            "type": "string",
+                            "enum": ["H","V"],
+                            "default": "H"
                         },
                         "buffer": {
                             "description": "Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.",

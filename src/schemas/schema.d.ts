@@ -89,7 +89,9 @@ export interface APRenderRep {
           | "circular-cobweb"
           | "sowing"
           | "conhex-dots"
-          | "conhex-cells";
+          | "conhex-cells"
+          | "cairo-collinear"
+          | "cairo-catalan";
         /**
          * The base stroke weight of lines drawn to construct the board.
          */
@@ -212,6 +214,10 @@ export interface APRenderRep {
          * By default, circular boards start with a vertical line drawn from the centre straight "north". This lets you choose a different starting degree. In this plane, 0 degrees is towards the top of the screen and increases clockwise.
          */
         "circular-start"?: number;
+        /**
+         * For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.
+         */
+        cairoStart?: "H" | "V";
         /**
          * Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.
          */
