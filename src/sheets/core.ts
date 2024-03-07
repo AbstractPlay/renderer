@@ -90,6 +90,24 @@ sheet.glyphs.set("cross-orth", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("dline-pos", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.line(110, -10, -10, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.viewbox(0,0,100,100);
+    return group;
+});
+
+sheet.glyphs.set("dline-neg", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.line(-10, -10, 110, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.viewbox(0,0,100,100);
+    return group;
+});
+
 sheet.glyphs.set("dragon", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const dragon = group.group();
@@ -163,6 +181,15 @@ sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
     const vbHeight = hex.corners[2].y - hex.corners[5].y;
     symbol.viewbox(vbx, vby, vbWidth, vbHeight);
     return symbol;
+});
+
+sheet.glyphs.set("hline", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.line(-10, 50, 110, 50)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.viewbox(0,0,100,100);
+    return group;
 });
 
 sheet.glyphs.set("house", (canvas: SVGContainer) => {
@@ -512,6 +539,15 @@ sheet.glyphs.set("tower", (canvas: SVGContainer) => {
         .fill("none")
         .attr("data-playerfill", true);
     group.viewbox(-7.279999999999999, -0.540000000000012, 80, 80);
+    return group;
+});
+
+sheet.glyphs.set("vline", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.line(50, -10, 50, 110)
+        .attr("data-playerstroke", true)
+        .stroke({width: 15, color: "#000"})
+    group.viewbox(0,0,100,100);
     return group;
 });
 
