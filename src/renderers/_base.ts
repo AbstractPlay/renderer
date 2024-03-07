@@ -3448,11 +3448,11 @@ export abstract class RendererBase {
         const quarter = cellsize / 4;
         const widest = half + quarter;
 
-        // type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-        // let blocked: Blocked|undefined;
-        // if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
-        //     blocked = [...(this.json.board.blocked as Blocked)];
-        // }
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( ("blocked" in this.json.board) && (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
 
         let hexFill: string|undefined;
         if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
@@ -3545,6 +3545,9 @@ export abstract class RendererBase {
                         type: "poly",
                         points: verts.map(vpt => { return {x: vpt.x + pt.x, y: vpt.y + pt.y}}),
                     });
+                    if (blocked !== undefined && blocked.find(p => p.col === col && p.row === iRow) !== undefined) {
+                        continue;
+                    }
                     const c = gridlines.use(sym).size(w, h).center(pt.x, pt.y);
                     if (this.options.boardClick !== undefined) {
                         if (this.options.rotate === 180) {
