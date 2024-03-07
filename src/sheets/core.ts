@@ -90,18 +90,18 @@ sheet.glyphs.set("cross-orth", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("dline-pos", (canvas: SVGContainer) => {
+sheet.glyphs.set("dline-neg", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    group.line(110, -10, -10, 110)
+    group.line(-10, -10, 110, 110)
         .attr("data-playerstroke", true)
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
-sheet.glyphs.set("dline-neg", (canvas: SVGContainer) => {
+sheet.glyphs.set("dline-pos", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    group.line(-10, -10, 110, 110)
+    group.line(110, -10, -10, 110)
         .attr("data-playerstroke", true)
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
