@@ -5587,9 +5587,9 @@ export abstract class RendererBase {
                 const txtWidth = tmptxt.bbox().w;
                 tmptxt.remove();
                 // set the actual width of the nested svg
-                const realWidth = Math.max(areaWidth, txtWidth*1.05)
+                const {x: vbx, y:vby, w: vbw, h: vbh} = nested.viewbox();
+                const realWidth = Math.max(vbw, txtWidth);
                 nested.width(realWidth);
-                const {x: vbx, y:vby, h: vbh} = nested.viewbox();
                 nested.viewbox(vbx, vby, realWidth, vbh);
                 const txt = nested.text(area.label).addClass(`aprender-area-label`);
                 txt.font({size: textHeight, anchor: "start", fill: "#000"})
