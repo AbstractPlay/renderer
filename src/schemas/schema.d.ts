@@ -558,6 +558,55 @@ export interface APRenderRep {
             }
           | {
               /**
+               * Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
+               */
+              type: "fences";
+              /**
+               * @minItems 1
+               */
+              sides: [
+                {
+                  cell: {
+                    row: number;
+                    col: number;
+                  };
+                  side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+                  /**
+                   * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+                   */
+                  colour?: PositiveInteger | Colourstrings;
+                  /**
+                   * Expressed as a multiple of the base stroke width
+                   */
+                  width?: number;
+                  /**
+                   * A valid `dasharray` appropriate for the game's display.
+                   */
+                  dashed?: number[];
+                },
+                ...{
+                  cell: {
+                    row: number;
+                    col: number;
+                  };
+                  side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+                  /**
+                   * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+                   */
+                  colour?: PositiveInteger | Colourstrings;
+                  /**
+                   * Expressed as a multiple of the base stroke width
+                   */
+                  width?: number;
+                  /**
+                   * A valid `dasharray` appropriate for the game's display.
+                   */
+                  dashed?: number[];
+                }[]
+              ];
+            }
+          | {
+              /**
                * A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.
                */
               type: "glyph";

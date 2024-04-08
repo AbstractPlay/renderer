@@ -4262,7 +4262,17 @@ export abstract class RendererBase {
                 baseOpacity = this.json.board.strokeOpacity;
             }
 
-            for (const marker of this.json.board.markers) {
+            const allMarkers = this.json.board.markers.filter(m => m.type !== "fences");
+            const fences = (this.json.board.markers.filter(m => m.type === "fences") as unknown[]) as {type: "fences", sides: {[k: string]: any}[]}[];
+            if (fences.length > 0) {
+                for (const decl of fences) {
+                    for (const side of decl.sides) {
+                        allMarkers.push({type: "fence", ...side});
+                    }
+                }
+            }
+
+            for (const marker of allMarkers) {
                 if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo"))) {
                     continue;
                 }
@@ -5587,9 +5597,9 @@ export abstract class RendererBase {
                 const txtWidth = tmptxt.bbox().w;
                 tmptxt.remove();
                 // set the actual width of the nested svg
-                const realWidth = Math.max(areaWidth, txtWidth*1.05)
+                const {x: vbx, y:vby, w: vbw, h: vbh} = nested.viewbox();
+                const realWidth = Math.max(vbw, txtWidth);
                 nested.width(realWidth);
-                const {x: vbx, y:vby, h: vbh} = nested.viewbox();
                 nested.viewbox(vbx, vby, realWidth, vbh);
                 const txt = nested.text(area.label).addClass(`aprender-area-label`);
                 txt.font({size: textHeight, anchor: "start", fill: "#000"})
