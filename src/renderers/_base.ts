@@ -4262,7 +4262,17 @@ export abstract class RendererBase {
                 baseOpacity = this.json.board.strokeOpacity;
             }
 
-            for (const marker of this.json.board.markers) {
+            const allMarkers = this.json.board.markers.filter(m => m.type !== "fences");
+            const fences = (this.json.board.markers.filter(m => m.type === "fences") as unknown[]) as {type: "fences", sides: {[k: string]: any}[]}[];
+            if (fences.length > 0) {
+                for (const decl of fences) {
+                    for (const side of decl.sides) {
+                        allMarkers.push({type: "fence", ...side});
+                    }
+                }
+            }
+
+            for (const marker of allMarkers) {
                 if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo"))) {
                     continue;
                 }
