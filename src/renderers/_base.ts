@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
@@ -3501,8 +3502,6 @@ export abstract class RendererBase {
 
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
-        // NO BOARD LABELS
-
         /*
           Pentagon points (N-facing):
             0, -half
@@ -3634,6 +3633,63 @@ export abstract class RendererBase {
             }
             polys.push(rowPolys);
         }
+
+        // Add board labels
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
+            const labels = board.group().id("labels");
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels as string[];
+            }
+            let columnLabels = this.getLabels(customLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+            if (this.options.rotate === 180) {
+                columnLabels.reverse();
+            }
+            console.log(columnLabels);
+
+            // @ts-ignore
+            let rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
+            console.log(rowLabels);
+
+            if (this.json.options?.includes("swap-labels")) {
+                const scratch = [...columnLabels];
+                columnLabels = [...rowLabels];
+                columnLabels.reverse();
+                rowLabels = [...scratch];
+                rowLabels.reverse();
+            }
+            const realwidth = width * 2;
+            // Columns (letters)
+            for (let col = 0; col < realwidth; col += 2) {
+                const pointTop = {x: (grid[0][col].x + grid[0][col+1].x) / 2, y: ((grid[0][col].y + grid[0][col+1].y) / 2) - (cellsize * 1.25)};
+                const pointBottom = {x: (grid[height - 1][col].x + grid[height - 1][col+1].x) / 2, y: ((grid[height - 1][col].y + grid[height - 1][col+1].y) / 2) + (cellsize * 1.25)};
+                if (! hideHalf) {
+                    labels.text(columnLabels[col / 2]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                }
+                labels.text(columnLabels[col / 2]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows (numbers)
+            for (let row = 0; row < height; row++) {
+                const pointL = {x: ((grid[row][0].x + grid[row][1].x) / 2) - (cellsize * 1.25), y: (grid[row][0].y + grid[row][1].y) / 2};
+                const pointR = {x: ((grid[row][realwidth - 1].x + grid[row][realwidth - 2].x) / 2) + (cellsize * 1.25), y: (grid[row][realwidth - 1].y + grid[row][realwidth - 2].y) / 2};
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                }
+            }
+        }
+
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
             polys = polys.map((r) => r.reverse()).reverse();
