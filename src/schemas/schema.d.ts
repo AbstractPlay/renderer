@@ -192,6 +192,10 @@ export interface APRenderRep {
          */
         rowLabels?: string[];
         /**
+         * Currently only applies to hex fields
+         */
+        labelStyle?: "internal" | "external";
+        /**
          * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
          */
         tileWidth?: number;

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
@@ -2007,6 +2006,10 @@ export abstract class RendererBase {
         }
 
         const labels = this.rootSvg.group().id("labels");
+        let labelStyle: "internal"|"external" = "internal";
+        if ("labelStyle" in this.json.board && this.json.board.labelStyle !== undefined && this.json.board.labelStyle !== null) {
+            labelStyle = this.json.board.labelStyle as "internal"|"external";
+        }
         const fontSize = this.cellsize / 5;
         const seenEdges = new Set<string>();
         let customLabels: string[]|undefined;
@@ -2046,7 +2049,7 @@ export abstract class RendererBase {
             }
             const { x, y } = hex;
             const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
-            if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            if ( ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) && (labelStyle === "internal") ) {
                 const components: string[] = [];
                 if (this.options.rotate === 180) {
                     components.push(columnLabels[width - hex.col - 1]);
@@ -2084,6 +2087,88 @@ export abstract class RendererBase {
                     used.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, ""));
                 } else {
                     used.click(() => this.options.boardClick!(hex.row, hex.col, ""));
+                }
+            }
+        }
+
+        // external labels, if requested
+        // Add board labels
+        if (labelStyle === "external") {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+            (polys.flat() as IPolyPolygon[]).forEach(hex => {
+                hex.points.forEach(({x,y}) => {
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x);
+                    maxY = Math.max(maxY, y);
+                });
+            });
+
+            const centroid = (pts: IPoint[]): IPoint|undefined => {
+                if (pts.length === 0) {
+                    return undefined;
+                }
+                const cx = pts.reduce((prev, curr) => prev + curr.x, 0) / pts.length;
+                const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
+                return {x: cx, y: cy};
+            }
+
+            // Columns
+            // if flat, columns are straight lines
+            // if pointy, place at minimum of first and second row centre points
+            for (let col = 0; col < width; col++) {
+                const hex = polys[0][col] as IPolyPolygon;
+                const {x: cx} = centroid(hex.points)!;
+                let pointTop: IPoint;
+                let pointBottom: IPoint;
+                if (style.endsWith("-f")) {
+                    pointTop = {x: cx, y: minY - (cellsize * 0.5)};
+                    pointBottom = {x: cx, y: maxY + (cellsize * 0.5)};
+                } else {
+                    if (style.includes("-even")) {
+                        pointTop = {x: cx - (cellsize * 1), y: minY - (cellsize * 0.5)};
+                        pointBottom = {x: cx - (cellsize * 1), y: maxY + (cellsize * 0.5)};
+                    } else {
+                        pointTop = {x: cx, y: minY - (cellsize * 0.5)};
+                        pointBottom = {x: cx, y: maxY + (cellsize * 0.5)};
+                    }
+                }
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                }
+                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows
+            // if pointy, rows are straight lines
+            // if flat, place at minimum of first and second row centre points
+            for (let row = 0; row < height; row++) {
+                const hex = polys[row][0] as IPolyPolygon;
+                const {y: cy} = centroid(hex.points)!;
+                let pointL: IPoint;
+                let pointR: IPoint;
+                if (style.endsWith("-p")) {
+                    pointL = {x: minX - (cellsize * 0.5), y: cy};
+                    pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                } else {
+                    if (style.includes("-even")) {
+                        pointL = {x: minX - (cellsize * 0.5), y: cy};
+                        pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                    } else {
+                        pointL = {x: minX - (cellsize * 0.5), y: cy};
+                        pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                    }
+                }
+                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -3652,14 +3737,12 @@ export abstract class RendererBase {
             if (this.options.rotate === 180) {
                 columnLabels.reverse();
             }
-            console.log(columnLabels);
 
             // @ts-ignore
             let rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
                 rowLabels.reverse();
             }
-            console.log(rowLabels);
 
             if (this.json.options?.includes("swap-labels")) {
                 const scratch = [...columnLabels];
