@@ -2016,7 +2016,7 @@ export abstract class RendererBase {
         if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
             customLabels = this.json.board.columnLabels as string[];
         }
-        let rowLabels = this.getLabels(customLabels, width);
+        let rowLabels = this.getLabels(customLabels, height);
         rowLabels.reverse();
         if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
             rowLabels.reverse();
@@ -2025,7 +2025,7 @@ export abstract class RendererBase {
             rowLabels.reverse();
         }
 
-        let columnLabels = this.getRowLabels(this.json.board.rowLabels, height);
+        let columnLabels = this.getRowLabels(this.json.board.rowLabels, width);
         columnLabels.reverse();
         if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
             columnLabels.reverse();
