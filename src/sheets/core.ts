@@ -218,6 +218,30 @@ sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("orb", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const gradient = group.gradient("radial", (add) => {
+        add.stop({offset: 0, color: "black"});
+        add.stop({offset: 1, color: "white"});
+    });
+    gradient.from(0.25, 0.25).to(0.5, 0.5).radius(0.5);
+    const rect = group.rect(sheet.cellsize, sheet.cellsize).fill(gradient);
+    const mask = group.mask().add(rect);
+    const border = 0;
+    group.circle(sheet.cellsize)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    const circle = group.circle(sheet.cellsize)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    circle.maskWith(mask);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
 sheet.glyphs.set("palace", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const palace = group.group();
