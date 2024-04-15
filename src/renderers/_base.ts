@@ -212,6 +212,33 @@ export interface IKey {
 }
 
 /**
+ * Internal interface used for generating scroll bars
+ */
+export interface IScroll {
+    [k: string]: unknown;
+    type: "scroll";
+    max: number;
+    min?: number;
+    current?: number;
+    labels?: {
+        upOne?: string;
+        upAll?: string;
+        downOne?: string;
+        downAll?: string;
+        bar?: string;
+    };
+    position?: "left"|"right";
+    width?: number;
+    height?: number;
+    lineWidth?: number;
+    colours?: {
+        background?: string;
+        fill?: string;
+        strokes?: string;
+    }
+}
+
+/**
  * For the generic "pieces" area
  */
 export interface IPiecesArea {
@@ -673,6 +700,7 @@ export abstract class RendererBase {
                     // const clone = got;
 
                     // Colourize (`player` first, then `colour` if defined)
+                    let isStroke = false;
                     if (g.player !== undefined) {
                         if  (this.options.patterns) {
                             if (g.player > this.options.patternList.length) {
@@ -692,16 +720,19 @@ export abstract class RendererBase {
                             }
                             const fill = this.options.colours[g.player - 1];
                             got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
-                            got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); });
+                            got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); isStroke = true; });
                         }
                     } else if (g.colour !== undefined) {
                         got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
-                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); });
+                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); isStroke = true; });
                     }
 
                     // Apply requested opacity
                     if (g.opacity !== undefined) {
                         got.fill({opacity: g.opacity});
+                        if (isStroke) {
+                            got.stroke({opacity: g.opacity});
+                        }
                     }
 
                     // nested.add(clone);
@@ -5904,6 +5935,223 @@ export abstract class RendererBase {
 
         // set the viewbox and return
         nested.viewbox(0, 0, (height * 1.1) + maxScaledWidth, (height * key.list.length) + (buffer * (key.list.length - 1)));
+        return nested;
+    }
+
+    /**
+     * Generates the scroll bar and then places it appropriately.
+     *
+     * @param grid - The grid of points; used for positioning.
+     * @param position - If given, overrides the JSON setting.
+     */
+    protected placeScroll(grid: GridPoints, position?: "left"|"right"): void {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+        if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+            // @ts-ignore
+            const scrolls = this.json.areas.filter((b) => b.type === "scrollBar") as IScroll[];
+            if (scrolls.length > 1) {
+                throw new Error("Only one scroll bar may be defined.");
+            }
+            if (scrolls.length === 1) {
+                const scroll = scrolls[0];
+                const scrollImg = this.buildScroll(scroll);
+                const y = grid[0][0].y - this.cellsize;
+                // Position defaults to "right"
+                // If a position is passed by the renderer, it overrides everything
+                // Otherwise, the JSON prevails
+                let pos = "right";
+                if (position !== undefined) {
+                    pos = position;
+                } else if (scroll.position !== undefined) {
+                    pos = scroll.position;
+                }
+                let x = 0;
+                if (pos === "left") {
+                    x = grid[0][0].x - (this.cellsize * 2) - scrollImg.viewbox().w;
+                } else {
+                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 2);
+                }
+                const used = this.rootSvg.use(scrollImg).size(scrollImg.viewbox().w, scrollImg.viewbox().h).dmove(x, y);
+                if (this.options.boardClick !== undefined) {
+                    const top = used.y() as number;
+                    const height = used.height() as number;
+                    const numSegs = scroll.max - (scroll.min || 0);
+                    const numEntries = 4 + numSegs;
+                    const segHeight = height / numEntries;
+                    used.click((e: { clientX: number; clientY: number; }) => {
+                        const point = used.point(e.clientX, e.clientY);
+                        const yRelative = point.y - top;
+                        const row = Math.floor(yRelative / segHeight);
+                        if ( (row >= 0) && (row < numEntries) ) {
+                            let value = "";
+                            if (row === 0) {
+                                value = "scroll_upAll";
+                            } else if (row === 1) {
+                                value = "scroll_upOne";
+                            } else if (row === numEntries - 1) {
+                                value = "scroll_downAll";
+                            } else if (row === numEntries - 2) {
+                                value = "scroll_downOne";
+                            } else {
+                                const offset = row - 2;
+                                value = `scroll_segment_${scroll.max - offset}`;
+                            }
+                            this.options.boardClick!(-1, -1, value);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Builds the scroll bar from JSON.
+     *
+     * @param json - The parsed JSON representing the button bar
+     * @returns The nested SVG, which is embedded in the root `defs()`
+     */
+    protected buildScroll(json: IScroll): Svg {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+
+        // initialize values
+        let height = this.cellsize * 0.75;
+        if (json.height !== undefined) {
+            height = this.cellsize * json.height;
+        }
+        let width = this.cellsize * 0.25;
+        if (json.width !== undefined) {
+            width = this.cellsize * json.width;
+        }
+        let lineWidth = width * 1.5;
+        if (json.lineWidth !== undefined) {
+            lineWidth = width * (1 + json.lineWidth);
+        }
+        let min = 0;
+        if (json.min !== undefined) {
+            min = json.min;
+        }
+        let current = json.max;
+        if (json.current !== undefined) {
+            current = json.current;
+        }
+        let lblUpOne = "+";
+        let lblUpAll = "++";
+        let lblDownOne = "\u2212";
+        let lblDownAll = "\u2212\u2212";
+        // let lblBar = "Hide/show layers";
+        if (json.labels !== undefined) {
+            // if (json.labels.bar !== undefined) {
+            //     lblBar = json.labels.bar;
+            // }
+            if (json.labels.upOne !== undefined) {
+                lblUpOne = json.labels.upOne;
+            }
+            if (json.labels.upAll !== undefined) {
+                lblUpAll = json.labels.upAll;
+            }
+            if (json.labels.downOne !== undefined) {
+                lblDownOne = json.labels.downOne;
+            }
+            if (json.labels.downAll !== undefined) {
+                lblDownAll = json.labels.downAll;
+            }
+        }
+        let clrBack: string|undefined;
+        let clrFill = "#000";
+        let clrStrokes = "#000";
+        if (json.colours !== undefined) {
+            if (json.colours.background !== undefined) {
+                clrBack = json.colours.background;
+            }
+            if (json.colours.fill !== undefined) {
+                clrFill = json.colours.fill;
+            }
+            if (json.colours.strokes !== undefined) {
+                clrStrokes = json.colours.strokes;
+            }
+        }
+        const nested = this.rootSvg.defs().nested().id("_scroll");
+
+        // build symbols of each label
+        const labels: SVGSymbol[] = [];
+        let maxWidth = 0;
+        let maxHeight = 0;
+        for (const lbl of [lblUpOne, lblUpAll, lblDownOne, lblDownAll]) {
+            const tmptxt = this.rootSvg.text(lbl).font({size: 17, fill: "#000", anchor: "start"});
+            maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
+            maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
+            const symtxt = nested.symbol();
+            symtxt.text(lbl).font({size: 17, fill: "#000", anchor: "start"});
+            symtxt.viewbox(tmptxt.bbox());
+            tmptxt.remove();
+            labels.push(symtxt);
+        }
+        const xOffset = (lineWidth - width) / 2;
+        const segBlank = nested.symbol();
+        segBlank.line(0,0,lineWidth,0).stroke({width: 1, color: clrStrokes});
+        segBlank.line(0,height,lineWidth,height).stroke({width: 1, color: clrStrokes});
+        if (clrBack !== undefined) {
+            segBlank.rect(width, height).move(xOffset, 0).stroke({width: 1, color: clrStrokes}).fill({color: clrBack});
+        } else {
+            segBlank.rect(width, height).move(xOffset, 0).stroke({width: 1, color: clrStrokes}).fill({color: "#fff", opacity: 0});
+        }
+        segBlank.viewbox(0,0,lineWidth, height);
+        const segFull = nested.symbol();
+        segFull.line(0,0,lineWidth,0).stroke({width: 1, color: clrStrokes});
+        segFull.line(0,height,lineWidth,height).stroke({width: 1, color: clrStrokes});
+        segFull.rect(width, height).move(xOffset, 0).stroke({width: 1, color: clrStrokes}).fill({color: clrFill});
+        segFull.viewbox(0,0,lineWidth, height);
+
+        // Composite each into a group, all at 0,0
+        // Click handlers don't work here
+        const groups: Svg[] = [];
+        let maxScaledWidth = -Infinity;
+        // up buttons first
+        for (const lbl of [labels[1], labels[0]]) {
+            const g = nested.nested();
+            const used = g.use(lbl).size(lineWidth, height);
+            maxScaledWidth = Math.max(maxScaledWidth, used.width() as number)
+            groups.push(g);
+        }
+        // segments
+        for (let i = json.max; i > min; i--) {
+            let sym: SVGSymbol;
+            if (i > current) {
+                sym = segBlank;
+            } else {
+                sym = segFull;
+            }
+            const g = nested.nested();
+            const used = g.use(sym).size(lineWidth, height);
+            maxScaledWidth = Math.max(maxScaledWidth, used.width() as number)
+            groups.push(g);
+        }
+        // down buttons last
+        for (const lbl of [labels[2], labels[3]]) {
+            const g = nested.nested();
+            const used = g.use(lbl).size(lineWidth, height);
+            maxScaledWidth = Math.max(maxScaledWidth, used.width() as number)
+            groups.push(g);
+        }
+
+        // move each successive one down
+        let dy = 0;
+        for (const g of groups) {
+            g.dy(dy);
+            dy += height;
+        }
+
+        // add background rect to capture all clicks
+        nested.rect(maxScaledWidth, (height * (4 + (json.max - min))))
+              .stroke({color: "none", width: 0})
+              .fill({color: "#fff", opacity: 0});
+
+        // set the viewbox and return
+        nested.viewbox(0, 0, maxScaledWidth, (height * (4 + (json.max - min))));
         return nested;
     }
 

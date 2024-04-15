@@ -231,6 +231,9 @@ export class DefaultRenderer extends RendererBase {
         // key
         this.placeKey(modGrid);
 
+        // scrollBar
+        this.placeScroll(modGrid);
+
         this.backFill();
     }
 
