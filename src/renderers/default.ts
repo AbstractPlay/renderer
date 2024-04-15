@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { GridPoints } from "../grids/_base";
+import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rotate, usePieceAt } from "../common/plotting";
@@ -8,6 +8,37 @@ export interface IPiecesArea {
     type: "pieces";
     pieces: [string, ...string[]];
     label: string;
+}
+
+const calcPyramidOffset = (width: number, height: number, col: number, row: number)
+                            : {gridrow: number, gridcol: number, layer: number, offset: boolean}|undefined => {
+    if (row < height) {
+        return {gridrow: row, gridcol: col, offset: false, layer: 0};
+    }
+    let maxrow = height - 1;
+    let gridrow = row;
+    let gridcol = col;
+    let layer: number;
+    for (layer = 1; layer < height; layer++) {
+        gridrow = gridrow - (height - layer) - 1;
+        if (layer % 2 === 0) {
+            gridrow++;
+            gridcol++;
+        }
+        maxrow += height - layer;
+        if (row <= maxrow) {
+            break;
+        }
+    }
+    if (row > maxrow) {
+        return undefined;
+    }
+    const maxcol = width - layer;
+    if (col >= maxcol) {
+        return undefined;
+    }
+
+    return {gridrow, gridcol, layer, offset: layer % 2 !== 0};
 }
 
 /**
@@ -45,6 +76,9 @@ export class DefaultRenderer extends RendererBase {
             case "squares":
             case "pegboard":
                 gridPoints = this.squares();
+                break;
+            case "squares-stacked":
+                gridPoints = this.squaresStacked();
                 break;
             case "go":
                 this.json.board.width = 19;
@@ -137,7 +171,27 @@ export class DefaultRenderer extends RendererBase {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
-                            const point = gridPoints[row][col];
+                            let point: IPoint;
+                            // handle pieces beyond the grid boundaries
+                            if (row >= gridPoints.length || col >= gridPoints[row].length) {
+                                if (this.json.board.style !== "squares-stacked") {
+                                    continue;
+                                } else {
+                                    const result = calcPyramidOffset(this.json.board.width as number, this.json.board.height as number, col, row);
+                                    if (result === undefined) {
+                                        continue;
+                                    }
+                                    point = gridPoints[result.gridrow][result.gridcol];
+                                    if (result.offset) {
+                                        point = {x: point.x + (this.cellsize / 2), y: point.y + (this.cellsize / 2)}
+                                    }
+                                }
+                            } else {
+                                point = gridPoints[row][col];
+                            }
+                            // if (point === undefined) {
+                            //     continue;
+                            // }
                             const piece = this.rootSvg.findOne("#" + key) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);

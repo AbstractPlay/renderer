@@ -72,6 +72,7 @@ export interface APRenderRep {
           | "squares"
           | "squares-checkered"
           | "squares-beveled"
+          | "squares-stacked"
           | "vertex"
           | "vertex-cross"
           | "vertex-fanorona"
