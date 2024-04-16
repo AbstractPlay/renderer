@@ -6038,9 +6038,9 @@ export abstract class RendererBase {
         if (json.current !== undefined) {
             current = json.current;
         }
-        let lblUpOne = "+";
+        let lblUpOne = "\u00A0+\u00A0";
         let lblUpAll = "++";
-        let lblDownOne = "\u2212";
+        let lblDownOne = "\u00A0\u2212\u00A0";
         let lblDownAll = "\u2212\u2212";
         // let lblBar = "Hide/show layers";
         if (json.labels !== undefined) {
