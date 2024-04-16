@@ -956,6 +956,66 @@ export interface APRenderRep {
         colour?: string;
       }
     | {
+        type: "scrollBar";
+        /**
+         * The lowest value of the bar (usually 0).
+         */
+        min?: number;
+        /**
+         * The highest value of the bar.
+         */
+        max: number;
+        /**
+         * The current value of the bar.
+         */
+        current?: number;
+        /**
+         * Defines the text labels for each of the clickable elements.
+         */
+        labels?: {
+          upOne?: string;
+          upAll?: string;
+          downOne?: string;
+          downAll?: string;
+          bar?: string;
+          [k: string]: unknown;
+        };
+        /**
+         * Where you want the bar to appear relative to the board.
+         */
+        position?: "left" | "right";
+        /**
+         * The width of each scroll bar segment as a percentage of the cell size.
+         */
+        width?: number;
+        /**
+         * The height of each scroll bar segment as a percentage of the cell size.
+         */
+        height?: number;
+        /**
+         * By default, each segment is signalled by lines that extend beyond the width of the bar itself. This defines the extra width of that line, as a percentage of the total width.
+         */
+        lineWidth?: number;
+        /**
+         * Defines the various colour settings.
+         */
+        colours?: {
+          /**
+           * Pattern for hex colour strings
+           */
+          background?: string;
+          /**
+           * Pattern for hex colour strings
+           */
+          fill?: string;
+          /**
+           * Pattern for hex colour strings
+           */
+          strokes?: string;
+          [k: string]: unknown;
+        };
+      }
+    | {
         type?: "key";
         /**
          * The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.

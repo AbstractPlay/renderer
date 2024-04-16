@@ -1639,6 +1639,100 @@
                         "additionalProperties": false
                     },
                     {
+                        "description": "Used to create a clickable vertical scroll bar used for hiding/showing layers of pieces.",
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "enum": ["scrollBar"]
+                            },
+                            "min": {
+                                "description": "The lowest value of the bar (usually 0).",
+                                "type": "integer",
+                                "default": 0
+                            },
+                            "max": {
+                                "description": "The highest value of the bar.",
+                                "type": "integer"
+                            },
+                            "current": {
+                                "description": "The current value of the bar.",
+                                "type": "integer",
+                                "default": 0
+                            },
+                            "labels": {
+                                "description": "Defines the text labels for each of the clickable elements.",
+                                "type": "object",
+                                "properties": {
+                                    "upOne": {
+                                        "type": "string",
+                                        "default": "+"
+                                    },
+                                    "upAll": {
+                                        "type": "string",
+                                        "default": "++"
+                                    },
+                                    "downOne": {
+                                        "type": "string",
+                                        "default": "\u2212"
+                                    },
+                                    "downAll": {
+                                        "type": "string",
+                                        "default": "\u2212\u2212"
+                                    },
+                                    "bar": {
+                                        "type": "string",
+                                        "default": "Hide/show layers"
+                                    }
+                                }
+                            },
+                            "position": {
+                                "description": "Where you want the bar to appear relative to the board.",
+                                "enum": ["left", "right"],
+                                "default": "right"
+                            },
+                            "width": {
+                                "description": "The width of each scroll bar segment as a percentage of the cell size.",
+                                "type": "number",
+                                "minimum": 0,
+                                "default": 0.25
+                            },
+                            "height": {
+                                "description": "The height of each scroll bar segment as a percentage of the cell size.",
+                                "type": "number",
+                                "minimum": 0,
+                                "default": 0.75
+                            },
+                            "lineWidth": {
+                                "description": "By default, each segment is signalled by lines that extend beyond the width of the bar itself. This defines the extra width of that line, as a percentage of the total width.",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "default": 0.5
+                            },
+                            "colours": {
+                                "description": "Defines the various colour settings.",
+                                "type": "object",
+                                "properties": {
+                                    "background": {
+                                        "description": "Defaults to fully transparent background",
+                                        "$ref": "#/definitions/colourstrings"
+                                    },
+                                    "fill": {
+                                        "$ref": "#/definitions/colourstrings",
+                                        "default": "#000"
+                                    },
+                                    "strokes": {
+                                        "description": "Lines and text",
+                                        "$ref": "#/definitions/colourstrings",
+                                        "default": "#000"
+                                    }
+                                }
+                            }
+                        },
+                        "required": ["type", "max"],
+                        "additionalProperties": false
+                    },
+                    {
                         "description": "A list of pieces in the `legend` that players need identifiers for. Usually needed for games with many colours or just indicating who controls what.",
                         "type": "object",
                         "properties": {

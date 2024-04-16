@@ -183,7 +183,11 @@ export class DefaultRenderer extends RendererBase {
                                     }
                                     point = gridPoints[result.gridrow][result.gridcol];
                                     if (result.offset) {
-                                        point = {x: point.x + (this.cellsize / 2), y: point.y + (this.cellsize / 2)}
+                                        if (this.options.rotate === 180) {
+                                            point = {x: point.x - (this.cellsize / 2), y: point.y - (this.cellsize / 2)}
+                                        } else {
+                                            point = {x: point.x + (this.cellsize / 2), y: point.y + (this.cellsize / 2)}
+                                        }
                                     }
                                 }
                             } else {
@@ -230,6 +234,9 @@ export class DefaultRenderer extends RendererBase {
 
         // key
         this.placeKey(modGrid);
+
+        // scrollBar
+        this.placeScroll(modGrid);
 
         this.backFill();
     }
