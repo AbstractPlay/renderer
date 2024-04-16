@@ -4518,6 +4518,22 @@ export abstract class RendererBase {
                             .center(pt.x, pt.y)
                             .attr({ 'pointer-events': 'none' });
                     }
+                } else if ( (note.type !== undefined) && (note.type === "glyph")) {
+                    if ( (! ("targets" in note)) || ((note.targets as any[]).length < 1) ) {
+                        throw new Error(`At least one target must be given for glyph annotations.`);
+                    }
+                    const key = note.glyph as string;
+                    const piece = notes.root().findOne("#" + key) as Svg;
+                    if ( (piece === null) || (piece === undefined) ) {
+                        throw new Error(`Could not find the requested piece (${key}). The glyph *must* exist in the \`legend\`.`);
+                    }
+                    for (const pt of (note.targets as ITarget[])) {
+                        const point = grid[pt.row][pt.col];
+                        const use = usePieceAt(notes, piece, this.cellsize, point.x, point.y, 1);
+                        if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
+                            rotate(use, this.options.rotate, point.x, point.y);
+                        }
+                    }
                 } else if ( (note.type !== undefined) && (note.type === "deltas") ) {
                     type Delta = {
                         row: number;

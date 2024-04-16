@@ -263,6 +263,11 @@
                     "description": "Annotations are the last things drawn and so overlay pieces. They are used to show changes in game state. In this case, it works like the dot marker but it shows up on top of pieces. It's a helpful way of showing movement range, for example. In this case, it's showing possible moves for the red piece at d7.",
                     "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"#000\"}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"dots\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
                 },
+                "notes-glyph": {
+                    "name": "Annotations: Glyphs",
+                    "description": "You can also use glyphs as annotations, which could consist of simple Unicode characters, like in this example, or full-blown composite pieces.",
+                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"#000\"},\"note\":{\"text\":\"\\u2718\",\"scale\":0.5}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"glyph\",\"glyph\":\"note\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
+                },
                 "blocking": {
                     "name": "Blocking cells",
                     "description": "Blocking cells lets you create boards of arbitrary shapes. In this case, the playing field is expanded by one layer, but some of those outer cells are \"blocked.\" This means both they they will not appear and they cannot be clicked on.",
