@@ -1805,7 +1805,8 @@
                                     "enter",
                                     "exit",
                                     "dots",
-                                    "outline"
+                                    "outline",
+                                    "glyph"
                                 ]
                             },
                             "targets": {
@@ -1863,6 +1864,10 @@
                                 "description": "Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.",
                                 "type": "boolean",
                                 "default": "true"
+                            },
+                            "glyph": {
+                                "description": "Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.",
+                                "type": "string"
                             }
                         },
                         "required": ["type", "targets"]

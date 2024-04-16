@@ -1054,7 +1054,7 @@ export interface APRenderRep {
         /**
          * The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.
          */
-        type: "move" | "eject" | "enter" | "exit" | "dots" | "outline";
+        type: "move" | "eject" | "enter" | "exit" | "dots" | "outline" | "glyph";
         /**
          * The cells involved in the annotation
          *
@@ -1091,6 +1091,10 @@ export interface APRenderRep {
          * Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.
          */
         static?: boolean & string;
+        /**
+         * Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.
+         */
+        glyph?: string;
         [k: string]: unknown;
       }
     | {
