@@ -167,3 +167,33 @@ export const matrixRectRot90 = (lst: any[][]): any[][] => {
     return transposed.map(row => [...row].reverse());
 }
 
+export const calcPyramidOffset = (width: number, height: number, col: number, row: number)
+                            : {gridrow: number, gridcol: number, layer: number, offset: boolean}|undefined => {
+    if (row < height) {
+        return {gridrow: row, gridcol: col, offset: false, layer: 0};
+    }
+    let maxrow = height - 1;
+    let gridrow = row;
+    let gridcol = col;
+    let layer: number;
+    for (layer = 1; layer < height; layer++) {
+        gridrow = gridrow - (height - layer) - 1;
+        if (layer % 2 === 0) {
+            gridrow++;
+            gridcol++;
+        }
+        maxrow += height - layer;
+        if (row <= maxrow) {
+            break;
+        }
+    }
+    if (row > maxrow) {
+        return undefined;
+    }
+    const maxcol = width - layer;
+    if (col >= maxcol) {
+        return undefined;
+    }
+
+    return {gridrow, gridcol, layer, offset: layer % 2 !== 0};
+}
