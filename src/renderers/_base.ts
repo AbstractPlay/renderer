@@ -8,7 +8,7 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90 } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset } from "../common/plotting";
 import { glyph2uid, x2uid} from "../common/glyph2uid";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
@@ -4366,7 +4366,10 @@ export abstract class RendererBase {
                     const markerCircle = notes.marker(2 * unit + 2 * s, 2 * unit + 2 * s, (add) => add.circle(2 * unit).center(unit + s, unit + s).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const points: string[] = [];
                     for (const node of (note.targets as ITarget[])) {
-                        const pt = grid[node.row][node.col];
+                        const pt = this.getStackedPoint(grid, node.col, node.row);
+                        if (pt === undefined) {
+                            throw new Error(`Annotation - Move: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
                         points.push(`${pt.x},${pt.y}`);
                     }
                     const stroke: StrokeData = {
@@ -4413,8 +4416,14 @@ export abstract class RendererBase {
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const [from, to] = note.targets as ITarget[];
-                    const ptFrom = grid[from.row][from.col];
-                    const ptTo = grid[to.row][to.col];
+                    const ptFrom = this.getStackedPoint(grid, from.col, from.row);
+                    if (ptFrom === undefined) {
+                        throw new Error(`Annotation - Ejenct: Could not find coordinates for row ${from.row}, column ${from.col}.`);
+                    }
+                    const ptTo = this.getStackedPoint(grid, to.col, to.row);
+                    if (ptTo === undefined) {
+                        throw new Error(`Annotation - Eject: Could not find coordinates for row ${to.row}, column ${to.col}.`);
+                    }
                     const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
                     const stroke: StrokeData = {
                         color: colour,
@@ -4450,7 +4459,11 @@ export abstract class RendererBase {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
                     for (const node of (note.targets as ITarget[])) {
-                        const pt = grid[node.row][node.col];
+                        // const pt = grid[node.row][node.col];
+                        const pt = this.getStackedPoint(grid, node.col, node.row);
+                        if (pt === undefined) {
+                            throw new Error(`Annotation - Enter: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
                         notes.rect(this.cellsize, this.cellsize)
                             .addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill("none")
@@ -4466,7 +4479,10 @@ export abstract class RendererBase {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
                     for (const node of (note.targets as ITarget[])) {
-                        const pt = grid[node.row][node.col];
+                        const pt = this.getStackedPoint(grid, node.col, node.row);
+                        if (pt === undefined) {
+                            throw new Error(`Annotation - Exit: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
                         notes.rect(this.cellsize, this.cellsize)
                             .addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill("none")
@@ -4483,7 +4499,11 @@ export abstract class RendererBase {
                     }
                     const pts: IPoint[] = [];
                     for (const node of (note.targets as ITarget[])) {
-                        pts.push(grid[node.row][node.col]);
+                        const pt = this.getStackedPoint(grid, node.col, node.row);
+                        if (pt === undefined) {
+                            throw new Error(`Annotation - Outline: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
+                        pts.push(pt);
                     }
                     if (pts.length < 3) {
                         throw new Error("The 'outline' annotation requires at least three points");
@@ -4509,7 +4529,10 @@ export abstract class RendererBase {
                         diameter = note.size as number;
                     }
                     for (const node of (note.targets as ITarget[])) {
-                        const pt = grid[node.row][node.col];
+                        const pt = this.getStackedPoint(grid, node.col, node.row);
+                        if (pt === undefined) {
+                            throw new Error(`Annotation - Dots: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
                         notes.circle(this.cellsize * diameter)
                             .addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill(colour)
@@ -4528,7 +4551,10 @@ export abstract class RendererBase {
                         throw new Error(`Could not find the requested piece (${key}). The glyph *must* exist in the \`legend\`.`);
                     }
                     for (const pt of (note.targets as ITarget[])) {
-                        const point = grid[pt.row][pt.col];
+                        const point = this.getStackedPoint(grid, pt.col, pt.row);
+                        if (point === undefined) {
+                            throw new Error(`Annotation - Enter: Could not find coordinates for row ${pt.row}, column ${pt.col}.`);
+                        }
                         const use = usePieceAt(notes, piece, this.cellsize, point.x, point.y, 1);
                         if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
                             rotate(use, this.options.rotate, point.x, point.y);
@@ -6348,5 +6374,30 @@ export abstract class RendererBase {
         }
         svg.line(x1, y1, x2, y2)
            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+    }
+
+    protected getStackedPoint (pts: GridPoints, col: number, row: number): IPoint|undefined {
+        if ( (! ("json" in this)) || (this.json === undefined) || (this.json === null) || (! ("board" in this.json)) || (this.json.board === undefined) || (this.json.board === null) || (! ("style" in this.json.board)) || (this.json.board.style === undefined)) {
+            throw new Error(`Cannot calculate the stacked point if the base object is not properly populated.`);
+        }
+        if (this.json.board.style !== "squares-stacked") {
+            return pts[row][col];
+        }
+        if ((! ("width" in this.json.board)) || (this.json.board.width === undefined) || (! ("height" in this.json.board)) || (this.json.board.height === undefined)) {
+            throw new Error(`Cannot calculate the stacked point if the base object is not properly populated.`);
+        }
+        const result = calcPyramidOffset(this.json.board.width, this.json.board.height, col, row);
+        if (result === undefined) {
+            return undefined;
+        }
+        let point = pts[result.gridrow][result.gridcol];
+        if (result.offset) {
+            if (this.options.rotate === 180) {
+                point = {x: point.x - (this.cellsize / 2), y: point.y - (this.cellsize / 2)}
+            } else {
+                point = {x: point.x + (this.cellsize / 2), y: point.y + (this.cellsize / 2)}
+            }
+        }
+        return point;
     }
 }
