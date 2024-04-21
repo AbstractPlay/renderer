@@ -5019,7 +5019,10 @@ export abstract class RendererBase {
                             colour = marker.colour as string;
                         }
                     }
-                    const opacity = baseOpacity + ((1 - baseOpacity) / 2);
+                    let opacity = baseOpacity + ((1 - baseOpacity) / 2);
+                    if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                        opacity = marker.opacity as number;
+                    }
                     const style = this.json.board.style;
                     if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") || (style.startsWith("conhex")) ) {
                         let xFrom = 0; let yFrom = 0;

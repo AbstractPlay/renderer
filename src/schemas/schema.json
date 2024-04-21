@@ -903,6 +903,12 @@
                                                     {"$ref": "#/definitions/positiveInteger"},
                                                     {"$ref": "#/definitions/colourstrings"}
                                                 ]
+                                            },
+                                            "opacity": {
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 1,
+                                                "default": 1
                                             }
                                         },
                                         "required": ["type", "edge", "colour"],
