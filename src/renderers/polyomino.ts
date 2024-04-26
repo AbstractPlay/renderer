@@ -214,12 +214,12 @@ export class PolyominoRenderer extends RendererBase {
                     }
 
                     // Add area label
-                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: "#000"});
+                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
                     const txtWidth = tmptxt.bbox().w;
                     tmptxt.remove();
                     nested.width(Math.max(areaWidth, txtWidth));
                     const txt = nested.text(area.label).addClass(`aprender-area-label`);
-                    txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                    txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging")
                         .move(0, 0);
@@ -275,12 +275,12 @@ export class PolyominoRenderer extends RendererBase {
                     nested.use(poly).size(areaWidth, cellsize * (numRows - 1)).move(0, (textHeight * 2) + cellsize);
 
                     // Add area label
-                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: "#000"});
+                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
                     const txtWidth = tmptxt.bbox().w;
                     tmptxt.remove();
                     nested.width(Math.max(areaWidth, txtWidth));
                     const txt = nested.text(area.label).addClass(`aprender-area-label`);
-                    txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                    txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging")
                         .move(0, 0);

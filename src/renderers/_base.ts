@@ -10,8 +10,22 @@ import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset } from "../common/plotting";
 import { glyph2uid, x2uid} from "../common/glyph2uid";
+import tinycolor from "tinycolor2";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
+
+/**
+ * This interface provides the renderer with preferences for specific element colouring.
+ * The intention is to make things like hosting SVGs in "dark mode" easier to accomplish.
+ */
+export interface IColourContext {
+    background: string;
+    strokes: string;
+    labels: string;
+    annotations: string;
+    fill: string;
+}
+// "background"|"strokes"|"labels"|"annotations"|"fill"
 
 /**
  * Defines the options recognized by the rendering engine.
@@ -24,6 +38,13 @@ export interface IRendererOptionsIn {
      *
      */
     sheets?: string[];
+    /**
+     * Let's you set desired default colours so the image more immediately fits
+     * into a specific context, like dark mode.
+     * The type is a generic string-to-string object, but the precheck function
+     * turns it into an IColourContext object.
+     */
+    colourContext?: {[k: string]: string};
     /**
      * A list of hexadecimal colour strings to be used as player colours. Be sure to provide enough for the number of players defined.
      * Defaults to a set of nine colours, defined in the constructor.
@@ -91,6 +112,7 @@ export interface IRendererOptionsIn {
  */
 export interface IRendererOptionsOut {
     sheets: string[];
+    colourContext: IColourContext;
     colours: string[];
     patterns: boolean;
     patternList: string[];
@@ -370,6 +392,13 @@ export abstract class RendererBase {
     constructor() {
         this.options = {
             sheets: ["core", "dice", "looney", "piecepack", "chess", "streetcar"],
+            colourContext: {
+                background: "#fff",
+                fill: "#000",
+                strokes: "#000",
+                annotations: "#000",
+                labels: "#000",
+            },
             colourBlind: false,
             colours: [],
             patterns: false,
@@ -453,16 +482,30 @@ export abstract class RendererBase {
             }
         }
 
-        // Validate colour list if given
-        if ( (opts.colours !== undefined) && (opts.colours.length > 0) ) {
-            const re3 = new RegExp(/^\#[a-f0-9]{3}$/, "i");
-            const re6 = new RegExp(/^\#[a-f0-9]{6}$/, "i");
-            for (const c of opts.colours) {
-                if ( (! re3.test(c)) && (! re6.test(c)) ) {
-                    throw new Error(`One of the colours you requested is malformed: ${ c }`);
+        // Validate colour context
+        if (opts.colourContext !== undefined && opts.colourContext !== null) {
+            for (const label of ["strokes", "labels", "annotations", "fill", "background"] as const) {
+                if ( (label in opts.colourContext) && (opts.colourContext[label] !== undefined) ) {
+                    const color = tinycolor(opts.colourContext[label]);
+                    if (! color.isValid()) {
+                        throw new Error(`The context colour for '${label}' is malformed: ${ opts.colourContext[label] }`);
+                    }
+                    this.options.colourContext[label] = color.toHexString();
                 }
             }
-            this.options.colours = opts.colours;
+        }
+
+        // Validate colour list if given
+        if ( (opts.colours !== undefined) && (opts.colours.length > 0) ) {
+            const normalized: string[] = [];
+            for (const c of opts.colours) {
+                const color = tinycolor(c);
+                if (! color.isValid()) {
+                    throw new Error(`One of the colours you requested is malformed: ${ c }`);
+                }
+                normalized.push(color.toHexString());
+            }
+            this.options.colours = [...normalized];
         }
 
         // Check for annotation screening
@@ -667,13 +710,13 @@ export abstract class RendererBase {
                         const fontsize = 17;
                         const text = group.text(g.text).font({
                             anchor: "start",
-                            fill: "#000",
+                            fill: this.options.colourContext.strokes,
                             size: fontsize,
                         });
                         text.attr("data-playerfill", true);
                         const temptext = this.rootSvg.text(g.text).font({
                             anchor: "start",
-                            fill: "#000",
+                            fill: this.options.colourContext.strokes,
                             size: fontsize,
                         });
                         const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
@@ -687,6 +730,12 @@ export abstract class RendererBase {
                     }
                     // tag glyph symbol for styling
                     got.id(glyph2uid(g));
+
+                    // look for context strokes and fills
+                    const contextStroke = this.options.colourContext.strokes;
+                    const contextFill = this.options.colourContext.fill;
+                    got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
+                    got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
 
                     let sheetCellSize = got.viewbox().height;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
@@ -723,8 +772,17 @@ export abstract class RendererBase {
                             got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); isStroke = true; });
                         }
                     } else if (g.colour !== undefined) {
-                        got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: g.colour}); });
-                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: g.colour}); isStroke = true; });
+                        let normColour = g.colour;
+                        if (/^_context_/.test(normColour)) {
+                            const [,,prop] = normColour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                normColour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            } else {
+                                normColour = "#000";
+                            }
+                        }
+                        got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: normColour}); });
+                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: normColour}); isStroke = true; });
                     }
 
                     // Apply requested opacity
@@ -921,7 +979,7 @@ export abstract class RendererBase {
         const style = this.json.board.style;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -1093,6 +1151,10 @@ export abstract class RendererBase {
         }
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -1128,18 +1190,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize - (show.includes("N") ? bufferwidth : 0)};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize + (show.includes("S") ? bufferwidth : 0)};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -1153,21 +1215,43 @@ export abstract class RendererBase {
 
         if (style === "squares-checkered") {
             // Load glyphs for light and dark squares
-            const tileDark = this.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
-            tileDark.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill(baseColour)
-                .opacity(baseOpacity * 0.25)
-                .stroke({width: 0});
-            const tileLight = this.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
-            tileLight.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill({color: "#ffffff", opacity: 0})
-                .stroke({width: 0});
+            const cBg = tinycolor(this.options.colourContext.background);
+            const cFill = tinycolor(this.options.colourContext.fill);
+            // If the background colour is lighter than the fill colour, then light tiles are fully transparent, and dark tiles are 75% transparent.
+            let tileDark: SVGSymbol;
+            let tileLight: SVGSymbol;
+            if (cBg.getLuminance() > cFill.getLuminance()) {
+                tileLight = this.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
+                tileLight.rect(cellsize, cellsize)
+                    .move(0, 0)
+                    .fill({color: this.options.colourContext.background})
+                    .opacity(0)
+                    .stroke({width: 0});
+                tileDark = this.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
+                tileDark.rect(cellsize, cellsize)
+                    .move(0, 0)
+                    .fill(this.options.colourContext.fill)
+                    .opacity(baseOpacity * 0.25)
+                    .stroke({width: 0});
+            // If the background colour is darker than the fill colour (dark mode), then light tiles are 75% transparent and dark tiles are fully transparent.
+            } else {
+                tileLight = this.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
+                tileLight.rect(cellsize, cellsize)
+                    .move(0, 0)
+                    .fill({color: this.options.colourContext.fill})
+                    .opacity(baseOpacity * 0.25)
+                    .stroke({width: 0});
+                tileDark = this.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
+                tileDark.rect(cellsize, cellsize)
+                    .move(0, 0)
+                    .fill(this.options.colourContext.background)
+                    .opacity(0)
+                    .stroke({width: 0});
+            }
             const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
-                .fill({color: baseColour, opacity: baseOpacity})
+                .fill({color: this.options.colourContext.fill, opacity: baseOpacity})
                 .stroke({width: 0});
 
             // Determine whether the first row starts with a light or dark square
@@ -1220,7 +1304,7 @@ export abstract class RendererBase {
         } else if (tileSpace > 0 || style === "pegboard" ) {
             const tileLight = this.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
             tileLight.rect(cellsize, cellsize)
-                .fill({color: "#ffffff", opacity: 0})
+                .fill({color: this.options.colourContext.background, opacity: 0})
                 .stroke({width: 0});
             if (style === "pegboard") {
                 tileLight.circle(cellsize / 5)
@@ -1231,7 +1315,7 @@ export abstract class RendererBase {
             const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
             if (style === "pegboard") {
                 tileBlocked.rect(cellsize, cellsize)
-                    .fill({color: "#ffffff", opacity: 0})
+                    .fill({color: this.options.colourContext.background, opacity: 0})
                     .stroke({width: 0});
             } else {
                 tileBlocked.rect(cellsize, cellsize)
@@ -1264,7 +1348,7 @@ export abstract class RendererBase {
             const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
             tileBlocked.rect(cellsize, cellsize)
                 .move(0, 0)
-                .fill({color: baseColour, opacity: baseOpacity})
+                .fill({color: this.options.colourContext.fill, opacity: baseOpacity})
                 .stroke({width: 0});
             for (const coord of blocked) {
                 const {x, y} = grid[coord.row][coord.col];
@@ -1495,7 +1579,7 @@ export abstract class RendererBase {
         const style = this.json.board.style;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -1635,6 +1719,10 @@ export abstract class RendererBase {
         }
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -1671,18 +1759,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -1879,7 +1967,7 @@ export abstract class RendererBase {
                 }
                 this.rootSvg.click(genericCatcher);
             } else {
-                const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill("#fff").opacity(0).id("_clickCatcher");
+                const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
                 for (let row = 0; row < grid.length; row++) {
                     for (let col = 0; col < grid[row].length; col++) {
                         const {x, y} = grid[row][col];
@@ -1943,7 +2031,7 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -1971,6 +2059,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -2019,9 +2111,9 @@ export abstract class RendererBase {
                     pointBottom = {x: grid[height - 1][realcol].x+half, y: grid[height - 1][realcol].y + cellsize};
                 }
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(baseColour).opacity(opacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(opacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(baseColour).opacity(opacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(opacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
@@ -2040,9 +2132,9 @@ export abstract class RendererBase {
                     pointL = {x: grid[realrow][0].x - cellsize, y: grid[realrow][0].y+half};
                     pointR = {x: grid[realrow][width - 1].x + cellsize, y: grid[realrow][width - 1].y+half};
                 }
-                labels.text(rowLabels[row]).fill(baseColour).opacity(opacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(opacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(baseColour).opacity(opacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(opacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -2051,8 +2143,8 @@ export abstract class RendererBase {
         const tile = this.rootSvg.defs().symbol().id("tile-circle").viewbox(0, 0, cellsize, cellsize);
         tile.circle(cellsize*0.75)
             .center(cellsize/2, cellsize/2)
-            .fill({color: "#fff", opacity: 0})
-            .stroke({width: 1, opacity: baseOpacity * 0.15, color: "#000"});
+            .fill({color: this.options.colourContext.background, opacity: 0})
+            .stroke({width: 1, opacity: baseOpacity * 0.15, color: baseColour});
 
         // Place them
         for (let row = 0; row < height; row++) {
@@ -2183,7 +2275,7 @@ export abstract class RendererBase {
         const style = this.json.board.style;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -2309,6 +2401,10 @@ export abstract class RendererBase {
             rowLabels.reverse();
         }
 
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         for (const hex of grid) {
             // don't draw "blocked" hexes
             if (blocked !== undefined) {
@@ -2345,7 +2441,7 @@ export abstract class RendererBase {
                 labels.text(label)
                 .font({
                     anchor: "middle",
-                    fill: baseStroke,
+                    fill: labelColour,
                     size: fontSize,
                 })
                 // .center(cx, cy);
@@ -2411,9 +2507,9 @@ export abstract class RendererBase {
                     }
                 }
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows
@@ -2436,9 +2532,9 @@ export abstract class RendererBase {
                         pointR = {x: maxX + (cellsize * 0.5), y: cy};
                     }
                 }
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -2502,7 +2598,7 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -2522,6 +2618,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -2563,18 +2663,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -2678,7 +2778,7 @@ export abstract class RendererBase {
         }
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -2706,6 +2806,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
             const labels = board.group().id("labels");
@@ -2717,7 +2821,7 @@ export abstract class RendererBase {
             // Columns (letters)
             for (let col = 0; col < width; col++) {
                 const pt = labelPts[col];
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pt.x, pt.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pt.x, pt.y);
             }
         }
 
@@ -2781,7 +2885,7 @@ export abstract class RendererBase {
         }
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -2801,6 +2905,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
 
@@ -2832,8 +2940,8 @@ export abstract class RendererBase {
 
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-                labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(columnLabels[height - row - 1] + rightNum).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -2982,7 +3090,7 @@ export abstract class RendererBase {
         }
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -3002,6 +3110,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
 
@@ -3032,8 +3144,8 @@ export abstract class RendererBase {
 
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-                labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(columnLabels[height - row - 1] + rightNum).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3097,7 +3209,7 @@ export abstract class RendererBase {
         }
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -3117,6 +3229,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
 
@@ -3147,8 +3263,8 @@ export abstract class RendererBase {
 
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-                labels.text(columnLabels[height - row - 1] + leftNum).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(columnLabels[height - row - 1] + rightNum).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3247,7 +3363,7 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -3267,6 +3383,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
@@ -3302,16 +3422,16 @@ export abstract class RendererBase {
             for (let col = 0; col < gridWidth; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[gridHeight - 1][col].x, y: grid[gridHeight - 1][col].y + cellsize};
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < gridHeight; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][gridWidth - 1].x + cellsize, y: grid[row][gridWidth - 1].y};
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3412,7 +3532,7 @@ export abstract class RendererBase {
         }
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -3450,6 +3570,10 @@ export abstract class RendererBase {
 
         const shrinkage = 0.75;
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
@@ -3467,8 +3591,8 @@ export abstract class RendererBase {
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
@@ -3484,8 +3608,8 @@ export abstract class RendererBase {
                     pointL.x -= cellsize * shrinkage;
                     pointR.x += cellsize * shrinkage;
                 }
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3514,20 +3638,20 @@ export abstract class RendererBase {
         const tilePit = this.rootSvg.defs().symbol().id("pit-symbol").viewbox(0, 0, cellsize, cellsize);
         tilePit.circle(cellsize * shrinkage)
             .center(cellsize / 2, cellsize / 2)
-            .fill({color: "#fff", opacity: 0})
+            .fill({color: this.options.colourContext.background, opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
             .attr("data-outlined", true)
         const tileSquare = this.rootSvg.defs().symbol().id("square-pit-symbol").viewbox(0, 0, cellsize, cellsize);
         tileSquare.rect(cellsize * shrinkage, cellsize * shrinkage)
             .center(cellsize / 2, cellsize / 2)
-            .fill({color: "#fff", opacity: 0})
+            .fill({color: this.options.colourContext.background, opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"})
             .attr("data-outlined", true)
         const tileEnd = this.rootSvg.defs().symbol().id("end-pit-symbol").viewbox(0, 0, cellsize, cellsize * height);
         tileEnd.rect(cellsize * shrinkage, cellsize * height * 0.95)
             .radius(10)
             .center(cellsize / 2, (cellsize * height) / 2)
-            .fill({color: "#fff", opacity: 0})
+            .fill({color: this.options.colourContext.background, opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"})
             .attr("data-outlined", true)
 
@@ -3662,7 +3786,7 @@ export abstract class RendererBase {
         // Draw square around entire board
         gridlines.rect(width * cellsize, height * cellsize)
             .move(0 - (cellsize / 2), 0 - (cellsize / 2))
-            .fill({color: "#fff", opacity: 0})
+            .fill({color: this.options.colourContext.background, opacity: 0})
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
         // if even number of rows, draw line between the halves
         if (height % 2 === 0) {
@@ -3732,7 +3856,7 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -3838,7 +3962,7 @@ export abstract class RendererBase {
         }
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -3990,6 +4114,10 @@ export abstract class RendererBase {
         }
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -4027,18 +4155,18 @@ export abstract class RendererBase {
                 const pointTop = {x: (grid[0][col].x + grid[0][col+1].x) / 2, y: ((grid[0][col].y + grid[0][col+1].y) / 2) - (cellsize * 1.25)};
                 const pointBottom = {x: (grid[height - 1][col].x + grid[height - 1][col+1].x) / 2, y: ((grid[height - 1][col].y + grid[height - 1][col+1].y) / 2) + (cellsize * 1.25)};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col / 2]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col / 2]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col / 2]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col / 2]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: ((grid[row][0].x + grid[row][1].x) / 2) - (cellsize * 1.25), y: (grid[row][0].y + grid[row][1].y) / 2};
                 const pointR = {x: ((grid[row][realwidth - 1].x + grid[row][realwidth - 2].x) / 2) + (cellsize * 1.25), y: (grid[row][realwidth - 1].y + grid[row][realwidth - 2].y) / 2};
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -4075,7 +4203,7 @@ export abstract class RendererBase {
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -4159,6 +4287,10 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
         // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            labelColour = baseColour;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -4200,18 +4332,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -4337,7 +4469,7 @@ export abstract class RendererBase {
                         throw new Error("Move annotations require at least two 'targets'.");
                     }
 
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -4393,7 +4525,7 @@ export abstract class RendererBase {
                         throw new Error("Eject annotations require exactly two 'targets'.");
                     }
 
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -4452,7 +4584,7 @@ export abstract class RendererBase {
                         }
                     }
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -4472,7 +4604,7 @@ export abstract class RendererBase {
                             .attr({ 'pointer-events': 'none' });
                     }
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -4491,7 +4623,7 @@ export abstract class RendererBase {
                             .attr({ 'pointer-events': 'none' });
                     }
                 } else if ( (note.type !== undefined) && (note.type === "outline") ) {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -4514,7 +4646,7 @@ export abstract class RendererBase {
                          .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
                          .attr({ 'pointer-events': 'none' });
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -4575,12 +4707,12 @@ export abstract class RendererBase {
                         const strDelta = `${delta > 0 ? "+" : ""}${delta}`;
                         const cellsize = 500;
                         const nested = this.rootSvg.defs().nested().id(`_delta_${delta < 0 ? `n${Math.abs(delta)}` : delta}`).attr({ 'pointer-events': 'none' });
-                        nested.rect(cellsize, cellsize).fill({color: "#fff", opacity: 1}).move(-cellsize / 2, -cellsize / 2);
+                        nested.rect(cellsize, cellsize).fill({color: this.options.colourContext.background, opacity: 1}).move(-cellsize / 2, -cellsize / 2);
                         const nestedGroup = nested.symbol();
                         const fontsize = 17;
                         const text = nestedGroup.text(strDelta).font({
                             anchor: "start",
-                            fill: "#000",
+                            fill: this.options.colourContext.strokes,
                             size: fontsize,
                             opacity: 0.5,
                         });
@@ -4588,7 +4720,7 @@ export abstract class RendererBase {
                         text.attr("font-weight", "bold");
                         const temptext = this.rootSvg.text(strDelta).font({
                             anchor: "start",
-                            fill: "#000",
+                            fill: this.options.colourContext.strokes,
                             size: fontsize,
                             opacity: 0.5,
                         });
@@ -4701,7 +4833,7 @@ export abstract class RendererBase {
             }
 
             let baseStroke = 1;
-            let baseColour = "#000";
+            let baseColour = this.options.colourContext.strokes;
             let baseOpacity = 1;
             if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
                 baseStroke = this.json.board.strokeWeight;
@@ -4761,7 +4893,7 @@ export abstract class RendererBase {
                         });
                     }
                 } else if (marker.type === "shading") {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
@@ -4792,7 +4924,7 @@ export abstract class RendererBase {
                     if (polys === undefined) {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
                     }
-                    let colour = "#000";
+                    let colour = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
@@ -5011,7 +5143,7 @@ export abstract class RendererBase {
                     text.path(`M${x1},${y1} L${x2},${y2}`)
                         .attr("startOffset", "50%");
                 } else if (marker.type === "edge") {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
@@ -5468,7 +5600,7 @@ export abstract class RendererBase {
                         }
                     }
                 } else if (marker.type === "fence") {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
@@ -5753,7 +5885,7 @@ export abstract class RendererBase {
         }
 
         // initialize values
-        let colour = "#000";
+        let colour = this.options.colourContext.strokes;
         if (bar.colour !== undefined) {
             colour= bar.colour;
         }
@@ -5806,7 +5938,7 @@ export abstract class RendererBase {
         for (const b of bar.buttons) {
             const cloned = {attributes: b.attributes, fill: b.fill};
             const symrect = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
-            let fill: FillData = {color: "#fff", opacity: 0};
+            let fill: FillData = {color: this.options.colourContext.background, opacity: 0};
             if ( ("fill" in b) && (b.fill !== undefined) ) {
                 fill = {color: b.fill, opacity: 1};
             }
@@ -5934,11 +6066,11 @@ export abstract class RendererBase {
         let maxWidth = 0;
         let maxHeight = 0;
         for (const k of key.list) {
-            const tmptxt = this.rootSvg.text(k.name).font({size: 17, fill: "#000", anchor: "start"});
+            const tmptxt = this.rootSvg.text(k.name).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
             maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
             maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
             const symtxt = nested.symbol();
-            symtxt.text(k.name).font({size: 17, fill: "#000", anchor: "start"});
+            symtxt.text(k.name).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
             symtxt.viewbox(tmptxt.bbox());
             tmptxt.remove();
             labels.push(symtxt);
@@ -6106,8 +6238,8 @@ export abstract class RendererBase {
             }
         }
         let clrBack: string|undefined;
-        let clrFill = "#000";
-        let clrStrokes = "#000";
+        let clrFill = this.options.colourContext.fill;
+        let clrStrokes = this.options.colourContext.strokes;
         if (json.colours !== undefined) {
             if (json.colours.background !== undefined) {
                 clrBack = json.colours.background;
@@ -6126,11 +6258,11 @@ export abstract class RendererBase {
         let maxWidth = 0;
         let maxHeight = 0;
         for (const lbl of [lblUpOne, lblUpAll, lblDownOne, lblDownAll]) {
-            const tmptxt = this.rootSvg.text(lbl).font({size: 17, fill: "#000", anchor: "start"});
+            const tmptxt = this.rootSvg.text(lbl).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
             maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
             maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
             const symtxt = nested.symbol();
-            symtxt.text(lbl).font({size: 17, fill: "#000", anchor: "start"});
+            symtxt.text(lbl).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
             symtxt.viewbox(tmptxt.bbox());
             tmptxt.remove();
             labels.push(symtxt);
@@ -6142,7 +6274,7 @@ export abstract class RendererBase {
         if (clrBack !== undefined) {
             segBlank.rect(width, height).move(xOffset, 0).stroke({width: 1, color: clrStrokes}).fill({color: clrBack});
         } else {
-            segBlank.rect(width, height).move(xOffset, 0).stroke({width: 1, color: clrStrokes}).fill({color: "#fff", opacity: 0});
+            segBlank.rect(width, height).move(xOffset, 0).stroke({width: 1, color: clrStrokes}).fill({color: this.options.colourContext.background, opacity: 0});
         }
         segBlank.viewbox(0,0,lineWidth, height);
         const segFull = nested.symbol();
@@ -6193,7 +6325,7 @@ export abstract class RendererBase {
         // add background rect to capture all clicks
         nested.rect(maxScaledWidth, (height * (4 + (json.max - min))))
               .stroke({color: "none", width: 0})
-              .fill({color: "#fff", opacity: 0});
+              .fill({color: this.options.colourContext.background, opacity: 0});
 
         // set the viewbox and return
         nested.viewbox(0, 0, maxScaledWidth, (height * (4 + (json.max - min))));
@@ -6264,7 +6396,7 @@ export abstract class RendererBase {
                 }
 
                 // Add area label
-                const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: "#000"});
+                const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
                 const txtWidth = tmptxt.bbox().w;
                 tmptxt.remove();
                 // set the actual width of the nested svg
@@ -6273,7 +6405,7 @@ export abstract class RendererBase {
                 nested.width(realWidth);
                 nested.viewbox(vbx, vby, realWidth, vbh);
                 const txt = nested.text(area.label).addClass(`aprender-area-label`);
-                txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                     .attr("alignment-baseline", "hanging")
                     .attr("dominant-baseline", "hanging")
                     .move(0, 0);
@@ -6306,7 +6438,7 @@ export abstract class RendererBase {
         if (this.json === undefined || this.json.board === null) {
             throw new Error("Invalid JSON");
         }
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
             baseColour = this.json.board.strokeColour;
         }
@@ -6355,7 +6487,7 @@ export abstract class RendererBase {
 
         // mark top-left cell if requested
         if (tlmark) {
-            svg.circle(this.cellsize / 5).center(this.cellsize / 2, this.cellsize / 2).stroke({width: 1, color: "#000"}).fill("#000");
+            svg.circle(this.cellsize / 5).center(this.cellsize / 2, this.cellsize / 2).stroke({width: 1, color: this.options.colourContext.strokes}).fill(this.options.colourContext.strokes);
         }
     }
 
@@ -6364,7 +6496,7 @@ export abstract class RendererBase {
             throw new Error("No valid json found.");
         }
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;

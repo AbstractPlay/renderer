@@ -159,7 +159,7 @@ export class FreespaceRenderer extends RendererBase {
                     throw new Error("Invalid annotation format found.");
                 }
                 if (note.type === "path") {
-                    let stroke = "#000";
+                    let stroke = this.options.colourContext.strokes;
                     if ( ("stroke" in note) && (note.stroke !== undefined) ) {
                         if (typeof note.stroke === "number") {
                             stroke = this.options.colours[note.stroke - 1];
@@ -228,7 +228,7 @@ export class FreespaceRenderer extends RendererBase {
 
             for (const marker of this.json.board.markers) {
                 if (marker.type === "label") {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "number") {
                             colour = this.options.colours[marker.colour - 1];
@@ -270,7 +270,7 @@ export class FreespaceRenderer extends RendererBase {
                         }
                     }
                 } else if (marker.type === "path") {
-                    let stroke = "#000";
+                    let stroke = this.options.colourContext.strokes;
                     if ( ("stroke" in marker) && (marker.stroke !== undefined) ) {
                         if (typeof marker.stroke === "number") {
                             stroke = this.options.colours[marker.stroke - 1];

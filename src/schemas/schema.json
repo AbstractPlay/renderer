@@ -15,8 +15,16 @@
         },
         "colourstrings": {
             "description": "Pattern for hex colour strings",
-            "type": "string",
-            "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+            "anyOf": [
+                {
+                    "type": "string",
+                    "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+                },
+                {
+                    "type": "string",
+                    "pattern": "^_context_"
+                }
+            ]
         },
         "glyph": {
             "description": "An individual glyph with options, used in the `legend` property.",

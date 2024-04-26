@@ -208,7 +208,7 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap});
+    renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, colourContext: opts.colourContext, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap});
     if (draw.bbox().h !== 0
         && draw.viewbox().h === 0  // Only set it here if the renderer didn't set it
         ) {

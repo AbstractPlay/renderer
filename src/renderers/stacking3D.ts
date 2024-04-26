@@ -155,7 +155,7 @@ export class Stacking3DRenderer extends RendererBase {
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
@@ -367,7 +367,7 @@ export class Stacking3DRenderer extends RendererBase {
                         throw new Error("Move annotations require at least two 'targets'.");
                     }
 
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -414,7 +414,7 @@ export class Stacking3DRenderer extends RendererBase {
                         throw new Error("Eject annotations require exactly two 'targets'.");
                     }
 
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -467,7 +467,7 @@ export class Stacking3DRenderer extends RendererBase {
                         }
                     }
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -493,7 +493,7 @@ export class Stacking3DRenderer extends RendererBase {
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                     }
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -519,7 +519,7 @@ export class Stacking3DRenderer extends RendererBase {
                             .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4"});
                     }
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
-                    let colour = "#000";
+                    let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
@@ -680,7 +680,7 @@ export class Stacking3DRenderer extends RendererBase {
 
                     // Add area label
                     const txt = this.rootSvg.text(area.label);
-                    txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                    txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging")
                         .move(gridPoints[start][start].x - this.cellsize, placeY);

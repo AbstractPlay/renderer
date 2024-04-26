@@ -32,6 +32,23 @@
                     options.rotate = 0;
                 }
                 options.boardClick = handleClick;
+
+                // add colour context
+                var fill = document.getElementById("ccFill");
+                var bg = document.getElementById("ccBackground");
+                var strokes = document.getElementById("ccStrokes");
+                var labels = document.getElementById("ccLabels");
+                var notes = document.getElementById("ccNotes");
+                options.colourContext = {
+                    background: bg.value,
+                    fill: fill.value,
+                    strokes: strokes.value,
+                    labels: labels.value,
+                    annotations: notes.value,
+                };
+                var div = document.getElementById("drawing");
+                div.style.backgroundColor = bg.value;
+
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
                 return false;
@@ -382,6 +399,35 @@
                     var jsonbox = document.getElementById("jsonIn");
                     jsonbox.value = JSON.stringify(JSON.parse(jsonbox.value), undefined, 4);
                 });
+
+                // listen for light mode click
+                var lightbtn = document.getElementById("btnLight");
+                lightbtn.addEventListener("click", e => {
+                    var fill = document.getElementById("ccFill");
+                    var bg = document.getElementById("ccBackground");
+                    var strokes = document.getElementById("ccStrokes");
+                    var labels = document.getElementById("ccLabels");
+                    var notes = document.getElementById("ccNotes");
+                    bg.value = "#fff";
+                    fill.value = "#000";
+                    strokes.value = "#000";
+                    labels.value = "#000";
+                    notes.value = "#000";
+                });
+                // listen for dark mode click
+                var darkbtn = document.getElementById("btnDark");
+                darkbtn.addEventListener("click", e => {
+                    var fill = document.getElementById("ccFill");
+                    var bg = document.getElementById("ccBackground");
+                    var strokes = document.getElementById("ccStrokes");
+                    var labels = document.getElementById("ccLabels");
+                    var notes = document.getElementById("ccNotes");
+                    bg.value = "#222";
+                    fill.value = "#e6f2f2";
+                    strokes.value = "#e6f2f2";
+                    labels.value = "#009fbf";
+                    notes.value = "#99cccc";
+                });
             });
         </script>
     </head>
@@ -411,6 +457,24 @@
                     <input type="radio" id="fillPatterns" name="playerfill" value="patterns">
                     <label for="fillPatterns">Black-and-white patterns (10 max)</label>
                 </div>
+                <hr>
+                <div>
+                    <label for="ccBackground">Background</label>
+                    <input type="text" id="ccBackground" value="#fff">
+                    <label for="ccFill">Fill</label>
+                    <input type="text" id="ccFill" value="#000">
+                    <label for="ccStrokes">Strokes</label>
+                    <input type="text" id="ccStrokes" value="#000">
+                    <label for="ccLabels">Labels</label>
+                    <input type="text" id="ccLabels" value="#000">
+                    <label for="ccNotes">Annotations</label>
+                    <input type="text" id="ccNotes" value="#000">
+                </div>
+                <div>
+                    <button id="btnLight" type="button">Light Mode</button>
+                    <button id="btnDark" type="button">Dark Mode</button>
+                </div>
+                <hr>
                 <div>
                     <input type="checkbox" id="rot180" name="rotate">
                     <label for="rot180">Rotate 180&deg;</label>

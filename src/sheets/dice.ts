@@ -20,9 +20,11 @@ sheet.glyphs.set("d6-1", (canvas: SVGContainer) => {
         .fill("none")
         .stroke({width: 1, color: "#000"})
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .center(25, 25);
     group.circle(10)
         .fill("#000")
+        .attr("data-context-fill", true)
         .center(25, 25);
     group.viewbox(0, 0, 50, 50);
     return group;
@@ -35,10 +37,13 @@ sheet.glyphs.set("d6-2", (canvas: SVGContainer) => {
         .fill("none")
         .stroke({width: 1, color: "#000"})
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .center(25, 25);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 13.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 36.5);
     group.viewbox(0, 0, 50, 50);
     return group;
@@ -51,12 +56,16 @@ sheet.glyphs.set("d6-3", (canvas: SVGContainer) => {
         .fill("none")
         .stroke({width: 1, color: "#000"})
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .center(25, 25);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 13.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(25, 25);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 36.5);
     group.viewbox(0, 0, 50, 50);
     return group;
@@ -68,15 +77,20 @@ sheet.glyphs.set("d6-4", (canvas: SVGContainer) => {
         .radius(10, 10)
         .fill("none")
         .stroke({width: 1, color: "#000"})
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true)
         .center(25, 25);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 13.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 36.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 13.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 36.5);
     group.viewbox(0, 0, 50, 50);
     return group;
@@ -88,17 +102,23 @@ sheet.glyphs.set("d6-5", (canvas: SVGContainer) => {
         .radius(10, 10)
         .fill("none")
         .stroke({width: 1, color: "#000"})
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true)
         .center(25, 25);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 13.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 36.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 13.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 36.5);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(25, 25);
     group.viewbox(0, 0, 50, 50);
     return group;
@@ -110,19 +130,26 @@ sheet.glyphs.set("d6-6", (canvas: SVGContainer) => {
         .radius(10, 10)
         .fill("none")
         .stroke({width: 1, color: "#000"})
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true)
         .center(25, 25);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 10);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 40);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 10);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 40);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(13.5, 25);
     group.circle(10).fill("#000")
+        .attr("data-context-fill", true)
         .center(36.5, 25);
     group.viewbox(0, 0, 50, 50);
     return group;

@@ -9,7 +9,7 @@ export type PositiveInteger = number;
 /**
  * Pattern for hex colour strings
  */
-export type Colourstrings = string;
+export type Colourstrings = string | string;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
  */
@@ -826,7 +826,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        background?: string;
+        background?: string | string;
         /**
          * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
          */
@@ -839,7 +839,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        background?: string;
+        background?: string | string;
       }
     | {
         type: "globalStash";
@@ -902,7 +902,7 @@ export interface APRenderRep {
             /**
              * Pattern for hex colour strings
              */
-            fill?: string;
+            fill?: string | string;
             [k: string]: unknown;
           },
           ...{
@@ -932,7 +932,7 @@ export interface APRenderRep {
             /**
              * Pattern for hex colour strings
              */
-            fill?: string;
+            fill?: string | string;
             [k: string]: unknown;
           }[]
         ];
@@ -955,7 +955,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        colour?: string;
+        colour?: string | string;
       }
     | {
         type: "scrollBar";
@@ -1005,15 +1005,15 @@ export interface APRenderRep {
           /**
            * Pattern for hex colour strings
            */
-          background?: string;
+          background?: string | string;
           /**
            * Pattern for hex colour strings
            */
-          fill?: string;
+          fill?: string | string;
           /**
            * Pattern for hex colour strings
            */
-          strokes?: string;
+          strokes?: string | string;
           [k: string]: unknown;
         };
       }
@@ -1083,7 +1083,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        colour?: string;
+        colour?: string | string;
         /**
          * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
          */

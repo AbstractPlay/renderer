@@ -157,7 +157,7 @@ export class ConhexRenderer extends RendererBase {
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
-        let baseColour = "#000";
+        let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
         if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
             baseStroke = this.json.board.strokeWeight;
