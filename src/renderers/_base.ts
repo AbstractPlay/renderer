@@ -4472,6 +4472,12 @@ export abstract class RendererBase {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                        if (/^_context_/.test(colour)) {
+                            const [,,prop] = colour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            }
+                        }
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
@@ -4528,6 +4534,12 @@ export abstract class RendererBase {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                        if (/^_context_/.test(colour)) {
+                            const [,,prop] = colour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            }
+                        }
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
@@ -4587,6 +4599,12 @@ export abstract class RendererBase {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                        if (/^_context_/.test(colour)) {
+                            const [,,prop] = colour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            }
+                        }
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
@@ -4607,6 +4625,12 @@ export abstract class RendererBase {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                        if (/^_context_/.test(colour)) {
+                            const [,,prop] = colour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            }
+                        }
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
@@ -4626,6 +4650,12 @@ export abstract class RendererBase {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                        if (/^_context_/.test(colour)) {
+                            const [,,prop] = colour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            }
+                        }
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
@@ -4649,6 +4679,12 @@ export abstract class RendererBase {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = note.colour as string;
+                        if (/^_context_/.test(colour)) {
+                            const [,,prop] = colour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            }
+                        }
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
@@ -4867,6 +4903,12 @@ export abstract class RendererBase {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         colour = marker.colour as string;
+                        if (/^_context_/.test(colour)) {
+                            const [,,prop] = colour.split("_");
+                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                            }
+                        }
                     } else if ( ("player" in marker) && (marker.player !== undefined) ) {
                         colour = this.options.colours[(marker.player as number) - 1];
                     }
@@ -4899,6 +4941,12 @@ export abstract class RendererBase {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour as string;
+                            if (/^_context_/.test(colour)) {
+                                const [,,prop] = colour.split("_");
+                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                }
+                            }
                         }
                     }
                     let opacity = 0.25;
@@ -4930,6 +4978,12 @@ export abstract class RendererBase {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour as string;
+                            if (/^_context_/.test(colour)) {
+                                const [,,prop] = colour.split("_");
+                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                }
+                            }
                         }
                     }
                     let opacity = 0.25;
@@ -4957,6 +5011,12 @@ export abstract class RendererBase {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour as string;
+                            if (/^_context_/.test(colour)) {
+                                const [,,prop] = colour.split("_");
+                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                }
+                            }
                         }
                     }
                     let opacity = baseOpacity;
@@ -5072,6 +5132,12 @@ export abstract class RendererBase {
                                     colour = this.options.colours[segment.colour - 1];
                                 } else {
                                     colour = segment.colour;
+                                    if (/^_context_/.test(colour)) {
+                                        const [,,prop] = colour.split("_");
+                                        if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                            colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                        }
+                                    }
                                 }
                             }
                             let opacity = baseOpacity;
@@ -5106,6 +5172,12 @@ export abstract class RendererBase {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour as string;
+                            if (/^_context_/.test(colour)) {
+                                const [,,prop] = colour.split("_");
+                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                }
+                            }
                         }
                     }
 
@@ -5149,6 +5221,12 @@ export abstract class RendererBase {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour as string;
+                            if (/^_context_/.test(colour)) {
+                                const [,,prop] = colour.split("_");
+                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                }
+                            }
                         }
                     }
                     let opacity = baseOpacity + ((1 - baseOpacity) / 2);
@@ -5606,6 +5684,12 @@ export abstract class RendererBase {
                             colour = this.options.colours[marker.colour - 1];
                         } else {
                             colour = marker.colour as string;
+                            if (/^_context_/.test(colour)) {
+                                const [,,prop] = colour.split("_");
+                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                }
+                            }
                         }
                     }
                     let multiplier = 6;
