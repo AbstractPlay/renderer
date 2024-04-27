@@ -6234,11 +6234,19 @@ export abstract class RendererBase {
                 } else {
                     x = grid[0][grid[0].length - 1].x + (this.cellsize * 2);
                 }
+                let min = 0;
+                if (scroll.min !== undefined) {
+                    min = scroll.min;
+                }
+                let current = scroll.max;
+                if (scroll.current !== undefined) {
+                    current = scroll.current;
+                }
                 const used = this.rootSvg.use(scrollImg).size(scrollImg.viewbox().w, scrollImg.viewbox().h).dmove(x, y);
                 if (this.options.boardClick !== undefined) {
                     const top = used.y() as number;
                     const height = used.height() as number;
-                    const numSegs = scroll.max - (scroll.min || 0);
+                    const numSegs = scroll.max - min;
                     const numEntries = 4 + numSegs;
                     const segHeight = height / numEntries;
                     used.click((e: { clientX: number; clientY: number; }) => {
@@ -6248,16 +6256,21 @@ export abstract class RendererBase {
                         if ( (row >= 0) && (row < numEntries) ) {
                             let value = "";
                             if (row === 0) {
-                                value = "scroll_upAll";
+                                // upAll
+                                value = `scroll_newval_${scroll.max}`;
                             } else if (row === 1) {
-                                value = "scroll_upOne";
+                                // upOne
+                                value = `scroll_newval_${current < scroll.max ? current + 1 : scroll.max}`;
                             } else if (row === numEntries - 1) {
-                                value = "scroll_downAll";
+                                // downAll
+                                value = `scroll_newval_${min}`;
                             } else if (row === numEntries - 2) {
-                                value = "scroll_downOne";
+                                // downOne
+                                value = `scroll_newval_${current > min ? current - 1 : min}`;
                             } else {
+                                // segment
                                 const offset = row - 2;
-                                value = `scroll_segment_${scroll.max - offset}`;
+                                value = `scroll_newval_${scroll.max - offset}`;
                             }
                             this.options.boardClick!(-1, -1, value);
                         }
