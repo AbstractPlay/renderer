@@ -220,15 +220,12 @@ sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     let xOffset = pipWidth * 1.5;
     let y = halfcell + halfbase - (strokeWeight * 2);
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x + xOffset;
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x + xOffset;
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // top
@@ -236,15 +233,12 @@ sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     xOffset = pipWidth * 1.5;
     y = halfcell - halfbase + (strokeWeight * 2);
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x - xOffset;
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x - xOffset;
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // left
@@ -252,15 +246,12 @@ sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     let yOffset = pipWidth * 1.5;
     y = halfcell - halfbase + pipWidth;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y + yOffset;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y + yOffset;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // right
@@ -268,15 +259,12 @@ sheet.glyphs.set("pyramid-up-large", (canvas: SVGContainer) => {
     yOffset = pipWidth * 1.5;
     y = halfcell + halfbase - pipWidth;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y - yOffset;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y - yOffset;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, cellsize, cellsize);
@@ -324,15 +312,12 @@ sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
     let xOffset = pipWidth * 1.5;
     let y = upHalfcell + halfbase - (strokeWeight * 2);
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x + xOffset;
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x + xOffset;
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // top
@@ -340,15 +325,12 @@ sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
     xOffset = pipWidth * 1.5;
     y = upHalfcell - halfbase + (strokeWeight * 2);
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x - xOffset;
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x - xOffset;
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // left
@@ -356,15 +338,12 @@ sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
     let yOffset = pipWidth * 1.5;
     y = upHalfcell - halfbase + pipWidth;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y + yOffset;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y + yOffset;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // right
@@ -372,15 +351,12 @@ sheet.glyphs.set("pyramid-up-large-upscaled", (canvas: SVGContainer) => {
     yOffset = pipWidth * 1.5;
     y = upHalfcell + halfbase - pipWidth;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y - yOffset;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y - yOffset;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, upCellsize, upCellsize);
@@ -411,11 +387,9 @@ sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     let xOffset = pipWidth * 1.5;
     let y = halfcell + halfbase - (strokeWeight * 2);
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x + xOffset;
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // top
@@ -423,11 +397,9 @@ sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     xOffset = pipWidth * 1.5;
     y = halfcell - halfbase + (strokeWeight * 2);
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x - xOffset;
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // left
@@ -435,11 +407,9 @@ sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     let yOffset = pipWidth * 1.5;
     y = halfcell - halfbase + pipWidth;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y + yOffset;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // right
@@ -447,11 +417,9 @@ sheet.glyphs.set("pyramid-up-medium", (canvas: SVGContainer) => {
     yOffset = pipWidth * 1.5;
     y = halfcell + halfbase - pipWidth;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y - yOffset;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, cellsize, cellsize);
@@ -499,11 +467,9 @@ sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
     let xOffset = pipWidth * 1.5;
     let y = upHalfcell + halfbase - (strokeWeight * 2);
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x + xOffset;
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // top
@@ -511,11 +477,9 @@ sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
     xOffset = pipWidth * 1.5;
     y = upHalfcell - halfbase + (strokeWeight * 2);
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     x = x - xOffset;
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // left
@@ -523,11 +487,9 @@ sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
     let yOffset = pipWidth * 1.5;
     y = upHalfcell - halfbase + pipWidth;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y + yOffset;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // right
@@ -535,11 +497,9 @@ sheet.glyphs.set("pyramid-up-medium-upscaled", (canvas: SVGContainer) => {
     yOffset = pipWidth * 1.5;
     y = upHalfcell + halfbase - pipWidth;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
     y = y - yOffset;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, upCellsize, upCellsize);
@@ -569,28 +529,24 @@ sheet.glyphs.set("pyramid-up-small", (canvas: SVGContainer) => {
     let x = halfcell - halfbase + pipWidth;
     let y = halfcell + halfbase - (strokeWeight * 2);
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // top
     x = halfcell + halfbase - pipWidth;
     y = halfcell - halfbase + (strokeWeight * 2);
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // left
     x = halfcell - halfbase + (strokeWeight * 2);
     y = halfcell - halfbase + pipWidth;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // right
     x = halfcell + halfbase - (strokeWeight * 2);
     y = halfcell + halfbase - pipWidth;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, cellsize, cellsize);
@@ -637,28 +593,24 @@ sheet.glyphs.set("pyramid-up-small-upscaled", (canvas: SVGContainer) => {
     let x = upHalfcell - halfbase + pipWidth;
     let y = upHalfcell + halfbase - (strokeWeight * 2);
     group.line(x, y, (x + pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // top
     x = upHalfcell + halfbase - pipWidth;
     y = upHalfcell - halfbase + (strokeWeight * 2);
     group.line(x, y, (x - pipWidth), y)
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // left
     x = upHalfcell - halfbase + (strokeWeight * 2);
     y = upHalfcell - halfbase + pipWidth;
     group.line(x, y, x, (y + pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     // right
     x = upHalfcell + halfbase - (strokeWeight * 2);
     y = upHalfcell + halfbase - pipWidth;
     group.line(x, y, x, (y - pipWidth))
-        .attr("data-context-stroke", true)
         .stroke({width: strokeWeight, color: "#000", opacity: pipOpacity});
 
     group.viewbox(0, 0, upCellsize, upCellsize);
