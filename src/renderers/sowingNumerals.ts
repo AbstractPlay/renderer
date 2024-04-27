@@ -97,13 +97,13 @@ export class SowingNumeralsRenderer extends RendererBase {
                 const fontsize = 17;
                 const text = nestedGroup.text(key).font({
                     anchor: "start",
-                    fill: "#000",
+                    fill: this.options.colourContext.strokes,
                     size: fontsize,
                 });
                 text.attr("data-playerfill", true);
                 const temptext = this.rootSvg.text(key).font({
                     anchor: "start",
-                    fill: "#000",
+                    fill: this.options.colourContext.strokes,
                     size: fontsize,
                 });
                 const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);

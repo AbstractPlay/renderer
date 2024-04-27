@@ -32,6 +32,23 @@
                     options.rotate = 0;
                 }
                 options.boardClick = handleClick;
+
+                // add colour context
+                var fill = document.getElementById("ccFill");
+                var bg = document.getElementById("ccBackground");
+                var strokes = document.getElementById("ccStrokes");
+                var labels = document.getElementById("ccLabels");
+                var notes = document.getElementById("ccNotes");
+                options.colourContext = {
+                    background: bg.value,
+                    fill: fill.value,
+                    strokes: strokes.value,
+                    labels: labels.value,
+                    annotations: notes.value,
+                };
+                var div = document.getElementById("drawing");
+                div.style.backgroundColor = bg.value;
+
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
                 return false;
@@ -116,7 +133,7 @@
                 "board-hexfield": {
                     "name": "Boards: Hex field",
                     "description": "A rectangular grid of hexes. The center \"chamber\" is here annotated as a piece. See later examples of how to use markers.",
-                    "render": "{\"board\":{\"style\":\"hex-even-p\",\"width\":9,\"height\":9},\"legend\":{\"A1\":{\"name\":\"d6-1\",\"player\":1},\"A2\":{\"name\":\"d6-2\",\"player\":1},\"A3\":{\"name\":\"d6-3\",\"player\":1},\"A4\":{\"name\":\"d6-4\",\"player\":1},\"A5\":{\"name\":\"d6-5\",\"player\":1},\"A6\":{\"name\":\"d6-6\",\"player\":1},\"B1\":{\"name\":\"d6-1\",\"player\":2},\"B2\":{\"name\":\"d6-2\",\"player\":2},\"B3\":{\"name\":\"d6-3\",\"player\":2},\"B4\":{\"name\":\"d6-4\",\"player\":2},\"B5\":{\"name\":\"d6-5\",\"player\":2},\"B6\":{\"name\":\"d6-6\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"#000\"}},\"pieces\":\"B1,B2,B3,B4,B5,B4,B3,B2,B1\\n_\\n,,,,,,,,\\n_\\n,,,,X,,,,\\n_\\n,,,,,,,,\\n_\\nA1,A2,A3,A4,A5,A4,A3,A2,A1\"}"
+                    "render": "{\"board\":{\"style\":\"hex-even-p\",\"width\":9,\"height\":9},\"legend\":{\"A1\":{\"name\":\"d6-1\",\"player\":1},\"A2\":{\"name\":\"d6-2\",\"player\":1},\"A3\":{\"name\":\"d6-3\",\"player\":1},\"A4\":{\"name\":\"d6-4\",\"player\":1},\"A5\":{\"name\":\"d6-5\",\"player\":1},\"A6\":{\"name\":\"d6-6\",\"player\":1},\"B1\":{\"name\":\"d6-1\",\"player\":2},\"B2\":{\"name\":\"d6-2\",\"player\":2},\"B3\":{\"name\":\"d6-3\",\"player\":2},\"B4\":{\"name\":\"d6-4\",\"player\":2},\"B5\":{\"name\":\"d6-5\",\"player\":2},\"B6\":{\"name\":\"d6-6\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"_context_strokes\"}},\"pieces\":\"B1,B2,B3,B4,B5,B4,B3,B2,B1\\n_\\n,,,,,,,,\\n_\\n,,,,X,,,,\\n_\\n,,,,,,,,\\n_\\nA1,A2,A3,A4,A5,A4,A3,A2,A1\"}"
                 },
                 "board-hexslanted": {
                     "name": "Boards: Slanted Hex",
@@ -261,12 +278,12 @@
                 "notes-dots": {
                     "name": "Annotations: Dots",
                     "description": "Annotations are the last things drawn and so overlay pieces. They are used to show changes in game state. In this case, it works like the dot marker but it shows up on top of pieces. It's a helpful way of showing movement range, for example. In this case, it's showing possible moves for the red piece at d7.",
-                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"#000\"}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"dots\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
+                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"_context_strokes\"}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"dots\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
                 },
                 "notes-glyph": {
                     "name": "Annotations: Glyphs",
                     "description": "You can also use glyphs as annotations, which could consist of simple Unicode characters, like in this example, or full-blown composite pieces.",
-                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"#000\"},\"note\":{\"text\":\"\\u2718\",\"scale\":0.5}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"glyph\",\"glyph\":\"note\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
+                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"player\":1},\"B\":{\"name\":\"piece\",\"player\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"_context_strokes\"},\"note\":{\"text\":\"\\u2718\",\"scale\":0.5}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"glyph\",\"glyph\":\"note\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
                 },
                 "blocking": {
                     "name": "Blocking cells",
@@ -341,7 +358,7 @@
                 "niche-polyomino": {
                     "name": "Niche: Polyominos",
                     "description": "This renderer lets you define pieces with a rectangular matrix. It also provides a special \"polyomino\" area for manipulating pieces before placing them. It also demonstrates the `outline` annotation.",
-                    "render": `{\"renderer\":\"polyomino\",\"board\":{\"style\":\"squares\",\"width\":4,\"height\":4},\"legend\":{\"SPACER\":{\"name\":\"piece-square-borderless\"},\"A1\":[[1]],\"A2\":[[1,1]],\"A3\":[[1,1],[0,1]],\"A4\":[[1,1],[1,1]],\"B1\":[[2]],\"B2\":[[2,2]],\"B3\":[[2,2],[0,2]],\"B4\":[[2,2],[2,2]]},\"pieces\":[{\"row\":1,\"col\":1,\"matrix\":[[1,1],[1,0]]}],\"annotations\":[{\"type\":\"outline\",\"targets\":[{\"row\":1,\"col\":1},{\"row\":1,\"col\":3},{\"row\":3,\"col\":3},{\"row\":3,\"col\":1}]}],\"areas\":[{\"type\":\"polyomino\",\"label\":\"Testing\",\"matrix\":[[1,1],[1,0],[1,0],[1,0]],\"background\":\"#ccc\"},{\"type\":\"pieces\",\"label\":\"P1 stash\",\"width\":4,\"pieces\":[\"A1\",\"SPACER\",\"A3\",\"A4\",\"B1\",\"B2\",\"B3\",\"B4\"]},{\"type\":\"pieces\",\"label\":\"P2 stash\",\"width\":4,\"pieces\":[\"A1\",\"A2\",\"SPACER\",\"A4\",\"B1\",\"B2\",\"B3\",\"B4\"]}]}`
+                    "render": `{\"renderer\":\"polyomino\",\"board\":{\"style\":\"squares\",\"width\":4,\"height\":4},\"legend\":{\"SPACER\":{\"name\":\"piece-square-borderless\",\"colour\":\"_context_background\"},\"A1\":[[1]],\"A2\":[[1,1]],\"A3\":[[1,1],[0,1]],\"A4\":[[1,1],[1,1]],\"B1\":[[2]],\"B2\":[[2,2]],\"B3\":[[2,2],[0,2]],\"B4\":[[2,2],[2,2]]},\"pieces\":[{\"row\":1,\"col\":1,\"matrix\":[[1,1],[1,0]]}],\"annotations\":[{\"type\":\"outline\",\"targets\":[{\"row\":1,\"col\":1},{\"row\":1,\"col\":3},{\"row\":3,\"col\":3},{\"row\":3,\"col\":1}]}],\"areas\":[{\"type\":\"polyomino\",\"label\":\"Testing\",\"matrix\":[[1,1],[1,0],[1,0],[1,0]],\"background\":\"_context_fill\"},{\"type\":\"pieces\",\"label\":\"P1 stash\",\"width\":4,\"pieces\":[\"A1\",\"SPACER\",\"A3\",\"A4\",\"B1\",\"B2\",\"B3\",\"B4\"]},{\"type\":\"pieces\",\"label\":\"P2 stash\",\"width\":4,\"pieces\":[\"A1\",\"A2\",\"SPACER\",\"A4\",\"B1\",\"B2\",\"B3\",\"B4\"]}]}`
                 }
             }
 
@@ -382,6 +399,35 @@
                     var jsonbox = document.getElementById("jsonIn");
                     jsonbox.value = JSON.stringify(JSON.parse(jsonbox.value), undefined, 4);
                 });
+
+                // listen for light mode click
+                var lightbtn = document.getElementById("btnLight");
+                lightbtn.addEventListener("click", e => {
+                    var fill = document.getElementById("ccFill");
+                    var bg = document.getElementById("ccBackground");
+                    var strokes = document.getElementById("ccStrokes");
+                    var labels = document.getElementById("ccLabels");
+                    var notes = document.getElementById("ccNotes");
+                    bg.value = "#fff";
+                    fill.value = "#000";
+                    strokes.value = "#000";
+                    labels.value = "#000";
+                    notes.value = "#000";
+                });
+                // listen for dark mode click
+                var darkbtn = document.getElementById("btnDark");
+                darkbtn.addEventListener("click", e => {
+                    var fill = document.getElementById("ccFill");
+                    var bg = document.getElementById("ccBackground");
+                    var strokes = document.getElementById("ccStrokes");
+                    var labels = document.getElementById("ccLabels");
+                    var notes = document.getElementById("ccNotes");
+                    bg.value = "#222";
+                    fill.value = "#e6f2f2";
+                    strokes.value = "#e6f2f2";
+                    labels.value = "#009fbf";
+                    notes.value = "#99cccc";
+                });
             });
         </script>
     </head>
@@ -411,6 +457,24 @@
                     <input type="radio" id="fillPatterns" name="playerfill" value="patterns">
                     <label for="fillPatterns">Black-and-white patterns (10 max)</label>
                 </div>
+                <hr>
+                <div>
+                    <label for="ccBackground">Background</label>
+                    <input type="text" id="ccBackground" value="#fff">
+                    <label for="ccFill">Fill</label>
+                    <input type="text" id="ccFill" value="#000">
+                    <label for="ccStrokes">Strokes</label>
+                    <input type="text" id="ccStrokes" value="#000">
+                    <label for="ccLabels">Labels</label>
+                    <input type="text" id="ccLabels" value="#000">
+                    <label for="ccNotes">Annotations</label>
+                    <input type="text" id="ccNotes" value="#000">
+                </div>
+                <div>
+                    <button id="btnLight" type="button">Light Mode</button>
+                    <button id="btnDark" type="button">Dark Mode</button>
+                </div>
+                <hr>
                 <div>
                     <input type="checkbox" id="rot180" name="rotate">
                     <label for="rot180">Rotate 180&deg;</label>

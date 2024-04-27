@@ -180,8 +180,10 @@ export class StackingOffsetRenderer extends RendererBase {
                                     }
                                 }
                                 const use = usePieceAt(group, piece, this.cellsize, point.x, point.y - (offset * i), 0.85);
-                                if (this.options.boardClick !== undefined) {
+                                if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
+                                } else {
+                                    use.attr({"pointer-events": "none"});
                                 }
                             }
                         }

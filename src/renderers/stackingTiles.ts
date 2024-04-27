@@ -118,7 +118,7 @@ export class StackingTilesRenderer extends RendererBase {
                                         .addClass(`aprender-tile-${idx}`)
                                         .move(x, y)
                                         .fill(color)
-                                        .stroke({width: tileHeight * 0.2, color: "#fff"});
+                                        .stroke({width: tileHeight * 0.2, color: this.options.colourContext.background});
                                     if (this.options.boardClick !== undefined) {
                                         tile.click((e: Event) => {this.options.boardClick!(row, col, (parts.length - i).toString()); e.stopPropagation();});
                                     }
@@ -126,8 +126,8 @@ export class StackingTilesRenderer extends RendererBase {
                                 } else {
                                     group.line(x, y + (tileHeight / 2), x + tileWidth, y + (tileHeight / 2))
                                         .addClass("aprender-tile-overflow")
-                                        .fill("#000")
-                                        .stroke({width: tileHeight, color: "#000", dasharray: "4"});
+                                        .fill(this.options.colourContext.strokes)
+                                        .stroke({width: tileHeight, color: this.options.colourContext.strokes, dasharray: "4"});
                                 }
                             }
                         }

@@ -157,6 +157,7 @@ sheet.glyphs.set("hex-flat", (canvas: SVGContainer) => {
     group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .stroke({width: 5, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     const vbx = Math.min(...hex.corners.map(pt => pt.x));
     const vby = Math.min(...hex.corners.map(pt => pt.y));
@@ -174,6 +175,7 @@ sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
     group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .stroke({width: 5, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     const vbx = Math.min(...hex.corners.map(pt => pt.x));
     const vby = Math.min(...hex.corners.map(pt => pt.y));
@@ -198,10 +200,12 @@ sheet.glyphs.set("house", (canvas: SVGContainer) => {
     house.rect(66.07, 21.700001).x(0.70999998).y(17.610001)
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     house.polygon("61.74,0.5 6.78,0.5 0.71,17.61 66.78,17.61")
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     group.viewbox(-6.2550000100000025, -39.689998, 80, 80);
     return group;
@@ -213,6 +217,7 @@ sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
     meeple.path("M256 54.99c-27 0-46.418 14.287-57.633 32.23-10.03 16.047-14.203 34.66-15.017 50.962-30.608 15.135-64.515 30.394-91.815 45.994-14.32 8.183-26.805 16.414-36.203 25.26C45.934 218.28 39 228.24 39 239.99c0 5 2.44 9.075 5.19 12.065 2.754 2.99 6.054 5.312 9.812 7.48 7.515 4.336 16.99 7.95 27.412 11.076 15.483 4.646 32.823 8.1 47.9 9.577-14.996 25.84-34.953 49.574-52.447 72.315C56.65 378.785 39 403.99 39 431.99c0 4-.044 7.123.31 10.26.355 3.137 1.256 7.053 4.41 10.156 3.155 3.104 7.017 3.938 10.163 4.28 3.146.345 6.315.304 10.38.304h111.542c8.097 0 14.026.492 20.125-3.43 6.1-3.92 8.324-9.275 12.67-17.275l.088-.16.08-.166s9.723-19.77 21.324-39.388c5.8-9.808 12.097-19.576 17.574-26.498 2.74-3.46 5.304-6.204 7.15-7.754.564-.472.82-.56 1.184-.76.363.2.62.288 1.184.76 1.846 1.55 4.41 4.294 7.15 7.754 5.477 6.922 11.774 16.69 17.574 26.498 11.6 19.618 21.324 39.387 21.324 39.387l.08.165.088.16c4.346 8 6.55 13.323 12.61 17.254 6.058 3.93 11.974 3.45 19.957 3.45H448c4 0 7.12.043 10.244-.304 3.123-.347 6.998-1.21 10.12-4.332 3.12-3.122 3.984-6.997 4.33-10.12.348-3.122.306-6.244.306-10.244 0-28-17.65-53.205-37.867-79.488-17.493-22.74-37.45-46.474-52.447-72.315 15.077-1.478 32.417-4.93 47.9-9.576 10.422-3.125 19.897-6.74 27.412-11.075 3.758-2.168 7.058-4.49 9.81-7.48 2.753-2.99 5.192-7.065 5.192-12.065 0-11.75-6.934-21.71-16.332-30.554-9.398-8.846-21.883-17.077-36.203-25.26-27.3-15.6-61.207-30.86-91.815-45.994-.814-16.3-4.988-34.915-15.017-50.96C302.418 69.276 283 54.99 256 54.99z")
         .stroke({width: 5, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     group.viewbox(36, 39.236, 440, 440);
     return group;
@@ -248,14 +253,17 @@ sheet.glyphs.set("palace", (canvas: SVGContainer) => {
     palace.polygon("64.94,33.45 33.35,13.89 33.35,0.93 61.38,19.52")
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     palace.polygon("0.86,33.45 33.35,13.89 33.35,0.93 5.38,18.86")
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     palace.polygon("64.94,57.38 64.94,33.45 33.35,13.89 0.86,33.45 0.86,57.38")
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     group.viewbox(-7.1000000000000005, -21.619999999999997, 80, 80);
     return group;
@@ -265,6 +273,7 @@ sheet.glyphs.set("piece", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.circle(sheet.cellsize)
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
@@ -290,15 +299,18 @@ sheet.glyphs.set("piece-chariot", (canvas: SVGContainer) => {
     const border = 5;
     group.circle(sheet.cellsize - border)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle(sheet.cellsize * 0.7)
         .fill("none")
+        .attr("data-context-stroke", true)
         .stroke({width: border * 2, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle (border * 2)
         .fill("none")
+        .attr("data-context-stroke", true)
         .stroke({width: border / 4, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
 
@@ -311,10 +323,12 @@ sheet.glyphs.set("piece-horse", (canvas: SVGContainer) => {
     const border = 5;
     group.circle(sheet.cellsize - border)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle(sheet.cellsize * 0.7)
+        .attr("data-context-stroke", true)
         .fill("none")
         .stroke({width: border * 2, color: "#000", dasharray: "10"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -328,6 +342,7 @@ sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
     const border = 2;
     group.rect(sheet.cellsize, sheet.cellsize)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -355,6 +370,7 @@ sheet.glyphs.set("piece-triangle", (canvas: SVGContainer) => {
     const base = 100;
     group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 5, color: "#000"})
         .fill("#fff");
     group.viewbox(0, 0, cellsize, cellsize);
@@ -377,9 +393,11 @@ sheet.glyphs.set("piece-triangle-dot", (canvas: SVGContainer) => {
     const cy = (y1 + y2 + y3) / 3;
     group.polygon(`${x1},${y1} ${x2},${y2} ${x3},${y3}`)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 5, color: "#000"})
         .fill("#fff");
     group.circle(base / 3)
+        .attr("data-context-fill", true)
         .fill("#000")
         .center(cx, cy);
     group.viewbox(0, 0, cellsize, cellsize);
@@ -445,6 +463,7 @@ sheet.glyphs.set("ring-01", (canvas: SVGContainer) => {
     const border = 5;
     group.circle(sheet.cellsize * 0.3)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -457,6 +476,7 @@ sheet.glyphs.set("ring-02", (canvas: SVGContainer) => {
     const border = 5;
     group.circle(sheet.cellsize * 0.65)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -468,6 +488,7 @@ sheet.glyphs.set("ring-12", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     const hole = group.circle(sheet.cellsize * 0.3)
+                      .attr("data-context-stroke", true)
                       .stroke({width: border, color: "#000"})
                       .fill("#000")
                       .center(sheet.cellsize / 2, sheet.cellsize / 2)
@@ -475,11 +496,13 @@ sheet.glyphs.set("ring-12", (canvas: SVGContainer) => {
     const mask = group.mask().add(bg).add(hole);
     group.circle(sheet.cellsize * 0.65)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.3)
+        .attr("data-context-stroke", true)
         .fill({color: "#fff", opacity: 0})
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -491,6 +514,7 @@ sheet.glyphs.set("ring-13", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     const hole = group.circle(sheet.cellsize * 0.3)
+                      .attr("data-context-stroke", true)
                       .stroke({width: 0})
                       .fill("#000")
                       .center(sheet.cellsize / 2, sheet.cellsize / 2)
@@ -498,11 +522,13 @@ sheet.glyphs.set("ring-13", (canvas: SVGContainer) => {
     const mask = group.mask().add(bg).add(hole);
     group.circle(sheet.cellsize)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.3)
+        .attr("data-context-stroke", true)
         .fill({color: "#fff", opacity: 0})
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -514,6 +540,7 @@ sheet.glyphs.set("ring-23", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     const hole = group.circle(sheet.cellsize * 0.65)
+                      .attr("data-context-stroke", true)
                       .stroke({width: 0})
                       .fill("#000")
                       .center(sheet.cellsize / 2, sheet.cellsize / 2)
@@ -521,11 +548,13 @@ sheet.glyphs.set("ring-23", (canvas: SVGContainer) => {
     const mask = group.mask().add(bg).add(hole);
     group.circle(sheet.cellsize)
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.65)
+        .attr("data-context-stroke", true)
         .fill({color: "#fff", opacity: 0})
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -539,9 +568,11 @@ sheet.glyphs.set("sphere-spiral", (canvas: SVGContainer) => {
     sphere.circle().cx(210.5).cy(210.5).radius(200)
         .stroke({width: 5, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     sphere.path("M255.55 405.36c-35.749 7.858-73.367 6.139-108.22-5.092m167.92-19.631c-49.05 27.441-109.02 32.427-162.93 18.068-23.251-5.986-45.237-16.405-64.686-30.473m268.16-20.862c-35.076 32.734-83.252 47.924-130.47 50.353-52.85 2.354-107.76-10.846-150.17-43.395-9.533-7.546-17.938-16.147-25.736-25.455m338.45-26.274c-19.622 33.291-53.486 55.792-89.458 68.217-48.883 17.101-102.98 18.343-152.96 5.15-41.172-10.98-81.07-32.744-106.73-67.507-6.847-9.275-11.85-19.34-16.324-29.931m379.59-12.008c-11.304 28.949-33.936 52.201-60.396 67.913-41.8 25.205-91.676 34.761-140.09 32.718-47.849-2.427-95.914-16.694-134.63-45.515-25.398-19.504-46.513-46.428-53.193-78.283l-.97-3.644m396.18-11.924c-4.841 23.535-17.54 44.808-34.672 61.489-32.824 31.618-77.391 48.446-122.03 54.483-51.714 6.666-105.74-.631-152.71-23.702-31.582-15.7-60.497-39.497-76.358-71.505-7.839-15.258-11.467-32.063-12.037-49.141m395.46-28.104c3.44 21.926-.457 44.727-11.272 64.133-18.271 33.084-51.067 55.847-85.775 69.187-51.58 19.912-109.46 21.782-162.79 7.924-40.561-10.931-79.692-31.96-105.93-65.454-17.927-23.385-28.042-53.574-23.504-83.085l.397-4.174m377.4-25.704c8.345 24.193 6.99 51.682-5.187 74.343-15.488 31.155-45.102 52.817-76.348 66.587-52.527 22.102-112.67 24.811-167.36 9.284-39.276-11.16-77.313-32.762-100.87-66.866-18.198-25.643-24.767-59.756-14.595-89.819 1.709-7.223 5.807-13.596 8.632-20.413m328.27-20.447c15.439 20.262 24.25 46.355 19.699 71.838-5.751 34.641-31.935 62.235-61.625 79.061-46.445 26.056-102.51 32.539-154.46 22.61-43.271-8.265-86.32-29.103-112.53-65.559-17.491-24.374-23.858-56.955-13.685-85.538 5.591-17.098 16.356-31.894 28.837-44.671m256.16-14.371c23.24 17.696 42.024 44.313 42.08 74.456.514 31.152-19.085 59.055-43.712 76.573-43.524 30.486-100.05 38.52-151.65 28.967-39.963-7.638-80.244-26.952-103.31-61.639-17.376-24.994-19.944-59.526-5.06-86.295 13.022-25.355 36.986-43.271 62.394-55.067m141.61-6.799c32.579 11.124 64.873 32.846 76.207 66.84 8.96 26.974-1.601 57.232-22.053 76.067-32.052 30.781-78.77 41.655-122.17 38.963-41.496-3.024-84.994-19.351-109.95-54.18-15.735-22.005-18.498-52.761-4.818-76.434 19.035-34.366 58.007-52.474 95.581-57.934 42.845-5.775 90.425 3.075 122.46 33.813 17.07 16.814 25.956 43.305 16.504 66.205-12.519 31.554-45.874 48.939-77.66 55.14-42.789 7.838-91.506-1.137-122.69-33.208-17.052-17.801-23.676-46.173-11.423-68.384 16.297-31.279 52.682-46.416 86.407-48.77 33.832-2.368 71.755 7.153 93.237 35.138 12.854 16.914 12.131 42.077-2.127 57.928-23.35 27.197-63.264 34.301-97.119 27.277-25.265-5.291-52.663-21.167-58.129-48.307-4.853-24.18 14.572-45.76 35.8-54.177C200.24 23.9 239.16 26.002 262.876 49.782c12.424 12.344 12.531 33.848-.35 45.922-23.364 22.258-64.275 23.307-88.762 2.303-12.354-10.191-13.797-30.612-1.233-41.251 17.168-15.857 48.004-17.888 64.956-.751 9.527 9.354 2.823 25.231-9 28.67-11.478 4.756-30.15 3.256-34.358-10.471-1.632-9.618 14.527-15.942 19.14-7.483.08 1.48-1.48 2.402-2.803 2.362")
         .stroke({width: 2, color: "black"})
+        .attr("data-context-stroke", true)
         .fill("none")
     group.viewbox(0, 0, 421, 421);
     return group;
@@ -553,14 +584,17 @@ sheet.glyphs.set("tower", (canvas: SVGContainer) => {
     tower.polygon("32.5,0.9 60.05,18.12 64.61,32.12 32.5,12.23")
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     tower.polygon("32.5,0.9 4.94,17.46 0.83,32.12 32.5,12.23")
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     tower.polygon("64.61,32.12 32.5,12.23 0.83,32.12 0.83,78.46 64.61,78.46")
         .stroke({width: 1, color: "black"})
         .fill("none")
+        .attr("data-context-stroke", true)
         .attr("data-playerfill", true);
     group.viewbox(-7.279999999999999, -0.540000000000012, 80, 80);
     return group;
@@ -581,6 +615,7 @@ sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -594,6 +629,7 @@ sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -608,6 +644,7 @@ sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -623,6 +660,7 @@ sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -639,6 +677,7 @@ sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -656,6 +695,7 @@ sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -674,6 +714,7 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
     rectsym.rect(50, 50)
         .fill("none")
         .attr("data-playerfill", true)
+        .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -690,8 +731,8 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
 sheet.glyphs.set("x", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const stroke = 8;
-    group.line(stroke, stroke, sheet.cellsize - stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" });
-    group.line(sheet.cellsize - stroke, stroke, stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" });
+    group.line(stroke, stroke, sheet.cellsize - stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" }).attr("data-context-stroke", true);
+    group.line(sheet.cellsize - stroke, stroke, stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" }).attr("data-context-stroke", true);
     group.viewbox(0, 0, sheet.cellsize, sheet.cellsize);
     return group;
 });

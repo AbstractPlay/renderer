@@ -165,10 +165,12 @@ export class DefaultRenderer extends RendererBase {
                             const use = usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
                             if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
                                 rotate(use, options.rotate, point.x, point.y);
-                            if (this.options.boardClick !== undefined) {
+                            if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
                                 if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
                                 }
+                            } else {
+                                use.attr({"pointer-events": "none"});
                             }
                         }
                     }

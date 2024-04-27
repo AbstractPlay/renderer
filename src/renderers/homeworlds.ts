@@ -58,8 +58,9 @@ export class HomeworldsRenderer extends RendererBase {
         }
 
         if ( (this.json.options) && (this.json.options.includes("hw-light")) ) {
-            this.backColour = "#fff";
-            this.contrastColour = "#000";
+            const scratch = this.backColour;
+            this.backColour = this.contrastColour;
+            this.contrastColour = scratch;
         }
 
         // Base render should have north at the bottom facing up
@@ -295,28 +296,28 @@ export class HomeworldsRenderer extends RendererBase {
         const boxWidth = stashCellSize * 2.5;
         const dxBox = cxBox - (boxWidth / 2);
 
-        sgroup.text("Global Stash").fill("black").center(cxBox, stashCellSize * -1.25);
+        sgroup.text("Global Stash").fill(this.options.colourContext.strokes).center(cxBox, stashCellSize * -1.25);
         // Add button bar unless told not to
         if ( (! this.json.options) || (! this.json.options.includes("hw-no-buttons")) ) {
             const top = stashCellSize * 7.5;
             const height = stashCellSize * 0.7;
             // Add "sacrifice" box
-            sgroup.text("Sacrifice").fill("black").center(cxBox, top + (height / 2));
-            const sacrect = sgroup.rect(boxWidth, height).id("_sacrificeclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            sgroup.text("Sacrifice").fill(this.options.colourContext.strokes).center(cxBox, top + (height / 2));
+            const sacrect = sgroup.rect(boxWidth, height).id("_sacrificeclick").fill({opacity: 0}).stroke({color: this.options.colourContext.strokes, width: 1});
             if (this.options.boardClick !== undefined) {
                 sacrect.click(() => this.options.boardClick!(-1, -1, "_sacrifice"));
             }
             sacrect.dmove(dxBox, top);
             // Add "pass" box
-            sgroup.text("Pass").fill("black").center(cxBox, top + (height * 1.5));
-            const passrect = sgroup.rect(boxWidth, height).id("_passclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            sgroup.text("Pass").fill(this.options.colourContext.strokes).center(cxBox, top + (height * 1.5));
+            const passrect = sgroup.rect(boxWidth, height).id("_passclick").fill({opacity: 0}).stroke({color: this.options.colourContext.strokes, width: 1});
             if (this.options.boardClick !== undefined) {
                 passrect.click(() => this.options.boardClick!(-1, -1, "_pass"));
             }
             passrect.dmove(dxBox, top + height);
             // Add "catastrophe" box
-            sgroup.text("Catastrophe").fill("black").center(cxBox, top + (height * 2.5));
-            const catrect = sgroup.rect(boxWidth, height).id("_catastropheclick").fill({opacity: 0}).stroke({color: "black", width: 1});
+            sgroup.text("Catastrophe").fill(this.options.colourContext.strokes).center(cxBox, top + (height * 2.5));
+            const catrect = sgroup.rect(boxWidth, height).id("_catastropheclick").fill({opacity: 0}).stroke({color: this.options.colourContext.strokes, width: 1});
             if (this.options.boardClick !== undefined) {
                 catrect.click(() => this.options.boardClick!(-1, -1, "_catastrophe"));
             }

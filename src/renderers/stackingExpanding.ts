@@ -63,7 +63,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     if ( ("cell" in area) && (area.cell !== undefined) ) {
                         const txt = nested.text(`Cell ${area.cell}`);
                         txt.font("size", "50%");
-                        txt.move(0, (this.cellsize / 4) * -1).fill("#000");
+                        txt.move(0, (this.cellsize / 4) * -1).fill(this.options.colourContext.strokes);
                     }
                 }
             } else {
@@ -181,7 +181,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     if ( ("cell" in area) && (area.cell !== undefined) ) {
                         const txt = nested.text(`Cell ${area.cell}`);
                         txt.font("size", "50%");
-                        txt.move(0, (this.cellsize / 4) * -1).fill("#000");
+                        txt.move(0, (this.cellsize / 4) * -1).fill(this.options.colourContext.strokes);
                     }
 
                     // Now place the whole group to the left-hand side of the board
@@ -233,7 +233,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
                     // Add area label
                     const txt = this.rootSvg.text(area.label);
-                    txt.font({size: textHeight, anchor: "start", fill: "#000"})
+                    txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("alignment-baseline", "hanging")
                         .attr("dominant-baseline", "hanging")
                         .move(gridPoints[0][0].x - this.cellsize, placeY);

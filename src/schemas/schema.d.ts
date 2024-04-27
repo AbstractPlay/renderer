@@ -9,7 +9,7 @@ export type PositiveInteger = number;
 /**
  * Pattern for hex colour strings
  */
-export type Colourstrings = string;
+export type Colourstrings = string | string;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
  */
@@ -42,7 +42,7 @@ export interface APRenderRep {
     | "multicell-square"
     | "polyomino";
   /**
-   * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers.
+   * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
   options?: (
     | "rotate-pieces"
@@ -55,6 +55,7 @@ export interface APRenderRep {
     | "reverse-letters"
     | "reverse-numbers"
     | "swap-labels"
+    | "no-piece-click"
   )[];
   /**
    * Map each `piece` to an actual glyph with possible options.
@@ -825,7 +826,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        background?: string;
+        background?: string | string;
         /**
          * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
          */
@@ -838,7 +839,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        background?: string;
+        background?: string | string;
       }
     | {
         type: "globalStash";
@@ -901,7 +902,7 @@ export interface APRenderRep {
             /**
              * Pattern for hex colour strings
              */
-            fill?: string;
+            fill?: string | string;
             [k: string]: unknown;
           },
           ...{
@@ -931,7 +932,7 @@ export interface APRenderRep {
             /**
              * Pattern for hex colour strings
              */
-            fill?: string;
+            fill?: string | string;
             [k: string]: unknown;
           }[]
         ];
@@ -954,7 +955,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        colour?: string;
+        colour?: string | string;
       }
     | {
         type: "scrollBar";
@@ -1004,15 +1005,15 @@ export interface APRenderRep {
           /**
            * Pattern for hex colour strings
            */
-          background?: string;
+          background?: string | string;
           /**
            * Pattern for hex colour strings
            */
-          fill?: string;
+          fill?: string | string;
           /**
            * Pattern for hex colour strings
            */
-          strokes?: string;
+          strokes?: string | string;
           [k: string]: unknown;
         };
       }
@@ -1082,7 +1083,7 @@ export interface APRenderRep {
         /**
          * Pattern for hex colour strings
          */
-        colour?: string;
+        colour?: string | string;
         /**
          * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
          */
