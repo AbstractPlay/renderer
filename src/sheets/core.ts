@@ -731,8 +731,8 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
 sheet.glyphs.set("x", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const stroke = 8;
-    group.line(stroke, stroke, sheet.cellsize - stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" });
-    group.line(sheet.cellsize - stroke, stroke, stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" });
+    group.line(stroke, stroke, sheet.cellsize - stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" }).attr("data-context-stroke", true);
+    group.line(sheet.cellsize - stroke, stroke, stroke, sheet.cellsize - stroke).stroke({ width: stroke, color: "#000", linecap: "round" }).attr("data-context-stroke", true);
     group.viewbox(0, 0, sheet.cellsize, sheet.cellsize);
     return group;
 });
