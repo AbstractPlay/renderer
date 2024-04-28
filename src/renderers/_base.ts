@@ -21,6 +21,7 @@ import tinycolor from "tinycolor2";
 export interface IColourContext {
     background: string;
     strokes: string;
+    borders: string;
     labels: string;
     annotations: string;
     fill: string;
@@ -396,6 +397,7 @@ export abstract class RendererBase {
                 background: "#fff",
                 fill: "#000",
                 strokes: "#000",
+                borders: "#000",
                 annotations: "#000",
                 labels: "#000",
             },
@@ -484,7 +486,7 @@ export abstract class RendererBase {
 
         // Validate colour context
         if (opts.colourContext !== undefined && opts.colourContext !== null) {
-            for (const label of ["strokes", "labels", "annotations", "fill", "background"] as const) {
+            for (const label of ["strokes", "labels", "annotations", "fill", "background", "borders"] as const) {
                 if ( (label in opts.colourContext) && (opts.colourContext[label] !== undefined) ) {
                     const color = tinycolor(opts.colourContext[label]);
                     if (! color.isValid()) {
@@ -734,8 +736,10 @@ export abstract class RendererBase {
                     // look for context strokes and fills
                     const contextStroke = this.options.colourContext.strokes;
                     const contextFill = this.options.colourContext.fill;
+                    const contextBorder = this.options.colourContext.borders;
                     got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
                     got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
+                    got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
 
                     let sheetCellSize = got.viewbox().height;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
