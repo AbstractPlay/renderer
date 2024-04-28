@@ -37,12 +37,14 @@
                 var fill = document.getElementById("ccFill");
                 var bg = document.getElementById("ccBackground");
                 var strokes = document.getElementById("ccStrokes");
+                var borders = document.getElementById("ccBorders");
                 var labels = document.getElementById("ccLabels");
                 var notes = document.getElementById("ccNotes");
                 options.colourContext = {
                     background: bg.value,
                     fill: fill.value,
                     strokes: strokes.value,
+                    borders: borders.value,
                     labels: labels.value,
                     annotations: notes.value,
                 };
@@ -406,11 +408,13 @@
                     var fill = document.getElementById("ccFill");
                     var bg = document.getElementById("ccBackground");
                     var strokes = document.getElementById("ccStrokes");
+                    var borders = document.getElementById("ccBorders");
                     var labels = document.getElementById("ccLabels");
                     var notes = document.getElementById("ccNotes");
                     bg.value = "#fff";
                     fill.value = "#000";
                     strokes.value = "#000";
+                    borders.value = "#000";
                     labels.value = "#000";
                     notes.value = "#000";
                 });
@@ -420,11 +424,13 @@
                     var fill = document.getElementById("ccFill");
                     var bg = document.getElementById("ccBackground");
                     var strokes = document.getElementById("ccStrokes");
+                    var borders = document.getElementById("ccBorders");
                     var labels = document.getElementById("ccLabels");
                     var notes = document.getElementById("ccNotes");
                     bg.value = "#222";
                     fill.value = "#e6f2f2";
                     strokes.value = "#e6f2f2";
+                    borders.value = "#000";
                     labels.value = "#009fbf";
                     notes.value = "#99cccc";
                 });
@@ -463,10 +469,14 @@
                     <input type="text" id="ccBackground" value="#fff">
                     <label for="ccFill">Fill</label>
                     <input type="text" id="ccFill" value="#000">
-                    <label for="ccStrokes">Strokes</label>
-                    <input type="text" id="ccStrokes" value="#000">
                     <label for="ccLabels">Labels</label>
                     <input type="text" id="ccLabels" value="#000">
+                </div>
+                <div>
+                    <label for="ccStrokes">Strokes</label>
+                    <input type="text" id="ccStrokes" value="#000">
+                    <label for="ccStrokes">Borders</label>
+                    <input type="text" id="ccBorders" value="#000">
                     <label for="ccNotes">Annotations</label>
                     <input type="text" id="ccNotes" value="#000">
                 </div>
