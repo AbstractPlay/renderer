@@ -2,7 +2,7 @@
 Todo:
   ✔ Review and reconsider schema @done(19-01-27 13:50)
   ✔ Consolidate `squares` and `squares-checkered` @done(21-09-27 16:58)
-  ✔ Get rid of `tileLight` and `tileDark` and dynamically generat dark squares based on specified stroke colour @done(21-09-27 16:58)
+  ✔ Get rid of `tileLight` and `tileDark` and dynamically generate dark squares based on specified stroke colour @done(21-09-27 16:58)
   ✔ Figure out why patterns sometimes break @done(21-10-05 11:29)
   ✔ Make `stacking-offset` renderer rotate properly @done(21-11-13 09:14)
   ✔ Does the click handler need more granularity? Homeworlds is a good example. Is it ok if one click triggers multiple events? @done(21-12-10 09:03)
