@@ -1156,8 +1156,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -1724,8 +1724,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -2064,8 +2064,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -2406,8 +2406,8 @@ export abstract class RendererBase {
         }
 
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         for (const hex of grid) {
             // don't draw "blocked" hexes
@@ -2623,8 +2623,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -2811,8 +2811,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
@@ -2910,8 +2910,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -3115,8 +3115,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -3234,8 +3234,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -3388,8 +3388,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -3575,8 +3575,8 @@ export abstract class RendererBase {
         const shrinkage = 0.75;
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -4119,8 +4119,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -4292,8 +4292,8 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            labelColour = baseColour;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;

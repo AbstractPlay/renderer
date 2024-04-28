@@ -96,15 +96,19 @@ export interface APRenderRep {
           | "cairo-collinear"
           | "cairo-catalan";
         /**
-         * The base stroke weight of lines drawn to construct the board.
+         * Pattern for hex colour strings
          */
-        strokeWeight?: number;
+        labelColour?: string;
         /**
          * Pattern for hex colour strings
          */
         strokeColour?: string;
         /**
-         * The opacity of lines drawn to construct the board, includes the labels.
+         * The base stroke weight of lines drawn to construct the board.
+         */
+        strokeWeight?: number;
+        /**
+         * The opacity of lines drawn to construct the board.
          */
         strokeOpacity?: number;
         /**

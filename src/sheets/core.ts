@@ -305,12 +305,10 @@ sheet.glyphs.set("piece-chariot", (canvas: SVGContainer) => {
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle(sheet.cellsize * 0.7)
         .fill("none")
-        .attr("data-context-stroke", true)
         .stroke({width: border * 2, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle (border * 2)
         .fill("none")
-        .attr("data-context-stroke", true)
         .stroke({width: border / 4, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
 
@@ -328,7 +326,6 @@ sheet.glyphs.set("piece-horse", (canvas: SVGContainer) => {
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle(sheet.cellsize * 0.7)
-        .attr("data-context-stroke", true)
         .fill("none")
         .stroke({width: border * 2, color: "#000", dasharray: "10"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);

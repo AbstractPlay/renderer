@@ -297,18 +297,23 @@
                                 "cairo-catalan"
                             ]
                         },
+                        "labelColour": {
+                            "description": "The colour for the board labels. Defaults to the colour passed into the context (default black).",
+                            "$ref": "#/definitions/colourstrings",
+                            "default": "#000"
+                        },
+                        "strokeColour": {
+                            "description": "The colour for lines drawn to construct the board.",
+                            "$ref": "#/definitions/colourstrings",
+                            "default": "#000"
+                        },
                         "strokeWeight": {
                             "description": "The base stroke weight of lines drawn to construct the board.",
                             "$ref": "#/definitions/positiveInteger",
                             "default": 1
                         },
-                        "strokeColour": {
-                            "description": "The colour for lines drawn to construct the board, includes the labels.",
-                            "$ref": "#/definitions/colourstrings",
-                            "default": "#000"
-                        },
                         "strokeOpacity": {
-                            "description": "The opacity of lines drawn to construct the board, includes the labels.",
+                            "description": "The opacity of lines drawn to construct the board.",
                             "type": "number",
                             "minimum": 0,
                             "maximum": 1,
