@@ -6162,7 +6162,7 @@ export abstract class RendererBase {
             maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
             maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
             const symtxt = nested.symbol();
-            symtxt.text(k.name).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
+            symtxt.text(k.name).font({size: 17, fill: labelColour, anchor: "start"});
             symtxt.viewbox(tmptxt.bbox());
             tmptxt.remove();
             labels.push(symtxt);
@@ -6514,7 +6514,7 @@ export abstract class RendererBase {
                 nested.width(realWidth);
                 nested.viewbox(vbx, vby, realWidth, vbh);
                 const txt = nested.text(area.label).addClass(`aprender-area-label`);
-                txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
+                txt.font({size: textHeight, anchor: "start", fill: labelColour})
                     .attr("alignment-baseline", "hanging")
                     .attr("dominant-baseline", "hanging")
                     .move(0, 0);
