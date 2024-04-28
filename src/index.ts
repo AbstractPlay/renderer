@@ -39,7 +39,7 @@ export interface IRenderOptions extends IRendererOptionsIn {
      */
     divelem?: HTMLElement;
     /**
-     * In some special cases, you already have an SVG and want the renderer to do it's thing inside of it.
+     * In some special cases, you already have an SVG and want the renderer to do its thing inside of it.
      * In that case, pass the Svg object.
      *
      */
