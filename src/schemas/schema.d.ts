@@ -174,11 +174,11 @@ export interface APRenderRep {
           }[]
         ];
         /**
-         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.
+         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisible 'bearing off' area.
          */
         clickDeltaX?: number;
         /**
-         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.
+         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisible 'bearing off' area.
          */
         clickDeltaY?: number;
         /**
@@ -1232,7 +1232,7 @@ export interface Freepiece {
    */
   y: number;
   /**
-   * Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
+   * Expressed in degrees, relative to 0&deg; being towards the top of the display and positive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
    */
   orientation: number;
 }
