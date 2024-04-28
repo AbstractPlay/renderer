@@ -6139,6 +6139,10 @@ export abstract class RendererBase {
         }
 
         // initialize values
+        let labelColour = this.options.colourContext.labels;
+        if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
+        }
         let height = this.cellsize * 0.333;
         if (key.height !== undefined) {
             height = this.cellsize * key.height;
@@ -6154,7 +6158,7 @@ export abstract class RendererBase {
         let maxWidth = 0;
         let maxHeight = 0;
         for (const k of key.list) {
-            const tmptxt = this.rootSvg.text(k.name).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
+            const tmptxt = this.rootSvg.text(k.name).font({size: 17, fill: labelColour, anchor: "start"});
             maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
             maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
             const symtxt = nested.symbol();
@@ -6497,7 +6501,11 @@ export abstract class RendererBase {
                 }
 
                 // Add area label
-                const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
+                let labelColour = this.options.colourContext.labels;
+                if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+                    labelColour = this.json.board.labelColour as string;
+                }
+                const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: labelColour});
                 const txtWidth = tmptxt.bbox().w;
                 tmptxt.remove();
                 // set the actual width of the nested svg
