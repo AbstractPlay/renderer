@@ -6535,10 +6535,12 @@ export abstract class RendererBase {
             throw new Error("Can't add a back fill unless the JSON is initialized!");
         }
         if (this.json.board !== null) {
+            let bgcolour = this.options.colourContext.background;
             if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
-                const bbox = this.rootSvg.bbox();
-                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill(this.json.board.backFill).back();
+                bgcolour = this.json.board.backFill as string;
             }
+            const bbox = this.rootSvg.bbox();
+            this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill(bgcolour).back();
         }
     }
 
