@@ -87,6 +87,11 @@
                     "description": "This board is for simulating sphere stacking in layers. The `pieces` property is still two dimensional. This render has three full layers of pieces.",
                     "render": "{\"board\":{\"style\":\"squares-stacked\",\"width\":9,\"height\":9,\"markers\":[{\"type\":\"edge\",\"edge\":\"N\",\"colour\":1},{\"type\":\"edge\",\"edge\":\"S\",\"colour\":1},{\"type\":\"edge\",\"edge\":\"E\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"W\",\"colour\":2}]},\"legend\":{\"A\":{\"name\":\"orb\",\"player\":1,\"scale\":1.15},\"B\":{\"name\":\"orb\",\"player\":2,\"scale\":1.15}},\"pieces\":\"\\n\\n--A--BAB-\\n----BBBBA\\n----B-AA-\\n----ABAB-\\n---BABA--\\n--BBABBB-\\n---BAAA--\\n\\n\\n------A-\\n------A-\\n\\n-----A--\\n---BBA--\\n---BAB--\\n\\n\\n\\n\\n\\n\\n----A--\\n\"}"
                 },
+                "board-triangles-stacked": {
+                    "name": "Boards: Triangles Stacked",
+                    "desciprion": "This board lets you stack triangles (composed of hexes). The `pieces` property is still two dimensional.",
+                    "render": `{\"options\":[\"no-piece-click\"],\"board\":{\"style\":\"triangles-stacked\",\"width\":7,\"height\":7,\"strokeOpacity\":0,\"blocked\":[{\"row\":0,\"col\":0},{\"row\":0,\"col\":5},{\"row\":0,\"col\":6},{\"row\":1,\"col\":0},{\"row\":1,\"col\":6},{\"row\":2,\"col\":6},{\"row\":4,\"col\":6},{\"row\":5,\"col\":0},{\"row\":5,\"col\":6},{\"row\":6,\"col\":0},{\"row\":6,\"col\":5},{\"row\":6,\"col\":6}]},\"legend\":{\"H\":{\"name\":\"hex-pointy-m21\",\"colour\":\"#999\",\"scale\":1.87},\"A\":{\"name\":\"hex-pointy-m123\",\"player\":1,\"scale\":1.87},\"B\":{\"name\":\"hex-pointy-m123\",\"player\":2,\"scale\":1.87}},\"pieces\":\"-HHHH--\\n-HHHHH-\\nBHHAHH-\\nHBHBBHH\\nHHAAHB-\\n-HHHHH-\\n-HHHH--\\n_\\n_\\n--A\\n--A\"}`
+                },
                 "board-vertex": {
                     "name": "Boards: Vertex",
                     "description": "Vertex board with stacking pieces",

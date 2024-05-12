@@ -286,7 +286,6 @@
                                 "hex-even-f",
                                 "hex-of-hex",
                                 "hex-of-tri",
-                                "hex-of-tri-star",
                                 "hex-of-cir",
                                 "snubsquare",
                                 "circular-cobweb",
@@ -294,7 +293,8 @@
                                 "conhex-dots",
                                 "conhex-cells",
                                 "cairo-collinear",
-                                "cairo-catalan"
+                                "cairo-catalan",
+                                "triangles-stacked"
                             ]
                         },
                         "labelColour": {
@@ -310,6 +310,13 @@
                         "strokeWeight": {
                             "description": "The base stroke weight of lines drawn to construct the board.",
                             "$ref": "#/definitions/positiveInteger",
+                            "default": 1
+                        },
+                        "labelOpacity": {
+                            "description": "The opacity of lines drawn to construct the board.",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
                             "default": 1
                         },
                         "strokeOpacity": {

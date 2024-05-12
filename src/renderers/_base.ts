@@ -8,7 +8,7 @@ import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset } from "../common/plotting";
 import { glyph2uid, x2uid} from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 // import { customAlphabet } from 'nanoid'
@@ -1159,6 +1159,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -1194,18 +1198,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize - (show.includes("N") ? bufferwidth : 0)};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize + (show.includes("S") ? bufferwidth : 0)};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -1727,6 +1731,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -1763,18 +1771,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -2067,6 +2075,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -2103,7 +2115,7 @@ export abstract class RendererBase {
                 let pointTop: IPoint;
                 let pointBottom: IPoint;
                 const realcol = Math.floor(col / 2);
-                let opacity = baseOpacity;
+                let opacity = labelOpacity;
                 if (col % 2 !== 0) {
                     opacity *= 0.5;
                 }
@@ -2125,7 +2137,7 @@ export abstract class RendererBase {
                 let pointL: IPoint;
                 let pointR: IPoint;
                 const realrow = Math.floor(row / 2);
-                let opacity = baseOpacity;
+                let opacity = labelOpacity;
                 if (row % 2 !== 0) {
                     opacity *= 0.5;
                 }
@@ -2409,6 +2421,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         for (const hex of grid) {
             // don't draw "blocked" hexes
             if (blocked !== undefined) {
@@ -2447,6 +2463,7 @@ export abstract class RendererBase {
                     anchor: "middle",
                     fill: labelColour,
                     size: fontSize,
+                    opacity: labelOpacity,
                 })
                 // .center(cx, cy);
                 .center(labelX, labelY)
@@ -2511,9 +2528,9 @@ export abstract class RendererBase {
                     }
                 }
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows
@@ -2536,9 +2553,9 @@ export abstract class RendererBase {
                         pointR = {x: maxX + (cellsize * 0.5), y: cy};
                     }
                 }
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -2581,6 +2598,272 @@ export abstract class RendererBase {
 
         return gridPoints;
     }
+
+    /**
+     * This is a specialized subset of the rectOfHex function, specifically:
+     * `hex-even-p` configuration with external, swapped labels and reversed numbers
+     * multiplied by three, in different colours. It was simpler than trying to generalize.
+     * It relies on a third-party library to do the heavy lifting.
+     *
+     * @returns A map of row/column locations to x,y coordinate
+     */
+    protected stackingTriangles(): {points: GridPoints, polys: Poly[][]} {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
+        const width: number = this.json.board.width as number;
+        const height: number = this.json.board.height as number;
+        const cellsize = this.cellsize * 0.8;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+        let clickEdges = false;
+        if ( (this.json.options !== undefined) && (this.json.options.includes("clickable-edges")) ) {
+            clickEdges = (this.options.boardClick !== undefined);
+        }
+
+        // Get a grid of points
+        const orientation = Orientation.POINTY;
+        const edges = edges2corners.get(orientation)!;
+        let offset: HexOffset = 1;
+        if ( (this.options.rotate === 180) && (height % 2 !== 0) ) {
+            offset = (offset * -1) as HexOffset;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const myHex = defineHex({
+            offset,
+            orientation,
+            dimensions: cellsize,
+        });
+        const grid = new Grid(myHex, rectangle({width, height}));
+        const board = this.rootSvg.group().id("board");
+        let gridPoints: GridPoints = [];
+        // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
+        let polys: Poly[][] = [];
+        for (let y = 0; y < height; y++) {
+            const rowPolys: Poly[] = [];
+            const node: IPoint[] = [];
+            for (let x = 0; x < width; x++) {
+                const hex = grid.getHex({col: x, row: y});
+                if (hex === undefined) {
+                    throw new Error();
+                }
+                // const pt = hex.toPoint();
+                // node.push({x: hex.x + cx, y: hex.y + cy} as IPoint);
+                node.push({x: hex.x, y: hex.y} as IPoint);
+                rowPolys.push({
+                    type: "poly",
+                    points: hex.corners
+                });
+            }
+            gridPoints.push(node);
+            polys.push(rowPolys);
+        }
+
+        this.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
+
+        const corners = grid.getHex({col: 0, row: 0})!.corners;
+        const vbx = Math.min(...corners.map(pt => pt.x));
+        const vby = Math.min(...corners.map(pt => pt.y));
+        const vbWidth = Math.max(...corners.map(pt => pt.x)) - vbx;
+        const vbHeight = Math.max(...corners.map(pt => pt.y)) - vby;
+        let hexFill: string|undefined;
+        if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            hexFill = this.json.board.hexFill;
+        }
+        // const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol")
+        //     .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+        //     .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
+        const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(vbx, vby, vbWidth, vbHeight);
+        const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+                            .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
+        if (hexFill !== undefined) {
+            symbolPoly.fill({color: hexFill, opacity: 1});
+        }
+        if (! clickEdges) {
+            symbolPoly.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round" });
+        }
+
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        const labels = this.rootSvg.group().id("labels");
+        const seenEdges = new Set<string>();
+        let customLabels: string[]|undefined;
+        if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+            customLabels = this.json.board.columnLabels as string[];
+        }
+        const columnLabels = this.getLabels(customLabels, width);
+        if (this.options.rotate === 180) {
+            columnLabels.reverse();
+        }
+
+        const rowLabels = this.getRowLabels(this.json.board.rowLabels, height * 3);
+        rowLabels.reverse();
+
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour as string;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
+        for (const hex of grid) {
+            // don't draw "blocked" hexes
+            if (blocked !== undefined) {
+                const found = blocked.find(e => e.row === hex.row && e.col === hex.col);
+                if (found !== undefined) {
+                    continue;
+                }
+            }
+            const { x, y } = hex;
+            const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
+            if (this.options.boardClick !== undefined) {
+                if (this.options.rotate === 180) {
+                    used.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, ""));
+                } else {
+                    used.click(() => this.options.boardClick!(hex.row, hex.col, ""));
+                }
+            }
+        }
+
+        // Add board labels
+        let hideHalf = false;
+        if (this.json.options?.includes("hide-labels-half")) {
+            hideHalf = true;
+        }
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        (polys.flat() as IPolyPolygon[]).forEach(hex => {
+            hex.points.forEach(({x,y}) => {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            });
+        });
+
+        const centroid = (pts: IPoint[]): IPoint|undefined => {
+            if (pts.length === 0) {
+                return undefined;
+            }
+            const cx = pts.reduce((prev, curr) => prev + curr.x, 0) / pts.length;
+            const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
+            return {x: cx, y: cy};
+        }
+
+        // Columns
+        for (let col = 0; col < width; col++) {
+            const hex = polys[0][col] as IPolyPolygon;
+            const {x: cx} = centroid(hex.points)!;
+            const pointTop = {x: cx - (cellsize * 1), y: minY - (cellsize * 0.5)};
+            const pointBottom = {x: cx - (cellsize * 1), y: maxY + (cellsize * 0.5)};
+            if (! hideHalf) {
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+            }
+            labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+        }
+
+        // Rows
+        // rows are straight lines
+        for (let row = 0; row < height; row++) {
+            const hex = polys[row][0] as IPolyPolygon;
+            const {y: cy} = centroid(hex.points)!;
+            let localOpacity = labelOpacity;
+            for (let inc = 0; inc < 3; inc++) {
+                let pointL: IPoint;
+                let pointR: IPoint;
+                switch (inc) {
+                    case 0:
+                        pointL = {x: minX - (cellsize * 0.5), y: cy};
+                        pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                        break;
+                    case 1:
+                        pointL = {x: minX - (cellsize * 0.5), y: hex.points[1].y};
+                        pointR = {x: maxX + (cellsize * 0.5), y: hex.points[1].y};
+                        localOpacity *= 0.66;
+                        break;
+                    case 2:
+                        pointL = {x: minX - (cellsize * 0.5), y: hex.points[2].y};
+                        pointR = {x: maxX + (cellsize * 0.5), y: hex.points[2].y};
+                        localOpacity *= 0.33;
+                        break;
+                    default:
+                        throw new Error(`Invalid increment`);
+                }
+                const label = rowLabels[(row * 3) + inc];
+                labels.text(label).fill(labelColour).opacity(localOpacity).center(pointL.x, pointL.y);
+                if (! hideHalf) {
+                    labels.text(label).fill(labelColour).opacity(localOpacity).center(pointR.x, pointR.y);
+                }
+            }
+        }
+
+        if (clickEdges) {
+            for (const hex of grid) {
+                // add clickable edges
+                // don't draw "blocked" hexes
+                if (blocked !== undefined) {
+                    const found = blocked.find(e => e.row === hex.row && e.col === hex.col);
+                    if (found !== undefined) {
+                        continue;
+                    }
+                }
+                const { x, y } = hex;
+                for (const edge of edges) {
+                    const [idx1, idx2] = edge.corners;
+                    const {x: x1, y: y1} = corners[idx1];
+                    const {x: x2, y: y2} = corners[idx2];
+                    const vid = pts2id([x1+x,y1+y],[x2+x,y2+y]);
+                    if (seenEdges.has(vid)) {
+                        continue;
+                    }
+                    seenEdges.add(vid);
+                    const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
+                    if (this.options.rotate === 180) {
+                        edgeLine.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, oppDir.get(edge.dir)!));
+                    } else {
+                        edgeLine.click(() => this.options.boardClick!(hex.row, hex.col, edge.dir));
+                    }
+                }
+            }
+        }
+
+        if (this.options.rotate === 180) {
+            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
+            polys = polys.map((r) => r.reverse()).reverse();
+        }
+        this.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
+
+        return {points: gridPoints, polys};
+    }
+
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
@@ -2626,6 +2909,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -2667,18 +2954,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -2814,6 +3101,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
             const labels = board.group().id("labels");
@@ -2825,7 +3116,7 @@ export abstract class RendererBase {
             // Columns (letters)
             for (let col = 0; col < width; col++) {
                 const pt = labelPts[col];
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pt.x, pt.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pt.x, pt.y);
             }
         }
 
@@ -2913,6 +3204,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
 
@@ -2944,8 +3239,8 @@ export abstract class RendererBase {
 
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3118,6 +3413,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
 
@@ -3148,8 +3447,8 @@ export abstract class RendererBase {
 
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3237,6 +3536,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
 
@@ -3267,8 +3570,8 @@ export abstract class RendererBase {
 
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3391,6 +3694,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
@@ -3426,16 +3733,16 @@ export abstract class RendererBase {
             for (let col = 0; col < gridWidth; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[gridHeight - 1][col].x, y: grid[gridHeight - 1][col].y + cellsize};
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < gridHeight; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][gridWidth - 1].x + cellsize, y: grid[row][gridWidth - 1].y};
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -3578,6 +3885,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
@@ -3595,8 +3906,8 @@ export abstract class RendererBase {
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
@@ -3612,8 +3923,8 @@ export abstract class RendererBase {
                     pointL.x -= cellsize * shrinkage;
                     pointR.x += cellsize * shrinkage;
                 }
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -4122,6 +4433,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -4159,18 +4474,18 @@ export abstract class RendererBase {
                 const pointTop = {x: (grid[0][col].x + grid[0][col+1].x) / 2, y: ((grid[0][col].y + grid[0][col+1].y) / 2) - (cellsize * 1.25)};
                 const pointBottom = {x: (grid[height - 1][col].x + grid[height - 1][col+1].x) / 2, y: ((grid[height - 1][col].y + grid[height - 1][col+1].y) / 2) + (cellsize * 1.25)};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col / 2]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col / 2]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col / 2]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col / 2]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: ((grid[row][0].x + grid[row][1].x) / 2) - (cellsize * 1.25), y: (grid[row][0].y + grid[row][1].y) / 2};
                 const pointR = {x: ((grid[row][realwidth - 1].x + grid[row][realwidth - 2].x) / 2) + (cellsize * 1.25), y: (grid[row][realwidth - 1].y + grid[row][realwidth - 2].y) / 2};
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -4295,6 +4610,10 @@ export abstract class RendererBase {
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.json.board.labelColour as string;
         }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity as number;
+        }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
@@ -4336,18 +4655,18 @@ export abstract class RendererBase {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
                 if (! hideHalf) {
-                    labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(columnLabels[col]).fill(labelColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-                labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
-                    labels.text(rowLabels[row]).fill(labelColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
                 }
             }
         }
@@ -6645,5 +6964,32 @@ export abstract class RendererBase {
             }
         }
         return point;
+    }
+
+    protected getTriStackedPoint (pts: GridPoints, col: number, row: number, polys: Poly[][]): IPoint|undefined {
+        if ( (! ("json" in this)) || (this.json === undefined) || (this.json === null) || (! ("board" in this.json)) || (this.json.board === undefined) || (this.json.board === null) || (! ("style" in this.json.board)) || (this.json.board.style === undefined)) {
+            throw new Error(`Cannot calculate the stacked point if the base object is not properly populated.`);
+        }
+        if (this.json.board.style !== "triangles-stacked") {
+            return pts[row][col];
+        }
+        if ((! ("width" in this.json.board)) || (this.json.board.width === undefined) || (! ("height" in this.json.board)) || (this.json.board.height === undefined)) {
+            throw new Error(`Cannot calculate the stacked point if the base object is not properly populated.`);
+        }
+        const result = calcLazoOffset(this.json.board.width, this.json.board.height, col, row);
+        if (result === undefined) {
+            return undefined;
+        }
+        const anchor = polys[result.gridrow][result.gridcol] as IPolyPolygon;
+        switch (result.layer % 3) {
+            case 0:
+                return pts[result.gridrow][result.gridcol];
+            case 1:
+                return anchor.points[2];
+            case 2:
+                return anchor.points[1];
+            default:
+                return undefined;
+        }
     }
 }

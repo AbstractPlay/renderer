@@ -86,7 +86,6 @@ export interface APRenderRep {
           | "hex-even-f"
           | "hex-of-hex"
           | "hex-of-tri"
-          | "hex-of-tri-star"
           | "hex-of-cir"
           | "snubsquare"
           | "circular-cobweb"
@@ -94,7 +93,8 @@ export interface APRenderRep {
           | "conhex-dots"
           | "conhex-cells"
           | "cairo-collinear"
-          | "cairo-catalan";
+          | "cairo-catalan"
+          | "triangles-stacked";
         /**
          * Pattern for hex colour strings
          */
@@ -107,6 +107,10 @@ export interface APRenderRep {
          * The base stroke weight of lines drawn to construct the board.
          */
         strokeWeight?: number;
+        /**
+         * The opacity of lines drawn to construct the board.
+         */
+        labelOpacity?: number;
         /**
          * The opacity of lines drawn to construct the board.
          */

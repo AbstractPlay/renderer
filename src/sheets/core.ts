@@ -185,6 +185,195 @@ sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
     return symbol;
 });
 
+sheet.glyphs.set("hex-pointy-m123", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group();
+    const pHex = defineHex({orientation: Orientation.POINTY, dimensions: {width: 230.6667, height: 266.351}});
+    const hex = new pHex();
+    let poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(230.6667, 0)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    let pts = poly.array();
+    // 3-4, 4-5, 5-0, 0-1
+    group.line(...pts[3], ...pts[4])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[4], ...pts[5])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[5], ...pts[0])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[0], ...pts[1])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(115.33, 200)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    pts = poly.array();
+    // 3-4, 4-5
+    group.line(...pts[3], ...pts[4])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[4], ...pts[5])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(346, 200)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    pts = poly.array();
+    // 5-0, 0-1
+    group.line(...pts[5], ...pts[0])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[0], ...pts[1])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(0, 400)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    pts = poly.array();
+    // 1-5
+    group.line(...pts[1], ...pts[2])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[2], ...pts[3])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+        group.line(...pts[3], ...pts[4])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[4], ...pts[5])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(230.6667, 400)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    pts = poly.array();
+    // 1-2, 2-3
+    group.line(...pts[1], ...pts[2])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[2], ...pts[3])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(461.6667, 400)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    pts = poly.array();
+    // 5-0, 0-3
+    group.line(...pts[5], ...pts[0])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[0], ...pts[1])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[1], ...pts[2])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[2], ...pts[3])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    symbol.viewbox(0, -1, 692, 800);
+    return symbol;
+});
+
+sheet.glyphs.set("hex-pointy-m21", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group();
+    const pHex = defineHex({orientation: Orientation.POINTY, dimensions: {width: 230.6667, height: 266.351}});
+    const hex = new pHex();
+    let poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(115.33, 200)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    let pts = poly.array();
+    // 2-3, 3-4, 4-5, 5-0
+    group.line(...pts[2], ...pts[3])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[3], ...pts[4])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[4], ...pts[5])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[5], ...pts[0])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(346, 200)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    pts = poly.array();
+    // 4-5, 5-0, 0-1, 1-2
+    group.line(...pts[4], ...pts[5])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[5], ...pts[0])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[0], ...pts[1])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[1], ...pts[2])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
+        .move(230.6667, 400)
+        .stroke({width: 5, color: "none"})
+        .fill("none")
+        .attr("data-playerstroke", true)
+        .attr("data-playerfill", true);
+    pts = poly.array();
+    // 0 - 4
+    group.line(...pts[0], ...pts[1])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[1], ...pts[2])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[2], ...pts[3])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+    group.line(...pts[3], ...pts[4])
+        .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
+        .attr("data-context-border", true);
+
+    symbol.viewbox(0, -1, 692, 800);
+    return symbol;
+});
+
 sheet.glyphs.set("hline", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(-10, 50, 110, 50)

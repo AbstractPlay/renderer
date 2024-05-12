@@ -197,3 +197,45 @@ export const calcPyramidOffset = (width: number, height: number, col: number, ro
 
     return {gridrow, gridcol, layer, offset: layer % 2 !== 0};
 }
+
+export const calcLazoOffset = (width: number, height: number, col: number, row: number)
+                            : {gridrow: number, gridcol: number, layer: number}|undefined => {
+    if (row < height) {
+        return {gridrow: row, gridcol: col, layer: 0};
+    }
+    let gridrow = row;
+    let gridcol = col;
+    let maxrow = height - 1;
+    const maxLayers = Math.min(width, height);
+    let layer: number;
+    for (layer = 1; layer < maxLayers; layer++) {
+        gridrow = gridrow - (height - layer) - 1;
+        maxrow += height - layer;
+        if (row <= maxrow) {
+            break;
+        }
+    }
+    if (row > maxrow) {
+        return undefined;
+    }
+    const maxcol = width - layer;
+    if (col >= maxcol) {
+        return undefined;
+    }
+    switch (layer % 3) {
+        case 0:
+            gridrow += 2 * Math.floor(layer / 3)
+            gridcol += 2 * Math.floor(layer / 3)
+            break;
+        case 1:
+            gridrow += 0 + (2 * Math.floor(layer / 3));
+            gridcol += 1 + (2 * Math.floor(layer / 3));
+            break;
+        case 2:
+            gridrow += 1 + (2 * Math.floor(layer / 3));
+            gridcol += 0 + (2 * Math.floor(layer / 3));
+            break;
+    }
+
+    return {gridrow, gridcol, layer};
+}

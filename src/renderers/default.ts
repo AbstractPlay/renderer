@@ -1,7 +1,7 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
+import { IRendererOptionsIn, RendererBase, type Poly } from "./_base";
 import { rotate, usePieceAt } from "../common/plotting";
 
 export interface IPiecesArea {
@@ -36,6 +36,7 @@ export class DefaultRenderer extends RendererBase {
         this.loadLegend();
 
         let gridPoints: GridPoints;
+        let polys: Poly[][] = [];
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ DefaultRenderer.rendererName }' renderer.`);
         }
@@ -77,6 +78,11 @@ export class DefaultRenderer extends RendererBase {
             case "hex-odd-f":
             case "hex-even-f":
                 gridPoints = this.rectOfHex();
+                break;
+            case "triangles-stacked":
+                const {points: pts, polys: lazoPolys} = this.stackingTriangles();
+                gridPoints = pts;
+                polys = lazoPolys;
                 break;
             case "circular-cobweb":
                 gridPoints = this.cobweb();
@@ -143,13 +149,18 @@ export class DefaultRenderer extends RendererBase {
                             let point: IPoint|undefined;
                             // handle pieces beyond the grid boundaries
                             if (row >= gridPoints.length || col >= gridPoints[row].length) {
-                                if (this.json.board.style !== "squares-stacked") {
-                                    continue;
-                                } else {
+                                if (this.json.board.style === "squares-stacked") {
                                     point = this.getStackedPoint(gridPoints, col, row);
                                     if (point === undefined) {
                                         continue;
                                     }
+                                } else if (this.json.board.style === "triangles-stacked") {
+                                    point = this.getTriStackedPoint(gridPoints, col, row, polys);
+                                    if (point === undefined) {
+                                        continue;
+                                    }
+                                } else {
+                                    continue;
                                 }
                             } else {
                                 point = gridPoints[row][col];
