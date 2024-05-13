@@ -206,6 +206,12 @@ export interface APRenderRep {
          */
         labelStyle?: "internal" | "external";
         /**
+         * A ham-fisted way to omit row and column labels you don't want displayed for some reason. Currently only used by the `triangles-stacked` renderer for certain board sizes.
+         *
+         * @minItems 1
+         */
+        skipLabels?: [string, ...string[]];
+        /**
          * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
          */
         tileWidth?: number;

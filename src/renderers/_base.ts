@@ -2716,7 +2716,7 @@ export abstract class RendererBase {
         if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
             customLabels = this.json.board.columnLabels as string[];
         }
-        const columnLabels = this.getLabels(customLabels, width);
+        const columnLabels = this.getLabels(customLabels, width * 2);
         if (this.options.rotate === 180) {
             columnLabels.reverse();
         }
@@ -2780,14 +2780,30 @@ export abstract class RendererBase {
 
         // Columns
         for (let col = 0; col < width; col++) {
+            let skipped: string[] = [];
+            if ( ("skipLabels" in this.json.board) && (this.json.board.skipLabels !== undefined) ) {
+                skipped = this.json.board.skipLabels as string[];
+            }
             const hex = polys[0][col] as IPolyPolygon;
             const {x: cx} = centroid(hex.points)!;
-            const pointTop = {x: cx - (cellsize * 1), y: minY - (cellsize * 0.5)};
-            const pointBottom = {x: cx - (cellsize * 1), y: maxY + (cellsize * 0.5)};
-            if (! hideHalf) {
-                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+            for (let inc = 0; inc < 2; inc++) {
+                const label = columnLabels[(col * 2) + inc]
+                let pointTop: IPoint;
+                let pointBottom: IPoint;
+                if (inc === 0) {
+                    pointTop = {x: hex.points[4].x, y: minY - (cellsize * 0.5)};
+                    pointBottom = {x: hex.points[4].x, y: maxY + (cellsize * 0.5)};
+                } else {
+                    pointTop = {x: cx, y: minY - (cellsize * 0.5)};
+                    pointBottom = {x: cx, y: maxY + (cellsize * 0.5)};
+                }
+                if (! skipped.includes(label)) {
+                    if (! hideHalf) {
+                        labels.text(label).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                    }
+                    labels.text(label).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+                }
             }
-            labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows
