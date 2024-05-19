@@ -414,6 +414,50 @@ sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
     return group;
 });
 
+const unlogit = (x: number) => {
+    return Math.log(x / (1 - x));
+}
+
+const logit = (x: number) => {
+    return 1 / (1 + Math.exp(-x));
+}
+
+const lighten = (rgb: [number, number, number], ds: number, dl: number) => {
+    const hsl = convert_rgb.hsl(rgb);
+    const l = 100 * logit(unlogit(hsl[2] / 100) + dl);
+    const s = 100 * logit(unlogit(hsl[1] / 100) + ds);
+    return convert_hsl.rgb([hsl[0], s, l]);
+}
+
+// orb with no highlights
+sheet.glyphs.set("orb", (canvas: SVGContainer, color:string) => {
+    const rgb = convert_hex.rgb(color);
+    let col = lighten(rgb, 3, 1);
+    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    col = lighten(rgb, 4, -1);
+    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    const group = canvas.symbol();
+    fnv.seed("aprender_orb4");
+    const colorhash = fnv.hash(color);
+    const radialGradient = group.gradient('radial', (add) => {
+        add.stop({offset: 0, color: color1});
+        add.stop({offset: 1, color: color2});
+    })
+    .attr({
+        cx: 273,
+        cy: 202,
+        r: 310,
+        fx: 315,
+        fy: 142,
+        gradientUnits: "userSpaceOnUse"
+    }).id('radialGradient-' + colorhash.hex());
+    group.circle(488)
+        .fill(radialGradient)
+        .center(250, 250);
+    group.viewbox(0, 0, 500, 500);
+    return group;
+});
+
 // Original "orb" tweaked abit.
 sheet.glyphs.set("orb0", (canvas: SVGContainer) => {
     const group = canvas.symbol();
@@ -438,21 +482,6 @@ sheet.glyphs.set("orb0", (canvas: SVGContainer) => {
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
-
-const unlogit = (x: number) => {
-    return Math.log(x / (1 - x));
-}
-
-const logit = (x: number) => {
-    return 1 / (1 + Math.exp(-x));
-}
-
-const lighten = (rgb: [number, number, number], ds: number, dl: number) => {
-    const hsl = convert_rgb.hsl(rgb);
-    const l = 100 * logit(unlogit(hsl[2] / 100) + dl);
-    const s = 100 * logit(unlogit(hsl[1] / 100) + ds);
-    return convert_hsl.rgb([hsl[0], s, l]);
-}
 
 // orb with three small highlights
 sheet.glyphs.set("orb1", (canvas: SVGContainer, color:string) => {
@@ -578,35 +607,6 @@ sheet.glyphs.set("orb3", (canvas: SVGContainer, color:string) => {
         .center(250, 250);
     group.path("m 246.84401,101.87487 c 49.7662,7.31974 95.67026,30.17926 123.93914,62.74526 -7.92756,17.26713 -28.73365,45.93875 -41.19813,60.50436 -25.77963,-20.97825 -70.89709,-42.49219 -107.21856,-54.81591 4.81312,-19.48619 15.36723,-49.03013 24.47755,-68.43371 z")
         .fill(color3);
-    group.viewbox(0, 0, 500, 500);
-    return group;
-});
-
-// orb with no highlights
-sheet.glyphs.set("orb", (canvas: SVGContainer, color:string) => {
-    const rgb = convert_hex.rgb(color);
-    let col = lighten(rgb, 3, 1);
-    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    col = lighten(rgb, 4, -1);
-    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    const group = canvas.symbol();
-    fnv.seed("aprender_orb4");
-    const colorhash = fnv.hash(color);
-    const radialGradient = group.gradient('radial', (add) => {
-        add.stop({offset: 0, color: color1});
-        add.stop({offset: 1, color: color2});
-    })
-    .attr({
-        cx: 273,
-        cy: 202,
-        r: 310,
-        fx: 315,
-        fy: 142,
-        gradientUnits: "userSpaceOnUse"
-    }).id('radialGradient-' + colorhash.hex());
-    group.circle(488)
-        .fill(radialGradient)
-        .center(250, 250);
     group.viewbox(0, 0, 500, 500);
     return group;
 });
