@@ -604,7 +604,7 @@ export abstract class RendererBase {
      * @param canvas - The canvas into which to load the glyph
      * @returns The {@link SVGSymbol} that was loaded
      */
-    protected loadGlyph(glyph: string, canvas?: Svg): SVGSymbol {
+    protected loadGlyph(glyph: string, player: (number | undefined), canvas?: Svg): SVGSymbol {
         if (canvas === undefined) {
             if (this.rootSvg === undefined) {
                 throw new Error("Object in an invalid state!");
@@ -623,7 +623,11 @@ export abstract class RendererBase {
             if (sheet !== undefined) {
                 const func = sheet.glyphs.get(glyph);
                 if (func !== undefined) {
-                    return func(canvas.defs());
+                    if (func.length === 1) {
+                        return (func as (svg: Svg) => SVGSymbol)(canvas.defs() as Svg);
+                    } else {
+                        return (func as (svg: Svg, color: string) => SVGSymbol)(canvas.defs() as Svg, player ? this.options.colours[player - 1] : "");
+                    }
                 }
             } else {
                 throw new Error("Could not load the glyph sheet '" + s + "'");
@@ -706,7 +710,7 @@ export abstract class RendererBase {
                 for (const g of glyphs) {
                     let got: SVGSymbol;
                     if ( ("name" in g) && (g.name !== undefined) ) {
-                        got = this.loadGlyph(g.name, nested);
+                        got = this.loadGlyph(g.name, g.player, nested);
                     } else if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;

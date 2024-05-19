@@ -1,6 +1,8 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import type { ISheet } from "./ISheet";
 import { Orientation, defineHex } from "honeycomb-grid";
+import { rgb as convert_rgb, hsl as convert_hsl, hex as convert_hex } from "color-convert";
+import fnv from "fnv-plus";
 
 const sheet: ISheet = {
     name: "core",
@@ -412,13 +414,14 @@ sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("orb", (canvas: SVGContainer) => {
+// Original "orb" tweaked abit.
+sheet.glyphs.set("orb0", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const gradient = group.gradient("radial", (add) => {
-        add.stop({offset: 0, color: "black"});
+        add.stop({offset: 0, color: "666"});
         add.stop({offset: 1, color: "white"});
     });
-    gradient.from(0.25, 0.25).to(0.5, 0.5).radius(0.5);
+    gradient.from(25, 25).to(40, 40).radius(60).attr({gradientUnits: "userSpaceOnUse"});
     const rect = group.rect(sheet.cellsize, sheet.cellsize).fill(gradient);
     const mask = group.mask().add(rect);
     const border = 0;
@@ -433,6 +436,178 @@ sheet.glyphs.set("orb", (canvas: SVGContainer) => {
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     circle.maskWith(mask);
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
+const unlogit = (x: number) => {
+    return Math.log(x / (1 - x));
+}
+
+const logit = (x: number) => {
+    return 1 / (1 + Math.exp(-x));
+}
+
+const lighten = (rgb: [number, number, number], ds: number, dl: number) => {
+    const hsl = convert_rgb.hsl(rgb);
+    const l = 100 * logit(unlogit(hsl[2] / 100) + dl);
+    const s = 100 * logit(unlogit(hsl[1] / 100) + ds);
+    return convert_hsl.rgb([hsl[0], s, l]);
+}
+
+// orb with three small highlights
+sheet.glyphs.set("orb1", (canvas: SVGContainer, color:string) => {
+    const rgb = convert_hex.rgb(color);
+    let col = lighten(rgb, 3, 1);
+    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    col = lighten(rgb, 4, -1);
+    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    const group = canvas.symbol();
+    fnv.seed("aprender_orb1");
+    const colorhash = fnv.hash(color);
+    const radialGradient = group.gradient('radial', (add) => {
+        add.stop({offset: 0, color: color1});
+        add.stop({offset: 1, color: color2});
+    })
+    .attr({
+        cx: 238,
+        cy: 234,
+        r: 319,
+        fx: 260,
+        fy: 57,
+        gradientUnits: "userSpaceOnUse"
+    }).id('radialGradient-' + colorhash.hex());
+    const radialGradient2 = group.gradient('radial', (add) => {
+        add.stop({offset: "0%", color: "white"});
+        add.stop({offset: "20%", color: "white"});
+        add.stop({offset: "100%", color: "white", opacity: 0});
+    })
+    .attr({
+        cx: "50%",
+        cy: "50%",
+        r: "50%",
+        fx: "50%",
+        fy: "50%"
+    }).id('radialGradient2-' + colorhash.hex());
+    const radialGradient3 = group.gradient('radial', (add) => {
+        add.stop({offset: "0%", color: "white"});
+        add.stop({offset: "40%", color: "white"});
+        add.stop({offset: "100%", color: "white", opacity: 0});
+    })
+    .attr({
+        cx: "50%",
+        cy: "50%",
+        r: "50%",
+        fx: "50%",
+        fy: "50%"
+    }).id('radialGradient3-' + colorhash.hex());
+    group.circle(500)
+        .fill(radialGradient)
+        .center(250, 250);
+    group.circle(60)
+        .fill(radialGradient2)
+        .center(260, 57);
+    group.circle(50)
+        .fill(radialGradient2)
+        .center(317, 234);
+    group.circle(40)
+        .fill(radialGradient3)
+        .center(212, 183);
+    group.viewbox(0, 0, 500, 500);
+    return group;
+});
+
+// orb with one big highlight
+sheet.glyphs.set("orb2", (canvas: SVGContainer, color:string) => {
+    const rgb = convert_hex.rgb(color);
+    let col = lighten(rgb, 3, 1);
+    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    col = lighten(rgb, 4, -1);
+    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    col = lighten(rgb, 3, 2.5);
+    const color3 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    const group = canvas.symbol();
+    fnv.seed("aprender");
+    const colorhash = fnv.hash(color);
+    const radialGradient = group.gradient('radial', (add) => {
+        add.stop({offset: 0, color: color1});
+        add.stop({offset: 1, color: color2});
+    })
+    .attr({
+        cx: 250,
+        cy: 250,
+        r: 260,
+        fx: 250,
+        fy: 0,
+        gradientUnits: "userSpaceOnUse"
+    }).id('radialGradient-' + colorhash.hex());
+    group.circle(474)
+        .fill(radialGradient)
+        .center(250, 250).rotate(-15, 250, 250).scale(1.055, 250, 250);
+    group.path("m 250,29.76036708 C 208.03927425,29.76036708 149.00322961999998,46.34446681 138.92567018,90.91210835 129.79170578553774,131.3067349850691 214.44670241,137.34815697 250,137.34815697 285.55329759,137.34815697 370.2082942144622,131.3067349850691 361.07432982,90.91210835 350.99677038,46.34446681  291.96072575,29.76036708 250,29.76036708 Z")
+        .fill(color3).rotate(-15, 250, 250).scale(1.055, 250, 250);
+    group.viewbox(0, 0, 500, 500);
+    return group;
+});
+
+// orb with big "rectangular" highlight
+sheet.glyphs.set("orb3", (canvas: SVGContainer, color:string) => {
+    const rgb = convert_hex.rgb(color);
+    let col = lighten(rgb, 3, 1);
+    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    col = lighten(rgb, 4, -1);
+    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    col = lighten(rgb, 3, 2.5);
+    const color3 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    const group = canvas.symbol();
+    fnv.seed("aprender_orb3");
+    const colorhash = fnv.hash(color);
+    const radialGradient = group.gradient('radial', (add) => {
+        add.stop({offset: 0, color: color1});
+        add.stop({offset: 1, color: color2});
+    })
+    .attr({
+        cx: 273,
+        cy: 202,
+        r: 310,
+        fx: 315,
+        fy: 142,
+        gradientUnits: "userSpaceOnUse"
+    }).id('radialGradient-' + colorhash.hex());
+    group.circle(488)
+        .fill(radialGradient)
+        .center(250, 250);
+    group.path("m 246.84401,101.87487 c 49.7662,7.31974 95.67026,30.17926 123.93914,62.74526 -7.92756,17.26713 -28.73365,45.93875 -41.19813,60.50436 -25.77963,-20.97825 -70.89709,-42.49219 -107.21856,-54.81591 4.81312,-19.48619 15.36723,-49.03013 24.47755,-68.43371 z")
+        .fill(color3);
+    group.viewbox(0, 0, 500, 500);
+    return group;
+});
+
+// orb with no highlights
+sheet.glyphs.set("orb", (canvas: SVGContainer, color:string) => {
+    const rgb = convert_hex.rgb(color);
+    let col = lighten(rgb, 3, 1);
+    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    col = lighten(rgb, 4, -1);
+    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+    const group = canvas.symbol();
+    fnv.seed("aprender_orb4");
+    const colorhash = fnv.hash(color);
+    const radialGradient = group.gradient('radial', (add) => {
+        add.stop({offset: 0, color: color1});
+        add.stop({offset: 1, color: color2});
+    })
+    .attr({
+        cx: 273,
+        cy: 202,
+        r: 310,
+        fx: 315,
+        fy: 142,
+        gradientUnits: "userSpaceOnUse"
+    }).id('radialGradient-' + colorhash.hex());
+    group.circle(488)
+        .fill(radialGradient)
+        .center(250, 250);
+    group.viewbox(0, 0, 500, 500);
     return group;
 });
 
