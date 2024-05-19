@@ -26,5 +26,5 @@ export interface ISheet {
      * and must return a Symbol.
      *
      */
-    readonly glyphs: Map<string, (svg: SVGContainer) => SVGSymbol>;
+    readonly glyphs: Map<string, ((svg: SVGContainer) => SVGSymbol) | ((svg: SVGContainer, color: string) => SVGSymbol)>;
 }
