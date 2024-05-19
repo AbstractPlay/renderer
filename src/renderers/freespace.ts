@@ -32,7 +32,7 @@ interface IPiece {
     /**
      * Expressed in degrees, relative to 0&deg; being towards the top of the display and positive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
      */
-    orientation: number;
+    orientation?: number;
 };
 
 /**
@@ -108,7 +108,7 @@ export class FreespaceRenderer extends RendererBase {
                     throw new Error(`Could not find the requested piece (${pc.glyph}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
                 const use = usePieceAt(field, piece, this.cellsize, pc.x, pc.y, 1);
-                rotate(use, pc.orientation, pc.x, pc.y);
+                rotate(use, pc.orientation || 0, pc.x, pc.y);
                 if (this.options.boardClick !== undefined) {
                     use.click((e : Event) => {this.options.boardClick!(pc.x, pc.y, pcid || pc.glyph); e.stopPropagation(); });
                 }

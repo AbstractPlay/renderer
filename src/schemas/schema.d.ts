@@ -1244,7 +1244,7 @@ export interface Freepiece {
   /**
    * Expressed in degrees, relative to 0&deg; being towards the top of the display and postive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
    */
-  orientation: number;
+  orientation?: number;
 }
 /**
  * Schema for the `multicell-square` renderer. This deforms glyphs from the legend into rectangular areas anchored from the top-left cell (the x,y coordinates closest to 0,0) and in a given width and height. Pieces can be overlapped, with an order decided by z index (higher z indices will overlap lower ones).
