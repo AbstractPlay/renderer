@@ -5245,15 +5245,17 @@ export abstract class RendererBase {
                 if (marker.type === "dots") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        colour = marker.colour as string;
-                        if (/^_context_/.test(colour)) {
-                            const [,,prop] = colour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                        if (typeof marker.colour === "number") {
+                            colour = this.options.colours[marker.colour - 1];
+                        } else {
+                            colour = marker.colour as string;
+                            if (/^_context_/.test(colour)) {
+                                const [,,prop] = colour.split("_");
+                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                                }
                             }
                         }
-                    } else if ( ("player" in marker) && (marker.player !== undefined) ) {
-                        colour = this.options.colours[(marker.player as number) - 1];
                     }
                     let opacity = baseOpacity;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
