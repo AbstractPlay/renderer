@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Container, Element, Use } from "@svgdotjs/svg.js";
+import { IPoint } from "../grids";
 
 /**
  * Ensures a degree measurement lies [0, 360)
@@ -63,6 +64,35 @@ export const projectPoint = (x: number, y: number, dist: number, deg: number): [
     }
     newx = truncNum(newx); newy = truncNum(newy);
     return [newx, newy];
+}
+
+/**
+ * Given a starting x,y coordinate, a distance, and a facing, return a new x,y coordinate.
+ * "Facing" is table facing, meaning 0 is due north and increases clockwise.
+ * This is tailored for ellipses. x and y are taken as the centre of the ellipse.
+ */
+export const projectPointEllipse = (cx: number, cy: number, rx: number, ry: number, deg: number): [number,number] => {
+    deg = normDeg(deg);
+    const facing = normDeg(toggleFacing(deg));
+    if (facing === 0) {
+        return [cx + rx, cy];
+    } else if (facing === 90) {
+        return [cx, cy + ry];
+    } else if (facing === 180) {
+        return [cx - rx, cy];
+    } else if (facing === 270) {
+        return [cx, cy - ry];
+    } else if (facing > 90 && facing < 270) {
+        const rad = Math.sqrt(ry**2 + (rx**2 * Math.tan(facing)**2));
+        const nx = (rx * ry) / rad * -1;
+        const ny = (rx * ry * Math.tan(facing)) / rad * -1;
+        return [nx + cx, ny + cy];
+    } else {
+        const rad = Math.sqrt(ry**2 + (rx**2 * Math.tan(facing)**2));
+        const nx = (rx * ry) / rad;
+        const ny = (rx * ry * Math.tan(facing)) / rad;
+        return [nx + cx, ny + cy];
+    }
 }
 
 export const ptDistance = (x1: number, y1: number, x2: number, y2: number): number => {
@@ -238,4 +268,13 @@ export const calcLazoOffset = (width: number, height: number, col: number, row: 
     }
 
     return {gridrow, gridcol, layer};
+}
+
+export const centroid = (pts: IPoint[]): IPoint|undefined => {
+    if (pts.length === 0) {
+        return undefined;
+    }
+    const cx = pts.reduce((prev, curr) => prev + curr.x, 0) / pts.length;
+    const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
+    return {x: cx, y: cy};
 }

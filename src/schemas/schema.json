@@ -295,7 +295,9 @@
                                 "conhex-cells",
                                 "cairo-collinear",
                                 "cairo-catalan",
-                                "triangles-stacked"
+                                "triangles-stacked",
+                                "conical-hex",
+                                "conical-hex-narrow"
                             ]
                         },
                         "labelColour": {
@@ -708,7 +710,7 @@
                                     {
                                         "properties": {
                                             "type": {
-                                                "description": "Only used for `circular-*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments",
+                                                "description": "Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments",
                                                 "enum": ["halo"]
                                             },
                                             "segments": {
