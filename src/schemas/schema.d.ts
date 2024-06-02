@@ -94,7 +94,9 @@ export interface APRenderRep {
           | "conhex-cells"
           | "cairo-collinear"
           | "cairo-catalan"
-          | "triangles-stacked";
+          | "triangles-stacked"
+          | "conical-hex"
+          | "conical-hex-narrow";
         /**
          * Pattern for hex colour strings
          */
@@ -394,7 +396,7 @@ export interface APRenderRep {
             }
           | {
               /**
-               * Only used for `circular-*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments
+               * Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments
                */
               type: "halo";
               /**

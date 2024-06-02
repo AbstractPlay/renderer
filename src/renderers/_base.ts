@@ -3,12 +3,12 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse } from "../common/plotting";
 import { glyph2uid, x2uid} from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 // import { customAlphabet } from 'nanoid'
@@ -2502,15 +2502,6 @@ export abstract class RendererBase {
                 });
             });
 
-            const centroid = (pts: IPoint[]): IPoint|undefined => {
-                if (pts.length === 0) {
-                    return undefined;
-                }
-                const cx = pts.reduce((prev, curr) => prev + curr.x, 0) / pts.length;
-                const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
-                return {x: cx, y: cy};
-            }
-
             // Columns
             // if flat, columns are straight lines
             // if pointy, place at minimum of first and second row centre points
@@ -2772,15 +2763,6 @@ export abstract class RendererBase {
                 maxY = Math.max(maxY, y);
             });
         });
-
-        const centroid = (pts: IPoint[]): IPoint|undefined => {
-            if (pts.length === 0) {
-                return undefined;
-            }
-            const cx = pts.reduce((prev, curr) => prev + curr.x, 0) / pts.length;
-            const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
-            return {x: cx, y: cy};
-        }
 
         // Columns
         for (let col = 0; col < width; col++) {
@@ -3834,6 +3816,89 @@ export abstract class RendererBase {
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generates a conical projection of a slanted hex board.
+     * Only one of `width` or `height` is required. If only width is given, then height is assumed
+     * to be width + 1 (you lose one column of cells in the projection).
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected conicalHex(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) || (this.json.board === null) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        let gridWidth: number|undefined;
+        let gridHeight: number|undefined;
+        if ( ("width" in this.json.board) && (this.json.board.width !== undefined)) {
+            gridWidth = this.json.board.width as number;
+        }
+        if ( ("height" in this.json.board) && (this.json.board.height !== undefined)) {
+            gridHeight = this.json.board.height as number;
+        }
+        if (gridHeight === undefined && gridWidth !== undefined) {
+            gridHeight = gridWidth + 1;
+            gridWidth++;
+        }
+        if (gridHeight === undefined) {
+            throw new Error(`One of 'width' or 'height' is required.`);
+        }
+
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        let narrow = false;
+        if ( ("style" in this.json.board) && (this.json.board.style !== undefined) && (this.json.board.style === "conical-hex-narrow") ) {
+            narrow = true;
+        }
+        const grid = conicalHex({gridHeight, conicalNarrow: narrow});
+        const polys = genConicalHexPolys({height: gridHeight, narrow, scale: cellsize})
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("hexes");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
+
+        // No board labels
+
+        // Draw hexes
+        for (let iRow = 0; iRow < grid.length; iRow++) {
+            const row = polys[iRow];
+            for (let iCol = 0; iCol < row.length; iCol++) {
+                const p = row[iCol];
+                const c = gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
+                if (this.options.boardClick !== undefined) {
+                    // if (this.options.rotate === 180) {
+                    //     c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                    // } else {
+                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
+                    // }
+                }
+            }
+        }
+        // if (this.options.rotate === 180) {
+        //     grid = grid.map((r) => r.reverse()).reverse();
+        //     polys = polys.map((r) => r.reverse()).reverse();
+        // }
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates grids for sowing boards. Points are the centre of each square.
      *
      * @returns A map of row/column locations to x,y coordinates
@@ -4559,14 +4624,6 @@ export abstract class RendererBase {
 
         // build the list of polys
         // there are four different shapes
-        const centroid = (pts: IPoint[]): IPoint|undefined => {
-            if (pts.length === 0) {
-                return undefined;
-            }
-            const cx = pts.reduce((prev, curr) => prev + curr.x, 0) / pts.length;
-            const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
-            return {x: cx, y: cy};
-        }
         let polys: IPolyPolygon[][] = [];
         for (let ssRow = 0; ssRow < height; ssRow++) {
             const polyRow: IPolyPolygon[] = [];
@@ -5424,8 +5481,8 @@ export abstract class RendererBase {
                         line.attr({ 'pointer-events': 'none' });
                     }
                 } else if (marker.type === "halo") {
-                    if (! this.json.board.style.startsWith("circular")) {
-                        throw new Error("The `halo` marker only works with `circular-*` boards.");
+                    if (! this.json.board.style.startsWith("circular") && ! this.json.board.style.startsWith("conical-hex") ) {
+                        throw new Error("The `halo` marker only works with `circular-*` and `conical-hex*` boards.");
                     }
                     // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
                     let polys: Poly[][]|undefined;
@@ -5435,13 +5492,33 @@ export abstract class RendererBase {
                     if (polys === undefined) {
                         throw new Error("The `halo` marker requires that the polygons be passed.");
                     }
-                    let radius = 0;
-                    for (const poly of polys.flat()) {
-                        if (poly.type !== "circle") {
-                            for (const pt of poly.points) {
-                                radius = Math.max(radius, pt.x, pt.y);
+                    let rx = 0;
+                    let ry = 0;
+                    let cx = 0;
+                    let cy = 0;
+                    if (this.json.board.style.startsWith("circular")) {
+                        for (const poly of polys.flat()) {
+                            if (poly.type !== "circle") {
+                                for (const pt of poly.points) {
+                                    rx = Math.max(rx, pt.x, pt.y);
+                                    ry = rx;
+                                }
                             }
                         }
+                    } else {
+                        const allCoords: IPoint[] = (polys.flat() as IPolyPolygon[]).map(p => p.points).flat();
+                        const minx = Math.min(...allCoords.map(pt => pt.x));
+                        const maxx = Math.max(...allCoords.map(pt => pt.x));
+                        const miny = Math.min(...allCoords.map(pt => pt.y));
+                        const maxy = Math.max(...allCoords.map(pt => pt.y));
+                        const width = maxx - minx;
+                        const height = maxy - miny;
+                        rx = (width / 2) * 1.05;
+                        const dx = Math.abs(rx - (width / 2));
+                        cx = minx + rx - dx;
+                        ry = (height / 2) * 1.05;
+                        const dy = Math.abs(ry - (height / 2));
+                        cy = miny + ry - dy;
                     }
                     if (preGridLines) {
                         let fill: string|undefined;
@@ -5453,14 +5530,18 @@ export abstract class RendererBase {
                             }
                         }
                         if (fill !== undefined) {
-                            svgGroup.circle(radius * 2).fill(fill).center(0,0);
+                            if (this.json.board.style.startsWith("circular")) {
+                                svgGroup.circle(rx * 2).fill(fill).center(cx,cy);
+                            } else {
+                                svgGroup.ellipse(rx * 2, ry * 2).fill(fill).center(cx,cy);
+                            }
                         }
                     } else {
                         let width = baseStroke;
                         if ( ("width" in marker) && (marker.width !== undefined) ) {
                             width = marker.width as number;
                         }
-                        radius += width / 2;
+                        rx += width / 2;
                         let degStart = 0;
                         if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
                             degStart = this.json.board["circular-start"] as number;
@@ -5498,15 +5579,28 @@ export abstract class RendererBase {
                             if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
                                 stroke.dasharray = "4";
                             }
-                            // if there's only one segment, draw a full circle
+                            // if there's only one segment, draw a full circle/ellipse
                             if (phi === 360) {
-                                svgGroup.circle(radius * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                if (this.json.board.style.startsWith("circular")) {
+                                    svgGroup.circle(rx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                } else {
+                                    svgGroup.ellipse(rx * 2, ry * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                }
                             }
                             // otherwise, draw an arc
                             else {
-                                const [lx, ly] = projectPoint(0, 0, radius, degStart + (phi * i));
-                                const [rx, ry] = projectPoint(0, 0, radius, degStart + (phi * (i+1)));
-                                svgGroup.path(`M${lx},${ly} A ${radius} ${radius} 0 0 1 ${rx},${ry}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                let xleft: number;
+                                let yleft: number;
+                                let xright: number;
+                                let yright: number;
+                                if (this.json.board.style.startsWith("circular")) {
+                                    [xleft, yleft] = projectPoint(cx, cy, rx, degStart + (phi * i));
+                                    [xright, yright] = projectPoint(cx, cy, rx, degStart + (phi * (i+1)));
+                                } else {
+                                    [xleft, yleft] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * i));
+                                    [xright, yright] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * (i+1)));
+                                }
+                                svgGroup.path(`M${xleft},${yleft} A ${rx} ${ry} 0 0 1 ${xright},${yright}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
                             }
                         }
                     }

@@ -100,6 +100,10 @@ export interface IGeneratorArgs {
      * Only used by the cairo generator to determine starting orientation
      */
     readonly cairoStart?: PentagonOrientation;
+    /**
+     * Only used by the conicalHex generator to determine whether you want the narrow or wide variant.
+     */
+    readonly conicalNarrow?: boolean;
 }
 
 /**

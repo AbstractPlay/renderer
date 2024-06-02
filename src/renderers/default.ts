@@ -99,6 +99,10 @@ export class DefaultRenderer extends RendererBase {
             case "cairo-catalan":
                 gridPoints = this.cairoCatalan();
                 break;
+            case "conical-hex":
+            case "conical-hex-narrow":
+                gridPoints = this.conicalHex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }
