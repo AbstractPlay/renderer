@@ -46,20 +46,36 @@ export const genPolys = (opts: {height: number, scale: number, narrow: boolean})
         baseHex.push([rad * Math.cos(alpha), rad * Math.sin(alpha)])
     }
 
-    const hexes: Hex[][] = [];
+    let hexes: Hex[][] = [];
     for (let y = 0; y < opts.height; y++) {
         const row: Hex[] = [];
-        for (let x = 1; x < opts.height; x++) {
+        for (let x = 0; x < opts.height; x++) {
             const yshift = opts.narrow ? 0.5 : -0.5;
             const dx = x + yshift * y;
             const dy = s32 * y;
             const hex: Vertex[] = [];
-            for (let i = 0; i < 6; i++) {
-                hex.push([baseHex[i][0] + dx, baseHex[i][1] + dy]);
+            if (opts.narrow) {
+                for (let i = 0; i < 6; i++) {
+                    hex.push([baseHex[i][0] + dx, baseHex[i][1] + dy]);
+                }
+            } else {
+                for (let i = 0; i < 6; i++) {
+                    hex.push([baseHex[i][0] + dx * -1, baseHex[i][1] + dy]);
+                }
             }
             row.push(hex);
         }
+        if (! opts.narrow) {
+            row.reverse();
+        }
         hexes.push(row);
+    }
+    if (opts.narrow) {
+        const ctr = centroid(hexes[hexes.length - 1][hexes[hexes.length - 1].length - 1].map(pt => { return {x: pt[0], y: pt[1]}; }))!;
+        hexes = hexes.map(row => row.map(hex => hex.map(pt => [pt[0] - ctr.x, pt[1] - ctr.y])));
+    } else {
+        const ctr = centroid(hexes[hexes.length - 1][0].map(pt => { return {x: pt[0], y: pt[1]}; }))!;
+        hexes = hexes.map(row => row.map(hex => hex.map(pt => [pt[0] - ctr.x, pt[1] - ctr.y])));
     }
 
     const toSegments = (hex: Hex): Vertex[] => {
@@ -76,7 +92,7 @@ export const genPolys = (opts: {height: number, scale: number, narrow: boolean})
         return coords;
     }
 
-    const fold = (p: [number,number], factor: number): [number,number] => {
+    const fold = (p: Vertex, factor: number): Vertex => {
         const d = Math.sqrt(p[0]**2 + p[1]**2);
         let a = Math.atan2(p[1], p[0]);
         a = a * factor;
@@ -100,8 +116,12 @@ export const genPolys = (opts: {height: number, scale: number, narrow: boolean})
                 const folded = fold(pt, f);
                 coords.push([truncate(opts.scale * folded[0]), truncate(opts.scale * folded[1])]);
             }
-            // rotate all the polygons 90 degrees
-            pRow.push({type: "poly", points: coords.map(v => { return {x: v[1], y: v[0] * -1}; })});
+            // rotate final boards 90 degrees
+            if (opts.narrow) {
+                pRow.push({type: "poly", points: coords.map(v => { return {x: v[1], y: v[0] * -1}; })});
+            } else {
+                pRow.push({type: "poly", points: coords.map(v => { return {x: v[1] * -1, y: v[0]}; })});
+            }
         }
         polys.push(pRow);
     }
