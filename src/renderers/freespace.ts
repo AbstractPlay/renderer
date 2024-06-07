@@ -110,7 +110,7 @@ export class FreespaceRenderer extends RendererBase {
                 const use = usePieceAt(field, piece, this.cellsize, pc.x, pc.y, 1);
                 rotate(use, pc.orientation || 0, pc.x, pc.y);
                 if (this.options.boardClick !== undefined) {
-                    use.click((e : Event) => {this.options.boardClick!(pc.x, pc.y, pcid || pc.glyph); e.stopPropagation(); });
+                    use.click((e : Event) => {this.options.boardClick!(pc.y, pc.x, pcid || pc.glyph); e.stopPropagation(); });
                 }
             }
         }
