@@ -103,6 +103,9 @@ export class DefaultRenderer extends RendererBase {
             case "conical-hex-narrow":
                 gridPoints = this.conicalHex();
                 break;
+            case "pyramid-hex":
+                gridPoints = this.pyramidHex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }

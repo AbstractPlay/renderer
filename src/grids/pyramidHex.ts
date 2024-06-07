@@ -11,20 +11,16 @@ type Hex = Vertex[];
  * @param args - Generator options
  * @returns Map of x,y coordinates to row/column locations
  */
-export const conicalHex = (args: IGeneratorArgs): GridPoints => {
+export const pyramidHex = (args: IGeneratorArgs): GridPoints => {
     let cellSize = 50;
     if (args.cellSize !== undefined) {
         cellSize = args.cellSize;
     }
-    let gridHeight = 8;
-    if (args.gridHeight !== undefined) {
-        gridHeight = args.gridHeight;
+    let gridWidth = 14;
+    if (args.gridWidthMin !== undefined) {
+        gridWidth = args.gridWidthMin;
     }
-    let narrow = false;
-    if (args.conicalNarrow !== undefined) {
-        narrow = args.conicalNarrow;
-    }
-    const polys = genPolys({height: gridHeight, scale: cellSize, narrow});
+    const polys = genPolys({size: gridWidth, scale: cellSize});
     const grid: GridPoints = [];
     for (const pRow of polys) {
         const row: IPoint[] = [];
@@ -36,7 +32,7 @@ export const conicalHex = (args: IGeneratorArgs): GridPoints => {
     return grid;
 }
 
-export const genPolys = (opts: {height: number, scale: number, narrow: boolean}): IPolyPolygon[][] => {
+export const genPolys = (opts: {size: number, scale: number}): IPolyPolygon[][] => {
     const baseHex: Hex = [];
     const s32 = Math.sqrt(3) / 2;
     const rad = 1 / Math.sqrt(3);
@@ -46,36 +42,22 @@ export const genPolys = (opts: {height: number, scale: number, narrow: boolean})
         baseHex.push([rad * Math.cos(alpha), rad * Math.sin(alpha)])
     }
 
-    let hexes: Hex[][] = [];
-    for (let y = 0; y < opts.height; y++) {
+    const hexes: Hex[][] = [];
+    for (let y = 0; y <= opts.size; y++) {
         const row: Hex[] = [];
-        for (let x = 0; x < opts.height; x++) {
-            const yshift = opts.narrow ? 0.5 : -0.5;
-            const dx = x + yshift * y;
-            const dy = s32 * y;
-            const hex: Vertex[] = [];
-            if (opts.narrow) {
+        for (let x = opts.size * -1; x <= opts.size; x++) {
+            if (x - y >= opts.size * -1) {
+                const yshift = -0.5;
+                const dx = x + yshift * y;
+                const dy = s32 * y;
+                const hex: Vertex[] = [];
                 for (let i = 0; i < 6; i++) {
                     hex.push([baseHex[i][0] + dx, baseHex[i][1] + dy]);
                 }
-            } else {
-                for (let i = 0; i < 6; i++) {
-                    hex.push([baseHex[i][0] + dx * -1, baseHex[i][1] + dy]);
-                }
+                row.push(hex);
             }
-            row.push(hex);
-        }
-        if (! opts.narrow) {
-            row.reverse();
         }
         hexes.push(row);
-    }
-    if (opts.narrow) {
-        const ctr = centroid(hexes[hexes.length - 1][hexes[hexes.length - 1].length - 1].map(pt => { return {x: pt[0], y: pt[1]}; }))!;
-        hexes = hexes.map(row => row.map(hex => hex.map(pt => [pt[0] - ctr.x, pt[1] - ctr.y])));
-    } else {
-        const ctr = centroid(hexes[hexes.length - 1][0].map(pt => { return {x: pt[0], y: pt[1]}; }))!;
-        hexes = hexes.map(row => row.map(hex => hex.map(pt => [pt[0] - ctr.x, pt[1] - ctr.y])));
     }
 
     const toSegments = (hex: Hex): Vertex[] => {
@@ -93,6 +75,7 @@ export const genPolys = (opts: {height: number, scale: number, narrow: boolean})
     }
 
     const fold = (p: Vertex, factor: number): Vertex => {
+        // return p;
         const d = Math.sqrt(p[0]**2 + p[1]**2);
         let a = Math.atan2(p[1], p[0]);
         a = a * factor;
@@ -106,7 +89,7 @@ export const genPolys = (opts: {height: number, scale: number, narrow: boolean})
         return Math.round(n * 100) / 100;
     }
 
-    const f = opts.narrow ? 6 : 3;
+    const f = 2;
     const polys: IPolyPolygon[][] = [];
     for (const row of hexes) {
         const pRow: IPolyPolygon[] = [];
@@ -116,12 +99,7 @@ export const genPolys = (opts: {height: number, scale: number, narrow: boolean})
                 const folded = fold(pt, f);
                 coords.push([truncate(opts.scale * folded[0]), truncate(opts.scale * folded[1])]);
             }
-            // rotate final boards 90 degrees
-            if (opts.narrow) {
-                pRow.push({type: "poly", points: coords.map(v => { return {x: v[1], y: v[0] * -1}; })});
-            } else {
-                pRow.push({type: "poly", points: coords.map(v => { return {x: v[1] * -1, y: v[0]}; })});
-            }
+            pRow.push({type: "poly", points: coords.map(v => { return {x: v[0], y: v[1]}; })});
         }
         polys.push(pRow);
     }

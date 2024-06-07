@@ -177,6 +177,11 @@
                     "description": "This is a projection of a slanted hex board rolled into a cone. Provide a height, and the width will automatically be one less the height. Adjacency is the same as a slanted hex board but where the right-most column wraps around to the first.",
                     "render": `{\"board\":{\"style\":\"conical-hex\",\"height\":14,\"markers\":[{\"type\":\"halo\",\"width\":10,\"segments\":[{\"colour\":1},{\"colour\":2}]},{\"type\":\"flood\",\"colour\":1,\"opacity\":1,\"points\":[{\"col\":0,\"row\":10},{\"col\":3,\"row\":9},{\"col\":3,\"row\":6},{\"col\":7,\"row\":4},{\"col\":10,\"row\":9}]},{\"type\":\"flood\",\"colour\":2,\"opacity\":1,\"points\":[{\"col\":4,\"row\":0},{\"col\":10,\"row\":1},{\"col\":1,\"row\":4},{\"col\":12,\"row\":1},{\"col\":7,\"row\":11}]}]},\"legend\":{},\"pieces\":null}`
                 },
+                "board-pyramidHex": {
+                    "name": "Boards: Pyramid Hex",
+                    "description": "The bottom half of a hexhex board folded so the left half of the top (longest) row overlaps with the right half, creating a three-sided board.",
+                    "render": `{\"board\":{\"style\":\"pyramid-hex\",\"minWidth\":14,\"markers\":[{\"type\":\"flood\",\"colour\":1,\"opacity\":1,\"points\":[{\"row\":3,\"col\":23},{\"row\":6,\"col\":19},{\"row\":5,\"col\":15}]},{\"type\":\"flood\",\"colour\":2,\"opacity\":1,\"points\":[{\"row\":2,\"col\":8},{\"row\":13,\"col\":2},{\"row\":4,\"col\":4}]}]},\"legend\":{},\"pieces\":null}`
+                },
                 "board-circular": {
                     "name": "Boards: Circular (Cobweb)",
                     "description": "We only have one type of circular board currently: the cobweb style. This render is quite comprehensive, showing the \"flood\" and \"halo\" markers as well. The \"pieces\" property can be difficult at first. It starts with the outermost ring and works inward, starting from column \"a\" through to the end. The center is a single cell in a row all by itself, at the very end.",
