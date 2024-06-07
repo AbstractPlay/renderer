@@ -96,7 +96,8 @@ export interface APRenderRep {
           | "cairo-catalan"
           | "triangles-stacked"
           | "conical-hex"
-          | "conical-hex-narrow";
+          | "conical-hex-narrow"
+          | "pyramid-hex";
         /**
          * Pattern for hex colour strings
          */

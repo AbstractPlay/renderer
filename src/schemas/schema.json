@@ -297,7 +297,8 @@
                                 "cairo-catalan",
                                 "triangles-stacked",
                                 "conical-hex",
-                                "conical-hex-narrow"
+                                "conical-hex-narrow",
+                                "pyramid-hex"
                             ]
                         },
                         "labelColour": {

@@ -3,7 +3,7 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint } from "../grids/_base";
 import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
@@ -3866,6 +3866,76 @@ export abstract class RendererBase {
         }
         const grid = conicalHex({gridHeight, conicalNarrow: narrow});
         const polys = genConicalHexPolys({height: gridHeight, narrow, scale: cellsize})
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("hexes");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
+
+        // No board labels
+
+        // Draw hexes
+        for (let iRow = 0; iRow < grid.length; iRow++) {
+            const row = polys[iRow];
+            for (let iCol = 0; iCol < row.length; iCol++) {
+                const p = row[iCol];
+                const c = gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
+                if (this.options.boardClick !== undefined) {
+                    // if (this.options.rotate === 180) {
+                    //     c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
+                    // } else {
+                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
+                    // }
+                }
+            }
+        }
+        // if (this.options.rotate === 180) {
+        //     grid = grid.map((r) => r.reverse()).reverse();
+        //     polys = polys.map((r) => r.reverse()).reverse();
+        // }
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generates a pyramidal projection of the bottom half of a hexhex board.
+     * Only `minWidth` is required, which defines the length of each side of the hex.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected pyramidHex(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) || (this.json.board === null) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        let gridWidth: number|undefined;
+        if ( ("minWidth" in this.json.board) && (this.json.board.minWidth !== undefined)) {
+            gridWidth = this.json.board.minWidth as number;
+        }
+        if (gridWidth === undefined) {
+            throw new Error(`The property 'minWidth' is required.`);
+        }
+
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        const grid = pyramidHex({gridWidthMin: gridWidth});
+        const polys = genPyramidHexPolys({size: gridWidth, scale: cellsize})
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
