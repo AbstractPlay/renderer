@@ -181,7 +181,15 @@ export class ConhexRenderer extends RendererBase {
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
-            const labels = board.group().id("labels");
+            let labelColour = this.options.colourContext.labels;
+            if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+                labelColour = this.json.board.labelColour;
+            }
+            let labelOpacity = 1;
+            if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+                labelOpacity = this.json.board.labelOpacity;
+            }
+                const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
                 customLabels = this.json.board.columnLabels;
@@ -197,8 +205,8 @@ export class ConhexRenderer extends RendererBase {
             for (let col = 0; col < boardsize; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[boardsize - 1][col].x, y: grid[boardsize - 1][col].y + cellsize};
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
-                labels.text(columnLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
             }
 
             // Rows (numbers)
@@ -206,8 +214,8 @@ export class ConhexRenderer extends RendererBase {
             for (let row = 0; row < boardsize; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][boardsize - 1].x + cellsize, y: grid[row][boardsize - 1].y};
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
-                labels.text(rowLabels[row]).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
             }
         }
 
@@ -267,7 +275,7 @@ export class ConhexRenderer extends RendererBase {
                 const poly = dots[row][col];
                 if (poly === null) { continue; }
                 if (poly !== null) {
-                    let fill = "white";
+                    let fill = this.options.colourContext.background;
                     if (row < pieces.length) {
                         if (col < pieces[row].length) {
                             const num = parseInt(pieces[row][col][0], 10);
@@ -276,7 +284,7 @@ export class ConhexRenderer extends RendererBase {
                             }
                         }
                     }
-                    const p = board.circle(poly.r * 2).center(poly.cx, poly.cy).fill({color: fill}).stroke({width: 2, color: "black"});
+                    const p = board.circle(poly.r * 2).center(poly.cx, poly.cy).fill({color: fill}).stroke({width: 2, color: baseColour});
                     if (this.options.boardClick !== undefined) {
                         p.click(() => this.options.boardClick!(row, col, "dot"))
                     }
