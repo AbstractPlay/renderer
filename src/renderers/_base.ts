@@ -7044,8 +7044,13 @@ export abstract class RendererBase {
             if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
                 bgcolour = this.json.board.backFill as string;
             }
+            let bgopacity = 1;
+            if ( ("backFillOpacity" in this.json.board) && (this.json.board.backFillOpacity !== undefined) && (this.json.board.backFillOpacity !== null) ) {
+                bgopacity = this.json.board.backFillOpacity as number;
+            }
+
             const bbox = this.rootSvg.bbox();
-            this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill(bgcolour).back();
+            this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
         }
     }
 

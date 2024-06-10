@@ -72,8 +72,12 @@ export class FreespaceRenderer extends RendererBase {
             }
         }
         let backFill = "#fff";
+        let backFillOpacity = 1;
         if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) ) {
             backFill = this.json.board.backFill as string;
+        }
+        if ( ("backFillOpacity" in this.json.board) && (this.json.board.backFillOpacity !== undefined) ) {
+            backFillOpacity = this.json.board.backFillOpacity as number;
         }
         const borderBuffer = 5;
 
@@ -82,7 +86,7 @@ export class FreespaceRenderer extends RendererBase {
 
         // clickable background field
         const field = this.rootSvg.nested().id("pieces").viewbox(ox - borderBuffer, oy - borderBuffer, width + (borderBuffer*2), height + (borderBuffer*2)).move(ox, oy);
-        field.rect(width, height).id("aprender-backfill").move(ox, oy).fill(backFill).back();
+        field.rect(width, height).id("aprender-backfill").move(ox, oy).fill({color: backFill, opacity: backFillOpacity}).back();
         if (this.options.boardClick !== undefined) {
             const originX = field.x() as number;
             const originY = field.y() as number;
