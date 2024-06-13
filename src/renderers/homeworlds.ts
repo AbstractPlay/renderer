@@ -109,9 +109,9 @@ export class HomeworldsRenderer extends RendererBase {
 
         // Generate each system and add to svg (no more defs because Firefox)
         // Take this opportunity to calculate min/max dimensions for plotting
-        let minHeight = 0;
-        let maxWidth = 0;
         // Home systems first
+        let minHomeHeight = 0;
+        let maxHomeWidth = 0;
         sysHome.forEach((sys) => {
             let bordercolour: string | undefined;
             if (sys.highlight !== undefined) {
@@ -125,21 +125,23 @@ export class HomeworldsRenderer extends RendererBase {
 
             const svg = this.genSystem(`_sysHome_${sys.seat}`, sys, orientation, bordercolour);
             if (orientation === "V") {
-                minHeight = Math.max(minHeight, svg.height() as number);
+                minHomeHeight = Math.max(minHomeHeight, svg.height() as number);
             } else {
-                maxWidth = Math.max(maxWidth, svg.width() as number);
+                maxHomeWidth = Math.max(maxHomeWidth, svg.width() as number);
             }
         });
 
         // Peripheral systems
+        const maxPeriphWidths: [number,number,number] = [0,0,0];
         sysPeriph.forEach((sys) => {
+            const size = parseInt(sys.stars[0][1], 10);
             let bordercolour: string | undefined;
             if (sys.highlight !== undefined) {
                 bordercolour = this.options.colours[sys.highlight - 1];
             }
 
             const svg = this.genSystem(`_sysPeriph_${sys.name}`, sys, "H", bordercolour);
-            maxWidth = Math.max(maxWidth, svg.width() as number);
+            maxPeriphWidths[size-1] = Math.max(maxPeriphWidths[size-1], svg.width() as number);
         });
 
         // Now plot those systems on the game board
@@ -147,39 +149,51 @@ export class HomeworldsRenderer extends RendererBase {
         const sysSort = (a: ISystem, b: ISystem): number => {
             const aSize = parseInt(a.stars[0][1], 10);
             const bSize = parseInt(b.stars[0][1], 10);
-            if (aSize === bSize) {
-                return a.name.localeCompare(b.name);
-            } else {
-                if (aSize < bSize) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            }
+            return aSize - bSize;
+            // if (aSize === bSize) {
+            //     return a.name.localeCompare(b.name);
+            // } else {
+            //     if (aSize < bSize) {
+            //         return -1;
+            //     } else {
+            //         return 1;
+            //     }
+            // }
         }
+        // plot into three columns, one for each size
         const vbuffer = 12.5;
+        const hbuffer = 12.5;
         let yPlace = 0;
-        for (const sys of [...sysPeriph].sort(sysSort)) {
-            const id = `#_sysPeriph_${sys.name}`;
-            const system = this.rootSvg.findOne(id) as Svg;
-            if ( (system === null) || (system === undefined) ) {
-                throw new Error(`Could not find the requested system (${id}). This should never happen`);
+        let xPlace = 0;
+        let maxColumnHeight = 0;
+        for (const starSize of [1,2,3]) {
+            yPlace = 0;
+            const maxWidth = maxPeriphWidths[starSize - 1];
+            const systems = [...sysPeriph.filter(s => parseInt(s.stars[0][1], 10) === starSize)].sort(sysSort);
+            for (const sys of systems) {
+                const id = `#_sysPeriph_${sys.name}`;
+                const system = this.rootSvg.findOne(id) as Svg;
+                if ( (system === null) || (system === undefined) ) {
+                    throw new Error(`Could not find the requested system (${id}). This should never happen`);
+                }
+                const width = system.width() as number;
+                system.dmove(xPlace + ((maxWidth - width) / 2), yPlace);
+                yPlace += system.height() as number + vbuffer;
             }
-            const width = system.width() as number;
-            system.dmove((maxWidth - width) / 2, yPlace);
-            yPlace += system.height() as number + vbuffer;
+            maxColumnHeight = Math.max(maxColumnHeight, yPlace);
+            if (systems.length > 0) {
+                xPlace += maxPeriphWidths[starSize - 1] + hbuffer;
+            }
         }
-
-        // shift yPlace if one of the E/W home systems is taller
-        if (minHeight > yPlace) {
-            yPlace = minHeight;
-        }
+        yPlace = maxColumnHeight;
 
         // Place home systems
         let minx = 0;
-        let maxx = maxWidth;
+        let maxx = Math.max(maxHomeWidth, xPlace);
+        const periphWidth = maxx;
         let miny = 0;
-        let maxy = yPlace;
+        let maxy = Math.max(minHomeHeight, yPlace);
+        const periphHeight = maxy;
         sysHome.forEach((sys) => {
             const id = `#_sysHome_${sys.seat}`;
             const system = this.rootSvg!.findOne(id) as Svg;
@@ -194,24 +208,24 @@ export class HomeworldsRenderer extends RendererBase {
             const seat = HomeworldsRenderer.effectiveSeat(sys.seat!, this.options.rotate);
             switch (seat) {
                 case "N":
-                    x = (maxWidth - width) / 2;
-                    y = (vbuffer + height) * -1;
+                    x = (periphWidth / 2) - (width / 2);
+                    y = miny - (vbuffer + height);
                     miny = y;
                     break;
                 case "E":
-                    x = maxWidth + vbuffer;
+                    x = periphWidth + hbuffer;
                     maxx = x + width;
-                    y = (yPlace - height) / 2;
+                    y = (periphHeight / 2) - (height / 2);
                     break;
                 case "S":
-                    x = (maxWidth - width) / 2;
-                    y = yPlace + vbuffer;
+                    x = (periphWidth / 2) - (width / 2);
+                    y = periphHeight + vbuffer;
                     maxy = y + height;
                     break;
                 case "W":
-                    x = (width + vbuffer) * -1;
+                    x = minx - (width + vbuffer);
                     minx = x;
-                    y = (yPlace - height) / 2;
+                    y = (periphHeight / 2) - (height / 2);
                     break;
                 default:
                     throw new Error(`Unrecognized seat (${sys.seat}). This should never happen.`);
