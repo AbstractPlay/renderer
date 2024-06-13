@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
@@ -2400,11 +2401,13 @@ export abstract class RendererBase {
         }
         let rowLabels = this.getLabels(customLabels, height);
         rowLabels.reverse();
+        console.log(`Normal row labels: ${JSON.stringify(rowLabels)}`);
         if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
             rowLabels.reverse();
         }
         if (this.options.rotate === 180) {
             rowLabels.reverse();
+            console.log(`Reversed row labels: ${JSON.stringify(rowLabels)}`);
         }
 
         let columnLabels = this.getRowLabels(this.json.board.rowLabels, width);
@@ -2441,13 +2444,8 @@ export abstract class RendererBase {
             const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
             if ( ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) && (labelStyle === "internal") ) {
                 const components: string[] = [];
-                if (this.options.rotate === 180) {
-                    components.push(columnLabels[width - hex.col - 1]);
-                    components.push(rowLabels[height - hex.row - 1]);
-                } else {
-                    components.push(columnLabels[hex.col]);
-                    components.push(rowLabels[hex.row]);
-                }
+                components.push(columnLabels[hex.col]);
+                components.push(rowLabels[hex.row]);
                 if (/^\d+$/.test(components[0])) {
                     components.reverse();
                 }
