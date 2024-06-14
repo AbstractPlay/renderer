@@ -3781,11 +3781,27 @@ export abstract class RendererBase {
         if (hexFill !== undefined) {
             symbolPoly.fill({color: hexFill, opacity: 1});
         }
+
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        // @ts-ignore
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            // @ts-ignore
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
         let polys: Poly[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
+                // don't draw "blocked" hexes
+                if (blocked !== undefined) {
+                    const found = blocked.find(e => e.row === iRow && e.col === iCol);
+                    if (found !== undefined) {
+                        continue;
+                    }
+                }
                 const p = row[iCol];
                 const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 const dx = p.x - triHeight; const dy = p.y - 25;
