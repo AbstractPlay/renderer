@@ -817,8 +817,16 @@ export abstract class RendererBase {
                     if (g.scale !== undefined) {
                         factor = g.scale;
                     }
-                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) && ( (this.json.board.style === "hex-of-hex") || (this.json.board.style === "hex-slanted") ) ) {
-                        factor *= 0.85;
+                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) ) {
+                        const style = this.json.board.style;
+                        // pieces in hexes need to be shrunk a little by default
+                        if ( (style === "hex-of-hex") || (style === "hex-slanted") ) {
+                            factor *= 0.85;
+                        }
+                        // but pieces on vertex boards need to be grown a little so they touch
+                        else if (style.startsWith("vertex")) {
+                            factor *= 1.16;
+                        }
                     }
                     if (factor !== 1) {
                         scale(use, factor, 0, 0);
@@ -1821,6 +1829,8 @@ export abstract class RendererBase {
                 let thisStroke = baseStroke;
                 if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
                     thisStroke = baseStroke * 3;
+                } else if (tiley === 0 && (row === 0 || row === height - 1)) {
+                    thisStroke = baseStroke * 2;
                 }
                 const x1 = grid[row][idxLeft].x;
                 const y1 = grid[row][idxLeft].y;
@@ -1864,6 +1874,8 @@ export abstract class RendererBase {
                 let thisStroke = baseStroke;
                 if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
                     thisStroke = baseStroke * 3;
+                } else if (tilex === 0 && (col === 0 || col === width - 1)) {
+                    thisStroke = baseStroke * 2;
                 }
                 const x1 = grid[idxTop][col].x;
                 const y1 = grid[idxTop][col].y;
@@ -2008,7 +2020,7 @@ export abstract class RendererBase {
             const pts = calcStarPoints(width);
             pts.forEach((p) => {
                 const pt = grid[p[0]][p[1]];
-                gridlines.circle(baseStroke * 10)
+                gridlines.circle(baseStroke * 7.5)
                     .fill(baseColour)
                     .opacity(baseOpacity)
                     .stroke({width: 0})
@@ -2017,7 +2029,7 @@ export abstract class RendererBase {
             // add ghost points
             const total = Math.ceil(width / 6)**2;
             for (let i = 0; i < total - pts.length; i++) {
-                gridlines.circle(baseStroke * 10)
+                gridlines.circle(baseStroke * 7.5)
                     .id(`aprender-ghost-star-${i+1}`)
                     .fill(baseColour)
                     .opacity(0)
@@ -3802,20 +3814,22 @@ export abstract class RendererBase {
             const row = grid[iRow];
             const rowPolys: Poly[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
-                // don't draw "blocked" hexes
+                // even blocked hexes need polys
+                const p = row[iCol];
+                const dx = p.x - triHeight; const dy = p.y - 25;
+                rowPolys.push({
+                    type: "poly",
+                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
+                });
+
+                // but don't draw "blocked" hexes
                 if (blocked !== undefined) {
                     const found = blocked.find(e => e.row === iRow && e.col === iCol);
                     if (found !== undefined) {
                         continue;
                     }
                 }
-                const p = row[iCol];
                 const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
-                const dx = p.x - triHeight; const dy = p.y - 25;
-                rowPolys.push({
-                    type: "poly",
-                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
-                });
                 if (this.options.boardClick !== undefined) {
                     if (this.options.rotate === 180) {
                         c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));

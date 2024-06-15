@@ -23,8 +23,10 @@ export const calcStarPoints = (size: number): Vertex[] => {
 
     // if odd size
     if (size % 2 !== 0) {
-        // always add centre
-        pts.push([Math.floor(size / 2), Math.floor(size / 2)])
+        // always add centre, except for size 7
+        if (size !== 7) {
+            pts.push([Math.floor(size / 2), Math.floor(size / 2)])
+        }
 
         const midpt = (p1: Vertex, p2: Vertex): Vertex => {
             return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
