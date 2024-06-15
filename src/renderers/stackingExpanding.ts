@@ -81,9 +81,6 @@ export class StackingExpandingRenderer extends RendererBase {
                 case "squares":
                     gridPoints = this.squares();
                     break;
-                case "go":
-                    this.json.board.width = 19;
-                    this.json.board.height = 19;
                 case "vertex":
                 case "vertex-cross":
                     gridPoints = this.vertex();

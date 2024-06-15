@@ -50,9 +50,6 @@ export class DefaultRenderer extends RendererBase {
             case "squares-stacked":
                 gridPoints = this.squaresStacked();
                 break;
-            case "go":
-                this.json.board.width = 19;
-                this.json.board.height = 19;
             case "vertex":
             case "vertex-cross":
             case "vertex-fanorona":
