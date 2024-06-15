@@ -58,11 +58,10 @@ Now for the game board itself. This is rendered first, followed by the pieces.
   squares-checkered:: Same as `squares` but alternating dark and light colours. The bottom-left cell is always dark.
   squares-beveled:: Same as `squares` but with very faint lines. Will eventually be updated with more attractive bevels.
   squares-stacked:: Designed for simulating sphere stacking games.
-  vertex:: Pieces are placed on the intersections of a grid of squares.
+  vertex:: Pieces are placed on the intersections of a grid of squares. For this style only (not its variants), star points are added at traditional locations for all sizes. This can be disabled using the `hide-star-points` option.
   vertex-cross:: Same as `vertex` but with crosses showing diagonal movement.
   vertex-fanorona:: Specialized connectivity for the traditional game Fanorona.
   pegboard:: Simulates a board with small holes for pegs, used for Twixt.
-  go:: A special case of `vertex`. Always 19x19 with small nodes at the traditional points.
   hex-slanted:: A rectangular grid of hexes slanted to the left so rows and columns align.
   hex-odd-p:: A pointy-topped hex grid where the odd-numbered rows are indented.
   hex-even-p:: A pointy-topped hex grid where the even-numbered rows are indented.

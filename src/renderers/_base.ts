@@ -10,6 +10,7 @@ import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse } from "../common/plotting";
+import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid} from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 // import { customAlphabet } from 'nanoid'
@@ -2002,13 +2003,9 @@ export abstract class RendererBase {
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
-        // If `go` board, add traditional nodes
-        if (style === "go") {
-            const pts: number[][] = [
-                [3, 3], [3, 9], [3, 15],
-                [9, 3], [9, 9], [9, 15],
-                [15, 3], [15, 9], [15, 15],
-            ];
+        // If square `vertex` board, consider adding star points
+        if (style === "vertex" && width === height && (this.json.options === undefined || !this.json.options.includes("hide-star-points"))) {
+            const pts = calcStarPoints(width);
             pts.forEach((p) => {
                 const pt = grid[p[0]][p[1]];
                 gridlines.circle(baseStroke * 10)
@@ -2017,6 +2014,16 @@ export abstract class RendererBase {
                     .stroke({width: 0})
                     .center(pt.x, pt.y);
             });
+            // add ghost points
+            const total = Math.ceil(width / 6)**2;
+            for (let i = 0; i < total - pts.length; i++) {
+                gridlines.circle(baseStroke * 10)
+                    .id(`aprender-ghost-star-${i+1}`)
+                    .fill(baseColour)
+                    .opacity(0)
+                    .stroke({width: 0})
+                    .center(0,0);
+            }
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
@@ -5757,7 +5764,7 @@ export abstract class RendererBase {
                         opacity = marker.opacity as number;
                     }
                     const style = this.json.board.style;
-                    if ( (style === "vertex") || (style === "vertex-cross") || (style === "go") || (style.startsWith("conhex")) ) {
+                    if ( (style === "vertex") || (style === "vertex-cross") || (style.startsWith("conhex")) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         switch (marker.edge) {
