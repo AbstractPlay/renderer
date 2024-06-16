@@ -9,6 +9,6 @@ import { cairo } from "./cairo";
 import { conicalHex, genPolys as genConicalHexPolys } from "./conicalHex";
 import { pyramidHex, genPolys as genPyramidHexPolys } from "./pyramidHex";
 
-import { GridPoints, IPoint } from "./_base";
+import { GridPoints, IPoint, Poly, IPolyCircle, IPolyPath, IPolyPolygon } from "./_base";
 
-export {GridPoints, IPoint, hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys};
+export {GridPoints, IPoint, hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, Poly, IPolyCircle, IPolyPath, IPolyPolygon};

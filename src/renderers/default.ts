@@ -1,7 +1,7 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint } from "../grids/_base";
+import { GridPoints, IPoint, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase, type Poly } from "./_base";
+import { IRendererOptionsIn, RendererBase} from "./_base";
 import { rotate, usePieceAt } from "../common/plotting";
 
 export interface IPiecesArea {
@@ -36,7 +36,7 @@ export class DefaultRenderer extends RendererBase {
         this.loadLegend();
 
         let gridPoints: GridPoints;
-        let polys: Poly[][] = [];
+        let polys: Poly[][]|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ DefaultRenderer.rendererName }' renderer.`);
         }
@@ -59,22 +59,22 @@ export class DefaultRenderer extends RendererBase {
                 gridPoints = this.snubSquare();
                 break;
             case "hex-of-hex":
-                gridPoints = this.hexOfHex();
+                [gridPoints, polys] = this.hexOfHex();
                 break;
             case "hex-of-tri":
                 gridPoints = this.hexOfTri();
                 break;
             case "hex-of-cir":
-                gridPoints = this.hexOfCir();
+                [gridPoints, polys] = this.hexOfCir();
                 break;
             case "hex-slanted":
-                gridPoints = this.hexSlanted();
+                [gridPoints, polys] = this.hexSlanted();
                 break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":
             case "hex-even-f":
-                gridPoints = this.rectOfHex();
+                [gridPoints, polys] = this.rectOfHex();
                 break;
             case "triangles-stacked":
                 const {points: pts, polys: lazoPolys} = this.stackingTriangles();
@@ -82,26 +82,26 @@ export class DefaultRenderer extends RendererBase {
                 polys = lazoPolys;
                 break;
             case "circular-cobweb":
-                gridPoints = this.cobweb();
+                [gridPoints, polys] = this.cobweb();
                 break;
             case "sowing":
                 gridPoints = this.sowing();
                 break;
             case "conhex-cells":
-                gridPoints = this.conhex();
+                [gridPoints, polys] = this.conhex();
                 break;
             case "cairo-collinear":
-                gridPoints = this.cairoCollinear();
+                [gridPoints, polys] = this.cairoCollinear();
                 break;
             case "cairo-catalan":
-                gridPoints = this.cairoCatalan();
+                [gridPoints, polys] = this.cairoCatalan();
                 break;
             case "conical-hex":
             case "conical-hex-narrow":
-                gridPoints = this.conicalHex();
+                [gridPoints, polys] = this.conicalHex();
                 break;
             case "pyramid-hex":
-                gridPoints = this.pyramidHex();
+                [gridPoints, polys] = this.pyramidHex();
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
@@ -158,7 +158,7 @@ export class DefaultRenderer extends RendererBase {
                                     if (point === undefined) {
                                         continue;
                                     }
-                                } else if (this.json.board.style === "triangles-stacked") {
+                                } else if (this.json.board.style === "triangles-stacked" && polys !== undefined) {
                                     point = this.getTriStackedPoint(gridPoints, col, row, polys);
                                     if (point === undefined) {
                                         continue;
@@ -195,7 +195,7 @@ export class DefaultRenderer extends RendererBase {
 
         // annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(gridPoints);
+            this.annotateBoard(gridPoints, polys);
         }
 
         // rotate gridpoints if necessary

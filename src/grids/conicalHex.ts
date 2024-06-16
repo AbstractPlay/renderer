@@ -1,5 +1,4 @@
-import { GridPoints, IGeneratorArgs, IPoint } from "./_base";
-import { IPolyPolygon } from "../renderers/_base";
+import { GridPoints, IGeneratorArgs, IPoint, IPolyPolygon } from "./_base";
 import { centroid } from "../common/plotting";
 
 type Vertex = [number,number];

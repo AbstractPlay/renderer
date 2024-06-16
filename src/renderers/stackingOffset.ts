@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { GridPoints } from "../grids/_base";
+import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
@@ -36,6 +36,7 @@ export class StackingOffsetRenderer extends RendererBase {
         // BOARD
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
+        let polys: Poly[][]|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
@@ -56,34 +57,34 @@ export class StackingOffsetRenderer extends RendererBase {
                 gridPoints = this.snubSquare();
                 break;
             case "hex-of-hex":
-                gridPoints = this.hexOfHex();
+                [gridPoints, polys] = this.hexOfHex();
                 break;
             case "hex-of-tri":
                 gridPoints = this.hexOfTri();
                 break;
             case "hex-of-cir":
-                gridPoints = this.hexOfCir();
+                [gridPoints, polys] = this.hexOfCir();
                 break;
             case "hex-slanted":
-                gridPoints = this.hexSlanted();
+                [gridPoints, polys] = this.hexSlanted();
                 break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":
             case "hex-even-f":
-                gridPoints = this.rectOfHex();
+                [gridPoints, polys] = this.rectOfHex();
                 break;
             case "circular-cobweb":
-                gridPoints = this.cobweb();
+                [gridPoints, polys] = this.cobweb();
                 break;
             case "conhex-cells":
-                gridPoints = this.conhex();
+                [gridPoints, polys] = this.conhex();
                 break;
             case "cairo-collinear":
-                gridPoints = this.cairoCollinear();
+                [gridPoints, polys] = this.cairoCollinear();
                 break;
             case "cairo-catalan":
-                gridPoints = this.cairoCatalan();
+                [gridPoints, polys] = this.cairoCatalan();
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
@@ -191,7 +192,7 @@ export class StackingOffsetRenderer extends RendererBase {
 
         // annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(gridPoints);
+            this.annotateBoard(gridPoints, polys);
         }
 
         // rotate gridpoints if necessary
