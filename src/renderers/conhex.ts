@@ -298,7 +298,7 @@ export class ConhexRenderer extends RendererBase {
 
         // annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(grid, cells);
+            this.annotateBoard(grid, dots);
         }
 
         // `pieces` area, if present

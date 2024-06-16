@@ -4938,7 +4938,7 @@ export abstract class RendererBase {
      *
      * @param grid - A map of row/column locations to x,y coordinates
      */
-    protected annotateBoard(grid: GridPoints, polys?: Poly[][]) {
+    protected annotateBoard(grid: GridPoints, polys?: (Poly|null)[][]) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -5104,6 +5104,7 @@ export abstract class RendererBase {
                         // outline the polygon if provided
                         if (polys !== undefined) {
                             const poly = polys[node.row][node.col];
+                            if (poly === null) { continue; }
                             if (poly.type === "circle") {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -5179,6 +5180,7 @@ export abstract class RendererBase {
                         // outline the polygon if provided
                         if (polys !== undefined) {
                             const poly = polys[node.row][node.col];
+                            if (poly === null) { continue; }
                             if (poly.type === "circle") {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
