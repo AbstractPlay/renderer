@@ -1,6 +1,5 @@
 import { projectPoint } from "../common/plotting";
-import { GridPoints, IGeneratorArgs, IPoint } from "./_base";
-import type { Poly } from "../renderers";
+import { GridPoints, IGeneratorArgs, IPoint, type Poly } from "./_base";
 
 export interface ICobwebArgs extends IGeneratorArgs {
     straight?: boolean;

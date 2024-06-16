@@ -1,4 +1,4 @@
-import { RendererBase, type Poly } from "./_base";
+import { RendererBase } from "./_base";
 import { DefaultRenderer } from "./default";
 import { EntropyRenderer } from "./entropy";
 import { HomeworldsOrigRenderer } from "./homeworldsOrig";
@@ -18,7 +18,7 @@ export {
     RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer,
     StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer,
     FreespaceRenderer, SowingNumeralsRenderer, SowingPipsRenderer, ConhexRenderer,
-    MulticellSquareRenderer, PolyominoRenderer, type Poly
+    MulticellSquareRenderer, PolyominoRenderer,
 };
 
 const renderers: (name: string) => RendererBase = (name) =>{

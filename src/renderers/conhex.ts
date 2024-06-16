@@ -1,9 +1,9 @@
 import { Svg } from "@svgdotjs/svg.js";
 // import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
-import { IPolyCircle, IRendererOptionsIn, RendererBase } from "./_base";
+import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
-import { IPoint, rectOfRects } from "../grids";
+import { IPoint, rectOfRects, IPolyCircle } from "../grids";
 
 export interface IPiecesArea {
     type: "pieces";
@@ -298,7 +298,7 @@ export class ConhexRenderer extends RendererBase {
 
         // annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(grid);
+            this.annotateBoard(grid, cells);
         }
 
         // `pieces` area, if present

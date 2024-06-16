@@ -1,5 +1,5 @@
 import { Svg, Use as SVGUse } from "@svgdotjs/svg.js";
-import { GridPoints } from "../grids/_base";
+import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
@@ -73,6 +73,7 @@ export class StackingExpandingRenderer extends RendererBase {
             // BOARD
             // Delegate to style-specific renderer
             let gridPoints: GridPoints;
+            let polys: Poly[][]|undefined;
             if (! ("style" in this.json.board)) {
                 throw new Error(`This 'board' schema cannot be handled by the '${ StackingExpandingRenderer.rendererName }' renderer.`);
             }
@@ -89,13 +90,13 @@ export class StackingExpandingRenderer extends RendererBase {
                     gridPoints = this.snubSquare();
                     break;
                 case "hex-of-hex":
-                    gridPoints = this.hexOfHex();
+                    [gridPoints, polys] = this.hexOfHex();
                     break;
                 case "hex-of-tri":
                     gridPoints = this.hexOfTri();
                     break;
                 case "hex-of-cir":
-                    gridPoints = this.hexOfCir();
+                    [gridPoints, polys] = this.hexOfCir();
                     break;
                 default:
                     throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingExpandingRenderer.rendererName }' renderer.`);
@@ -190,7 +191,7 @@ export class StackingExpandingRenderer extends RendererBase {
 
             // Annotations
             if (this.options.showAnnotations) {
-                this.annotateBoard(gridPoints);
+                this.annotateBoard(gridPoints, polys);
             }
 
             // Look for local stashes

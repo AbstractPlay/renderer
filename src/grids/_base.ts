@@ -111,6 +111,23 @@ export interface IGeneratorArgs {
  */
 export type GridPoints = Array<Array<IPoint>>;
 
+export interface IPolyPath {
+    type: "path";
+    path: string;
+    points: IPoint[];
+}
+export interface IPolyPolygon {
+    type: "poly";
+    points: IPoint[];
+}
+export interface IPolyCircle {
+    type: "circle";
+    cx: number;
+    cy: number;
+    r: number;
+}
+export type Poly = IPolyCircle|IPolyPath|IPolyPolygon;
+
 /**
  * The definition of a grid generator. It accepts a list of `IGeneratorArgs` and returns `GridPoints`
  * that maps rows and columns to x,y coordinates.
