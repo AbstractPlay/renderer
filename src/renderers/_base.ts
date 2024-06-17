@@ -5009,7 +5009,10 @@ export abstract class RendererBase {
                         linecap: "round", linejoin: "round"
                     };
                     if (style === "dashed") {
-                        stroke.dasharray = "4";
+                        stroke.dasharray = (4 * Math.ceil(strokeWidth / 0.03)).toString();
+                        if (note.dashed !== undefined && note.dashed !== null) {
+                            stroke.dasharray = (note.dashed as number[]).join(" ");
+                        }
                     }
                     const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
@@ -5069,6 +5072,9 @@ export abstract class RendererBase {
                     };
                     if (style === "dashed") {
                         stroke.dasharray = "4";
+                        if (note.dashed !== undefined && note.dashed !== null) {
+                            stroke.dasharray = (note.dashed as number[]).join(" ");
+                        }
                     }
                     const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                     line.marker("start", markerCircle);
@@ -5100,6 +5106,14 @@ export abstract class RendererBase {
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
+                    let strokeWeight = this.cellsize* 0.05;
+                    if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
+                        strokeWeight = this.json.board.strokeWeight;
+                    }
+                    let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    if (note.dashed !== undefined && note.dashed !== null) {
+                        dasharray = (note.dashed as number[]).join(" ");
+                    }
                     for (const node of (note.targets as ITarget[])) {
                         // outline the polygon if provided
                         if (polys !== undefined) {
@@ -5109,36 +5123,36 @@ export abstract class RendererBase {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                             } else if (poly.type === "path") {
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                             } else {
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                             }
                         }
@@ -5152,13 +5166,13 @@ export abstract class RendererBase {
                             notes.rect(this.cellsize, this.cellsize)
                                 .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                 .fill("none")
-                                .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' });
                             notes.rect(this.cellsize, this.cellsize)
                                 .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                 .fill("none")
-                                .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' });
                         }
@@ -5176,6 +5190,14 @@ export abstract class RendererBase {
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
+                    let strokeWeight = this.cellsize* 0.05;
+                    if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
+                        strokeWeight = this.json.board.strokeWeight;
+                    }
+                    let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    if (note.dashed !== undefined && note.dashed !== null) {
+                        dasharray = (note.dashed as number[]).join(" ");
+                    }
                     for (const node of (note.targets as ITarget[])) {
                         // outline the polygon if provided
                         if (polys !== undefined) {
@@ -5185,36 +5207,36 @@ export abstract class RendererBase {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                             } else if (poly.type === "path") {
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                             } else {
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                     .attr({ 'pointer-events': 'none' });
                             }
                         }
@@ -5228,13 +5250,13 @@ export abstract class RendererBase {
                             notes.rect(this.cellsize, this.cellsize)
                                 .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                 .fill("none")
-                                .stroke({color: this.options.colourContext.background, width: this.cellsize * 0.05, linecap: "round", linejoin: "round"})
+                                .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' });
                             notes.rect(this.cellsize, this.cellsize)
                                 .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                 .fill("none")
-                                .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                                .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' });
                         }
@@ -5252,6 +5274,10 @@ export abstract class RendererBase {
                     } else if ( ("player" in note) && (note.player !== undefined) ) {
                         colour = this.options.colours[(note.player as number) - 1];
                     }
+                    let dasharray = "4";
+                    if (note.dashed !== undefined && note.dashed !== null) {
+                        dasharray = (note.dashed as number[]).join(" ");
+                    }
                     const pts: IPoint[] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = this.getStackedPoint(grid, node.col, node.row);
@@ -5266,7 +5292,7 @@ export abstract class RendererBase {
                     notes.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
                          .addClass(`aprender-annotation-${x2uid(cloned)}`)
                          .fill("none")
-                         .stroke({color: colour, width: this.cellsize * 0.05, dasharray: "4", linecap: "round", linejoin: "round"})
+                         .stroke({color: colour, width: this.cellsize * 0.05, dasharray, linecap: "round", linejoin: "round"})
                          .attr({ 'pointer-events': 'none' });
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
                     let colour = this.options.colourContext.annotations;
@@ -5589,13 +5615,13 @@ export abstract class RendererBase {
                         const cell = polys[point.row][point.col];
                         switch (cell.type) {
                             case "circle":
-                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' }).back();
                                 break;
                             case "poly":
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' }).back();
                                 break;
                             case "path":
-                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' }).back();
                                 break;
                         }
                     }
