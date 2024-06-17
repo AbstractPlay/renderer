@@ -1920,6 +1920,13 @@
                             "glyph": {
                                 "description": "Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.",
                                 "type": "string"
+                            },
+                            "dashed": {
+                                "description": "A valid `dasharray` appropriate for the game's display.",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
                             }
                         },
                         "required": ["type", "targets"]

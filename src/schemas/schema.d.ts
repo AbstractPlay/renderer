@@ -1122,6 +1122,10 @@ export interface APRenderRep {
          * Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.
          */
         glyph?: string;
+        /**
+         * A valid `dasharray` appropriate for the game's display.
+         */
+        dashed?: number[];
         [k: string]: unknown;
       }
     | {
