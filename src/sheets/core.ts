@@ -1041,11 +1041,18 @@ sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
         .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
+    const filledsym = group.symbol();
+    filledsym.rect(50, 50)
+        .fill({color: "#fff", opacity: 0.25})
+        .stroke({width: 0, color: "black"})
+        .attr("data-context-fill", true)
+        .attr("data-playerfill", true);
+    filledsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
     group.use(rectsym).size(50, 50).dx(50);
     group.use(rectsym).size(50, 50).dy(50);
     group.use(rectsym).size(50, 50).dmove(50,50);
-    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 6.25);
+    group.use(filledsym).size(37.5, 37.5).dmove(6.25, 6.25)
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -1059,12 +1066,19 @@ sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
         .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
+    const filledsym = group.symbol();
+    filledsym.rect(50, 50)
+        .fill({color: "#fff", opacity: 0.25})
+        .stroke({width: 0, color: "black"})
+        .attr("data-context-fill", true)
+        .attr("data-playerfill", true);
+    filledsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
     group.use(rectsym).size(50, 50).dx(50);
     group.use(rectsym).size(50, 50).dy(50);
     group.use(rectsym).size(50, 50).dmove(50,50);
-    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 6.25);
-    group.use(rectsym).size(37.5, 37.5).dmove(56.25, 6.25);
+    group.use(filledsym).size(37.5, 37.5).dmove(6.25, 6.25);
+    group.use(filledsym).size(37.5, 37.5).dmove(56.25, 6.25);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
@@ -1078,13 +1092,20 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
         .attr("data-context-stroke", true)
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
+    const filledsym = group.symbol();
+    filledsym.rect(50, 50)
+        .fill({color: "#fff", opacity: 0.25})
+        .stroke({width: 0, color: "black"})
+        .attr("data-context-fill", true)
+        .attr("data-playerfill", true);
+    filledsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
     group.use(rectsym).size(50, 50).dx(50);
     group.use(rectsym).size(50, 50).dy(50);
     group.use(rectsym).size(50, 50).dmove(50,50);
-    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 6.25);
-    group.use(rectsym).size(37.5, 37.5).dmove(56.25, 6.25);
-    group.use(rectsym).size(37.5, 37.5).dmove(6.25, 56.25);
+    group.use(filledsym).size(37.5, 37.5).dmove(6.25, 6.25);
+    group.use(filledsym).size(37.5, 37.5).dmove(56.25, 6.25);
+    group.use(filledsym).size(37.5, 37.5).dmove(6.25, 56.25);
     group.viewbox(-1, -1, 102, 102);
     return group;
 });
