@@ -5343,6 +5343,7 @@ export abstract class RendererBase {
                             throw new Error(`Annotation - Enter: Could not find coordinates for row ${pt.row}, column ${pt.col}.`);
                         }
                         const use = usePieceAt(notes, piece, this.cellsize, point.x, point.y, 1);
+                        use.attr({ 'pointer-events': 'none' });
                         if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
                             rotate(use, this.options.rotate, point.x, point.y);
                         }
@@ -6435,6 +6436,7 @@ export abstract class RendererBase {
                     for (const pt of marker.points as ITarget[]) {
                         const point = grid[pt.row][pt.col];
                         const use = usePieceAt(svgGroup, piece, this.cellsize, point.x, point.y, 1);
+                        use.attr({ 'pointer-events': 'none' });
                         if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
                             rotate(use, this.options.rotate, point.x, point.y);
                         }
