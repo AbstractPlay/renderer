@@ -105,6 +105,7 @@ Boards can be marked up in various ways. Markers are added to the board layer it
 dots:: This adds small dots at the requested points and respects the `strokeWeight`, `strokeColour`, and `strokeOpacity` settings.
 shading:: The points outline a polygon which gets filled in with the colour and opacity requested. The colour can be specified by player number or by hex string.
 edge:: This is how you highlight edges. It only works on the `squares*` and `vertex*` boards. Specify an edge by compass direction and give a colour by player id or by hex string.
+flood:: This only works on boards composed of polygons. Fills the specified cell with the specified colour and opacity.
 fence:: This is a specialized marker used to draw thick lines between cells. Only works on the `squares*` boards.
 glyph:: This lets you incorporate glyphs from your legend directly into the board itself.
 

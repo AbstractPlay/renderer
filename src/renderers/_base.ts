@@ -12,7 +12,7 @@ import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidO
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
-import turfUnion from "@turf/union";
+import { union as turfUnion } from "@turf/union";
 import { polygon as turfPoly, featureCollection, type Feature, type Polygon } from "@turf/helpers";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
