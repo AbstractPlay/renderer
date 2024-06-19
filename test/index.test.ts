@@ -1,5 +1,3 @@
-/* tslint:disable:no-console */
-
 import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";

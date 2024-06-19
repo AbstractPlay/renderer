@@ -1,5 +1,3 @@
-/* tslint:disable:no-console */
-
 import "mocha";
 import { sheets } from "../../src/sheets";
 
