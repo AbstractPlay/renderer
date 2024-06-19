@@ -177,7 +177,8 @@ export class ConhexRenderer extends RendererBase {
 
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
+        const cells = this.getConhexCells(boardsize, cellsize);
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys: cells});
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -220,7 +221,6 @@ export class ConhexRenderer extends RendererBase {
         }
 
         // place cells and give them a base, empty fill
-        const cells = this.getConhexCells(boardsize, cellsize);
         for (let row = 0; row < cells.length; row++) {
             for (let col = 0; col < cells[row].length; col++) {
                 const poly = cells[row][col];
