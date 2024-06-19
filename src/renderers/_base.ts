@@ -8,10 +8,12 @@ import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../gri
 import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly } from "../common/plotting";
 import { calcStarPoints } from "../common/starPoints";
-import { glyph2uid, x2uid} from "../common/glyph2uid";
+import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
+import turfUnion from "@turf/union";
+import { polygon as turfPoly, featureCollection, type Feature, type Polygon } from "@turf/helpers";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -961,7 +963,7 @@ export abstract class RendererBase {
      *
      * @returns A map of row/column locations to x,y coordinates
      */
-    protected squares(): GridPoints {
+    protected squares(): [GridPoints, Poly[][]] {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -1556,7 +1558,7 @@ export abstract class RendererBase {
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded, polys});
 
-        return grid;
+        return [grid, polys];
     }
 
     /**
@@ -2365,20 +2367,12 @@ export abstract class RendererBase {
         const vby = Math.min(...corners.map(pt => pt.y));
         const vbWidth = Math.max(...corners.map(pt => pt.x)) - vbx;
         const vbHeight = Math.max(...corners.map(pt => pt.y)) - vby;
-        let hexFill: string|undefined;
-        if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            hexFill = this.json.board.hexFill;
-        }
         // const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol")
         //     .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
         //     .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
         const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(vbx, vby, vbWidth, vbHeight);
         const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
                             .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
-        if (hexFill !== undefined) {
-            symbolPoly.fill({color: hexFill, opacity: 1});
-        }
         if (! clickEdges) {
             symbolPoly.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round" });
         }
@@ -2678,20 +2672,12 @@ export abstract class RendererBase {
         const vby = Math.min(...corners.map(pt => pt.y));
         const vbWidth = Math.max(...corners.map(pt => pt.x)) - vbx;
         const vbHeight = Math.max(...corners.map(pt => pt.y)) - vby;
-        let hexFill: string|undefined;
-        if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            hexFill = this.json.board.hexFill;
-        }
         // const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol")
         //     .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
         //     .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
         const hexSymbol = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(vbx, vby, vbWidth, vbHeight);
         const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
                             .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
-        if (hexFill !== undefined) {
-            symbolPoly.fill({color: hexFill, opacity: 1});
-        }
         if (! clickEdges) {
             symbolPoly.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round" });
         }
@@ -3635,17 +3621,9 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
-        let hexFill: string|undefined;
-        if ( (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            hexFill = this.json.board.hexFill;
-        }
-        const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
-                           .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
-                           .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-        if (hexFill !== undefined) {
-            symbolPoly.fill({color: hexFill, opacity: 1});
-        }
+        hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+           .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
+           .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
             for (let iCol = 0; iCol < row.length; iCol++) {
@@ -7225,7 +7203,13 @@ export abstract class RendererBase {
         }
     }
 
-    protected backFill() {
+    protected backFill(polys?: Poly[][]) {
+        type BackFill = {
+            type?: "full"|"board";
+            colour: string;
+            opacity?: number;
+        };
+
         if (this.rootSvg === undefined) {
             throw new Error("Can't add a back fill unless the root SVG is initialized!");
         }
@@ -7233,17 +7217,46 @@ export abstract class RendererBase {
             throw new Error("Can't add a back fill unless the JSON is initialized!");
         }
         if (this.json.board !== null) {
-            let bgcolour = this.options.colourContext.background;
+            let backFillObj: BackFill|undefined;
             if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
-                bgcolour = this.json.board.backFill as string;
+                backFillObj = this.json.board.backFill as BackFill;
+            }
+            let bgcolour = this.options.colourContext.background;
+            if ( backFillObj !== undefined ) {
+                bgcolour = backFillObj.colour;
             }
             let bgopacity = 1;
-            if ( ("backFillOpacity" in this.json.board) && (this.json.board.backFillOpacity !== undefined) && (this.json.board.backFillOpacity !== null) ) {
-                bgopacity = this.json.board.backFillOpacity as number;
+            if ( backFillObj !== undefined && backFillObj.opacity !== undefined ) {
+                bgopacity = backFillObj.opacity;
+            }
+            let bgtype: "full"|"board" = "full";
+            if (backFillObj !== undefined && backFillObj.type !== undefined) {
+                bgtype = backFillObj.type;
             }
 
-            const bbox = this.rootSvg.bbox();
-            this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
+            if (bgtype === "board" && polys === undefined) {
+                throw new Error(`We can only do a "board" backfill if the board was built with polygons.`);
+            }
+
+            if (bgtype === "full") {
+                const bbox = this.rootSvg.bbox();
+                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
+            } else {
+                const turfed = polys!.flat().map(p => {
+                    let pts: [number,number][];
+                    if (p.type === "circle") {
+                        pts = circle2poly(p.cx, p.cy, p.r);
+                    } else {
+                        pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
+                    }
+                    if (pts[0] !== pts[pts.length - 1]) {
+                        pts.push(pts[0])
+                    }
+                    return turfPoly([pts]);
+                });
+                const union = turfUnion(featureCollection(turfed)) as Feature<Polygon>;
+                this.rootSvg.polygon(union.geometry.coordinates.flat().map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity}).back();
+            }
         }
     }
 

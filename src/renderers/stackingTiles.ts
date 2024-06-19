@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { GridPoints } from "../grids/_base";
+import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 
@@ -29,6 +29,7 @@ export class StackingTilesRenderer extends RendererBase {
         // BOARD
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
+        let polys: Poly[][]|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ StackingTilesRenderer.rendererName }' renderer.`);
         }
@@ -51,7 +52,7 @@ export class StackingTilesRenderer extends RendererBase {
         switch (this.json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares();
+                [gridPoints, polys] = this.squares();
                 break;
             // case "hex_of_hex":
             //     gridPoints = this.hexOfHex(json, draw, opts);
@@ -147,6 +148,6 @@ export class StackingTilesRenderer extends RendererBase {
         // key
         this.placeKey(gridPoints);
 
-        this.backFill();
+        this.backFill(polys);
     }
 }

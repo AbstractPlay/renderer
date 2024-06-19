@@ -47,7 +47,7 @@ export class StackingOffsetRenderer extends RendererBase {
         switch (this.json.board.style) {
             case "squares-checkered":
             case "squares":
-                gridPoints = this.squares();
+                [gridPoints, polys] = this.squares();
                 break;
             case "vertex":
             case "vertex-cross":
@@ -210,6 +210,6 @@ export class StackingOffsetRenderer extends RendererBase {
         // key
         this.placeKey(modGrid);
 
-        this.backFill();
+        this.backFill(polys);
     }
 }

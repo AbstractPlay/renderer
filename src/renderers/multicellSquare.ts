@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { GridPoints, rectOfRects, IPoint } from "../grids";
+import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
 import { APRenderRep, type Multipiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
@@ -38,6 +38,7 @@ export class MulticellSquareRenderer extends RendererBase {
 
         let gridPoints: GridPoints;
         let origPoints: GridPoints;
+        let polys: Poly[][]|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ MulticellSquareRenderer.rendererName }' renderer.`);
         }
@@ -45,7 +46,7 @@ export class MulticellSquareRenderer extends RendererBase {
             case "squares-beveled":
             case "squares-checkered":
             case "squares":
-                origPoints = this.squares();
+                [origPoints, polys] = this.squares();
                 gridPoints = rectOfRects({gridHeight: (this.json.board.height as number) + 1, gridWidth: (this.json.board.width as number) + 1, cellSize: this.cellsize});
                 gridPoints = gridPoints.map((row) => row.map((cell) => ({x: cell.x - (this.cellsize / 2), y: cell.y - (this.cellsize / 2)} as IPoint)));
                 break;
@@ -126,7 +127,7 @@ export class MulticellSquareRenderer extends RendererBase {
         // key
         this.placeKey(modGrid);
 
-        this.backFill();
+        this.backFill(polys);
     }
 
     /**
