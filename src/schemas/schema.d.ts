@@ -9,7 +9,7 @@ export type PositiveInteger = number;
 /**
  * Pattern for hex colour strings
  */
-export type Colourstrings = string | string;
+export type Colourstrings = string;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
  */
@@ -119,17 +119,16 @@ export interface APRenderRep {
          */
         strokeOpacity?: number;
         /**
-         * Pattern for hex colour strings
+         * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
          */
-        hexFill?: string;
-        /**
-         * Pattern for hex colour strings
-         */
-        backFill?: string;
-        /**
-         * Add an opacity to the back fill.
-         */
-        backFillOpacity?: number;
+        backFill?: {
+          /**
+           * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
+           */
+          type?: "full" | "board";
+          colour: Colourstrings;
+          opacity?: number;
+        };
         /**
          * On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
          *
@@ -735,13 +734,16 @@ export interface APRenderRep {
          */
         height: number;
         /**
-         * Pattern for hex colour strings
+         * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
          */
-        backFill?: string;
-        /**
-         * Add an opacity to the back fill.
-         */
-        backFillOpacity?: number;
+        backFill?: {
+          /**
+           * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
+           */
+          type?: "full" | "board";
+          colour: Colourstrings;
+          opacity?: number;
+        };
         /**
          * In most cases, you'll want the top-left corner of the field to be 0,0 and generate your render accordingly. But if for some reason you want that origin to be different, change it here.
          */

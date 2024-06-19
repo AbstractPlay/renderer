@@ -278,3 +278,12 @@ export const centroid = (pts: IPoint[]): IPoint|undefined => {
     const cy = pts.reduce((prev, curr) => prev + curr.y, 0) / pts.length;
     return {x: cx, y: cy};
 }
+
+// Builds a circle as a polygon of `steps` sides
+export const circle2poly = (cx: number, cy: number, r: number, steps = 64): [number,number][] => {
+    const coordinates: [number,number][] = [];
+    for (let i = 0; i < steps; i++) {
+        coordinates.push(projectPoint(cx, cy, r, (i * 360) / steps));
+    }
+    return coordinates;
+}

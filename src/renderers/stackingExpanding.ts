@@ -80,7 +80,7 @@ export class StackingExpandingRenderer extends RendererBase {
             switch (this.json.board.style) {
                 case "squares-checkered":
                 case "squares":
-                    gridPoints = this.squares();
+                    [gridPoints, polys] = this.squares();
                     break;
                 case "vertex":
                 case "vertex-cross":

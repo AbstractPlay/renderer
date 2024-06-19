@@ -35,6 +35,12 @@ interface IPiece {
     orientation?: number;
 };
 
+type BackFill = {
+    type?: "full"|"board";
+    colour: string;
+    opacity?: number;
+};
+
 /**
  * The `freespace` renderer lets you just place defined glyphs wherever and however you want.
  *
@@ -71,14 +77,19 @@ export class FreespaceRenderer extends RendererBase {
                 oy = origin.y;
             }
         }
-        let backFill = "#fff";
-        let backFillOpacity = 1;
-        if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) ) {
-            backFill = this.json.board.backFill as string;
+        let backFillObj: BackFill|undefined;
+        if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
+            backFillObj = this.json.board.backFill as BackFill;
         }
-        if ( ("backFillOpacity" in this.json.board) && (this.json.board.backFillOpacity !== undefined) ) {
-            backFillOpacity = this.json.board.backFillOpacity as number;
+        let bgcolour = this.options.colourContext.background;
+        if ( backFillObj !== undefined ) {
+            bgcolour = backFillObj.colour;
         }
+        let bgopacity = 1;
+        if ( backFillObj !== undefined && backFillObj.opacity !== undefined ) {
+            bgopacity = backFillObj.opacity;
+        }
+
         const borderBuffer = 5;
 
         // Load all the pieces in the legend (have to do this first so the glyphs are available for marking the board)
@@ -86,7 +97,7 @@ export class FreespaceRenderer extends RendererBase {
 
         // clickable background field
         const field = this.rootSvg.nested().id("pieces").viewbox(ox - borderBuffer, oy - borderBuffer, width + (borderBuffer*2), height + (borderBuffer*2)).move(ox, oy);
-        field.rect(width, height).id("aprender-backfill").move(ox, oy).fill({color: backFill, opacity: backFillOpacity}).back();
+        field.rect(width, height).id("aprender-backfill").move(ox, oy).fill({color: bgcolour, opacity: bgopacity}).back();
         if (this.options.boardClick !== undefined) {
             const originX = field.x() as number;
             const originY = field.y() as number;

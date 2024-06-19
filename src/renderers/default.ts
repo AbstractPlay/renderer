@@ -45,7 +45,7 @@ export class DefaultRenderer extends RendererBase {
             case "squares-checkered":
             case "squares":
             case "pegboard":
-                gridPoints = this.squares();
+                [gridPoints, polys] = this.squares();
                 break;
             case "squares-stacked":
                 gridPoints = this.squaresStacked();
@@ -216,7 +216,7 @@ export class DefaultRenderer extends RendererBase {
         // scrollBar
         this.placeScroll(modGrid);
 
-        this.backFill();
+        this.backFill(polys);
     }
 
     /**
