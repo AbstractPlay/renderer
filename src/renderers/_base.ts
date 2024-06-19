@@ -12,8 +12,8 @@ import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidO
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
-import { union as turfUnion } from "@turf/union";
-import { polygon as turfPoly, featureCollection, type Feature, type Polygon } from "@turf/helpers";
+import turfUnion from "@turf/union";
+import { polygon as turfPoly, Properties, Feature, Polygon, MultiPolygon } from "@turf/helpers";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -7254,7 +7254,14 @@ export abstract class RendererBase {
                     }
                     return turfPoly([pts]);
                 });
-                const union = turfUnion(featureCollection(turfed)) as Feature<Polygon>;
+                let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
+                while (turfed.length > 0) {
+                    const next = turfed.pop()!;
+                    union = turfUnion(union, next);
+                    if (union === null) {
+                        throw new Error(`Got null while joining polygons in backFill()`);
+                    }
+                }
                 this.rootSvg.polygon(union.geometry.coordinates.flat().map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity}).back();
             }
         }
