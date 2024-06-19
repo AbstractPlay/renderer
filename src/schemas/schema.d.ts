@@ -347,6 +347,10 @@ export interface APRenderRep {
                */
               type: "flood";
               /**
+               * If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.
+               */
+              belowGrid?: boolean;
+              /**
                * One or more grid coordinates of spaces to fill.
                *
                * @minItems 1

@@ -5512,8 +5512,16 @@ export abstract class RendererBase {
             }
 
             for (const marker of allMarkers) {
-                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo"))) {
+                if ((marker.type === "flood") && marker.belowGrid === undefined) {
+                    marker.belowGrid = true;
+                }
+                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo") )) {
                     continue;
+                }
+                if (preGridLines) {
+                    console.log(`Before gridlines:`, marker);
+                } else {
+                    console.log(`After gridlines:`, marker);
                 }
                 const cloned = {...marker as {[k:string]: any}};
                 if ("points" in cloned) {
@@ -5616,13 +5624,13 @@ export abstract class RendererBase {
                         const cell = polys[point.row][point.col];
                         switch (cell.type) {
                             case "circle":
-                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' }).back();
+                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' }).back();
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
-                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' }).back();
+                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                     }

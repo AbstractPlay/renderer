@@ -630,6 +630,11 @@
                                                 "description": "Only usable by `circular-*` boards and hex fields. Distinct from shading, this will simply fill the specified cells with a colour.",
                                                 "enum": ["flood"]
                                             },
+                                            "belowGrid": {
+                                                "description": "If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.",
+                                                "type": "boolean",
+                                                "default": true
+                                            },
                                             "points": {
                                                 "description": "One or more grid coordinates of spaces to fill.",
                                                 "type": "array",
