@@ -3405,7 +3405,21 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+        // build polys
+        let polys: IPolyCircle[][] = [];
+        for (const row of grid) {
+            const polyRow: IPolyCircle[] = [];
+            for (const p of row) {
+                polyRow.push({type: "circle", r: cellsize/2, cx: p.x, cy: p.y});
+            }
+            polys.push(polyRow);
+        }
+
+        if (this.options.rotate === 180) {
+            polys = polys.map((r) => r.reverse()).reverse();
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
@@ -3456,14 +3470,11 @@ export abstract class RendererBase {
         circle.circle(cellsize)
             .fill({color: "black", opacity: 0})
             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
-        const polys: IPolyCircle[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
-            const polyRow: IPolyCircle[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
                 const c = gridlines.use(circle).size(cellsize, cellsize).center(p.x, p.y);
-                polyRow.push({type: "circle", r: cellsize/2, cx: p.x, cy: p.y});
                 if (this.options.boardClick !== undefined) {
                     if (this.options.rotate === 180) {
                         c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
@@ -3472,7 +3483,6 @@ export abstract class RendererBase {
                     }
                 }
             }
-            polys.push(polyRow);
         }
 
         if (this.options.rotate === 180) {
@@ -3532,7 +3542,30 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+        // Build polygons first
+        const triWidth = 50 / 2;
+        const halfhex = triWidth / 2;
+        const triHeight = (triWidth * Math.sqrt(3)) / 2;
+
+        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
+        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
+        let polys: IPolyPolygon[][] = [];
+        for (const row of grid) {
+            const rowPolys: IPolyPolygon[] = [];
+            for (const p of row) {
+                const dx = p.x - triHeight; const dy = p.y - 25;
+                rowPolys.push({
+                    type: "poly",
+                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
+                });
+            }
+            polys.push(rowPolys);
+        }
+        if (this.options.rotate === 180) {
+            polys = polys.map((r) => r.reverse()).reverse();
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
@@ -3595,11 +3628,7 @@ export abstract class RendererBase {
             0 half
         */
 
-        // Draw hexes
-        const triWidth = 50 / 2;
-        const halfhex = triWidth / 2;
-        const triHeight = (triWidth * Math.sqrt(3)) / 2;
-
+        // Draw the actual hexes
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
         let blocked: Blocked|undefined;
         if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
@@ -3611,25 +3640,16 @@ export abstract class RendererBase {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
-        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
                            .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
                            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
         if (hexFill !== undefined) {
             symbolPoly.fill({color: hexFill, opacity: 1});
         }
-        let polys: IPolyPolygon[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
-            const rowPolys: IPolyPolygon[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
                 const p = row[iCol];
-                const dx = p.x - triHeight; const dy = p.y - 25;
-                rowPolys.push({
-                    type: "poly",
-                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
-                });
                 if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
                     continue;
                 }
@@ -3642,11 +3662,9 @@ export abstract class RendererBase {
                     }
                 }
             }
-            polys.push(rowPolys);
         }
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
-            polys = polys.map((r) => r.reverse()).reverse();
         }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
@@ -3690,7 +3708,31 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+        // build polys
+        const triWidth = 50 / 2;
+        const halfhex = triWidth / 2;
+        const triHeight = (triWidth * Math.sqrt(3)) / 2;
+
+        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
+        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
+
+        let polys: IPolyPolygon[][] = [];
+        for (const row of grid) {
+            const rowPolys: IPolyPolygon[] = [];
+            for (const p of row) {
+                const dx = p.x - triHeight; const dy = p.y - 25;
+                rowPolys.push({
+                    type: "poly",
+                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
+                });
+            }
+            polys.push(rowPolys);
+        }
+        if (this.options.rotate === 180) {
+            polys = polys.map((r) => r.reverse()).reverse();
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
@@ -3767,17 +3809,11 @@ export abstract class RendererBase {
         */
 
         // Draw hexes
-        const triWidth = 50 / 2;
-        const halfhex = triWidth / 2;
-        const triHeight = (triWidth * Math.sqrt(3)) / 2;
-
         let hexFill: string|undefined;
         if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hexFill = this.json.board.hexFill;
         }
-        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
-        const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
         const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
                             .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
                             .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
@@ -3793,20 +3829,12 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
-        let polys: IPolyPolygon[][] = [];
         for (let iRow = 0; iRow < grid.length; iRow++) {
             const row = grid[iRow];
-            const rowPolys: IPolyPolygon[] = [];
             for (let iCol = 0; iCol < row.length; iCol++) {
-                // even blocked hexes need polys
                 const p = row[iCol];
-                const dx = p.x - triHeight; const dy = p.y - 25;
-                rowPolys.push({
-                    type: "poly",
-                    points: pts.map(pt => { return {x: pt.x + dx, y: pt.y + dy}}),
-                });
 
-                // but don't draw "blocked" hexes
+                // don't draw "blocked" hexes
                 if (blocked !== undefined) {
                     const found = blocked.find(e => e.row === iRow && e.col === iCol);
                     if (found !== undefined) {
@@ -3822,12 +3850,11 @@ export abstract class RendererBase {
                     }
                 }
             }
-            polys.push(rowPolys);
         }
         if (this.options.rotate === 180) {
             grid = grid.map((r) => r.reverse()).reverse();
-            polys = polys.map((r) => r.reverse()).reverse();
         }
+
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return [grid, polys];
@@ -4383,7 +4410,9 @@ export abstract class RendererBase {
         gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
 
         const gridlines = board.group().id("gridlines");
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
+        const cells = this.getConhexCells(boardsize, cellsize);
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys: cells});
 
         // no board labels
 
@@ -4395,7 +4424,6 @@ export abstract class RendererBase {
         }
 
         // place cells and give them a base, empty fill
-        const cells = this.getConhexCells(boardsize, cellsize);
         for (let row = 0; row < cells.length; row++) {
             for (let col = 0; col < cells[row].length; col++) {
                 if (blocked !== undefined && blocked.find(obj => obj.col === col && obj.row === row) !== undefined) {
@@ -4468,8 +4496,6 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("pentagons");
 
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
-
         /*
           Pentagon points (N-facing):
             0, -half
@@ -4479,7 +4505,7 @@ export abstract class RendererBase {
             -widest, -quarter
         */
 
-        // Draw hexes
+        // build polys
         const half = cellsize / 2;
         const quarter = cellsize / 4;
         const widest = half + quarter;
@@ -4576,11 +4602,76 @@ export abstract class RendererBase {
                         verts: ptsS,
                     });
                 }
-                for (const {pt, col, w, h, sym, verts} of pairs) {
+                for (const {pt, verts} of pairs) {
                     rowPolys.push({
                         type: "poly",
                         points: verts.map(vpt => { return {x: vpt.x + pt.x, y: vpt.y + pt.y}}),
                     });
+                }
+                if (orientation === "H") {
+                    orientation = "V";
+                } else {
+                    orientation = "H";
+                }
+            }
+            polys.push(rowPolys);
+        }
+
+        if (this.options.rotate === 180) {
+            polys = polys.map((r) => r.reverse()).reverse();
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
+
+        // now actually draw pentagons
+         orientation = startOrientation;
+        for (let iRow = 0; iRow < height; iRow++) {
+            const row = grid[iRow];
+            if (iRow % 2 === 0) {
+                orientation = startOrientation;
+            } else if (startOrientation === "H") {
+                orientation = "V";
+            } else {
+                orientation = "H";
+            }
+            for (let iCol = 0; iCol < width; iCol++) {
+                const pairs: {pt: IPoint, w: number, h: number, col: number, sym: SVGSymbol, verts: IPoint[]}[] = [];
+                if (orientation === "H") {
+                    pairs.push({
+                        pt: row[iCol * 2],
+                        col: iCol * 2,
+                        w: cellsize + 2,
+                        h: (cellsize * 1.5) + 2,
+                        sym: pentW,
+                        verts: ptsW,
+                    });
+                    pairs.push({
+                        pt: row[(iCol * 2) + 1],
+                        col: (iCol * 2) + 1,
+                        w: cellsize + 2,
+                        h: (cellsize * 1.5) + 2,
+                        sym: pentE,
+                        verts: ptsE,
+                    });
+                } else {
+                    pairs.push({
+                        pt: row[iCol * 2],
+                        col: iCol * 2,
+                        w: (cellsize * 1.5) + 2,
+                        h: cellsize + 2,
+                        sym: pentN,
+                        verts: ptsN,
+                    });
+                    pairs.push({
+                        pt: row[(iCol * 2) + 1],
+                        col: (iCol * 2) + 1,
+                        w: (cellsize * 1.5) + 2,
+                        h: cellsize + 2,
+                        sym: pentS,
+                        verts: ptsS,
+                    });
+                }
+                for (const {pt, col, w, h, sym} of pairs) {
                     if (blocked !== undefined && blocked.find(p => p.col === col && p.row === iRow) !== undefined) {
                         continue;
                     }
@@ -4599,7 +4690,6 @@ export abstract class RendererBase {
                     orientation = "H";
                 }
             }
-            polys.push(rowPolys);
         }
 
         // Add board labels
@@ -4769,7 +4859,7 @@ export abstract class RendererBase {
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("pentagons");
 
-        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
@@ -4847,54 +4937,6 @@ export abstract class RendererBase {
         if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
             hexFill = this.json.board.hexFill;
         }
-
-        // let minX = Math.min(...polys[0][0].points.map(p => p.x));
-        // let minY = Math.min(...polys[0][0].points.map(p => p.y));
-        // let maxX = Math.max(...polys[0][0].points.map(p => p.x));
-        // let maxY = Math.max(...polys[0][0].points.map(p => p.y));
-        // const pentEE = this.rootSvg.defs().symbol().id("pentagon-symbol-EE").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
-        // const symbolPolyEE = pentEE.polygon(polys[0][0].points.map(pt => `${pt.x},${pt.y}`).join(" "))
-        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-EE")
-        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-        // if (hexFill !== undefined) {
-        //     symbolPolyEE.fill({color: hexFill, opacity: 1});
-        // }
-
-        // minX = Math.min(...polys[0][1].points.map(p => p.x));
-        // minY = Math.min(...polys[0][1].points.map(p => p.y));
-        // maxX = Math.max(...polys[0][1].points.map(p => p.x));
-        // maxY = Math.max(...polys[0][1].points.map(p => p.y));
-        // const pentEO = this.rootSvg.defs().symbol().id("pentagon-symbol-EO").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
-        // const symbolPolyEO = pentEO.polygon(polys[0][1].points.map(pt => `${pt.x},${pt.y}`).join(" "))
-        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-EO")
-        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-        // if (hexFill !== undefined) {
-        //     symbolPolyEO.fill({color: hexFill, opacity: 1});
-        // }
-
-        // minX = Math.min(...polys[1][0].points.map(p => p.x));
-        // minY = Math.min(...polys[1][0].points.map(p => p.y));
-        // maxX = Math.max(...polys[1][0].points.map(p => p.x));
-        // maxY = Math.max(...polys[1][0].points.map(p => p.y));
-        // const pentOE = this.rootSvg.defs().symbol().id("pentagon-symbol-OE").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
-        // const symbolPolyOE = pentOE.polygon(polys[0][1].points.map(pt => `${pt.x},${pt.y}`).join(" "))
-        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-OE")
-        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-        // if (hexFill !== undefined) {
-        //     symbolPolyOE.fill({color: hexFill, opacity: 1});
-        // }
-
-        // minX = Math.min(...polys[1][1].points.map(p => p.x));
-        // minY = Math.min(...polys[1][1].points.map(p => p.y));
-        // maxX = Math.max(...polys[1][1].points.map(p => p.x));
-        // maxY = Math.max(...polys[1][1].points.map(p => p.y));
-        // const pentOO = this.rootSvg.defs().symbol().id("pentagon-symbol-OO").viewbox(minX - 1, minY - 1, maxX - minX + 2, maxY - minY + 2);
-        // const symbolPolyOO = pentOO.polygon(polys[0][1].points.map(pt => `${pt.x},${pt.y}`).join(" "))
-        //                    .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-OO")
-        //                    .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-        // if (hexFill !== undefined) {
-        //     symbolPolyOO.fill({color: hexFill, opacity: 1});
-        // }
 
         for (let iRow = 0; iRow < height; iRow++) {
             const row = grid[iRow];
