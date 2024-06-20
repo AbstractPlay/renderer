@@ -26,6 +26,72 @@
                 }
             ]
         },
+        "gradientStop": {
+            "description": "Schema for a gradient stop",
+            "type": "object",
+            "properties": {
+                "offset": {
+                    "description": "Interpreted as a percent, like opacity",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "colour": {
+                    "description": "Hex string or player number of the desired colour",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ]
+                },
+                "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                }
+            },
+            "required": ["offset", "colour"],
+            "additionalProperties": false
+        },
+        "gradient": {
+            "description": "A gradient one can use for flood fills and the like.",
+            "type": "object",
+            "properties": {
+                "x1": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0
+                },
+                "y1": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0
+                },
+                "x2": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "y2": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0
+                },
+                "stops": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gradientStop"
+                    },
+                    "minItems": 2
+                }
+            },
+            "required": ["stops"],
+            "additionalProperties": false
+        },
         "glyph": {
             "description": "An individual glyph with options, used in the `legend` property.",
             "type": "object",
@@ -39,13 +105,13 @@
                     "description": "Mutually exclusive with `name`. In this case, the glyph is plain text, shrunk down to the appropriate size to fit in a cell. This is intended for very short strings, like numbers.",
                     "type": "string"
                 },
-                "player": {
-                    "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
-                    "$ref": "#/definitions/positiveInteger"
-                },
                 "colour": {
-                    "description": "A 3- or 6-digit hex colour value. Do not use this to assign player colours! This should only be used for tweaking composite pieces. Ignored if `player` is also defined.",
-                    "$ref": "#/definitions/colourstrings"
+                    "description": "A 3- or 6-digit hex colour value, a player position, or a gradient.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/colourstrings"},
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/gradient"}
+                    ]
                 },
                 "scale": {
                     "description": "A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.",
@@ -634,7 +700,7 @@
                                     {
                                         "properties": {
                                             "type": {
-                                                "description": "Only usable by `circular-*` boards and hex fields. Distinct from shading, this will simply fill the specified cells with a colour.",
+                                                "description": "Only usable by board styles composed of polygons. Distinct from shading, this will simply fill the specified cells with a colour.",
                                                 "enum": ["flood"]
                                             },
                                             "belowGrid": {
@@ -666,7 +732,8 @@
                                                 "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                                                 "anyOf": [
                                                     {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
+                                                    {"$ref": "#/definitions/colourstrings"},
+                                                    {"$ref": "#/definitions/gradient"}
                                                 ],
                                                 "default": "#000"
                                             },
@@ -1923,12 +1990,11 @@
                                 "default": 1
                             },
                             "colour": {
-                                "$ref": "#/definitions/colourstrings",
+                                "anyOf": [
+                                    {"$ref": "#/definitions/colourstrings"},
+                                    {"$ref": "#/definitions/positiveInteger"}
+                                ],
                                 "default": "#000"
-                            },
-                            "player": {
-                                "description": "A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.",
-                                "$ref": "#/definitions/positiveInteger"
                             },
                             "arrow": {
                                 "type": "boolean",

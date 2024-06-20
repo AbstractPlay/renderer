@@ -106,30 +106,16 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
  * @beta
  */
 export const renderglyph = (glyphid: string, colour: number | string, opts = {} as IRenderOptions): string => {
-    let obj: APRenderRep;
-    if (typeof colour === "number") {
-        obj = {
-            board: null,
-            legend: {
-                A: {
-                    name: glyphid,
-                    player: colour,
-                },
+    const obj: APRenderRep = {
+        board: null,
+        legend: {
+            A: {
+                name: glyphid,
+                colour,
             },
-            pieces: "A",
-        };
-    } else {
-        obj = {
-            board: null,
-            legend: {
-                A: {
-                    name: glyphid,
-                    colour,
-                },
-            },
-            pieces: "A",
-        };
-    }
+        },
+        pieces: "A",
+    };
     const node = document.createElement("div");
     const uid = uuidv4();
     node.setAttribute("id", uid);
