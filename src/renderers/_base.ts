@@ -1,11 +1,11 @@
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../grids/_base";
-import { APRenderRep, Glyph, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, Glyph, Gradient, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly } from "../common/plotting";
@@ -653,9 +653,9 @@ export abstract class RendererBase {
                             glyphs = node as [Glyph, ...Glyph[]];
                         }
                         glyphs.forEach((e) => {
-                            if (e.player !== undefined) {
-                                if (! patterns.includes(e.player)) {
-                                    patterns.push(e.player);
+                            if (e.colour !== undefined && typeof e.colour === "number") {
+                                if (! patterns.includes(e.colour)) {
+                                    patterns.push(e.colour);
                                 }
                             }
                         });
@@ -696,7 +696,11 @@ export abstract class RendererBase {
                 for (const g of glyphs) {
                     let got: SVGSymbol;
                     if ( ("name" in g) && (g.name !== undefined) ) {
-                        got = this.loadGlyph(g.name, g.player, nested);
+                        let player: number|undefined;
+                        if (g.colour !== undefined && typeof g.colour === "number") {
+                            player = g.colour;
+                        }
+                        got = this.loadGlyph(g.name, player, nested);
                     } else if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;
@@ -744,39 +748,34 @@ export abstract class RendererBase {
 
                     // Colourize (`player` first, then `colour` if defined)
                     let isStroke = false;
-                    if (g.player !== undefined) {
+                    if (g.colour !== undefined && typeof g.colour === "number") {
+                        const player = g.colour;
                         if  (this.options.patterns) {
-                            if (g.player > this.options.patternList.length) {
+                            if (player > this.options.patternList.length) {
                                 throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                             }
                             const useSize = sheetCellSize;
-                            let fill = this.rootSvg.findOne("#" + this.options.patternList[g.player - 1] + "-" + useSize.toString()) as SVGElement;
+                            let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGElement;
                             if (fill === null) {
-                                fill = this.rootSvg.findOne("#" + this.options.patternList[g.player - 1]) as SVGElement;
-                                fill = fill.clone().id(this.options.patternList[g.player - 1] + "-" + useSize.toString()).scale(useSize / 150);
+                                fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGElement;
+                                fill = fill.clone().id(this.options.patternList[player - 1] + "-" + useSize.toString()).scale(useSize / 150);
                                 this.rootSvg.defs().add(fill);
                             }
                             got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                         } else {
-                            if (g.player > this.options.colours.length) {
+                            if (player > this.options.colours.length) {
                                 throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                             }
-                            const fill = this.options.colours[g.player - 1];
+                            const fill = this.options.colours[player - 1];
                             got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
                             got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); isStroke = true; });
                         }
                     } else if (g.colour !== undefined) {
-                        let normColour = g.colour;
-                        if (/^_context_/.test(normColour)) {
-                            const [,,prop] = normColour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                normColour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                            } else {
-                                normColour = "#000";
-                            }
-                        }
-                        got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill({color: normColour}); });
-                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke({color: normColour}); isStroke = true; });
+                        const normColour = this.resolveColour(g.colour, "#000");
+                        // @ts-ignore
+                        got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(normColour); });
+                        // @ts-ignore
+                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(normColour); isStroke = true; });
                     }
 
                     // Apply requested opacity
@@ -4979,16 +4978,8 @@ export abstract class RendererBase {
                     }
 
                     let colour = this.options.colourContext.annotations;
-                    if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                        if (/^_context_/.test(colour)) {
-                            const [,,prop] = colour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                            }
-                        }
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                    if ( ("colour" in note) && (note.colour !== undefined) && (note.colour !== null) ) {
+                        colour = this.resolveColour(note.colour as string|number) as string;
                     }
                     let style = "solid";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -5045,15 +5036,7 @@ export abstract class RendererBase {
 
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                        if (/^_context_/.test(colour)) {
-                            const [,,prop] = colour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                            }
-                        }
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour as string|number, "#000") as string;
                     }
                     let style = "dashed";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -5113,15 +5096,7 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                        if (/^_context_/.test(colour)) {
-                            const [,,prop] = colour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                            }
-                        }
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour as string|number) as string;
                     }
                     let strokeWeight = this.cellsize* 0.05;
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
@@ -5197,15 +5172,7 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                        if (/^_context_/.test(colour)) {
-                            const [,,prop] = colour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                            }
-                        }
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour as string|number) as string;
                     }
                     let strokeWeight = this.cellsize* 0.05;
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
@@ -5281,15 +5248,7 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "outline") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                        if (/^_context_/.test(colour)) {
-                            const [,,prop] = colour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                            }
-                        }
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour as string|number) as string;
                     }
                     let dasharray = "4";
                     if (note.dashed !== undefined && note.dashed !== null) {
@@ -5314,15 +5273,7 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                        if (/^_context_/.test(colour)) {
-                            const [,,prop] = colour.split("_");
-                            if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                            }
-                        }
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour as string|number) as string;
                     }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
@@ -5540,19 +5491,9 @@ export abstract class RendererBase {
                     delete cloned.points;
                 }
                 if (marker.type === "dots") {
-                    let colour = baseColour;
+                    let colour: string|SVGGradient = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour as string;
-                            if (/^_context_/.test(colour)) {
-                                const [,,prop] = colour.split("_");
-                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                }
-                            }
-                        }
+                        colour = this.resolveColour(marker.colour as string|number|Gradient);
                     }
                     let opacity = baseOpacity;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
@@ -5567,7 +5508,9 @@ export abstract class RendererBase {
                         pts.push([point.row, point.col]);
                         pts.forEach((p) => {
                             const pt = grid[p[0]][p[1]];
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                             svgGroup.circle(this.cellsize * diameter)
+                                // @ts-ignore
                                 .fill(colour)
                                 .opacity(opacity)
                                 .stroke({width: 0})
@@ -5577,19 +5520,9 @@ export abstract class RendererBase {
                         });
                     }
                 } else if (marker.type === "shading") {
-                    let colour = this.options.colourContext.fill;
+                    let colour: string|SVGGradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour as string;
-                            if (/^_context_/.test(colour)) {
-                                const [,,prop] = colour.split("_");
-                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                }
-                            }
-                        }
+                        colour = this.resolveColour(marker.colour as string|number|Gradient);
                     }
                     let opacity = 0.25;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
@@ -5606,60 +5539,55 @@ export abstract class RendererBase {
                         }
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
+                    // @ts-ignore
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
-                    // if ( (! this.json.board.style.startsWith("circular")) && (this.json.board.style !== "hex-of-hex") && (! this.json.board.style.startsWith("hex-odd")) && (! this.json.board.style.startsWith("hex-even")) && (! this.json.board.style.startsWith("conhex")) ) {
-                    //     throw new Error("The `flood` marker can only currently be used with the `circular-cobweb` board, the `conhex-*` boards, and hex fields.");
-                    // }
                     if (polys === undefined) {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
                     }
-                    let colour = this.options.colourContext.fill;
+                    let isGradient = false;
+                    let colour: string|SVGGradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour as string;
-                            if (/^_context_/.test(colour)) {
-                                const [,,prop] = colour.split("_");
-                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                }
-                            }
+                        if (typeof marker.colour === "object") {
+                            isGradient = true;
                         }
+                        colour = this.resolveColour(marker.colour as string|number|Gradient);
                     }
                     let opacity = 0.25;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
                         opacity = marker.opacity as number;
                     }
+                    let fill: FillData|SVGGradient;
+                    if (isGradient) {
+                        fill = colour as SVGGradient;
+                    } else {
+                        fill = {color: colour as string, opacity};
+                    }
                     for (const point of marker.points as ITarget[]) {
                         const cell = polys[point.row][point.col];
                         switch (cell.type) {
                             case "circle":
-                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill({color: colour, opacity}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                                // @ts-ignore
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill(fill).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                // @ts-ignore
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
-                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill({color: colour, opacity}).attr({ 'pointer-events': 'none' });
+                                // @ts-ignore
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                     }
                 } else if (marker.type === "line") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour as string;
-                            if (/^_context_/.test(colour)) {
-                                const [,,prop] = colour.split("_");
-                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                }
-                            }
-                        }
+                        colour = this.resolveColour(marker.colour as string|number) as string;
                     }
                     let opacity = baseOpacity;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
@@ -5794,17 +5722,7 @@ export abstract class RendererBase {
                             const segment: ISegment = marker.segments[i] as ISegment;
                             let colour = baseColour;
                             if ( ("colour" in segment) && (segment.colour !== undefined) ) {
-                                if (typeof segment.colour === "number") {
-                                    colour = this.options.colours[segment.colour - 1];
-                                } else {
-                                    colour = segment.colour;
-                                    if (/^_context_/.test(colour)) {
-                                        const [,,prop] = colour.split("_");
-                                        if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                            colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                        }
-                                    }
-                                }
+                                colour = this.resolveColour(segment.colour) as string;
                             }
                             let opacity = baseOpacity;
                             if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
@@ -5847,17 +5765,7 @@ export abstract class RendererBase {
                 } else if (marker.type === "label") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour as string;
-                            if (/^_context_/.test(colour)) {
-                                const [,,prop] = colour.split("_");
-                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                }
-                            }
-                        }
+                        colour = this.resolveColour(marker.colour as string|number) as string;
                     }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
@@ -5896,17 +5804,7 @@ export abstract class RendererBase {
                 } else if (marker.type === "edge") {
                     let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour as string;
-                            if (/^_context_/.test(colour)) {
-                                const [,,prop] = colour.split("_");
-                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                }
-                            }
-                        }
+                        colour = this.resolveColour(marker.colour as string|number) as string;
                     }
                     let opacity = baseOpacity + ((1 - baseOpacity) / 2);
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
@@ -6359,17 +6257,7 @@ export abstract class RendererBase {
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour as string;
-                            if (/^_context_/.test(colour)) {
-                                const [,,prop] = colour.split("_");
-                                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                }
-                            }
-                        }
+                        colour = this.resolveColour(marker.colour as string|number) as string;
                     }
                     let multiplier = 6;
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
@@ -7395,5 +7283,44 @@ export abstract class RendererBase {
             default:
                 return undefined;
         }
+    }
+
+    /**
+     * This function takes a string, number, or gradient defintion and returns
+     * either the corresponding hex colour or an SVGGradient.
+     * Gradients cannot be recursive.
+     * @param val - the value in the JSON
+     * @param def - the default value
+     * @returns
+     */
+    protected resolveColour(val: number|string|Gradient, def?: string): string|SVGGradient {
+        if (this.rootSvg === undefined || this.rootSvg === null) {
+            throw new Error(`Cannot resolve colour values until the root SVG is initialized.`);
+        }
+
+        let colour: string|SVGGradient|undefined = def;
+        if (typeof val === "object") {
+            const x1 = val.x1 !== undefined ? val.x1 : 0;
+            const y1 = val.y1 !== undefined ? val.y1 : 0;
+            const x2 = val.x2 !== undefined ? val.x2 : 1;
+            const y2 = val.y2 !== undefined ? val.y2 : 0;
+            colour = this.rootSvg.defs().gradient("linear", add => {
+                for (const stop of val.stops) {
+                    add.stop({offset: stop.offset, color: this.resolveColour(stop.colour, "#000") as string, opacity: stop.opacity || 1});
+                }
+            });
+            colour.from(x1,y1).to(x2,y2);
+        } else if (typeof val === "number") {
+            colour = this.options.colours[val - 1];
+        } else {
+            colour = val;
+            if (/^_context_/.test(colour)) {
+                const [,,prop] = colour.split("_");
+                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
+                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                }
+            }
+        }
+        return colour;
     }
 }

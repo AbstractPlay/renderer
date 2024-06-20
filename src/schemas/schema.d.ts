@@ -5,11 +5,11 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type PositiveInteger = number;
 /**
  * Pattern for hex colour strings
  */
 export type Colourstrings = string;
+export type PositiveInteger = number;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
  */
@@ -342,7 +342,7 @@ export interface APRenderRep {
             }
           | {
               /**
-               * Only usable by `circular-*` boards and hex fields. Distinct from shading, this will simply fill the specified cells with a colour.
+               * Only usable by board styles composed of polygons. Distinct from shading, this will simply fill the specified cells with a colour.
                */
               type: "flood";
               /**
@@ -367,7 +367,7 @@ export interface APRenderRep {
               /**
                * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
                */
-              colour?: PositiveInteger | Colourstrings;
+              colour?: PositiveInteger | Colourstrings | Gradient;
               /**
                * 1 is fully opaque. 0 is fully transparent.
                */
@@ -1111,14 +1111,7 @@ export interface APRenderRep {
          */
         strokeWidth?: number;
         opacity?: number;
-        /**
-         * Pattern for hex colour strings
-         */
-        colour?: string | string;
-        /**
-         * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
-         */
-        player?: number;
+        colour?: Colourstrings | PositiveInteger;
         arrow?: boolean;
         /**
          * Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.
@@ -1209,13 +1202,9 @@ export interface Glyph {
    */
   text?: string;
   /**
-   * A positive integer pointing to a player position. Based on user settings, an appropriate background fill colour will be chosen.
+   * A 3- or 6-digit hex colour value, a player position, or a gradient.
    */
-  player?: number;
-  /**
-   * A 3- or 6-digit hex colour value. Do not use this to assign player colours! This should only be used for tweaking composite pieces. Ignored if `player` is also defined.
-   */
-  colour?: string;
+  colour?: Colourstrings | PositiveInteger | Gradient;
   /**
    * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
    */
@@ -1241,6 +1230,33 @@ export interface Glyph {
      */
     dy?: number;
   };
+}
+/**
+ * A gradient one can use for flood fills and the like.
+ */
+export interface Gradient {
+  x1?: number;
+  y1?: number;
+  x2?: number;
+  y2?: number;
+  /**
+   * @minItems 2
+   */
+  stops: [GradientStop, GradientStop, ...GradientStop[]];
+}
+/**
+ * Schema for a gradient stop
+ */
+export interface GradientStop {
+  /**
+   * Interpreted as a percent, like opacity
+   */
+  offset: number;
+  /**
+   * Hex string or player number of the desired colour
+   */
+  colour: PositiveInteger | Colourstrings;
+  opacity?: number;
 }
 /**
  * Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.
