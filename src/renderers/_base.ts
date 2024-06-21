@@ -5,7 +5,7 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../grids/_base";
-import { APRenderRep, Glyph, Gradient, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaScrollBar, BoardBasic, Glyph, Gradient, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly } from "../common/plotting";
@@ -166,112 +166,6 @@ interface ITarget {
     col: number;
 }
 
-/**
- * Internal interface
- */
-interface INameValuePair {
-    name: string;
-    value: string;
-}
-
-/**
- * Internal interface used for button bars
- */
-interface IButton {
-    label: string;
-    value?: string;
-    attributes?: INameValuePair[];
-    fill?: string;
-}
-
-/**
- * Internal interface used for button bars
- */
-interface IButtonBar {
-    [k: string]: unknown;
-    type: "buttonBar";
-    buttons: IButton[];
-    position?: "left"|"right";
-    height?: number;
-    minWidth?: number;
-    buffer?: number;
-    colour?: string;
-}
-
-/**
- * Internal interface used for generating keys
- */
-interface IKeyEntry {
-    piece: string;
-    name: string;
-    value?: string;
-}
-
-/**
- * Internal interface used for generating keys
- */
-export interface IKey {
-    [k: string]: unknown;
-    type: "key";
-    list: IKeyEntry[];
-    height?: number;
-    buffer?: number;
-    position?: "left"|"right";
-    clickable?: boolean;
-}
-
-/**
- * Internal interface used for generating scroll bars
- */
-export interface IScroll {
-    [k: string]: unknown;
-    type: "scroll";
-    max: number;
-    min?: number;
-    current?: number;
-    labels?: {
-        upOne?: string;
-        upAll?: string;
-        downOne?: string;
-        downAll?: string;
-        bar?: string;
-    };
-    position?: "left"|"right";
-    width?: number;
-    height?: number;
-    lineWidth?: number;
-    colours?: {
-        background?: string;
-        fill?: string;
-        strokes?: string;
-    }
-}
-
-/**
- * For the generic "pieces" area
- */
-export interface IPiecesArea {
-    type: "pieces";
-    pieces: [string, ...string[]];
-    label: string;
-    width?: number;
-}
-
-type OutlineMarker = {
-    type: "outline";
-    points: [
-        {
-            row: number;
-            col: number;
-        },
-        ...{
-            row: number;
-            col: number;
-        }[]
-    ];
-    colour?: number|string;
-    opacity?: number;
-  }
 
 /** Helper functions for drawing edge click handlers */
 const sortPoints = (a: [number,number], b: [number,number]) => {
@@ -772,8 +666,10 @@ export abstract class RendererBase {
                         }
                     } else if (g.colour !== undefined) {
                         const normColour = this.resolveColour(g.colour, "#000");
+                        // This ts-ignore is because of poor SVGjs typing
                         // @ts-ignore
                         got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(normColour); });
+                        // This ts-ignore is because of poor SVGjs typing
                         // @ts-ignore
                         got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(normColour); isStroke = true; });
                     }
@@ -3663,21 +3559,22 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const gridWidth: number = this.json.board.width as number;
-        const gridHeight: number = this.json.board.height as number;
+        const boardTyped = this.json.board as BoardBasic;
+        const gridWidth: number = boardTyped.width as number;
+        const gridHeight: number = boardTyped.height as number;
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
         let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
-        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
-            baseStroke = this.json.board.strokeWeight;
+        if ( ("strokeWeight" in boardTyped) && (boardTyped.strokeWeight !== undefined) ) {
+            baseStroke = boardTyped.strokeWeight;
         }
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+        if ( ("strokeColour" in boardTyped) && (boardTyped.strokeColour !== undefined) ) {
+            baseColour = boardTyped.strokeColour;
         }
-        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = this.json.board.strokeOpacity;
+        if ( ("strokeOpacity" in boardTyped) && (boardTyped.strokeOpacity !== undefined) ) {
+            baseOpacity = boardTyped.strokeOpacity;
         }
 
         // Get a grid of points
@@ -3713,18 +3610,18 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+        if ( ("labelColour" in boardTyped) && (boardTyped.labelColour !== undefined) ) {
+            labelColour = boardTyped.labelColour;
         }
         let labelOpacity = 1;
-        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+        if ( ("labelOpacity" in boardTyped) && (boardTyped.labelOpacity !== undefined) ) {
+            labelOpacity = boardTyped.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
-            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+            if ( ("columnLabels" in boardTyped) && (boardTyped.columnLabels !== undefined) ) {
+                customLabels = boardTyped.columnLabels;
             }
             let columnLabels = this.getLabels(customLabels, gridWidth);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
@@ -3732,8 +3629,8 @@ export abstract class RendererBase {
             }
 
             customLabels = undefined
-            if ( ("rowLabels" in this.json.board) && (this.json.board.rowLabels !== undefined) ) {
-                customLabels = this.json.board.rowLabels as string[];
+            if ( ("rowLabels" in boardTyped) && (boardTyped.rowLabels !== undefined) ) {
+                customLabels = boardTyped.rowLabels;
             }
             let rowLabels = this.getRowLabels(customLabels, gridHeight);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -3787,9 +3684,9 @@ export abstract class RendererBase {
 
         // Draw hexes
         let hexFill: string|undefined;
-        if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
+        if ( ("hexFill" in boardTyped) && (boardTyped.hexFill !== undefined) && (boardTyped.hexFill !== null) && (typeof boardTyped.hexFill === "string") && (boardTyped.hexFill.length > 0) ){
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            hexFill = this.json.board.hexFill;
+            hexFill = boardTyped.hexFill;
         }
         const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
                             .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
@@ -3800,10 +3697,8 @@ export abstract class RendererBase {
 
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
         let blocked: Blocked|undefined;
-        // @ts-ignore
-        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
-            // @ts-ignore
-            blocked = [...(this.json.board.blocked as Blocked)];
+        if ( (boardTyped.blocked !== undefined) && (boardTyped.blocked !== null) && (Array.isArray(boardTyped.blocked)) && (boardTyped.blocked.length > 0) ){
+            blocked = [...(boardTyped.blocked as Blocked)];
         }
 
         for (let iRow = 0; iRow < grid.length; iRow++) {
@@ -4149,9 +4044,9 @@ export abstract class RendererBase {
             .attr("data-outlined", true)
 
         // check for cells with `outline` marker
-        let outlines: OutlineMarker[] = [];
+        let outlines: MarkerOutline[] = [];
         if ( ("markers" in this.json.board) && (this.json.board.markers !== undefined) ) {
-            outlines = (this.json.board.markers as {type: string; [k:string]: any}[]).filter(m => m.type === "outline") as OutlineMarker[];
+            outlines = (this.json.board.markers as {type: string; [k:string]: any}[]).filter(m => m.type === "outline") as MarkerOutline[];
         }
 
         const tiles = board.group().id("tiles");
@@ -4435,14 +4330,15 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
+        const boardTyped = this.json.board as BoardBasic;
         // Width and Height are in number of two-cell pairs
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = boardTyped.width as number;
+        const height: number = boardTyped.height as number;
         const cellsize = this.cellsize;
         type PentagonOrientation = "H"|"V";
         let startOrientation: PentagonOrientation = "H";
-        if ( ("cairoStart" in this.json.board) && (this.json.board.cairoStart !== undefined) ) {
-            startOrientation = this.json.board.cairoStart as PentagonOrientation;
+        if ( ("cairoStart" in boardTyped) && (boardTyped.cairoStart !== undefined) ) {
+            startOrientation = boardTyped.cairoStart as PentagonOrientation;
         }
         // flip starting orientation when rotated, if necessary
         if (this.options.rotate === 180) {
@@ -4458,14 +4354,14 @@ export abstract class RendererBase {
         let baseStroke = 1;
         let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
-        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
-            baseStroke = this.json.board.strokeWeight;
+        if ( ("strokeWeight" in boardTyped) && (boardTyped.strokeWeight !== undefined) ) {
+            baseStroke = boardTyped.strokeWeight;
         }
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+        if ( ("strokeColour" in boardTyped) && (boardTyped.strokeColour !== undefined) ) {
+            baseColour = boardTyped.strokeColour;
         }
-        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = this.json.board.strokeOpacity;
+        if ( ("strokeOpacity" in boardTyped) && (boardTyped.strokeOpacity !== undefined) ) {
+            baseOpacity = boardTyped.strokeOpacity;
         }
 
         // Get a grid of points
@@ -4489,13 +4385,13 @@ export abstract class RendererBase {
 
         type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
         let blocked: Blocked|undefined;
-        if ( ("blocked" in this.json.board) && (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
-            blocked = [...(this.json.board.blocked as Blocked)];
+        if ( ("blocked" in boardTyped) && (boardTyped.blocked !== undefined) && (boardTyped.blocked !== null)  && (Array.isArray(boardTyped.blocked)) && (boardTyped.blocked.length > 0) ){
+            blocked = [...(boardTyped.blocked as Blocked)];
         }
 
         let hexFill: string|undefined;
-        if ( ("hexFill" in this.json.board) && (this.json.board.hexFill !== undefined) && (this.json.board.hexFill !== null) && (typeof this.json.board.hexFill === "string") && (this.json.board.hexFill.length > 0) ){
-            hexFill = this.json.board.hexFill;
+        if ( ("hexFill" in boardTyped) && (boardTyped.hexFill !== undefined) && (boardTyped.hexFill !== null) && (typeof boardTyped.hexFill === "string") && (boardTyped.hexFill.length > 0) ){
+            hexFill = boardTyped.hexFill;
         }
         const pentN = this.rootSvg.defs().symbol().id("pentagon-symbol-N").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
         const ptsN: IPoint[] = [{x: 0, y: 0 - half}, {x: widest, y: 0 - quarter}, {x: half, y: half}, {x: 0 - half, y: half}, {x: 0 - widest, y: 0 - quarter}];
@@ -4671,12 +4567,12 @@ export abstract class RendererBase {
 
         // Add board labels
         let labelColour = this.options.colourContext.labels;
-        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+        if ( ("labelColour" in boardTyped) && (boardTyped.labelColour !== undefined) ) {
+            labelColour = boardTyped.labelColour;
         }
         let labelOpacity = 1;
-        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+        if ( ("labelOpacity" in boardTyped) && (boardTyped.labelOpacity !== undefined) ) {
+            labelOpacity = boardTyped.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -4685,8 +4581,8 @@ export abstract class RendererBase {
             }
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
-            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+            if ( ("columnLabels" in boardTyped) && (boardTyped.columnLabels !== undefined) ) {
+                customLabels = boardTyped.columnLabels;
             }
             let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -4696,8 +4592,7 @@ export abstract class RendererBase {
                 columnLabels.reverse();
             }
 
-            // @ts-ignore
-            let rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            let rowLabels = this.getRowLabels(boardTyped.rowLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
                 rowLabels.reverse();
             }
@@ -5508,6 +5403,7 @@ export abstract class RendererBase {
                         pts.push([point.row, point.col]);
                         pts.forEach((p) => {
                             const pt = grid[p[0]][p[1]];
+                            // these exceptions are due to poor SVGjs typing
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                             svgGroup.circle(this.cellsize * diameter)
                                 // @ts-ignore
@@ -5539,6 +5435,7 @@ export abstract class RendererBase {
                         }
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
+                    // these exceptions are due to poor SVGjs typing
                     // @ts-ignore
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
@@ -5566,6 +5463,7 @@ export abstract class RendererBase {
                     }
                     for (const point of marker.points as ITarget[]) {
                         const cell = polys[point.row][point.col];
+                        // the following eslint and ts exceptions are due to poor SVGjs typing
                         switch (cell.type) {
                             case "circle":
                                 // @ts-ignore
@@ -6478,7 +6376,7 @@ export abstract class RendererBase {
             throw new Error("Invalid object state.");
         }
         if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-            const bars = this.json.areas.filter((b) => b.type === "buttonBar") as IButtonBar[];
+            const bars = this.json.areas.filter((b) => b.type === "buttonBar") as AreaButtonBar[];
             if (bars.length > 1) {
                 throw new Error("Only one button bar may be defined.");
             }
@@ -6531,7 +6429,7 @@ export abstract class RendererBase {
      * @param bar - The parsed JSON representing the button bar
      * @returns The nested SVG, which is embedded in the root `defs()`
      */
-    protected buildButtonBar(bar: IButtonBar): Svg {
+    protected buildButtonBar(bar: AreaButtonBar): Svg {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -6640,7 +6538,7 @@ export abstract class RendererBase {
             throw new Error("Invalid object state.");
         }
         if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-            const keys = this.json.areas.filter((b) => b.type === "key") as IKey[];
+            const keys = this.json.areas.filter((b) => b.type === "key") as AreaKey[];
             if (keys.length > 1) {
                 throw new Error("Only one key may be defined.");
             }
@@ -6697,7 +6595,7 @@ export abstract class RendererBase {
      * @param key - The parsed JSON representing the button bar
      * @returns The nested SVG, which is embedded in the root `defs()`
      */
-    protected buildKey(key: IKey): Svg {
+    protected buildKey(key: AreaKey): Svg {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -6782,8 +6680,7 @@ export abstract class RendererBase {
             throw new Error("Invalid object state.");
         }
         if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-            // @ts-ignore
-            const scrolls = this.json.areas.filter((b) => b.type === "scrollBar") as IScroll[];
+            const scrolls = this.json.areas.filter((b) => b.type === "scrollBar") as AreaScrollBar[];
             if (scrolls.length > 1) {
                 throw new Error("Only one scroll bar may be defined.");
             }
@@ -6858,7 +6755,7 @@ export abstract class RendererBase {
      * @param json - The parsed JSON representing the button bar
      * @returns The nested SVG, which is embedded in the root `defs()`
      */
-    protected buildScroll(json: IScroll): Svg {
+    protected buildScroll(json: AreaScrollBar): Svg {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -7011,7 +6908,7 @@ export abstract class RendererBase {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
         }
         if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-            const areas = this.json.areas.filter((x) => x.type === "pieces") as IPiecesArea[];
+            const areas = this.json.areas.filter((x) => x.type === "pieces") as AreaPieces[];
             const boardBottom = Math.max(gridPoints[0][0].y, gridPoints[gridPoints.length - 1][0].y) + this.cellsize;
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.max(...gridPoints.map(r => r.length));
@@ -7035,7 +6932,7 @@ export abstract class RendererBase {
                     if (typeof area.ownerMark === "number") {
                         markColour = this.options.colours[area.ownerMark - 1];
                     } else {
-                        markColour = area.ownerMark as string;
+                        markColour = area.ownerMark;
                     }
                 }
                 const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);

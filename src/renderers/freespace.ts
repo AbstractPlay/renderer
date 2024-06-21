@@ -1,6 +1,6 @@
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase, IKey } from "./_base";
+import { APRenderRep, AreaKey } from "../schemas/schema";
+import { IRendererOptionsIn, RendererBase } from "./_base";
 import { IPoint } from "../grids/_base";
 import { rotate, usePieceAt } from "../common/plotting";
 import { x2uid} from "../common/glyph2uid";
@@ -338,7 +338,7 @@ export class FreespaceRenderer extends RendererBase {
             throw new Error("Invalid object state.");
         }
         if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-            const keys = this.json.areas.filter((b) => b.type === "key") as IKey[];
+            const keys = this.json.areas.filter((b) => b.type === "key") as AreaKey[];
             if (keys.length > 1) {
                 throw new Error("Only one key may be defined.");
             }

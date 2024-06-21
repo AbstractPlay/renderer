@@ -200,6 +200,226 @@
             "required": ["col", "row", "matrix"],
             "additionalProperties": false
         },
+        "annotationBasic": {
+            "description": "These are pulled into the definitions section to make referencing them easier in the game code.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.",
+                    "enum": [
+                        "move",
+                        "eject",
+                        "enter",
+                        "exit",
+                        "dots",
+                        "outline",
+                        "glyph"
+                    ]
+                },
+                "targets": {
+                    "description": "The cells involved in the annotation",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.",
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"]
+                    }
+                },
+                "style": {
+                    "enum": [
+                        "solid",
+                        "dashed"
+                    ],
+                    "default": "solid"
+                },
+                "strokeWidth": {
+                    "description": "The width of the line, expressed as a percentage of cell size.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.1
+                },
+                "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "colour": {
+                    "anyOf": [
+                        {"$ref": "#/definitions/colourstrings"},
+                        {"$ref": "#/definitions/positiveInteger"}
+                    ],
+                    "default": "#000"
+                },
+                "arrow": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "static": {
+                    "description": "Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.",
+                    "type": "boolean",
+                    "default": "true"
+                },
+                "glyph": {
+                    "description": "Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.",
+                    "type": "string"
+                },
+                "dashed": {
+                    "description": "A valid `dasharray` appropriate for the game's display.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": ["type", "targets"]
+        },
+        "annotationSowing": {
+            "description": "Delta annotations for the `sowing-*` renderers",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["deltas"]
+                },
+                "deltas": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer"
+                            },
+                            "col": {
+                                "type": "integer"
+                            },
+                            "delta": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": ["row", "col", "delta"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "required": ["type", "deltas"],
+            "additionalProperties": false
+        },
+        "annotationHomeworlds": {
+            "type": "object",
+            "properties": {
+                "system": {
+                    "description": "Name of the system",
+                    "type": "string"
+                },
+                "action": {
+                    "description": "The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4
+                }
+            },
+            "required": ["system", "action"]
+        },
+        "annotationFreespace": {
+            "description": "Annotations specifically for the `freespace` renderer.",
+            "type": "object",
+            "anyOf": [
+                {
+                    "description": "Path annotations are simply an SVG path with stroke and fill attributes. You can draw whatever annotations you want. They will overlie any pieces.",
+                    "properties": {
+                        "type": {
+                            "enum": ["path"]
+                        },
+                        "path": {
+                            "type": "string"
+                        },
+                        "fill": {
+                            "anyOf": [
+                                {"$ref": "#/definitions/positiveInteger"},
+                                {"$ref": "#/definitions/colourstrings"}
+                            ],
+                            "default": "#fff"
+                        },
+                        "fillOpacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "default": 1
+                        },
+                        "stroke": {
+                            "anyOf": [
+                                {"$ref": "#/definitions/positiveInteger"},
+                                {"$ref": "#/definitions/colourstrings"}
+                            ],
+                            "default": "#000"
+                        },
+                        "strokeWidth": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "default": 1
+                        },
+                        "strokeOpacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "default": 1
+                        },
+                        "dashed": {
+                            "description": "A valid `dasharray` appropriate for the game's display.",
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "required": ["type", "path"],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "description": "A way of incorporating a glyph from the legend into the board itself. This one is specific to the `freespace` renderer.",
+                            "enum": ["glyph"]
+                        },
+                        "glyph": {
+                            "description": "The name of the glyph in the `legend`.",
+                            "type": "string"
+                        },
+                        "points": {
+                            "description": "Provide absolute x,y coordinates.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "x": {
+                                        "type": "number"
+                                    },
+                                    "y": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["x","y"],
+                                "additionalProperties": false
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "required": ["type", "glyph", "points"],
+                    "additionalProperties": false
+                }
+            ]
+        },
         "multipiece": {
             "description": "Schema for the `multicell-square` renderer. This deforms glyphs from the legend into rectangular areas anchored from the top-left cell (the x,y coordinates closest to 0,0) and in a given width and height. Pieces can be overlapped, with an order decided by z index (higher z indices will overlap lower ones).",
             "type": "object",
@@ -267,6 +487,1521 @@
             },
             "required": ["glyph", "x", "y"],
             "additionalProperties": false
+        },
+        "areaPieces": {
+            "description": "The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["pieces"]
+                },
+                "pieces": {
+                    "description": "A list of strings representing glyphs in the `legend`",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "label": {
+                    "description": "The text that will appear at the top left of the area",
+                    "type": "string"
+                },
+                "width": {
+                    "description": "By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "background": {
+                    "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
+                    "$ref": "#/definitions/colourstrings",
+                    "default": "#fff"
+                },
+                "ownerMark": {
+                    "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ]
+                }
+            },
+            "required": ["type", "pieces", "label"],
+            "additionalProperties": false
+        },
+        "areaPolyomino": {
+            "description": "Used by the `polyomino` renderer to display a selected piece and provide UI for manipulating it. Current maninpulations are rotating in 90-degree increments and flipping horizontally and vertically.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["polyomino"]
+                },
+                "label": {
+                    "type": "string"
+                },
+                "matrix": {
+                    "$ref": "#/definitions/polymatrix"
+                },
+                "background": {
+                    "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
+                    "$ref": "#/definitions/colourstrings",
+                    "default": "#fff"
+                }
+            },
+            "required": ["type", "matrix", "label"],
+            "additionalProperties": false
+        },
+        "areaHWStash": {
+            "description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["globalStash"]
+                },
+                "R": {
+                    "$ref": "#/definitions/stashstrings"
+                },
+                "G": {
+                    "$ref": "#/definitions/stashstrings"
+                },
+                "B": {
+                    "$ref": "#/definitions/stashstrings"
+                },
+                "Y": {
+                    "$ref": "#/definitions/stashstrings"
+                }
+            },
+            "required": [
+                "type",
+                "R",
+                "G",
+                "B",
+                "Y"
+            ],
+            "additionalProperties": false
+        },
+        "areaStackingExpanded": {
+            "description": "Used by the `stacking-expanding` renderer to display the expanded contents of a cell.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["expandedColumn"]
+                },
+                "cell": {
+                    "description": "The coordinates of the cell being expanded (optional).",
+                    "type": "string"
+                },
+                "stack": {
+                    "description": "List of pieces (each must appear in the `legend`) to display alongside the board. The first piece in the array is the bottom of the stack.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": ["type", "stack"],
+            "additionalProperties": false
+        },
+        "areaVolcanoStash": {
+            "description": "Used by the `stacking-expanding` renderer for displaying stashes of pyramids (e.g., captured pieces in a Volcano game).",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["localStash"]
+                },
+                "label": {
+                    "type": "string"
+                },
+                "stash": {
+                    "description": "This is an array of stacks of pieces (themselves an array).",
+                    "type": "array",
+                    "items": {
+                        "description": "The stack of pieces is displayed from the bottom to the top, read left to right.",
+                        "type": "array",
+                        "items": {
+                            "description": "The pieces to be placed. Must exist in the `legend`.",
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "required": ["type", "label", "stash"],
+            "additionalProperties": false
+        },
+        "areaButtonBar": {
+            "description": "Used to create a button bar for clicking.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["buttonBar"]
+                },
+                "buttons": {
+                    "description": "The array of the buttons themselves, which will be presented in the order given.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "label": {
+                                "description": "The label that will be visible on the rendered image.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "description": "The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.",
+                                "type": "string",
+                                "pattern": "^\\S+$"
+                            },
+                            "attributes": {
+                                "description": "Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.",
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "fill": {
+                                "description": "Optional fill for this specific button.",
+                                "$ref": "#/definitions/colourstrings",
+                                "default": "#000"
+                            }
+                        },
+                        "required": ["label"]
+                    }
+                },
+                "position": {
+                    "description": "Where you want the bar to appear relative to the board.",
+                    "enum": ["left", "right"],
+                    "default": "right"
+                },
+                "height": {
+                    "description": "The height of each button as a percentage of the cell size.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "minWidth": {
+                    "description": "If you want the buttons to have a minimum width, regardless of the values, provide it here as a percentage of the cell size. Otherwise all the buttons will have the width of the widest label.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "buffer": {
+                    "description": "The spacing you want between each button, expressed as a percentage of the height.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "colour": {
+                    "description": "The colour of the button border and text.",
+                    "$ref": "#/definitions/colourstrings",
+                    "default": "#000"
+                }
+            },
+            "required": ["type", "buttons"],
+            "additionalProperties": false
+        },
+        "areaScrollBar": {
+            "description": "Used to create a clickable vertical scroll bar used for hiding/showing layers of pieces.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["scrollBar"]
+                },
+                "min": {
+                    "description": "The lowest value of the bar (usually 0).",
+                    "type": "integer",
+                    "default": 0
+                },
+                "max": {
+                    "description": "The highest value of the bar.",
+                    "type": "integer"
+                },
+                "current": {
+                    "description": "The current value of the bar.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "labels": {
+                    "description": "Defines the text labels for each of the clickable elements.",
+                    "type": "object",
+                    "properties": {
+                        "upOne": {
+                            "type": "string",
+                            "default": "+"
+                        },
+                        "upAll": {
+                            "type": "string",
+                            "default": "++"
+                        },
+                        "downOne": {
+                            "type": "string",
+                            "default": "\u2212"
+                        },
+                        "downAll": {
+                            "type": "string",
+                            "default": "\u2212\u2212"
+                        },
+                        "bar": {
+                            "type": "string",
+                            "default": "Hide/show layers"
+                        }
+                    }
+                },
+                "position": {
+                    "description": "Where you want the bar to appear relative to the board.",
+                    "enum": ["left", "right"],
+                    "default": "right"
+                },
+                "width": {
+                    "description": "The width of each scroll bar segment as a percentage of the cell size.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.25
+                },
+                "height": {
+                    "description": "The height of each scroll bar segment as a percentage of the cell size.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.75
+                },
+                "lineWidth": {
+                    "description": "By default, each segment is signalled by lines that extend beyond the width of the bar itself. This defines the extra width of that line, as a percentage of the total width.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.5
+                },
+                "colours": {
+                    "description": "Defines the various colour settings.",
+                    "type": "object",
+                    "properties": {
+                        "background": {
+                            "description": "Defaults to fully transparent background",
+                            "$ref": "#/definitions/colourstrings"
+                        },
+                        "fill": {
+                            "$ref": "#/definitions/colourstrings",
+                            "default": "#000"
+                        },
+                        "strokes": {
+                            "description": "Lines and text",
+                            "$ref": "#/definitions/colourstrings",
+                            "default": "#000"
+                        }
+                    }
+                }
+            },
+            "required": ["type", "max"],
+            "additionalProperties": false
+        },
+        "areaKey": {
+            "description": "A list of pieces in the `legend` that players need identifiers for. Usually needed for games with many colours or just indicating who controls what.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["key"]
+                },
+                "list": {
+                    "description": "The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "piece": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "description": "If a click handler is attached, this is the value that will be given in the \"piece\" parameter. Otherwise it will pass the name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["piece", "name"],
+                        "additionalProperties": false
+                    }
+                },
+                "height": {
+                    "description": "The height of each entry as a percentage of cell size.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.333
+                },
+                "buffer": {
+                    "description": "The spacing you want between each entry, expressed as a percentage of the height.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.1
+                },
+                "position": {
+                    "description": "Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.",
+                    "enum": ["left", "right"],
+                    "default": "right"
+                },
+                "clickable": {
+                    "description": "By default, `key` entries have a click handler attached. Set this to `false` to disable that.",
+                    "type": "boolean",
+                    "default": true
+                }
+            },
+            "required": ["list"],
+            "additionalProperties": false
+        },
+        "markerDots": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "A way of placing small marker dots at certain points of the board.",
+                    "enum": ["dots"]
+                },
+                "points": {
+                    "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 1
+                },
+                "size": {
+                    "description": "The size of the diameter of the dot as a fraction of cellsize.",
+                    "type": "number",
+                    "default": 0.2
+                },
+                "colour": {
+                    "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "opacity": {
+                    "description": "1 is fully opaque. 0 is fully transparent.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                }
+            },
+            "required": ["type", "points"],
+            "additionalProperties": false
+        },
+        "markerShading": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "This is for shading spaces or areas on the board.",
+                    "enum": ["shading"]
+                },
+                "belowGrid": {
+                    "description": "If true, the shading will be done below the grid lines.",
+                    "type": "boolean"
+                },
+                "points": {
+                    "description": "It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 3
+                },
+                "colour": {
+                    "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "opacity": {
+                    "description": "1 is fully opaque. 0 is fully transparent.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.25
+                }
+            },
+            "required": ["type", "points"],
+            "additionalProperties": false
+        },
+        "markerFlood": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Only usable by board styles composed of polygons. Distinct from shading, this will simply fill the specified cells with a colour.",
+                    "enum": ["flood"]
+                },
+                "belowGrid": {
+                    "description": "If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "points": {
+                    "description": "One or more grid coordinates of spaces to fill.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 1
+                },
+                "colour": {
+                    "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"},
+                        {"$ref": "#/definitions/gradient"}
+                    ],
+                    "default": "#000"
+                },
+                "opacity": {
+                    "description": "1 is fully opaque. 0 is fully transparent.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.25
+                }
+            },
+            "required": ["type", "points"],
+            "additionalProperties": false
+        },
+        "markerOutline": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Only usable by boards constructed out of premade shapes (e.g., `hex-of-hex`, `sowing`). Uses the given colour as the outline of the given cell shape.",
+                    "enum": ["outline"]
+                },
+                "points": {
+                    "description": "One or more grid coordinates of spaces to fill.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 1
+                },
+                "colour": {
+                    "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "opacity": {
+                    "description": "1 is fully opaque. 0 is fully transparent.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.25
+                }
+            },
+            "required": ["type", "points", "colour"],
+            "additionalProperties": false
+        },
+        "markerHalo": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments",
+                    "enum": ["halo"]
+                },
+                "segments": {
+                    "description": "If only one segment is given, then a single circle will be drawn. Otherwise, the circle will be divided into equal chunks and drawn in the order specified, proceeding clockwise. The first segment will align with the `circular-start` given in `board` (`0` by default).",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "colour": {
+                                "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                "anyOf": [
+                                    {"$ref": "#/definitions/positiveInteger"},
+                                    {"$ref": "#/definitions/colourstrings"}
+                                ]
+                            },
+                            "opacity": {
+                                "description": "1 is fully opaque. 0 is fully transparent.",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "default": 1
+                            },
+                            "style": {
+                                "enum": [
+                                    "solid",
+                                    "dashed"
+                                ],
+                                "default": "solid"
+                            }
+                        },
+                        "required": ["colour"],
+                        "additionalProperties": false
+                    }
+                },
+                "width": {
+                    "description": "Stroke width of the line",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 5
+                },
+                "offset": {
+                    "description": "By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.",
+                    "type": "number",
+                    "default": 0
+                },
+                "fill": {
+                    "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ]
+                }
+            },
+            "required": ["type", "segments"],
+            "additionalProperties": false
+        },
+        "markerLine": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "A way of drawing arbitrary lines on the board. By default, respects the stroke width, colour, and opacity of the larger board.",
+                    "enum": ["line"]
+                },
+                "points": {
+                    "description": "Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "colour": {
+                    "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "opacity": {
+                    "description": "1 is fully opaque. 0 is fully transparent.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.5
+                },
+                "width": {
+                    "description": "Stroke width of the line",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "style": {
+                    "enum": [
+                        "solid",
+                        "dashed"
+                    ],
+                    "default": "solid"
+                },
+                "centered": {
+                    "description": "By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "clickable": {
+                    "description": "Adds a click handler to the line. This can get in the way of regular clicks, depending on how your board is configured.",
+                    "type": "boolean",
+                    "default": "false"
+                },
+                "belowGrid": {
+                    "description": "If true, the labels will be drawn below the grid lines.",
+                    "type": "boolean"
+                },
+                "shorten": {
+                    "description": "Let's you trim the ends of a line. Expressed as a percentage of total length.",
+                    "type": "number",
+                    "minimum": 0,
+                    "exclusiveMaximum": 1,
+                    "default": 0
+                }
+            },
+            "required": ["type", "points"],
+            "additionalProperties": false
+        },
+        "markerLabel": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.",
+                    "enum": ["label"]
+                },
+                "belowGrid": {
+                    "description": "If true, the labels will be drawn below the grid lines.",
+                    "type": "boolean"
+                },
+                "label": {
+                    "description": "The string itself you want to display.",
+                    "type": "string"
+                },
+                "points": {
+                    "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "number",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "number",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "nudge": {
+                    "description": "You almost never want a label *on* the board. Nudge lets you use board coordinates to get started and then move that line by a multiple of the 'cellspacing' (i.e., the base unit, the width of a square in a square grid). The nudge is applied to both points.",
+                    "type": "object",
+                    "properties": {
+                        "dx": {
+                            "type": "number"
+                        },
+                        "dy": {
+                            "type": "number"
+                        }
+                    },
+                    "required": ["dx", "dy"],
+                    "additionalProperties": false
+                },
+                "colour": {
+                    "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "size": {
+                    "description": "Font size in absolute pixels",
+                    "type": "number",
+                    "default": 17
+                },
+                "font": {
+                    "description": "Font style, e.g. 'font: Stencil; font-weight: Bold'",
+                    "type": "string",
+                    "default": ""
+                }
+            },
+            "required": ["type", "label", "points"],
+            "additionalProperties": false
+        },
+        "markerEdge": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.",
+                    "enum": ["edge"]
+                },
+                "edge": {
+                    "description": "An invalid edge designator (NE on a square map, for example) will just be ignored.",
+                    "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                },
+                "colour": {
+                    "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ]
+                },
+                "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                }
+            },
+            "required": ["type", "edge", "colour"],
+            "additionalProperties": false
+        },
+        "markerFence": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
+                    "enum": ["fence"]
+                },
+                "cell": {
+                    "type": "object",
+                    "properties": {
+                        "row": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "col": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "required": ["row", "col"],
+                    "additionalProperties": false
+                },
+                "side": {
+                    "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                },
+                "colour": {
+                    "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "width": {
+                    "description": "Expressed as a multiple of the base stroke width",
+                    "type": "number",
+                    "default": 6
+                },
+                "dashed": {
+                    "description": "A valid `dasharray` appropriate for the game's display.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": ["type", "cell", "side"],
+            "additionalProperties": false
+        },
+        "markerFences": {
+            "description": "Just a container marker for multiple fences",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["fences"]
+                },
+                "sides": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {"$ref": "#/definitions/markerFence"}
+                }
+            },
+            "required": ["type", "sides"],
+            "additionalProperties": false
+        },
+        "markerGlyph": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.",
+                    "enum": ["glyph"]
+                },
+                "belowGrid": {
+                    "description": "If true, the glyph will be drawn below the grid lines.",
+                    "type": "boolean"
+                },
+                "glyph": {
+                    "description": "The name of the glyph in the `legend`.",
+                    "type": "string"
+                },
+                "points": {
+                    "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["type", "glyph", "points"],
+            "additionalProperties": false
+        },
+        "markerFreespaceLabel": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.",
+                    "enum": ["label"]
+                },
+                "label": {
+                    "description": "The string itself you want to display.",
+                    "type": "string"
+                },
+                "points": {
+                    "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["x", "y"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "colour": {
+                    "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "size": {
+                    "description": "Font size in absolute pixels",
+                    "type": "number",
+                    "default": 17
+                }
+            },
+            "required": ["type", "label", "points"],
+            "additionalProperties": false
+        },
+        "markerFreespaceGlyph": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "A way of incorporating a glyph from the legend into the board itself.",
+                    "enum": ["glyph"]
+                },
+                "glyph": {
+                    "description": "The name of the glyph in the `legend`.",
+                    "type": "string"
+                },
+                "orientation": {
+                    "type": "number"
+                },
+                "points": {
+                    "description": "Provide absolute x,y coordinates.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["x", "y"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["type", "glyph", "points"],
+            "additionalProperties": false
+        },
+        "markerPath": {
+            "type": "object",
+            "description": "A simple SVG path with stroke and fill attributes.",
+            "properties": {
+                "type": {
+                    "enum": ["path"]
+                },
+                "path": {
+                    "type": "string"
+                },
+                "fill": {
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#fff"
+                },
+                "fillOpacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "stroke": {
+                    "anyOf": [
+                        {"$ref": "#/definitions/positiveInteger"},
+                        {"$ref": "#/definitions/colourstrings"}
+                    ],
+                    "default": "#000"
+                },
+                "strokeWidth": {
+                    "type": "number",
+                    "minimum": 0.1,
+                    "default": 1
+                },
+                "strokeOpacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "dashed": {
+                    "description": "A valid `dasharray` appropriate for the game's display.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": ["type", "path"],
+            "additionalProperties": false
+        },
+        "piecesHomeworlds": {
+            "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are allowed because sometimes you need to display an empty home system in the middle of a turn.",
+            "type": "array",
+            "items": {
+                "description": "The actual array of pieces in the given system.",
+                "type": "array",
+                "minItems": 0,
+                "maxItems": 24,
+                "items": {
+                    "type": "string",
+                    "pattern": "^p[RGBY][123][NESW]$"
+                }
+            }
+        },
+        "boardBasic": {
+            "description": "One of the preset boards.",
+            "type": "object",
+            "properties": {
+                "style": {
+                    "enum": [
+                        "squares",
+                        "squares-checkered",
+                        "squares-beveled",
+                        "squares-stacked",
+                        "vertex",
+                        "vertex-cross",
+                        "vertex-fanorona",
+                        "pegboard",
+                        "hex-slanted",
+                        "hex-odd-p",
+                        "hex-even-p",
+                        "hex-odd-f",
+                        "hex-even-f",
+                        "hex-of-hex",
+                        "hex-of-tri",
+                        "hex-of-cir",
+                        "snubsquare",
+                        "circular-cobweb",
+                        "sowing",
+                        "conhex-dots",
+                        "conhex-cells",
+                        "cairo-collinear",
+                        "cairo-catalan",
+                        "triangles-stacked",
+                        "conical-hex",
+                        "conical-hex-narrow",
+                        "pyramid-hex"
+                    ]
+                },
+                "labelColour": {
+                    "description": "The colour for the board labels. Defaults to the colour passed into the context (default black).",
+                    "$ref": "#/definitions/colourstrings",
+                    "default": "#000"
+                },
+                "strokeColour": {
+                    "description": "The colour for lines drawn to construct the board.",
+                    "$ref": "#/definitions/colourstrings",
+                    "default": "#000"
+                },
+                "strokeWeight": {
+                    "description": "The base stroke weight of lines drawn to construct the board.",
+                    "$ref": "#/definitions/positiveInteger",
+                    "default": 1
+                },
+                "labelOpacity": {
+                    "description": "The opacity of lines drawn to construct the board.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "strokeOpacity": {
+                    "description": "The opacity of lines drawn to construct the board.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "backFill": {
+                    "description": "Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.",
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "description": "`full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.",
+                            "enum": ["full", "board"],
+                            "default": "full"
+                        },
+                        "colour": {
+                            "$ref": "#/definitions/colourstrings"
+                        },
+                        "opacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "default": 1
+                        }
+                    },
+                    "required": ["colour"],
+                    "additionalProperties": false
+                },
+                "blocked": {
+                    "description": "On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 1
+                },
+                "minWidth": {
+                    "description": "Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "maxWidth": {
+                    "description": "Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "half": {
+                    "description": "Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids. Mutually exclusive with `alternatingSymmetry`.",
+                    "enum": ["top", "bottom"]
+                },
+                "width": {
+                    "description": "Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of slices.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "height": {
+                    "description": "Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "showEndPits": {
+                    "description": "Only applies to the `sowing` board style. Determines whether to include full-height end pits on the board.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "squarePits": {
+                    "description": "Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "col": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": ["row", "col"],
+                        "additionalProperties": false
+                    },
+                    "minItems": 1
+                },
+                "clickDeltaX": {
+                    "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "clickDeltaY": {
+                    "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "startLight": {
+                    "description": "Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.",
+                    "type": "boolean"
+                },
+                "alternatingSymmetry": {
+                    "description": "Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.",
+                    "type": "boolean"
+                },
+                "columnLabels": {
+                    "description": "An optional array of strings to override the default column labeling.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rowLabels": {
+                    "description": "An optional array of strings to override the default row labeling.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "labelStyle": {
+                    "description": "Currently only applies to hex fields",
+                    "enum": ["internal", "external"],
+                    "default": "internal"
+                },
+                "skipLabels": {
+                    "description": "A ham-fisted way to omit row and column labels you don't want displayed for some reason. Currently only used by the `triangles-stacked` renderer for certain board sizes.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "description": "For now, simply matches the string against the label.",
+                        "type": "string"
+                    }
+                },
+                "tileWidth": {
+                    "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "tileHeight": {
+                    "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells high as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "tileSpacing": {
+                    "description": "If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "stackMax": {
+                    "description": "Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 8
+                },
+                "stackOffset": {
+                    "description": "Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.13
+                },
+                "circular-start": {
+                    "description": "By default, circular boards start with a vertical line drawn from the centre straight \"north\". This lets you choose a different starting degree. In this plane, 0 degrees is towards the top of the screen and increases clockwise.",
+                    "type": "number",
+                    "minimum": -360,
+                    "maximum": 360,
+                    "default": 0
+                },
+                "cairoStart": {
+                    "description": "For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.",
+                    "type": "string",
+                    "enum": ["H","V"],
+                    "default": "H"
+                },
+                "buffer": {
+                    "description": "Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.",
+                    "type": "object",
+                    "properties": {
+                        "width": {
+                            "description": "The width of the zone expressed as a percentage of the cell size. If zero, the zone is omitted.",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 0.9
+                        },
+                        "pattern": {
+                            "description": "The name of one of the built-in patterns for fill.",
+                            "type": "string"
+                        },
+                        "show": {
+                            "description": "Choose which of the four sides you want displayed. By default, it's all four.",
+                            "type": "array",
+                            "items": {
+                                "enum": ["N", "E", "S", "W"]
+                            },
+                            "default": ["N", "E", "S", "W"]
+                        }
+                    },
+                    "required": ["width"],
+                    "additionalProperties": false
+                },
+                "markers": {
+                    "description": "Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.",
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {"$ref": "#/definitions/markerDots"},
+                            {"$ref": "#/definitions/markerShading"},
+                            {"$ref": "#/definitions/markerFlood"},
+                            {"$ref": "#/definitions/markerOutline"},
+                            {"$ref": "#/definitions/markerHalo"},
+                            {"$ref": "#/definitions/markerLine"},
+                            {"$ref": "#/definitions/markerLabel"},
+                            {"$ref": "#/definitions/markerEdge"},
+                            {"$ref": "#/definitions/markerFence"},
+                            {"$ref": "#/definitions/markerFences"},
+                            {"$ref": "#/definitions/markerGlyph"}
+                        ]
+                    }
+                }
+            },
+            "required": ["style"],
+            "additionalProperties": false
+        },
+        "boardHomeworlds": {
+            "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "description": "The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 25,
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+                    },
+                    "seat": {
+                        "description": "If this is a home system, give the compass direction representing the player's seat. Omit property in shared systems.",
+                        "enum": [
+                            "N",
+                            "E",
+                            "S",
+                            "W"
+                        ]
+                    },
+                    "stars": {
+                        "description": "Describes the system's stars.",
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 2,
+                        "items": {
+                            "type": "string",
+                            "pattern": "^[RGBY][123]$"
+                        }
+                    }
+                },
+                "required": [
+                    "name",
+                    "stars"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "boardEntropy": {
+            "description": "The board schema for the `entropy` renderer",
+            "type": "object",
+            "properties": {
+                "style": {
+                    "enum": ["entropy"]
+                },
+                "boardOne": {
+                    "description": "Describes the left-hand or top board",
+                    "type": "object",
+                    "properties": {
+                        "label": {
+                            "type": "string",
+                            "default": "Player 1: Order"
+                        },
+                        "occluded": {
+                            "description": "Used as an aid to the player by occluding one of the boards",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "boardTwo": {
+                    "description": "Describes the right-hand or bottom board",
+                    "type": "object",
+                    "properties": {
+                        "label": {
+                            "type": "string",
+                            "default": "Player 2: Order"
+                        },
+                        "occluded": {
+                            "description": "Used as an aid to the player by occluding one of the boards",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "orientation": {
+                    "description": "Whether the two boards should be arranged horizontally or vertically",
+                    "enum": ["horizontal", "vertical"],
+                    "default": "horizontal"
+                },
+                "strokeWeight": {
+                    "description": "The base stroke weight of lines drawn to construct the board.",
+                    "$ref": "#/definitions/positiveInteger",
+                    "default": 1
+                },
+                "strokeColour": {
+                    "description": "The colour for lines drawn to construct the board, includes the labels.",
+                    "$ref": "#/definitions/colourstrings",
+                    "default": "#000"
+                },
+                "strokeOpacity": {
+                    "description": "The opacity of lines drawn to construct the board, includes the labels.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                }
+            },
+            "required": ["style"]
+        },
+        "boardFreespace": {
+            "description": "Board schema for `freespace` boards",
+            "type": "object",
+            "properties": {
+                "width": {
+                    "description": "Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.",
+                    "type": "number"
+                },
+                "height": {
+                    "description": "Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.",
+                    "type": "number"
+                },
+                "backFill": {
+                    "description": "Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.",
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "description": "`full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.",
+                            "enum": ["full", "board"],
+                            "default": "full"
+                        },
+                        "colour": {
+                            "$ref": "#/definitions/colourstrings"
+                        },
+                        "opacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "default": 1
+                        }
+                    },
+                    "required": ["colour"],
+                    "additionalProperties": false
+                },
+                "origin": {
+                    "description": "In most cases, you'll want the top-left corner of the field to be 0,0 and generate your render accordingly. But if for some reason you want that origin to be different, change it here.",
+                    "type": "object",
+                    "properties": {
+                        "x": {
+                            "type": "number",
+                            "default": 0
+                        },
+                        "y": {
+                            "type": "number",
+                            "default": 0
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "markers": {
+                    "description": "Markers are placed before pieces, and thus can be obscured by them.",
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {"$ref": "#/definitions/markerPath"},
+                            {"$ref": "#/definitions/markerFreespaceLabel"},
+                            {"$ref": "#/definitions/markerFreespaceGlyph"}
+                        ]
+                    }
+                }
+            },
+            "required": ["width", "height"],
+            "additionalProperties": false
         }
     },
     "type": "object",
@@ -331,1157 +2066,10 @@
                     "description": "Used to render a single glyph",
                     "type": "null"
                 },
-                {
-                    "description": "One of the preset boards.",
-                    "type": "object",
-                    "properties": {
-                        "style": {
-                            "enum": [
-                                "squares",
-                                "squares-checkered",
-                                "squares-beveled",
-                                "squares-stacked",
-                                "vertex",
-                                "vertex-cross",
-                                "vertex-fanorona",
-                                "pegboard",
-                                "hex-slanted",
-                                "hex-odd-p",
-                                "hex-even-p",
-                                "hex-odd-f",
-                                "hex-even-f",
-                                "hex-of-hex",
-                                "hex-of-tri",
-                                "hex-of-cir",
-                                "snubsquare",
-                                "circular-cobweb",
-                                "sowing",
-                                "conhex-dots",
-                                "conhex-cells",
-                                "cairo-collinear",
-                                "cairo-catalan",
-                                "triangles-stacked",
-                                "conical-hex",
-                                "conical-hex-narrow",
-                                "pyramid-hex"
-                            ]
-                        },
-                        "labelColour": {
-                            "description": "The colour for the board labels. Defaults to the colour passed into the context (default black).",
-                            "$ref": "#/definitions/colourstrings",
-                            "default": "#000"
-                        },
-                        "strokeColour": {
-                            "description": "The colour for lines drawn to construct the board.",
-                            "$ref": "#/definitions/colourstrings",
-                            "default": "#000"
-                        },
-                        "strokeWeight": {
-                            "description": "The base stroke weight of lines drawn to construct the board.",
-                            "$ref": "#/definitions/positiveInteger",
-                            "default": 1
-                        },
-                        "labelOpacity": {
-                            "description": "The opacity of lines drawn to construct the board.",
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "default": 1
-                        },
-                        "strokeOpacity": {
-                            "description": "The opacity of lines drawn to construct the board.",
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "default": 1
-                        },
-                        "backFill": {
-                            "description": "Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.",
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "description": "`full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.",
-                                    "enum": ["full", "board"],
-                                    "default": "full"
-                                },
-                                "colour": {
-                                    "$ref": "#/definitions/colourstrings"
-                                },
-                                "opacity": {
-                                    "type": "number",
-                                    "minimum": 0,
-                                    "maximum": 1,
-                                    "default": 1
-                                }
-                            },
-                            "required": ["colour"],
-                            "additionalProperties": false
-                        },
-                        "blocked": {
-                            "description": "On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "row": {
-                                        "type": "integer",
-                                        "minimum": 0
-                                    },
-                                    "col": {
-                                        "type": "integer",
-                                        "minimum": 0
-                                    }
-                                },
-                                "required": ["row", "col"],
-                                "additionalProperties": false
-                            },
-                            "minItems": 1
-                        },
-                        "minWidth": {
-                            "description": "Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "maxWidth": {
-                            "description": "Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "half": {
-                            "description": "Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids. Mutually exclusive with `alternatingSymmetry`.",
-                            "enum": ["top", "bottom"]
-                        },
-                        "width": {
-                            "description": "Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of slices.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "height": {
-                            "description": "Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "showEndPits": {
-                            "description": "Only applies to the `sowing` board style. Determines whether to include full-height end pits on the board.",
-                            "type": "boolean",
-                            "default": true
-                        },
-                        "squarePits": {
-                            "description": "Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.",
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "row": {
-                                        "type": "integer",
-                                        "minimum": 0
-                                    },
-                                    "col": {
-                                        "type": "integer",
-                                        "minimum": 0
-                                    }
-                                },
-                                "required": ["row", "col"],
-                                "additionalProperties": false
-                            },
-                            "minItems": 1
-                        },
-                        "clickDeltaX": {
-                            "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "clickDeltaY": {
-                            "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "startLight": {
-                            "description": "Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.",
-                            "type": "boolean"
-                        },
-                        "alternatingSymmetry": {
-                            "description": "Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.",
-                            "type": "boolean"
-                        },
-                        "columnLabels": {
-                            "description": "An optional array of strings to override the default column labeling.",
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "rowLabels": {
-                            "description": "An optional array of strings to override the default row labeling.",
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "labelStyle": {
-                            "description": "Currently only applies to hex fields",
-                            "enum": ["internal", "external"],
-                            "default": "internal"
-                        },
-                        "skipLabels": {
-                            "description": "A ham-fisted way to omit row and column labels you don't want displayed for some reason. Currently only used by the `triangles-stacked` renderer for certain board sizes.",
-                            "type": "array",
-                            "minItems": 1,
-                            "items": {
-                                "description": "For now, simply matches the string against the label.",
-                                "type": "string"
-                            }
-                        },
-                        "tileWidth": {
-                            "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "tileHeight": {
-                            "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells high as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
-                            "$ref": "#/definitions/positiveInteger"
-                        },
-                        "tileSpacing": {
-                            "description": "If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.",
-                            "type": "number",
-                            "minimum": 0,
-                            "default": 0
-                        },
-                        "stackMax": {
-                            "description": "Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.",
-                            "type": "integer",
-                            "minimum": 1,
-                            "default": 8
-                        },
-                        "stackOffset": {
-                            "description": "Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.",
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "default": 0.13
-                        },
-                        "circular-start": {
-                            "description": "By default, circular boards start with a vertical line drawn from the centre straight \"north\". This lets you choose a different starting degree. In this plane, 0 degrees is towards the top of the screen and increases clockwise.",
-                            "type": "number",
-                            "minimum": -360,
-                            "maximum": 360,
-                            "default": 0
-                        },
-                        "cairoStart": {
-                            "description": "For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.",
-                            "type": "string",
-                            "enum": ["H","V"],
-                            "default": "H"
-                        },
-                        "buffer": {
-                            "description": "Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.",
-                            "type": "object",
-                            "properties": {
-                                "width": {
-                                    "description": "The width of the zone expressed as a percentage of the cell size. If zero, the zone is omitted.",
-                                    "type": "number",
-                                    "minimum": 0,
-                                    "maximum": 0.9
-                                },
-                                "pattern": {
-                                    "description": "The name of one of the built-in patterns for fill.",
-                                    "type": "string"
-                                },
-                                "show": {
-                                    "description": "Choose which of the four sides you want displayed. By default, it's all four.",
-                                    "type": "array",
-                                    "items": {
-                                        "enum": ["N", "E", "S", "W"]
-                                    },
-                                    "default": ["N", "E", "S", "W"]
-                                }
-                            },
-                            "required": ["width"],
-                            "additionalProperties": false
-                        },
-                        "markers": {
-                            "description": "Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.",
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "anyOf": [
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "A way of placing small marker dots at certain points of the board.",
-                                                "enum": ["dots"]
-                                            },
-                                            "points": {
-                                                "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "row": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        },
-                                                        "col": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        }
-                                                    },
-                                                    "required": ["row", "col"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 1
-                                            },
-                                            "size": {
-                                                "description": "The size of the diameter of the dot as a fraction of cellsize.",
-                                                "type": "number",
-                                                "default": 0.2
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "opacity": {
-                                                "description": "1 is fully opaque. 0 is fully transparent.",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 1
-                                            }
-                                        },
-                                        "required": ["type", "points"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "This is for shading spaces or areas on the board.",
-                                                "enum": ["shading"]
-                                            },
-                                            "belowGrid": {
-                                                "description": "If true, the shading will be done below the grid lines.",
-                                                "type": "boolean"
-                                            },
-                                            "points": {
-                                                "description": "It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "row": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        },
-                                                        "col": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        }
-                                                    },
-                                                    "required": ["row", "col"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 3
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "opacity": {
-                                                "description": "1 is fully opaque. 0 is fully transparent.",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 0.25
-                                            }
-                                        },
-                                        "required": ["type", "points"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "Only usable by board styles composed of polygons. Distinct from shading, this will simply fill the specified cells with a colour.",
-                                                "enum": ["flood"]
-                                            },
-                                            "belowGrid": {
-                                                "description": "If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.",
-                                                "type": "boolean",
-                                                "default": true
-                                            },
-                                            "points": {
-                                                "description": "One or more grid coordinates of spaces to fill.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "row": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        },
-                                                        "col": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        }
-                                                    },
-                                                    "required": ["row", "col"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 1
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"},
-                                                    {"$ref": "#/definitions/gradient"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "opacity": {
-                                                "description": "1 is fully opaque. 0 is fully transparent.",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 0.25
-                                            }
-                                        },
-                                        "required": ["type", "points"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "Only usable by boards constructed out of premade shapes (e.g., `hex-of-hex`, `sowing`). Uses the given colour as the outline of the given cell shape.",
-                                                "enum": ["outline"]
-                                            },
-                                            "points": {
-                                                "description": "One or more grid coordinates of spaces to fill.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "row": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        },
-                                                        "col": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        }
-                                                    },
-                                                    "required": ["row", "col"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 1
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "opacity": {
-                                                "description": "1 is fully opaque. 0 is fully transparent.",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 0.25
-                                            }
-                                        },
-                                        "required": ["type", "points", "colour"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments",
-                                                "enum": ["halo"]
-                                            },
-                                            "segments": {
-                                                "description": "If only one segment is given, then a single circle will be drawn. Otherwise, the circle will be divided into equal chunks and drawn in the order specified, proceeding clockwise. The first segment will align with the `circular-start` given in `board` (`0` by default).",
-                                                "type": "array",
-                                                "minItems": 1,
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "colour": {
-                                                            "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                            "anyOf": [
-                                                                {"$ref": "#/definitions/positiveInteger"},
-                                                                {"$ref": "#/definitions/colourstrings"}
-                                                            ]
-                                                        },
-                                                        "opacity": {
-                                                            "description": "1 is fully opaque. 0 is fully transparent.",
-                                                            "type": "number",
-                                                            "minimum": 0,
-                                                            "maximum": 1,
-                                                            "default": 1
-                                                        },
-                                                        "style": {
-                                                            "enum": [
-                                                                "solid",
-                                                                "dashed"
-                                                            ],
-                                                            "default": "solid"
-                                                        }
-                                                    },
-                                                    "required": ["colour"],
-                                                    "additionalProperties": false
-                                                }
-                                            },
-                                            "width": {
-                                                "description": "Stroke width of the line",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "default": 5
-                                            },
-                                            "offset": {
-                                                "description": "By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.",
-                                                "type": "number",
-                                                "default": 0
-                                            },
-                                            "fill": {
-                                                "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ]
-                                            }
-                                        },
-                                        "required": ["type", "segments"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "A way of drawing arbitrary lines on the board. By default, respects the stroke width, colour, and opacity of the larger board.",
-                                                "enum": ["line"]
-                                            },
-                                            "points": {
-                                                "description": "Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "row": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        },
-                                                        "col": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        }
-                                                    },
-                                                    "required": ["row", "col"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 2,
-                                                "maxItems": 2
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "opacity": {
-                                                "description": "1 is fully opaque. 0 is fully transparent.",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 0.5
-                                            },
-                                            "width": {
-                                                "description": "Stroke width of the line",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "default": 1
-                                            },
-                                            "style": {
-                                                "enum": [
-                                                    "solid",
-                                                    "dashed"
-                                                ],
-                                                "default": "solid"
-                                            },
-                                            "centered": {
-                                                "description": "By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.",
-                                                "type": "boolean",
-                                                "default": false
-                                            },
-                                            "clickable": {
-                                                "description": "Adds a click handler to the line. This can get in the way of regular clicks, depending on how your board is configured.",
-                                                "type": "boolean",
-                                                "default": "false"
-                                            },
-                                            "belowGrid": {
-                                                "description": "If true, the labels will be drawn below the grid lines.",
-                                                "type": "boolean"
-                                            },
-                                            "shorten": {
-                                                "description": "Let's you trim the ends of a line. Expressed as a percentage of total length.",
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "exclusiveMaximum": 1,
-                                                "default": 0
-                                            }
-                                        },
-                                        "required": ["type", "points"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.",
-                                                "enum": ["label"]
-                                            },
-                                            "belowGrid": {
-                                                "description": "If true, the labels will be drawn below the grid lines.",
-                                                "type": "boolean"
-                                            },
-                                            "label": {
-                                                "description": "The string itself you want to display.",
-                                                "type": "string"
-                                            },
-                                            "points": {
-                                                "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "row": {
-                                                            "type": "number",
-                                                            "minimum": 0
-                                                        },
-                                                        "col": {
-                                                            "type": "number",
-                                                            "minimum": 0
-                                                        }
-                                                    },
-                                                    "required": ["row", "col"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 2,
-                                                "maxItems": 2
-                                            },
-                                            "nudge": {
-                                                "description": "You almost never want a label *on* the board. Nudge lets you use board coordinates to get started and then move that line by a multiple of the 'cellspacing' (i.e., the base unit, the width of a square in a square grid). The nudge is applied to both points.",
-                                                "type": "object",
-                                                "properties": {
-                                                    "dx": {
-                                                        "type": "number"
-                                                    },
-                                                    "dy": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                "required": ["dx", "dy"],
-                                                "additionalProperties": false
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "size": {
-                                                "description": "Font size in absolute pixels",
-                                                "type": "number",
-                                                "default": 17
-                                            },
-                                            "font": {
-                                                "description": "Font style, e.g. 'font: Stencil; font-weight: Bold'",
-                                                "type": "string",
-                                                "default": ""
-                                            }
-                                        },
-                                        "required": ["type", "label", "points"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.",
-                                                "enum": ["edge"]
-                                            },
-                                            "edge": {
-                                                "description": "An invalid edge designator (NE on a square map, for example) will just be ignored.",
-                                                "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ]
-                                            },
-                                            "opacity": {
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 1
-                                            }
-                                        },
-                                        "required": ["type", "edge", "colour"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
-                                                "enum": ["fence"]
-                                            },
-                                            "cell": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "row": {
-                                                        "type": "integer",
-                                                        "minimum": 0
-                                                    },
-                                                    "col": {
-                                                        "type": "integer",
-                                                        "minimum": 0
-                                                    }
-                                                },
-                                                "required": ["row", "col"],
-                                                "additionalProperties": false
-                                            },
-                                            "side": {
-                                                "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "width": {
-                                                "description": "Expressed as a multiple of the base stroke width",
-                                                "type": "number",
-                                                "default": 6
-                                            },
-                                            "dashed": {
-                                                "description": "A valid `dasharray` appropriate for the game's display.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "number"
-                                                }
-                                            }
-                                        },
-                                        "required": ["type", "cell", "side"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
-                                                "enum": ["fences"]
-                                            },
-                                            "sides": {
-                                                "type": "array",
-                                                "minItems": 1,
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "cell": {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "row": {
-                                                                    "type": "integer",
-                                                                    "minimum": 0
-                                                                },
-                                                                "col": {
-                                                                    "type": "integer",
-                                                                    "minimum": 0
-                                                                }
-                                                            },
-                                                            "required": ["row", "col"],
-                                                            "additionalProperties": false
-                                                        },
-                                                        "side": {
-                                                            "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-                                                        },
-                                                        "colour": {
-                                                            "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                            "anyOf": [
-                                                                {"$ref": "#/definitions/positiveInteger"},
-                                                                {"$ref": "#/definitions/colourstrings"}
-                                                            ],
-                                                            "default": "#000"
-                                                        },
-                                                        "width": {
-                                                            "description": "Expressed as a multiple of the base stroke width",
-                                                            "type": "number",
-                                                            "default": 6
-                                                        },
-                                                        "dashed": {
-                                                            "description": "A valid `dasharray` appropriate for the game's display.",
-                                                            "type": "array",
-                                                            "items": {
-                                                                "type": "number"
-                                                            }
-                                                        }
-                                                    },
-                                                    "required": ["cell", "side"],
-                                                    "additionalProperties": false
-                                                }
-                                            }
-                                        },
-                                        "required": ["type", "sides"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.",
-                                                "enum": ["glyph"]
-                                            },
-                                            "belowGrid": {
-                                                "description": "If true, the glyph will be drawn below the grid lines.",
-                                                "type": "boolean"
-                                            },
-                                            "glyph": {
-                                                "description": "The name of the glyph in the `legend`.",
-                                                "type": "string"
-                                            },
-                                            "points": {
-                                                "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "row": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        },
-                                                        "col": {
-                                                            "type": "integer",
-                                                            "minimum": 0
-                                                        }
-                                                    },
-                                                    "required": ["row", "col"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 1
-                                            }
-                                        },
-                                        "required": ["type", "glyph", "points"],
-                                        "additionalProperties": false
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "required": ["style"],
-                    "additionalProperties": false
-                },
-                {
-                    "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.",
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "description": "The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.",
-                                "type": "string",
-                                "minLength": 1,
-                                "maxLength": 25,
-                                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
-                            },
-                            "seat": {
-                                "description": "If this is a home system, give the compass direction representing the player's seat. Omit property in shared systems.",
-                                "enum": [
-                                    "N",
-                                    "E",
-                                    "S",
-                                    "W"
-                                ]
-                            },
-                            "stars": {
-                                "description": "Describes the system's stars.",
-                                "type": "array",
-                                "minItems": 1,
-                                "maxItems": 2,
-                                "items": {
-                                    "type": "string",
-                                    "pattern": "^[RGBY][123]$"
-                                }
-                            }
-                        },
-                        "required": [
-                            "name",
-                            "stars"
-                        ],
-                        "additionalProperties": false
-                    }
-                },
-                {
-                    "description": "The board schema for the `entropy` renderer",
-                    "type": "object",
-                    "properties": {
-                        "style": {
-                            "enum": ["entropy"]
-                        },
-                        "boardOne": {
-                            "description": "Describes the left-hand or top board",
-                            "type": "object",
-                            "properties": {
-                                "label": {
-                                    "type": "string",
-                                    "default": "Player 1: Order"
-                                },
-                                "occluded": {
-                                    "description": "Used as an aid to the player by occluding one of the boards",
-                                    "type": "boolean",
-                                    "default": false
-                                }
-                            },
-                            "additionalProperties": false
-                        },
-                        "boardTwo": {
-                            "description": "Describes the right-hand or bottom board",
-                            "type": "object",
-                            "properties": {
-                                "label": {
-                                    "type": "string",
-                                    "default": "Player 2: Order"
-                                },
-                                "occluded": {
-                                    "description": "Used as an aid to the player by occluding one of the boards",
-                                    "type": "boolean",
-                                    "default": false
-                                }
-                            },
-                            "additionalProperties": false
-                        },
-                        "orientation": {
-                            "description": "Whether the two boards should be arranged horizontally or vertically",
-                            "enum": ["horizontal", "vertical"],
-                            "default": "horizontal"
-                        },
-                        "strokeWeight": {
-                            "description": "The base stroke weight of lines drawn to construct the board.",
-                            "$ref": "#/definitions/positiveInteger",
-                            "default": 1
-                        },
-                        "strokeColour": {
-                            "description": "The colour for lines drawn to construct the board, includes the labels.",
-                            "$ref": "#/definitions/colourstrings",
-                            "default": "#000"
-                        },
-                        "strokeOpacity": {
-                            "description": "The opacity of lines drawn to construct the board, includes the labels.",
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "default": 1
-                        }
-                    },
-                    "required": ["style"]
-                },
-                {
-                    "description": "Board schema for `freespace` boards",
-                    "type": "object",
-                    "properties": {
-                        "width": {
-                            "description": "Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.",
-                            "type": "number"
-                        },
-                        "height": {
-                            "description": "Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.",
-                            "type": "number"
-                        },
-                        "backFill": {
-                            "description": "Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.",
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "description": "`full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.",
-                                    "enum": ["full", "board"],
-                                    "default": "full"
-                                },
-                                "colour": {
-                                    "$ref": "#/definitions/colourstrings"
-                                },
-                                "opacity": {
-                                    "type": "number",
-                                    "minimum": 0,
-                                    "maximum": 1,
-                                    "default": 1
-                                }
-                            },
-                            "required": ["colour"],
-                            "additionalProperties": false
-                        },
-                        "origin": {
-                            "description": "In most cases, you'll want the top-left corner of the field to be 0,0 and generate your render accordingly. But if for some reason you want that origin to be different, change it here.",
-                            "type": "object",
-                            "properties": {
-                                "x": {
-                                    "type": "number",
-                                    "default": 0
-                                },
-                                "y": {
-                                    "type": "number",
-                                    "default": 0
-                                }
-                            },
-                            "additionalProperties": false
-                        },
-                        "markers": {
-                            "description": "Markers are placed before pieces, and thus can be obscured by them.",
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "anyOf": [
-                                    {
-                                        "description": "A simple SVG path with stroke and fill attributes.",
-                                        "properties": {
-                                            "type": {
-                                                "enum": ["path"]
-                                            },
-                                            "path": {
-                                                "type": "string"
-                                            },
-                                            "fill": {
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#fff"
-                                            },
-                                            "fillOpacity": {
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 1
-                                            },
-                                            "stroke": {
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "strokeWidth": {
-                                                "type": "number",
-                                                "minimum": 0.1,
-                                                "default": 1
-                                            },
-                                            "strokeOpacity": {
-                                                "type": "number",
-                                                "minimum": 0,
-                                                "maximum": 1,
-                                                "default": 1
-                                            },
-                                            "dashed": {
-                                                "description": "A valid `dasharray` appropriate for the game's display.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "number"
-                                                }
-                                            }
-                                        },
-                                        "required": ["type", "path"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.",
-                                                "enum": ["label"]
-                                            },
-                                            "label": {
-                                                "description": "The string itself you want to display.",
-                                                "type": "string"
-                                            },
-                                            "points": {
-                                                "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "x": {
-                                                            "type": "number"
-                                                        },
-                                                        "y": {
-                                                            "type": "number"
-                                                        }
-                                                    },
-                                                    "required": ["x", "y"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 2,
-                                                "maxItems": 2
-                                            },
-                                            "colour": {
-                                                "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
-                                                "anyOf": [
-                                                    {"$ref": "#/definitions/positiveInteger"},
-                                                    {"$ref": "#/definitions/colourstrings"}
-                                                ],
-                                                "default": "#000"
-                                            },
-                                            "size": {
-                                                "description": "Font size in absolute pixels",
-                                                "type": "number",
-                                                "default": 17
-                                            }
-                                        },
-                                        "required": ["type", "label", "points"],
-                                        "additionalProperties": false
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "description": "A way of incorporating a glyph from the legend into the board itself.",
-                                                "enum": ["glyph"]
-                                            },
-                                            "glyph": {
-                                                "description": "The name of the glyph in the `legend`.",
-                                                "type": "string"
-                                            },
-                                            "orientation": {
-                                                "type": "number"
-                                            },
-                                            "points": {
-                                                "description": "Provide absolute x,y coordinates.",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "x": {
-                                                            "type": "number"
-                                                        },
-                                                        "y": {
-                                                            "type": "number"
-                                                        }
-                                                    },
-                                                    "required": ["x", "y"],
-                                                    "additionalProperties": false
-                                                },
-                                                "minItems": 1
-                                            }
-                                        },
-                                        "required": ["type", "glyph", "points"],
-                                        "additionalProperties": false
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "required": ["width", "height"],
-                    "additionalProperties": false
-                }
+                {"$ref": "#/definitions/boardBasic"},
+                {"$ref": "#/definitions/boardHomeworlds"},
+                {"$ref": "#/definitions/boardEntropy"},
+                {"$ref": "#/definitions/boardFreespace"}
             ]
         },
         "pieces": {
@@ -1520,20 +2108,7 @@
                         }
                     }
                 },
-                {
-                    "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are allowed because sometimes you need to display an empty home system in the middle of a turn.",
-                    "type": "array",
-                    "items": {
-                        "description": "The actual array of pieces in the given system.",
-                        "type": "array",
-                        "minItems": 0,
-                        "maxItems": 24,
-                        "items": {
-                            "type": "string",
-                            "pattern": "^p[RGBY][123][NESW]$"
-                        }
-                    }
-                },
+                {"$ref": "#/definitions/piecesHomeworlds"},
                 {
                     "type": "array",
                     "items": {
@@ -1559,374 +2134,14 @@
             "type": "array",
             "items": {
                 "anyOf": [
-                    {
-                        "description": "The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm.",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["pieces"]
-                            },
-                            "pieces": {
-                                "description": "A list of strings representing glyphs in the `legend`",
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                },
-                                "minItems": 1
-                            },
-                            "label": {
-                                "description": "The text that will appear at the top left of the area",
-                                "type": "string"
-                            },
-                            "width": {
-                                "description": "By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.",
-                                "$ref": "#/definitions/positiveInteger"
-                            },
-                            "background": {
-                                "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
-                                "$ref": "#/definitions/colourstrings",
-                                "default": "#fff"
-                            },
-                            "ownerMark": {
-                                "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
-                                "anyOf": [
-                                    {"$ref": "#/definitions/positiveInteger"},
-                                    {"$ref": "#/definitions/colourstrings"}
-                                ]
-                            }
-                        },
-                        "required": ["type", "pieces", "label"],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "Used by the `polyomino` renderer to display a selected piece and provide UI for manipulating it. Current maninpulations are rotating in 90-degree increments and flipping horizontally and vertically.",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["polyomino"]
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "matrix": {
-                                "$ref": "#/definitions/polymatrix"
-                            },
-                            "background": {
-                                "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
-                                "$ref": "#/definitions/colourstrings",
-                                "default": "#fff"
-                            }
-                        },
-                        "required": ["type", "matrix", "label"],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["globalStash"]
-                            },
-                            "R": {
-                                "$ref": "#/definitions/stashstrings"
-                            },
-                            "G": {
-                                "$ref": "#/definitions/stashstrings"
-                            },
-                            "B": {
-                                "$ref": "#/definitions/stashstrings"
-                            },
-                            "Y": {
-                                "$ref": "#/definitions/stashstrings"
-                            }
-                        },
-                        "required": [
-                            "type",
-                            "R",
-                            "G",
-                            "B",
-                            "Y"
-                        ],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "Used by the `stacking-expanding` renderer to display the expanded contents of a cell.",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["expandedColumn"]
-                            },
-                            "cell": {
-                                "description": "The coordinates of the cell being expanded (optional).",
-                                "type": "string"
-                            },
-                            "stack": {
-                                "description": "List of pieces (each must appear in the `legend`) to display alongside the board. The first piece in the array is the bottom of the stack.",
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "required": ["type", "stack"],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "Used by the `stacking-expanding` renderer for displaying stashes of pyramids (e.g., captured pieces in a Volcano game).",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["localStash"]
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "stash": {
-                                "description": "This is an array of stacks of pieces (themselves an array).",
-                                "type": "array",
-                                "items": {
-                                    "description": "The stack of pieces is displayed from the bottom to the top, read left to right.",
-                                    "type": "array",
-                                    "items": {
-                                        "description": "The pieces to be placed. Must exist in the `legend`.",
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        },
-                        "required": ["type", "label", "stash"],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "Used to create a button bar for clicking.",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["buttonBar"]
-                            },
-                            "buttons": {
-                                "description": "The array of the buttons themselves, which will be presented in the order given.",
-                                "type": "array",
-                                "minItems": 1,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "label": {
-                                            "description": "The label that will be visible on the rendered image.",
-                                            "type": "string",
-                                            "minLength": 1
-                                        },
-                                        "value": {
-                                            "description": "The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.",
-                                            "type": "string",
-                                            "pattern": "^\\S+$"
-                                        },
-                                        "attributes": {
-                                            "description": "Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.",
-                                            "type": "array",
-                                            "minItems": 1,
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "value": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "required": ["name", "value"],
-                                                "additionalProperties": false
-                                            }
-                                        },
-                                        "fill": {
-                                            "description": "Optional fill for this specific button.",
-                                            "$ref": "#/definitions/colourstrings",
-                                            "default": "#000"
-                                        }
-                                    },
-                                    "required": ["label"]
-                                }
-                            },
-                            "position": {
-                                "description": "Where you want the bar to appear relative to the board.",
-                                "enum": ["left", "right"],
-                                "default": "right"
-                            },
-                            "height": {
-                                "description": "The height of each button as a percentage of the cell size.",
-                                "type": "number",
-                                "minimum": 0,
-                                "default": 1
-                            },
-                            "minWidth": {
-                                "description": "If you want the buttons to have a minimum width, regardless of the values, provide it here as a percentage of the cell size. Otherwise all the buttons will have the width of the widest label.",
-                                "type": "number",
-                                "minimum": 0
-                            },
-                            "buffer": {
-                                "description": "The spacing you want between each button, expressed as a percentage of the height.",
-                                "type": "number",
-                                "minimum": 0,
-                                "default": 0
-                            },
-                            "colour": {
-                                "description": "The colour of the button border and text.",
-                                "$ref": "#/definitions/colourstrings",
-                                "default": "#000"
-                            }
-                        },
-                        "required": ["type", "buttons"],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "Used to create a clickable vertical scroll bar used for hiding/showing layers of pieces.",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["scrollBar"]
-                            },
-                            "min": {
-                                "description": "The lowest value of the bar (usually 0).",
-                                "type": "integer",
-                                "default": 0
-                            },
-                            "max": {
-                                "description": "The highest value of the bar.",
-                                "type": "integer"
-                            },
-                            "current": {
-                                "description": "The current value of the bar.",
-                                "type": "integer",
-                                "default": 0
-                            },
-                            "labels": {
-                                "description": "Defines the text labels for each of the clickable elements.",
-                                "type": "object",
-                                "properties": {
-                                    "upOne": {
-                                        "type": "string",
-                                        "default": "+"
-                                    },
-                                    "upAll": {
-                                        "type": "string",
-                                        "default": "++"
-                                    },
-                                    "downOne": {
-                                        "type": "string",
-                                        "default": "\u2212"
-                                    },
-                                    "downAll": {
-                                        "type": "string",
-                                        "default": "\u2212\u2212"
-                                    },
-                                    "bar": {
-                                        "type": "string",
-                                        "default": "Hide/show layers"
-                                    }
-                                }
-                            },
-                            "position": {
-                                "description": "Where you want the bar to appear relative to the board.",
-                                "enum": ["left", "right"],
-                                "default": "right"
-                            },
-                            "width": {
-                                "description": "The width of each scroll bar segment as a percentage of the cell size.",
-                                "type": "number",
-                                "minimum": 0,
-                                "default": 0.25
-                            },
-                            "height": {
-                                "description": "The height of each scroll bar segment as a percentage of the cell size.",
-                                "type": "number",
-                                "minimum": 0,
-                                "default": 0.75
-                            },
-                            "lineWidth": {
-                                "description": "By default, each segment is signalled by lines that extend beyond the width of the bar itself. This defines the extra width of that line, as a percentage of the total width.",
-                                "type": "number",
-                                "minimum": 0,
-                                "maximum": 1,
-                                "default": 0.5
-                            },
-                            "colours": {
-                                "description": "Defines the various colour settings.",
-                                "type": "object",
-                                "properties": {
-                                    "background": {
-                                        "description": "Defaults to fully transparent background",
-                                        "$ref": "#/definitions/colourstrings"
-                                    },
-                                    "fill": {
-                                        "$ref": "#/definitions/colourstrings",
-                                        "default": "#000"
-                                    },
-                                    "strokes": {
-                                        "description": "Lines and text",
-                                        "$ref": "#/definitions/colourstrings",
-                                        "default": "#000"
-                                    }
-                                }
-                            }
-                        },
-                        "required": ["type", "max"],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "A list of pieces in the `legend` that players need identifiers for. Usually needed for games with many colours or just indicating who controls what.",
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "enum": ["key"]
-                            },
-                            "list": {
-                                "description": "The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.",
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "piece": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "value": {
-                                            "description": "If a click handler is attached, this is the value that will be given in the \"piece\" parameter. Otherwise it will pass the name.",
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": ["piece", "name"],
-                                    "additionalProperties": false
-                                }
-                            },
-                            "height": {
-                                "description": "The height of each entry as a percentage of cell size.",
-                                "type": "number",
-                                "minimum": 0,
-                                "default": 0.333
-                            },
-                            "buffer": {
-                                "description": "The spacing you want between each entry, expressed as a percentage of the height.",
-                                "type": "number",
-                                "minimum": 0,
-                                "default": 0.1
-                            },
-                            "position": {
-                                "description": "Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.",
-                                "enum": ["left", "right"],
-                                "default": "right"
-                            },
-                            "clickable": {
-                                "description": "By default, `key` entries have a click handler attached. Set this to `false` to disable that.",
-                                "type": "boolean",
-                                "default": true
-                            }
-                        },
-                        "required": ["list"],
-                        "additionalProperties": false
-                    }
+                    {"$ref": "#/definitions/areaPieces"},
+                    {"$ref": "#/definitions/areaPolyomino"},
+                    {"$ref": "#/definitions/areaHWStash"},
+                    {"$ref": "#/definitions/areaStackingExpanded"},
+                    {"$ref": "#/definitions/areaVolcanoStash"},
+                    {"$ref": "#/definitions/areaButtonBar"},
+                    {"$ref": "#/definitions/areaScrollBar"},
+                    {"$ref": "#/definitions/areaKey"}
                 ]
             }
         },
@@ -1934,223 +2149,11 @@
             "description": "Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.",
             "type": "array",
             "items": {
-                "type": "object",
                 "anyOf": [
-                    {
-                        "properties": {
-                            "type": {
-                                "description": "The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.",
-                                "enum": [
-                                    "move",
-                                    "eject",
-                                    "enter",
-                                    "exit",
-                                    "dots",
-                                    "outline",
-                                    "glyph"
-                                ]
-                            },
-                            "targets": {
-                                "description": "The cells involved in the annotation",
-                                "type": "array",
-                                "minItems": 1,
-                                "items": {
-                                    "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.",
-                                    "type": "object",
-                                    "properties": {
-                                        "row": {
-                                            "type": "integer",
-                                            "minimum": 0
-                                        },
-                                        "col": {
-                                            "type": "integer",
-                                            "minimum": 0
-                                        }
-                                    },
-                                    "required": ["row", "col"]
-                                }
-                            },
-                            "style": {
-                                "enum": [
-                                    "solid",
-                                    "dashed"
-                                ],
-                                "default": "solid"
-                            },
-                            "strokeWidth": {
-                                "description": "The width of the line, expressed as a percentage of cell size.",
-                                "type": "number",
-                                "minimum": 0,
-                                "default": 0.1
-                            },
-                            "opacity": {
-                                "type": "number",
-                                "minimum": 0,
-                                "maximum": 1,
-                                "default": 1
-                            },
-                            "colour": {
-                                "anyOf": [
-                                    {"$ref": "#/definitions/colourstrings"},
-                                    {"$ref": "#/definitions/positiveInteger"}
-                                ],
-                                "default": "#000"
-                            },
-                            "arrow": {
-                                "type": "boolean",
-                                "default": true
-                            },
-                            "static": {
-                                "description": "Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.",
-                                "type": "boolean",
-                                "default": "true"
-                            },
-                            "glyph": {
-                                "description": "Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.",
-                                "type": "string"
-                            },
-                            "dashed": {
-                                "description": "A valid `dasharray` appropriate for the game's display.",
-                                "type": "array",
-                                "items": {
-                                    "type": "number"
-                                }
-                            }
-                        },
-                        "required": ["type", "targets"]
-                    },
-                    {
-                        "description": "Delta annotations for the `sowing-*` renderers",
-                        "properties": {
-                            "type": {
-                                "enum": ["deltas"]
-                            },
-                            "deltas": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "row": {
-                                            "type": "integer"
-                                        },
-                                        "col": {
-                                            "type": "integer"
-                                        },
-                                        "delta": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "required": ["row", "col", "delta"],
-                                    "additionalProperties": false
-                                }
-                            }
-                        },
-                        "required": ["type", "deltas"],
-                        "additionalProperties": false
-                    },
-                    {
-                        "properties": {
-                            "system": {
-                                "description": "Name of the system",
-                                "type": "string"
-                            },
-                            "action": {
-                                "description": "The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)",
-                                "type": "integer",
-                                "minimum": 1,
-                                "maximum": 4
-                            }
-                        },
-                        "required": ["system", "action"]
-                    },
-                    {
-                        "description": "Annotations specifically for the `freespace` renderer.",
-                        "anyOf": [
-                            {
-                                "description": "Path annotations are simply an SVG path with stroke and fill attributes. You can draw whatever annotations you want. They will overlie any pieces.",
-                                "properties": {
-                                    "type": {
-                                        "enum": ["path"]
-                                    },
-                                    "path": {
-                                        "type": "string"
-                                    },
-                                    "fill": {
-                                        "anyOf": [
-                                            {"$ref": "#/definitions/positiveInteger"},
-                                            {"$ref": "#/definitions/colourstrings"}
-                                        ],
-                                        "default": "#fff"
-                                    },
-                                    "fillOpacity": {
-                                        "type": "number",
-                                        "minimum": 0,
-                                        "maximum": 1,
-                                        "default": 1
-                                    },
-                                    "stroke": {
-                                        "anyOf": [
-                                            {"$ref": "#/definitions/positiveInteger"},
-                                            {"$ref": "#/definitions/colourstrings"}
-                                        ],
-                                        "default": "#000"
-                                    },
-                                    "strokeWidth": {
-                                        "type": "number",
-                                        "minimum": 0.1,
-                                        "default": 1
-                                    },
-                                    "strokeOpacity": {
-                                        "type": "number",
-                                        "minimum": 0,
-                                        "maximum": 1,
-                                        "default": 1
-                                    },
-                                    "dashed": {
-                                        "description": "A valid `dasharray` appropriate for the game's display.",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "number"
-                                        }
-                                    }
-                                },
-                                "required": ["type", "path"],
-                                "additionalProperties": false
-                            },
-                            {
-                                "properties": {
-                                    "type": {
-                                        "description": "A way of incorporating a glyph from the legend into the board itself. This one is specific to the `freespace` renderer.",
-                                        "enum": ["glyph"]
-                                    },
-                                    "glyph": {
-                                        "description": "The name of the glyph in the `legend`.",
-                                        "type": "string"
-                                    },
-                                    "points": {
-                                        "description": "Provide absolute x,y coordinates.",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "x": {
-                                                    "type": "number"
-                                                },
-                                                "y": {
-                                                    "type": "number"
-                                                }
-                                            },
-                                            "required": ["x","y"],
-                                            "additionalProperties": false
-                                        },
-                                        "minItems": 1
-                                    }
-                                },
-                                "required": ["type", "glyph", "points"],
-                                "additionalProperties": false
-                            }
-                        ]
-                    }
+                    {"$ref": "#/definitions/annotationBasic"},
+                    {"$ref": "#/definitions/annotationSowing"},
+                    {"$ref": "#/definitions/annotationHomeworlds"},
+                    {"$ref": "#/definitions/annotationFreespace"}
                 ]
             }
         }

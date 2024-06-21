@@ -15,9 +15,75 @@ export type PositiveInteger = number;
  */
 export type Polymatrix = (PositiveInteger | Colourstrings | 0 | null)[][];
 /**
+ * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
+ */
+export type BoardHomeworlds = {
+  /**
+   * The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.
+   */
+  name: string;
+  /**
+   * If this is a home system, give the compass direction representing the player's seat. Omit property in shared systems.
+   */
+  seat?: "N" | "E" | "S" | "W";
+  /**
+   * Describes the system's stars.
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  stars: [string] | [string, string];
+}[];
+/**
+ * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are allowed because sometimes you need to display an empty home system in the middle of a turn.
+ */
+export type PiecesHomeworlds = string[][];
+/**
  * Pattern for the global stash definitions for the `homeworlds` renderer.
  */
 export type Stashstrings = string;
+/**
+ * Annotations specifically for the `freespace` renderer.
+ */
+export type AnnotationFreespace =
+  | {
+      type: "path";
+      path: string;
+      fill?: PositiveInteger | Colourstrings;
+      fillOpacity?: number;
+      stroke?: PositiveInteger | Colourstrings;
+      strokeWidth?: number;
+      strokeOpacity?: number;
+      /**
+       * A valid `dasharray` appropriate for the game's display.
+       */
+      dashed?: number[];
+    }
+  | {
+      /**
+       * A way of incorporating a glyph from the legend into the board itself. This one is specific to the `freespace` renderer.
+       */
+      type: "glyph";
+      /**
+       * The name of the glyph in the `legend`.
+       */
+      glyph: string;
+      /**
+       * Provide absolute x,y coordinates.
+       *
+       * @minItems 1
+       */
+      points: [
+        {
+          x: number;
+          y: number;
+        },
+        ...{
+          x: number;
+          y: number;
+        }[]
+      ];
+    };
 
 /**
  * Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.
@@ -67,1126 +133,28 @@ export interface APRenderRep {
   /**
    * This is the game board itself.
    */
-  board:
-    | null
-    | {
-        style:
-          | "squares"
-          | "squares-checkered"
-          | "squares-beveled"
-          | "squares-stacked"
-          | "vertex"
-          | "vertex-cross"
-          | "vertex-fanorona"
-          | "pegboard"
-          | "hex-slanted"
-          | "hex-odd-p"
-          | "hex-even-p"
-          | "hex-odd-f"
-          | "hex-even-f"
-          | "hex-of-hex"
-          | "hex-of-tri"
-          | "hex-of-cir"
-          | "snubsquare"
-          | "circular-cobweb"
-          | "sowing"
-          | "conhex-dots"
-          | "conhex-cells"
-          | "cairo-collinear"
-          | "cairo-catalan"
-          | "triangles-stacked"
-          | "conical-hex"
-          | "conical-hex-narrow"
-          | "pyramid-hex";
-        /**
-         * Pattern for hex colour strings
-         */
-        labelColour?: string;
-        /**
-         * Pattern for hex colour strings
-         */
-        strokeColour?: string;
-        /**
-         * The base stroke weight of lines drawn to construct the board.
-         */
-        strokeWeight?: number;
-        /**
-         * The opacity of lines drawn to construct the board.
-         */
-        labelOpacity?: number;
-        /**
-         * The opacity of lines drawn to construct the board.
-         */
-        strokeOpacity?: number;
-        /**
-         * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
-         */
-        backFill?: {
-          /**
-           * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
-           */
-          type?: "full" | "board";
-          colour: Colourstrings;
-          opacity?: number;
-        };
-        /**
-         * On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
-         *
-         * @minItems 1
-         */
-        blocked?: [
-          {
-            row: number;
-            col: number;
-          },
-          ...{
-            row: number;
-            col: number;
-          }[]
-        ];
-        /**
-         * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
-         */
-        minWidth?: number;
-        /**
-         * Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board.
-         */
-        maxWidth?: number;
-        /**
-         * Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids. Mutually exclusive with `alternatingSymmetry`.
-         */
-        half?: "top" | "bottom";
-        /**
-         * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of slices.
-         */
-        width?: number;
-        /**
-         * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.
-         */
-        height?: number;
-        /**
-         * Only applies to the `sowing` board style. Determines whether to include full-height end pits on the board.
-         */
-        showEndPits?: boolean;
-        /**
-         * Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.
-         *
-         * @minItems 1
-         */
-        squarePits?: [
-          {
-            row: number;
-            col: number;
-          },
-          ...{
-            row: number;
-            col: number;
-          }[]
-        ];
-        /**
-         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.
-         */
-        clickDeltaX?: number;
-        /**
-         * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.
-         */
-        clickDeltaY?: number;
-        /**
-         * Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.
-         */
-        startLight?: boolean;
-        /**
-         * Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.
-         */
-        alternatingSymmetry?: boolean;
-        /**
-         * An optional array of strings to override the default column labeling.
-         */
-        columnLabels?: string[];
-        /**
-         * An optional array of strings to override the default row labeling.
-         */
-        rowLabels?: string[];
-        /**
-         * Currently only applies to hex fields
-         */
-        labelStyle?: "internal" | "external";
-        /**
-         * A ham-fisted way to omit row and column labels you don't want displayed for some reason. Currently only used by the `triangles-stacked` renderer for certain board sizes.
-         *
-         * @minItems 1
-         */
-        skipLabels?: [string, ...string[]];
-        /**
-         * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
-         */
-        tileWidth?: number;
-        /**
-         * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells high as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
-         */
-        tileHeight?: number;
-        /**
-         * If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.
-         */
-        tileSpacing?: number;
-        /**
-         * Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.
-         */
-        stackMax?: number;
-        /**
-         * Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.
-         */
-        stackOffset?: number;
-        /**
-         * By default, circular boards start with a vertical line drawn from the centre straight "north". This lets you choose a different starting degree. In this plane, 0 degrees is towards the top of the screen and increases clockwise.
-         */
-        "circular-start"?: number;
-        /**
-         * For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.
-         */
-        cairoStart?: "H" | "V";
-        /**
-         * Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.
-         */
-        buffer?: {
-          /**
-           * The width of the zone expressed as a percentage of the cell size. If zero, the zone is omitted.
-           */
-          width: number;
-          /**
-           * The name of one of the built-in patterns for fill.
-           */
-          pattern?: string;
-          /**
-           * Choose which of the four sides you want displayed. By default, it's all four.
-           */
-          show?: ("N" | "E" | "S" | "W")[];
-        };
-        /**
-         * Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.
-         */
-        markers?: (
-          | {
-              /**
-               * A way of placing small marker dots at certain points of the board.
-               */
-              type: "dots";
-              /**
-               * Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
-               *
-               * @minItems 1
-               */
-              points: [
-                {
-                  row: number;
-                  col: number;
-                },
-                ...{
-                  row: number;
-                  col: number;
-                }[]
-              ];
-              /**
-               * The size of the diameter of the dot as a fraction of cellsize.
-               */
-              size?: number;
-              /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour?: PositiveInteger | Colourstrings;
-              /**
-               * 1 is fully opaque. 0 is fully transparent.
-               */
-              opacity?: number;
-            }
-          | {
-              /**
-               * This is for shading spaces or areas on the board.
-               */
-              type: "shading";
-              /**
-               * If true, the shading will be done below the grid lines.
-               */
-              belowGrid?: boolean;
-              /**
-               * It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.
-               *
-               * @minItems 3
-               */
-              points: [
-                {
-                  row: number;
-                  col: number;
-                },
-                {
-                  row: number;
-                  col: number;
-                },
-                {
-                  row: number;
-                  col: number;
-                },
-                ...{
-                  row: number;
-                  col: number;
-                }[]
-              ];
-              /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour?: PositiveInteger | Colourstrings;
-              /**
-               * 1 is fully opaque. 0 is fully transparent.
-               */
-              opacity?: number;
-            }
-          | {
-              /**
-               * Only usable by board styles composed of polygons. Distinct from shading, this will simply fill the specified cells with a colour.
-               */
-              type: "flood";
-              /**
-               * If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.
-               */
-              belowGrid?: boolean;
-              /**
-               * One or more grid coordinates of spaces to fill.
-               *
-               * @minItems 1
-               */
-              points: [
-                {
-                  row: number;
-                  col: number;
-                },
-                ...{
-                  row: number;
-                  col: number;
-                }[]
-              ];
-              /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour?: PositiveInteger | Colourstrings | Gradient;
-              /**
-               * 1 is fully opaque. 0 is fully transparent.
-               */
-              opacity?: number;
-            }
-          | {
-              /**
-               * Only usable by boards constructed out of premade shapes (e.g., `hex-of-hex`, `sowing`). Uses the given colour as the outline of the given cell shape.
-               */
-              type: "outline";
-              /**
-               * One or more grid coordinates of spaces to fill.
-               *
-               * @minItems 1
-               */
-              points: [
-                {
-                  row: number;
-                  col: number;
-                },
-                ...{
-                  row: number;
-                  col: number;
-                }[]
-              ];
-              /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour: PositiveInteger | Colourstrings;
-              /**
-               * 1 is fully opaque. 0 is fully transparent.
-               */
-              opacity?: number;
-            }
-          | {
-              /**
-               * Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments
-               */
-              type: "halo";
-              /**
-               * If only one segment is given, then a single circle will be drawn. Otherwise, the circle will be divided into equal chunks and drawn in the order specified, proceeding clockwise. The first segment will align with the `circular-start` given in `board` (`0` by default).
-               *
-               * @minItems 1
-               */
-              segments: [
-                {
-                  /**
-                   * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-                   */
-                  colour: PositiveInteger | Colourstrings;
-                  /**
-                   * 1 is fully opaque. 0 is fully transparent.
-                   */
-                  opacity?: number;
-                  style?: "solid" | "dashed";
-                },
-                ...{
-                  /**
-                   * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-                   */
-                  colour: PositiveInteger | Colourstrings;
-                  /**
-                   * 1 is fully opaque. 0 is fully transparent.
-                   */
-                  opacity?: number;
-                  style?: "solid" | "dashed";
-                }[]
-              ];
-              /**
-               * Stroke width of the line
-               */
-              width?: number;
-              /**
-               * By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.
-               */
-              offset?: number;
-              /**
-               * Fill is drawn before grid lines, segments are drawn after grid lines.
-               */
-              fill?: PositiveInteger | Colourstrings;
-            }
-          | {
-              /**
-               * A way of drawing arbitrary lines on the board. By default, respects the stroke width, colour, and opacity of the larger board.
-               */
-              type: "line";
-              /**
-               * Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.
-               *
-               * @minItems 2
-               * @maxItems 2
-               */
-              points: [
-                {
-                  row: number;
-                  col: number;
-                },
-                {
-                  row: number;
-                  col: number;
-                }
-              ];
-              /**
-               * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour?: PositiveInteger | Colourstrings;
-              /**
-               * 1 is fully opaque. 0 is fully transparent.
-               */
-              opacity?: number;
-              /**
-               * Stroke width of the line
-               */
-              width?: number;
-              style?: "solid" | "dashed";
-              /**
-               * By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.
-               */
-              centered?: boolean;
-              /**
-               * Adds a click handler to the line. This can get in the way of regular clicks, depending on how your board is configured.
-               */
-              clickable?: boolean & string;
-              /**
-               * If true, the labels will be drawn below the grid lines.
-               */
-              belowGrid?: boolean;
-              /**
-               * Let's you trim the ends of a line. Expressed as a percentage of total length.
-               */
-              shorten?: number;
-            }
-          | {
-              /**
-               * A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.
-               */
-              type: "label";
-              /**
-               * If true, the labels will be drawn below the grid lines.
-               */
-              belowGrid?: boolean;
-              /**
-               * The string itself you want to display.
-               */
-              label: string;
-              /**
-               * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
-               *
-               * @minItems 2
-               * @maxItems 2
-               */
-              points: [
-                {
-                  row: number;
-                  col: number;
-                },
-                {
-                  row: number;
-                  col: number;
-                }
-              ];
-              /**
-               * You almost never want a label *on* the board. Nudge lets you use board coordinates to get started and then move that line by a multiple of the 'cellspacing' (i.e., the base unit, the width of a square in a square grid). The nudge is applied to both points.
-               */
-              nudge?: {
-                dx: number;
-                dy: number;
-              };
-              /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour?: PositiveInteger | Colourstrings;
-              /**
-               * Font size in absolute pixels
-               */
-              size?: number;
-              /**
-               * Font style, e.g. 'font: Stencil; font-weight: Bold'
-               */
-              font?: string;
-            }
-          | {
-              /**
-               * This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.
-               */
-              type: "edge";
-              /**
-               * An invalid edge designator (NE on a square map, for example) will just be ignored.
-               */
-              edge: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
-              /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour: PositiveInteger | Colourstrings;
-              opacity?: number;
-            }
-          | {
-              /**
-               * Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
-               */
-              type: "fence";
-              cell: {
-                row: number;
-                col: number;
-              };
-              side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
-              /**
-               * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour?: PositiveInteger | Colourstrings;
-              /**
-               * Expressed as a multiple of the base stroke width
-               */
-              width?: number;
-              /**
-               * A valid `dasharray` appropriate for the game's display.
-               */
-              dashed?: number[];
-            }
-          | {
-              /**
-               * Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
-               */
-              type: "fences";
-              /**
-               * @minItems 1
-               */
-              sides: [
-                {
-                  cell: {
-                    row: number;
-                    col: number;
-                  };
-                  side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
-                  /**
-                   * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-                   */
-                  colour?: PositiveInteger | Colourstrings;
-                  /**
-                   * Expressed as a multiple of the base stroke width
-                   */
-                  width?: number;
-                  /**
-                   * A valid `dasharray` appropriate for the game's display.
-                   */
-                  dashed?: number[];
-                },
-                ...{
-                  cell: {
-                    row: number;
-                    col: number;
-                  };
-                  side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
-                  /**
-                   * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-                   */
-                  colour?: PositiveInteger | Colourstrings;
-                  /**
-                   * Expressed as a multiple of the base stroke width
-                   */
-                  width?: number;
-                  /**
-                   * A valid `dasharray` appropriate for the game's display.
-                   */
-                  dashed?: number[];
-                }[]
-              ];
-            }
-          | {
-              /**
-               * A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.
-               */
-              type: "glyph";
-              /**
-               * If true, the glyph will be drawn below the grid lines.
-               */
-              belowGrid?: boolean;
-              /**
-               * The name of the glyph in the `legend`.
-               */
-              glyph: string;
-              /**
-               * Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
-               *
-               * @minItems 1
-               */
-              points: [
-                {
-                  row: number;
-                  col: number;
-                },
-                ...{
-                  row: number;
-                  col: number;
-                }[]
-              ];
-            }
-        )[];
-      }
-    | {
-        /**
-         * The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.
-         */
-        name: string;
-        /**
-         * If this is a home system, give the compass direction representing the player's seat. Omit property in shared systems.
-         */
-        seat?: "N" | "E" | "S" | "W";
-        /**
-         * Describes the system's stars.
-         *
-         * @minItems 1
-         * @maxItems 2
-         */
-        stars: [string] | [string, string];
-      }[]
-    | {
-        style: "entropy";
-        /**
-         * Describes the left-hand or top board
-         */
-        boardOne?: {
-          label?: string;
-          /**
-           * Used as an aid to the player by occluding one of the boards
-           */
-          occluded?: boolean;
-        };
-        /**
-         * Describes the right-hand or bottom board
-         */
-        boardTwo?: {
-          label?: string;
-          /**
-           * Used as an aid to the player by occluding one of the boards
-           */
-          occluded?: boolean;
-        };
-        /**
-         * Whether the two boards should be arranged horizontally or vertically
-         */
-        orientation?: "horizontal" | "vertical";
-        /**
-         * The base stroke weight of lines drawn to construct the board.
-         */
-        strokeWeight?: number;
-        /**
-         * Pattern for hex colour strings
-         */
-        strokeColour?: string;
-        /**
-         * The opacity of lines drawn to construct the board, includes the labels.
-         */
-        strokeOpacity?: number;
-        [k: string]: unknown;
-      }
-    | {
-        /**
-         * Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.
-         */
-        width: number;
-        /**
-         * Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.
-         */
-        height: number;
-        /**
-         * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
-         */
-        backFill?: {
-          /**
-           * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
-           */
-          type?: "full" | "board";
-          colour: Colourstrings;
-          opacity?: number;
-        };
-        /**
-         * In most cases, you'll want the top-left corner of the field to be 0,0 and generate your render accordingly. But if for some reason you want that origin to be different, change it here.
-         */
-        origin?: {
-          x?: number;
-          y?: number;
-        };
-        /**
-         * Markers are placed before pieces, and thus can be obscured by them.
-         */
-        markers?: (
-          | {
-              type: "path";
-              path: string;
-              fill?: PositiveInteger | Colourstrings;
-              fillOpacity?: number;
-              stroke?: PositiveInteger | Colourstrings;
-              strokeWidth?: number;
-              strokeOpacity?: number;
-              /**
-               * A valid `dasharray` appropriate for the game's display.
-               */
-              dashed?: number[];
-            }
-          | {
-              /**
-               * A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.
-               */
-              type: "label";
-              /**
-               * The string itself you want to display.
-               */
-              label: string;
-              /**
-               * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
-               *
-               * @minItems 2
-               * @maxItems 2
-               */
-              points: [
-                {
-                  x: number;
-                  y: number;
-                },
-                {
-                  x: number;
-                  y: number;
-                }
-              ];
-              /**
-               * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
-               */
-              colour?: PositiveInteger | Colourstrings;
-              /**
-               * Font size in absolute pixels
-               */
-              size?: number;
-            }
-          | {
-              /**
-               * A way of incorporating a glyph from the legend into the board itself.
-               */
-              type: "glyph";
-              /**
-               * The name of the glyph in the `legend`.
-               */
-              glyph: string;
-              orientation?: number;
-              /**
-               * Provide absolute x,y coordinates.
-               *
-               * @minItems 1
-               */
-              points: [
-                {
-                  x: number;
-                  y: number;
-                },
-                ...{
-                  x: number;
-                  y: number;
-                }[]
-              ];
-            }
-        )[];
-      };
+  board: null | BoardBasic | BoardHomeworlds | BoardEntropy | BoardFreespace;
   /**
    * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).
    */
-  pieces: null | string | [string[][], ...string[][][]] | string[][] | Freepiece[] | Multipiece[] | Polypiece[];
+  pieces: null | string | [string[][], ...string[][][]] | PiecesHomeworlds | Freepiece[] | Multipiece[] | Polypiece[];
   /**
    * Areas are renderer-specific elements that are used and rendered in various ways.
    */
   areas?: (
-    | {
-        type: "pieces";
-        /**
-         * A list of strings representing glyphs in the `legend`
-         *
-         * @minItems 1
-         */
-        pieces: [string, ...string[]];
-        /**
-         * The text that will appear at the top left of the area
-         */
-        label: string;
-        /**
-         * By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.
-         */
-        width?: number;
-        /**
-         * Pattern for hex colour strings
-         */
-        background?: string | string;
-        /**
-         * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
-         */
-        ownerMark?: PositiveInteger | Colourstrings;
-      }
-    | {
-        type: "polyomino";
-        label: string;
-        matrix: Polymatrix;
-        /**
-         * Pattern for hex colour strings
-         */
-        background?: string | string;
-      }
-    | {
-        type: "globalStash";
-        R: Stashstrings;
-        G: Stashstrings;
-        B: Stashstrings;
-        Y: Stashstrings;
-      }
-    | {
-        type: "expandedColumn";
-        /**
-         * The coordinates of the cell being expanded (optional).
-         */
-        cell?: string;
-        /**
-         * List of pieces (each must appear in the `legend`) to display alongside the board. The first piece in the array is the bottom of the stack.
-         */
-        stack: string[];
-      }
-    | {
-        type: "localStash";
-        label: string;
-        /**
-         * This is an array of stacks of pieces (themselves an array).
-         */
-        stash: string[][];
-      }
-    | {
-        type: "buttonBar";
-        /**
-         * The array of the buttons themselves, which will be presented in the order given.
-         *
-         * @minItems 1
-         */
-        buttons: [
-          {
-            /**
-             * The label that will be visible on the rendered image.
-             */
-            label: string;
-            /**
-             * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
-             */
-            value?: string;
-            /**
-             * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
-             *
-             * @minItems 1
-             */
-            attributes?: [
-              {
-                name: string;
-                value: string;
-              },
-              ...{
-                name: string;
-                value: string;
-              }[]
-            ];
-            /**
-             * Pattern for hex colour strings
-             */
-            fill?: string | string;
-            [k: string]: unknown;
-          },
-          ...{
-            /**
-             * The label that will be visible on the rendered image.
-             */
-            label: string;
-            /**
-             * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
-             */
-            value?: string;
-            /**
-             * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
-             *
-             * @minItems 1
-             */
-            attributes?: [
-              {
-                name: string;
-                value: string;
-              },
-              ...{
-                name: string;
-                value: string;
-              }[]
-            ];
-            /**
-             * Pattern for hex colour strings
-             */
-            fill?: string | string;
-            [k: string]: unknown;
-          }[]
-        ];
-        /**
-         * Where you want the bar to appear relative to the board.
-         */
-        position?: "left" | "right";
-        /**
-         * The height of each button as a percentage of the cell size.
-         */
-        height?: number;
-        /**
-         * If you want the buttons to have a minimum width, regardless of the values, provide it here as a percentage of the cell size. Otherwise all the buttons will have the width of the widest label.
-         */
-        minWidth?: number;
-        /**
-         * The spacing you want between each button, expressed as a percentage of the height.
-         */
-        buffer?: number;
-        /**
-         * Pattern for hex colour strings
-         */
-        colour?: string | string;
-      }
-    | {
-        type: "scrollBar";
-        /**
-         * The lowest value of the bar (usually 0).
-         */
-        min?: number;
-        /**
-         * The highest value of the bar.
-         */
-        max: number;
-        /**
-         * The current value of the bar.
-         */
-        current?: number;
-        /**
-         * Defines the text labels for each of the clickable elements.
-         */
-        labels?: {
-          upOne?: string;
-          upAll?: string;
-          downOne?: string;
-          downAll?: string;
-          bar?: string;
-          [k: string]: unknown;
-        };
-        /**
-         * Where you want the bar to appear relative to the board.
-         */
-        position?: "left" | "right";
-        /**
-         * The width of each scroll bar segment as a percentage of the cell size.
-         */
-        width?: number;
-        /**
-         * The height of each scroll bar segment as a percentage of the cell size.
-         */
-        height?: number;
-        /**
-         * By default, each segment is signalled by lines that extend beyond the width of the bar itself. This defines the extra width of that line, as a percentage of the total width.
-         */
-        lineWidth?: number;
-        /**
-         * Defines the various colour settings.
-         */
-        colours?: {
-          /**
-           * Pattern for hex colour strings
-           */
-          background?: string | string;
-          /**
-           * Pattern for hex colour strings
-           */
-          fill?: string | string;
-          /**
-           * Pattern for hex colour strings
-           */
-          strokes?: string | string;
-          [k: string]: unknown;
-        };
-      }
-    | {
-        type?: "key";
-        /**
-         * The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.
-         */
-        list: {
-          piece: string;
-          name: string;
-          /**
-           * If a click handler is attached, this is the value that will be given in the "piece" parameter. Otherwise it will pass the name.
-           */
-          value?: string;
-        }[];
-        /**
-         * The height of each entry as a percentage of cell size.
-         */
-        height?: number;
-        /**
-         * The spacing you want between each entry, expressed as a percentage of the height.
-         */
-        buffer?: number;
-        /**
-         * Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.
-         */
-        position?: "left" | "right";
-        /**
-         * By default, `key` entries have a click handler attached. Set this to `false` to disable that.
-         */
-        clickable?: boolean;
-      }
+    | AreaPieces
+    | AreaPolyomino
+    | AreaHWStash
+    | AreaStackingExpanded
+    | AreaVolcanoStash
+    | AreaButtonBar
+    | AreaScrollBar
+    | AreaKey
   )[];
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
-  annotations?: (
-    | {
-        /**
-         * The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.
-         */
-        type: "move" | "eject" | "enter" | "exit" | "dots" | "outline" | "glyph";
-        /**
-         * The cells involved in the annotation
-         *
-         * @minItems 1
-         */
-        targets: [
-          {
-            row: number;
-            col: number;
-            [k: string]: unknown;
-          },
-          ...{
-            row: number;
-            col: number;
-            [k: string]: unknown;
-          }[]
-        ];
-        style?: "solid" | "dashed";
-        /**
-         * The width of the line, expressed as a percentage of cell size.
-         */
-        strokeWidth?: number;
-        opacity?: number;
-        colour?: Colourstrings | PositiveInteger;
-        arrow?: boolean;
-        /**
-         * Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.
-         */
-        static?: boolean & string;
-        /**
-         * Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.
-         */
-        glyph?: string;
-        /**
-         * A valid `dasharray` appropriate for the game's display.
-         */
-        dashed?: number[];
-        [k: string]: unknown;
-      }
-    | {
-        type: "deltas";
-        deltas: {
-          row: number;
-          col: number;
-          delta: number;
-        }[];
-      }
-    | {
-        /**
-         * Name of the system
-         */
-        system: string;
-        /**
-         * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
-         */
-        action: number;
-        [k: string]: unknown;
-      }
-    | (
-        | {
-            type: "path";
-            path: string;
-            fill?: PositiveInteger | Colourstrings;
-            fillOpacity?: number;
-            stroke?: PositiveInteger | Colourstrings;
-            strokeWidth?: number;
-            strokeOpacity?: number;
-            /**
-             * A valid `dasharray` appropriate for the game's display.
-             */
-            dashed?: number[];
-          }
-        | {
-            /**
-             * A way of incorporating a glyph from the legend into the board itself. This one is specific to the `freespace` renderer.
-             */
-            type: "glyph";
-            /**
-             * The name of the glyph in the `legend`.
-             */
-            glyph: string;
-            /**
-             * Provide absolute x,y coordinates.
-             *
-             * @minItems 1
-             */
-            points: [
-              {
-                x: number;
-                y: number;
-              },
-              ...{
-                x: number;
-                y: number;
-              }[]
-            ];
-          }
-      )
-  )[];
+  annotations?: (AnnotationBasic | AnnotationSowing | AnnotationHomeworlds | AnnotationFreespace)[];
   [k: string]: unknown;
 }
 /**
@@ -1257,6 +225,733 @@ export interface GradientStop {
    */
   colour: PositiveInteger | Colourstrings;
   opacity?: number;
+}
+/**
+ * One of the preset boards.
+ */
+export interface BoardBasic {
+  style:
+    | "squares"
+    | "squares-checkered"
+    | "squares-beveled"
+    | "squares-stacked"
+    | "vertex"
+    | "vertex-cross"
+    | "vertex-fanorona"
+    | "pegboard"
+    | "hex-slanted"
+    | "hex-odd-p"
+    | "hex-even-p"
+    | "hex-odd-f"
+    | "hex-even-f"
+    | "hex-of-hex"
+    | "hex-of-tri"
+    | "hex-of-cir"
+    | "snubsquare"
+    | "circular-cobweb"
+    | "sowing"
+    | "conhex-dots"
+    | "conhex-cells"
+    | "cairo-collinear"
+    | "cairo-catalan"
+    | "triangles-stacked"
+    | "conical-hex"
+    | "conical-hex-narrow"
+    | "pyramid-hex";
+  /**
+   * Pattern for hex colour strings
+   */
+  labelColour?: string;
+  /**
+   * Pattern for hex colour strings
+   */
+  strokeColour?: string;
+  /**
+   * The base stroke weight of lines drawn to construct the board.
+   */
+  strokeWeight?: number;
+  /**
+   * The opacity of lines drawn to construct the board.
+   */
+  labelOpacity?: number;
+  /**
+   * The opacity of lines drawn to construct the board.
+   */
+  strokeOpacity?: number;
+  /**
+   * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
+   */
+  backFill?: {
+    /**
+     * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
+     */
+    type?: "full" | "board";
+    colour: Colourstrings;
+    opacity?: number;
+  };
+  /**
+   * On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+   *
+   * @minItems 1
+   */
+  blocked?: [
+    {
+      row: number;
+      col: number;
+    },
+    ...{
+      row: number;
+      col: number;
+    }[]
+  ];
+  /**
+   * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
+   */
+  minWidth?: number;
+  /**
+   * Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board.
+   */
+  maxWidth?: number;
+  /**
+   * Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids. Mutually exclusive with `alternatingSymmetry`.
+   */
+  half?: "top" | "bottom";
+  /**
+   * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of slices.
+   */
+  width?: number;
+  /**
+   * Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.
+   */
+  height?: number;
+  /**
+   * Only applies to the `sowing` board style. Determines whether to include full-height end pits on the board.
+   */
+  showEndPits?: boolean;
+  /**
+   * Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.
+   *
+   * @minItems 1
+   */
+  squarePits?: [
+    {
+      row: number;
+      col: number;
+    },
+    ...{
+      row: number;
+      col: number;
+    }[]
+  ];
+  /**
+   * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.
+   */
+  clickDeltaX?: number;
+  /**
+   * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.
+   */
+  clickDeltaY?: number;
+  /**
+   * Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.
+   */
+  startLight?: boolean;
+  /**
+   * Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.
+   */
+  alternatingSymmetry?: boolean;
+  /**
+   * An optional array of strings to override the default column labeling.
+   */
+  columnLabels?: string[];
+  /**
+   * An optional array of strings to override the default row labeling.
+   */
+  rowLabels?: string[];
+  /**
+   * Currently only applies to hex fields
+   */
+  labelStyle?: "internal" | "external";
+  /**
+   * A ham-fisted way to omit row and column labels you don't want displayed for some reason. Currently only used by the `triangles-stacked` renderer for certain board sizes.
+   *
+   * @minItems 1
+   */
+  skipLabels?: [string, ...string[]];
+  /**
+   * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
+   */
+  tileWidth?: number;
+  /**
+   * Only meaningful for the `squares` and `vertex` boards. Defines sections X cells high as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.
+   */
+  tileHeight?: number;
+  /**
+   * If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.
+   */
+  tileSpacing?: number;
+  /**
+   * Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.
+   */
+  stackMax?: number;
+  /**
+   * Only valid for the `stacking-offset` renderer. A number between 0 and 1 representing the percentage of a cell's space that should be used to offset each piece in the stack. A value of 1 will lead to no overlap. A value of 0 will stack all the pieces directly on top of each other.
+   */
+  stackOffset?: number;
+  /**
+   * By default, circular boards start with a vertical line drawn from the centre straight "north". This lets you choose a different starting degree. In this plane, 0 degrees is towards the top of the screen and increases clockwise.
+   */
+  "circular-start"?: number;
+  /**
+   * For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.
+   */
+  cairoStart?: "H" | "V";
+  /**
+   * Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.
+   */
+  buffer?: {
+    /**
+     * The width of the zone expressed as a percentage of the cell size. If zero, the zone is omitted.
+     */
+    width: number;
+    /**
+     * The name of one of the built-in patterns for fill.
+     */
+    pattern?: string;
+    /**
+     * Choose which of the four sides you want displayed. By default, it's all four.
+     */
+    show?: ("N" | "E" | "S" | "W")[];
+  };
+  /**
+   * Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.
+   */
+  markers?: (
+    | MarkerDots
+    | MarkerShading
+    | MarkerFlood
+    | MarkerOutline
+    | MarkerHalo
+    | MarkerLine
+    | MarkerLabel
+    | MarkerEdge
+    | MarkerFence
+    | MarkerFences
+    | MarkerGlyph
+  )[];
+}
+export interface MarkerDots {
+  /**
+   * A way of placing small marker dots at certain points of the board.
+   */
+  type: "dots";
+  /**
+   * Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+   *
+   * @minItems 1
+   */
+  points: [
+    {
+      row: number;
+      col: number;
+    },
+    ...{
+      row: number;
+      col: number;
+    }[]
+  ];
+  /**
+   * The size of the diameter of the dot as a fraction of cellsize.
+   */
+  size?: number;
+  /**
+   * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings;
+  /**
+   * 1 is fully opaque. 0 is fully transparent.
+   */
+  opacity?: number;
+}
+export interface MarkerShading {
+  /**
+   * This is for shading spaces or areas on the board.
+   */
+  type: "shading";
+  /**
+   * If true, the shading will be done below the grid lines.
+   */
+  belowGrid?: boolean;
+  /**
+   * It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.
+   *
+   * @minItems 3
+   */
+  points: [
+    {
+      row: number;
+      col: number;
+    },
+    {
+      row: number;
+      col: number;
+    },
+    {
+      row: number;
+      col: number;
+    },
+    ...{
+      row: number;
+      col: number;
+    }[]
+  ];
+  /**
+   * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings;
+  /**
+   * 1 is fully opaque. 0 is fully transparent.
+   */
+  opacity?: number;
+}
+export interface MarkerFlood {
+  /**
+   * Only usable by board styles composed of polygons. Distinct from shading, this will simply fill the specified cells with a colour.
+   */
+  type: "flood";
+  /**
+   * If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.
+   */
+  belowGrid?: boolean;
+  /**
+   * One or more grid coordinates of spaces to fill.
+   *
+   * @minItems 1
+   */
+  points: [
+    {
+      row: number;
+      col: number;
+    },
+    ...{
+      row: number;
+      col: number;
+    }[]
+  ];
+  /**
+   * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings | Gradient;
+  /**
+   * 1 is fully opaque. 0 is fully transparent.
+   */
+  opacity?: number;
+}
+export interface MarkerOutline {
+  /**
+   * Only usable by boards constructed out of premade shapes (e.g., `hex-of-hex`, `sowing`). Uses the given colour as the outline of the given cell shape.
+   */
+  type: "outline";
+  /**
+   * One or more grid coordinates of spaces to fill.
+   *
+   * @minItems 1
+   */
+  points: [
+    {
+      row: number;
+      col: number;
+    },
+    ...{
+      row: number;
+      col: number;
+    }[]
+  ];
+  /**
+   * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour: PositiveInteger | Colourstrings;
+  /**
+   * 1 is fully opaque. 0 is fully transparent.
+   */
+  opacity?: number;
+}
+export interface MarkerHalo {
+  /**
+   * Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments
+   */
+  type: "halo";
+  /**
+   * If only one segment is given, then a single circle will be drawn. Otherwise, the circle will be divided into equal chunks and drawn in the order specified, proceeding clockwise. The first segment will align with the `circular-start` given in `board` (`0` by default).
+   *
+   * @minItems 1
+   */
+  segments: [
+    {
+      /**
+       * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+       */
+      colour: PositiveInteger | Colourstrings;
+      /**
+       * 1 is fully opaque. 0 is fully transparent.
+       */
+      opacity?: number;
+      style?: "solid" | "dashed";
+    },
+    ...{
+      /**
+       * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+       */
+      colour: PositiveInteger | Colourstrings;
+      /**
+       * 1 is fully opaque. 0 is fully transparent.
+       */
+      opacity?: number;
+      style?: "solid" | "dashed";
+    }[]
+  ];
+  /**
+   * Stroke width of the line
+   */
+  width?: number;
+  /**
+   * By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.
+   */
+  offset?: number;
+  /**
+   * Fill is drawn before grid lines, segments are drawn after grid lines.
+   */
+  fill?: PositiveInteger | Colourstrings;
+}
+export interface MarkerLine {
+  /**
+   * A way of drawing arbitrary lines on the board. By default, respects the stroke width, colour, and opacity of the larger board.
+   */
+  type: "line";
+  /**
+   * Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.
+   *
+   * @minItems 2
+   * @maxItems 2
+   */
+  points: [
+    {
+      row: number;
+      col: number;
+    },
+    {
+      row: number;
+      col: number;
+    }
+  ];
+  /**
+   * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings;
+  /**
+   * 1 is fully opaque. 0 is fully transparent.
+   */
+  opacity?: number;
+  /**
+   * Stroke width of the line
+   */
+  width?: number;
+  style?: "solid" | "dashed";
+  /**
+   * By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.
+   */
+  centered?: boolean;
+  /**
+   * Adds a click handler to the line. This can get in the way of regular clicks, depending on how your board is configured.
+   */
+  clickable?: boolean & string;
+  /**
+   * If true, the labels will be drawn below the grid lines.
+   */
+  belowGrid?: boolean;
+  /**
+   * Let's you trim the ends of a line. Expressed as a percentage of total length.
+   */
+  shorten?: number;
+}
+export interface MarkerLabel {
+  /**
+   * A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.
+   */
+  type: "label";
+  /**
+   * If true, the labels will be drawn below the grid lines.
+   */
+  belowGrid?: boolean;
+  /**
+   * The string itself you want to display.
+   */
+  label: string;
+  /**
+   * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
+   *
+   * @minItems 2
+   * @maxItems 2
+   */
+  points: [
+    {
+      row: number;
+      col: number;
+    },
+    {
+      row: number;
+      col: number;
+    }
+  ];
+  /**
+   * You almost never want a label *on* the board. Nudge lets you use board coordinates to get started and then move that line by a multiple of the 'cellspacing' (i.e., the base unit, the width of a square in a square grid). The nudge is applied to both points.
+   */
+  nudge?: {
+    dx: number;
+    dy: number;
+  };
+  /**
+   * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings;
+  /**
+   * Font size in absolute pixels
+   */
+  size?: number;
+  /**
+   * Font style, e.g. 'font: Stencil; font-weight: Bold'
+   */
+  font?: string;
+}
+export interface MarkerEdge {
+  /**
+   * This will highlight one edge of the board, indicated by compass direction. It relies on the properties`strokeWeight` and `strokeOpacity`, if given. It does not work on the `hex-odd*`, `hex-even*`, `hex-of-cir` or `hex-of-hex` boards.
+   */
+  type: "edge";
+  /**
+   * An invalid edge designator (NE on a square map, for example) will just be ignored.
+   */
+  edge: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+  /**
+   * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour: PositiveInteger | Colourstrings;
+  opacity?: number;
+}
+export interface MarkerFence {
+  /**
+   * Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
+   */
+  type: "fence";
+  cell: {
+    row: number;
+    col: number;
+  };
+  side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+  /**
+   * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings;
+  /**
+   * Expressed as a multiple of the base stroke width
+   */
+  width?: number;
+  /**
+   * A valid `dasharray` appropriate for the game's display.
+   */
+  dashed?: number[];
+}
+/**
+ * Just a container marker for multiple fences
+ */
+export interface MarkerFences {
+  type: "fences";
+  /**
+   * @minItems 1
+   */
+  sides: [MarkerFence, ...MarkerFence[]];
+}
+export interface MarkerGlyph {
+  /**
+   * A way of incorporating a glyph from the legend into the board itself. Currently only works in the `default` and `stacking-offset` renderer.
+   */
+  type: "glyph";
+  /**
+   * If true, the glyph will be drawn below the grid lines.
+   */
+  belowGrid?: boolean;
+  /**
+   * The name of the glyph in the `legend`.
+   */
+  glyph: string;
+  /**
+   * Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.
+   *
+   * @minItems 1
+   */
+  points: [
+    {
+      row: number;
+      col: number;
+    },
+    ...{
+      row: number;
+      col: number;
+    }[]
+  ];
+}
+/**
+ * The board schema for the `entropy` renderer
+ */
+export interface BoardEntropy {
+  style: "entropy";
+  /**
+   * Describes the left-hand or top board
+   */
+  boardOne?: {
+    label?: string;
+    /**
+     * Used as an aid to the player by occluding one of the boards
+     */
+    occluded?: boolean;
+  };
+  /**
+   * Describes the right-hand or bottom board
+   */
+  boardTwo?: {
+    label?: string;
+    /**
+     * Used as an aid to the player by occluding one of the boards
+     */
+    occluded?: boolean;
+  };
+  /**
+   * Whether the two boards should be arranged horizontally or vertically
+   */
+  orientation?: "horizontal" | "vertical";
+  /**
+   * The base stroke weight of lines drawn to construct the board.
+   */
+  strokeWeight?: number;
+  /**
+   * Pattern for hex colour strings
+   */
+  strokeColour?: string;
+  /**
+   * The opacity of lines drawn to construct the board, includes the labels.
+   */
+  strokeOpacity?: number;
+  [k: string]: unknown;
+}
+/**
+ * Board schema for `freespace` boards
+ */
+export interface BoardFreespace {
+  /**
+   * Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.
+   */
+  width: number;
+  /**
+   * Width in pixels of the visible field. The total SVG size will likely be larger, especially if you include areas or other features.
+   */
+  height: number;
+  /**
+   * Used to add a solid block of colour behind the entire image. This should usually be left to the client, but sometimes you want the option.
+   */
+  backFill?: {
+    /**
+     * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
+     */
+    type?: "full" | "board";
+    colour: Colourstrings;
+    opacity?: number;
+  };
+  /**
+   * In most cases, you'll want the top-left corner of the field to be 0,0 and generate your render accordingly. But if for some reason you want that origin to be different, change it here.
+   */
+  origin?: {
+    x?: number;
+    y?: number;
+  };
+  /**
+   * Markers are placed before pieces, and thus can be obscured by them.
+   */
+  markers?: (MarkerPath | MarkerFreespaceLabel | MarkerFreespaceGlyph)[];
+}
+/**
+ * A simple SVG path with stroke and fill attributes.
+ */
+export interface MarkerPath {
+  type: "path";
+  path: string;
+  fill?: PositiveInteger | Colourstrings;
+  fillOpacity?: number;
+  stroke?: PositiveInteger | Colourstrings;
+  strokeWidth?: number;
+  strokeOpacity?: number;
+  /**
+   * A valid `dasharray` appropriate for the game's display.
+   */
+  dashed?: number[];
+}
+export interface MarkerFreespaceLabel {
+  /**
+   * A ham-fisted way of getting arbitrary labels on a board or series of boards (e.g., Wizard's Garden). Experimentation will definitely be needed to accomplish your goal.
+   */
+  type: "label";
+  /**
+   * The string itself you want to display.
+   */
+  label: string;
+  /**
+   * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
+   *
+   * @minItems 2
+   * @maxItems 2
+   */
+  points: [
+    {
+      x: number;
+      y: number;
+    },
+    {
+      x: number;
+      y: number;
+    }
+  ];
+  /**
+   * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings;
+  /**
+   * Font size in absolute pixels
+   */
+  size?: number;
+}
+export interface MarkerFreespaceGlyph {
+  /**
+   * A way of incorporating a glyph from the legend into the board itself.
+   */
+  type: "glyph";
+  /**
+   * The name of the glyph in the `legend`.
+   */
+  glyph: string;
+  orientation?: number;
+  /**
+   * Provide absolute x,y coordinates.
+   *
+   * @minItems 1
+   */
+  points: [
+    {
+      x: number;
+      y: number;
+    },
+    ...{
+      x: number;
+      y: number;
+    }[]
+  ];
 }
 /**
  * Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.
@@ -1337,4 +1032,337 @@ export interface Polypiece {
    * Determines the order of overlap. Higher z values will overlap lower ones. Objects with equal z values will be rendered in the order of declaration (later objects will overlap earlier ones).
    */
   z?: number;
+}
+/**
+ * The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm.
+ */
+export interface AreaPieces {
+  type: "pieces";
+  /**
+   * A list of strings representing glyphs in the `legend`
+   *
+   * @minItems 1
+   */
+  pieces: [string, ...string[]];
+  /**
+   * The text that will appear at the top left of the area
+   */
+  label: string;
+  /**
+   * By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.
+   */
+  width?: number;
+  /**
+   * Pattern for hex colour strings
+   */
+  background?: string | string;
+  /**
+   * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
+   */
+  ownerMark?: PositiveInteger | Colourstrings;
+}
+/**
+ * Used by the `polyomino` renderer to display a selected piece and provide UI for manipulating it. Current maninpulations are rotating in 90-degree increments and flipping horizontally and vertically.
+ */
+export interface AreaPolyomino {
+  type: "polyomino";
+  label: string;
+  matrix: Polymatrix;
+  /**
+   * Pattern for hex colour strings
+   */
+  background?: string | string;
+}
+/**
+ * The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.
+ */
+export interface AreaHWStash {
+  type: "globalStash";
+  R: Stashstrings;
+  G: Stashstrings;
+  B: Stashstrings;
+  Y: Stashstrings;
+}
+/**
+ * Used by the `stacking-expanding` renderer to display the expanded contents of a cell.
+ */
+export interface AreaStackingExpanded {
+  type: "expandedColumn";
+  /**
+   * The coordinates of the cell being expanded (optional).
+   */
+  cell?: string;
+  /**
+   * List of pieces (each must appear in the `legend`) to display alongside the board. The first piece in the array is the bottom of the stack.
+   */
+  stack: string[];
+}
+/**
+ * Used by the `stacking-expanding` renderer for displaying stashes of pyramids (e.g., captured pieces in a Volcano game).
+ */
+export interface AreaVolcanoStash {
+  type: "localStash";
+  label: string;
+  /**
+   * This is an array of stacks of pieces (themselves an array).
+   */
+  stash: string[][];
+}
+/**
+ * Used to create a button bar for clicking.
+ */
+export interface AreaButtonBar {
+  type: "buttonBar";
+  /**
+   * The array of the buttons themselves, which will be presented in the order given.
+   *
+   * @minItems 1
+   */
+  buttons: [
+    {
+      /**
+       * The label that will be visible on the rendered image.
+       */
+      label: string;
+      /**
+       * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
+       */
+      value?: string;
+      /**
+       * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
+       *
+       * @minItems 1
+       */
+      attributes?: [
+        {
+          name: string;
+          value: string;
+        },
+        ...{
+          name: string;
+          value: string;
+        }[]
+      ];
+      /**
+       * Pattern for hex colour strings
+       */
+      fill?: string | string;
+      [k: string]: unknown;
+    },
+    ...{
+      /**
+       * The label that will be visible on the rendered image.
+       */
+      label: string;
+      /**
+       * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
+       */
+      value?: string;
+      /**
+       * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
+       *
+       * @minItems 1
+       */
+      attributes?: [
+        {
+          name: string;
+          value: string;
+        },
+        ...{
+          name: string;
+          value: string;
+        }[]
+      ];
+      /**
+       * Pattern for hex colour strings
+       */
+      fill?: string | string;
+      [k: string]: unknown;
+    }[]
+  ];
+  /**
+   * Where you want the bar to appear relative to the board.
+   */
+  position?: "left" | "right";
+  /**
+   * The height of each button as a percentage of the cell size.
+   */
+  height?: number;
+  /**
+   * If you want the buttons to have a minimum width, regardless of the values, provide it here as a percentage of the cell size. Otherwise all the buttons will have the width of the widest label.
+   */
+  minWidth?: number;
+  /**
+   * The spacing you want between each button, expressed as a percentage of the height.
+   */
+  buffer?: number;
+  /**
+   * Pattern for hex colour strings
+   */
+  colour?: string | string;
+}
+/**
+ * Used to create a clickable vertical scroll bar used for hiding/showing layers of pieces.
+ */
+export interface AreaScrollBar {
+  type: "scrollBar";
+  /**
+   * The lowest value of the bar (usually 0).
+   */
+  min?: number;
+  /**
+   * The highest value of the bar.
+   */
+  max: number;
+  /**
+   * The current value of the bar.
+   */
+  current?: number;
+  /**
+   * Defines the text labels for each of the clickable elements.
+   */
+  labels?: {
+    upOne?: string;
+    upAll?: string;
+    downOne?: string;
+    downAll?: string;
+    bar?: string;
+    [k: string]: unknown;
+  };
+  /**
+   * Where you want the bar to appear relative to the board.
+   */
+  position?: "left" | "right";
+  /**
+   * The width of each scroll bar segment as a percentage of the cell size.
+   */
+  width?: number;
+  /**
+   * The height of each scroll bar segment as a percentage of the cell size.
+   */
+  height?: number;
+  /**
+   * By default, each segment is signalled by lines that extend beyond the width of the bar itself. This defines the extra width of that line, as a percentage of the total width.
+   */
+  lineWidth?: number;
+  /**
+   * Defines the various colour settings.
+   */
+  colours?: {
+    /**
+     * Pattern for hex colour strings
+     */
+    background?: string | string;
+    /**
+     * Pattern for hex colour strings
+     */
+    fill?: string | string;
+    /**
+     * Pattern for hex colour strings
+     */
+    strokes?: string | string;
+    [k: string]: unknown;
+  };
+}
+/**
+ * A list of pieces in the `legend` that players need identifiers for. Usually needed for games with many colours or just indicating who controls what.
+ */
+export interface AreaKey {
+  type?: "key";
+  /**
+   * The list of piece ids (must exist in the `legend`) and a short string the user should associate with it. They will be listed in the order provided.
+   */
+  list: {
+    piece: string;
+    name: string;
+    /**
+     * If a click handler is attached, this is the value that will be given in the "piece" parameter. Otherwise it will pass the name.
+     */
+    value?: string;
+  }[];
+  /**
+   * The height of each entry as a percentage of cell size.
+   */
+  height?: number;
+  /**
+   * The spacing you want between each entry, expressed as a percentage of the height.
+   */
+  buffer?: number;
+  /**
+   * Where you would prefer the legend be placed relative to the game board. Specific renderers may override your preference.
+   */
+  position?: "left" | "right";
+  /**
+   * By default, `key` entries have a click handler attached. Set this to `false` to disable that.
+   */
+  clickable?: boolean;
+}
+/**
+ * These are pulled into the definitions section to make referencing them easier in the game code.
+ */
+export interface AnnotationBasic {
+  /**
+   * The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.
+   */
+  type: "move" | "eject" | "enter" | "exit" | "dots" | "outline" | "glyph";
+  /**
+   * The cells involved in the annotation
+   *
+   * @minItems 1
+   */
+  targets: [
+    {
+      row: number;
+      col: number;
+      [k: string]: unknown;
+    },
+    ...{
+      row: number;
+      col: number;
+      [k: string]: unknown;
+    }[]
+  ];
+  style?: "solid" | "dashed";
+  /**
+   * The width of the line, expressed as a percentage of cell size.
+   */
+  strokeWidth?: number;
+  opacity?: number;
+  colour?: Colourstrings | PositiveInteger;
+  arrow?: boolean;
+  /**
+   * Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.
+   */
+  static?: boolean & string;
+  /**
+   * Only meaningful for the `glyph` annotation. Places a glyph from the legend at the requested points.
+   */
+  glyph?: string;
+  /**
+   * A valid `dasharray` appropriate for the game's display.
+   */
+  dashed?: number[];
+  [k: string]: unknown;
+}
+/**
+ * Delta annotations for the `sowing-*` renderers
+ */
+export interface AnnotationSowing {
+  type: "deltas";
+  deltas: {
+    row: number;
+    col: number;
+    delta: number;
+  }[];
+}
+export interface AnnotationHomeworlds {
+  /**
+   * Name of the system
+   */
+  system: string;
+  /**
+   * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
+   */
+  action: number;
+  [k: string]: unknown;
 }
