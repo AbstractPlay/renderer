@@ -5177,7 +5177,7 @@ export abstract class RendererBase {
                     }
                     let diameter = 0.2;
                     if ( ("size" in note) && (note.size !== undefined) ) {
-                        diameter = note.size as number;
+                        diameter = note.size;
                     }
                     for (const node of (note.targets as ITarget[])) {
                         const pt = this.getStackedPoint(grid, node.col, node.row);
