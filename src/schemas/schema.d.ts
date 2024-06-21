@@ -293,16 +293,7 @@ export interface BoardBasic {
    *
    * @minItems 1
    */
-  blocked?: [
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  blocked?: [RowCol, ...RowCol[]];
   /**
    * Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.
    */
@@ -332,16 +323,7 @@ export interface BoardBasic {
    *
    * @minItems 1
    */
-  squarePits?: [
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  squarePits?: [RowCol, ...RowCol[]];
   /**
    * Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.
    */
@@ -438,6 +420,13 @@ export interface BoardBasic {
     | MarkerGlyph
   )[];
 }
+/**
+ * The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.
+ */
+export interface RowCol {
+  row: number;
+  col: number;
+}
 export interface MarkerDots {
   /**
    * A way of placing small marker dots at certain points of the board.
@@ -448,16 +437,7 @@ export interface MarkerDots {
    *
    * @minItems 1
    */
-  points: [
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  points: [RowCol, ...RowCol[]];
   /**
    * The size of the diameter of the dot as a fraction of cellsize.
    */
@@ -485,24 +465,7 @@ export interface MarkerShading {
    *
    * @minItems 3
    */
-  points: [
-    {
-      row: number;
-      col: number;
-    },
-    {
-      row: number;
-      col: number;
-    },
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  points: [RowCol, RowCol, RowCol, ...RowCol[]];
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
@@ -526,16 +489,7 @@ export interface MarkerFlood {
    *
    * @minItems 1
    */
-  points: [
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  points: [RowCol, ...RowCol[]];
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
@@ -555,16 +509,7 @@ export interface MarkerOutline {
    *
    * @minItems 1
    */
-  points: [
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  points: [RowCol, ...RowCol[]];
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
@@ -632,16 +577,7 @@ export interface MarkerLine {
    * @minItems 2
    * @maxItems 2
    */
-  points: [
-    {
-      row: number;
-      col: number;
-    },
-    {
-      row: number;
-      col: number;
-    }
-  ];
+  points: [RowCol, RowCol];
   /**
    * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
@@ -691,16 +627,7 @@ export interface MarkerLabel {
    * @minItems 2
    * @maxItems 2
    */
-  points: [
-    {
-      row: number;
-      col: number;
-    },
-    {
-      row: number;
-      col: number;
-    }
-  ];
+  points: [RowCol, RowCol];
   /**
    * You almost never want a label *on* the board. Nudge lets you use board coordinates to get started and then move that line by a multiple of the 'cellspacing' (i.e., the base unit, the width of a square in a square grid). The nudge is applied to both points.
    */
@@ -741,10 +668,7 @@ export interface MarkerFence {
    * Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.
    */
   type: "fence";
-  cell: {
-    row: number;
-    col: number;
-  };
+  cell: RowCol;
   side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
   /**
    * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
@@ -770,10 +694,7 @@ export interface MarkerFences {
   sides: [MarkerFenceData, ...MarkerFenceData[]];
 }
 export interface MarkerFenceData {
-  cell: {
-    row: number;
-    col: number;
-  };
+  cell: RowCol;
   side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
   /**
    * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
@@ -806,16 +727,7 @@ export interface MarkerGlyph {
    *
    * @minItems 1
    */
-  points: [
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  points: [RowCol, ...RowCol[]];
 }
 /**
  * The board schema for the `entropy` renderer
@@ -1323,16 +1235,7 @@ export interface AnnotationBasic {
    *
    * @minItems 1
    */
-  targets: [
-    {
-      row: number;
-      col: number;
-    },
-    ...{
-      row: number;
-      col: number;
-    }[]
-  ];
+  targets: [RowCol, ...RowCol[]];
   style?: "solid" | "dashed";
   /**
    * The width of the line, expressed as a percentage of cell size.

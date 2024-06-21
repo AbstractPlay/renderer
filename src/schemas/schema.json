@@ -26,6 +26,22 @@
                 }
             ]
         },
+        "rowCol": {
+            "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.",
+            "type": "object",
+            "properties": {
+                "row": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "col": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "required": ["row", "col"],
+            "additionalProperties": false
+        },
         "gradientStop": {
             "description": "Schema for a gradient stop",
             "type": "object",
@@ -220,22 +236,7 @@
                     "description": "The cells involved in the annotation",
                     "type": "array",
                     "minItems": 1,
-                    "items": {
-                        "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.",
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    }
+                    "items": {"$ref": "#/definitions/rowCol"}
                 },
                 "style": {
                     "enum": [
@@ -877,21 +878,7 @@
                 "points": {
                     "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 1
                 },
                 "size": {
@@ -932,21 +919,7 @@
                 "points": {
                     "description": "It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 3
                 },
                 "colour": {
@@ -983,21 +956,7 @@
                 "points": {
                     "description": "One or more grid coordinates of spaces to fill.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 1
                 },
                 "colour": {
@@ -1030,21 +989,7 @@
                 "points": {
                     "description": "One or more grid coordinates of spaces to fill.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 1
                 },
                 "colour": {
@@ -1138,21 +1083,7 @@
                 "points": {
                     "description": "Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 2,
                     "maxItems": 2
                 },
@@ -1227,21 +1158,7 @@
                 "points": {
                     "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "number",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "number",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 2,
                     "maxItems": 2
                 },
@@ -1312,21 +1229,7 @@
         "markerFenceData": {
             "type": "object",
             "properties": {
-                "cell": {
-                    "type": "object",
-                    "properties": {
-                        "row": {
-                            "type": "integer",
-                            "minimum": 0
-                        },
-                        "col": {
-                            "type": "integer",
-                            "minimum": 0
-                        }
-                    },
-                    "required": ["row", "col"],
-                    "additionalProperties": false
-                },
+                "cell": {"$ref": "#/definitions/rowCol"},
                 "side": {
                     "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
                 },
@@ -1361,21 +1264,7 @@
                     "description": "Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
                     "enum": ["fence"]
                 },
-                "cell": {
-                    "type": "object",
-                    "properties": {
-                        "row": {
-                            "type": "integer",
-                            "minimum": 0
-                        },
-                        "col": {
-                            "type": "integer",
-                            "minimum": 0
-                        }
-                    },
-                    "required": ["row", "col"],
-                    "additionalProperties": false
-                },
+                "cell": {"$ref": "#/definitions/rowCol"},
                 "side": {
                     "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
                 },
@@ -1437,21 +1326,7 @@
                 "points": {
                     "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 1
                 }
             },
@@ -1696,21 +1571,7 @@
                 "blocked": {
                     "description": "On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 1
                 },
                 "minWidth": {
@@ -1741,21 +1602,7 @@
                 "squarePits": {
                     "description": "Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.",
                     "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "row": {
-                                "type": "integer",
-                                "minimum": 0
-                            },
-                            "col": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        },
-                        "required": ["row", "col"],
-                        "additionalProperties": false
-                    },
+                    "items": {"$ref": "#/definitions/rowCol"},
                     "minItems": 1
                 },
                 "clickDeltaX": {
