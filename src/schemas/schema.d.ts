@@ -1342,6 +1342,10 @@ export interface AnnotationBasic {
   colour?: Colourstrings | PositiveInteger;
   arrow?: boolean;
   /**
+   * The size of the diameter of the dot as a fraction of cellsize.
+   */
+  size?: number;
+  /**
    * Only meaningful for the `eject` annotation. If true, it won't keep expanding the area of each consecutive arc.
    */
   static?: boolean & string;
