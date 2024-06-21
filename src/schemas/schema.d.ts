@@ -155,7 +155,6 @@ export interface APRenderRep {
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
   annotations?: (AnnotationBasic | AnnotationSowing | AnnotationHomeworlds | AnnotationFreespace)[];
-  [k: string]: unknown;
 }
 /**
  * An individual glyph with options, used in the `legend` property.
@@ -768,7 +767,26 @@ export interface MarkerFences {
   /**
    * @minItems 1
    */
-  sides: [MarkerFence, ...MarkerFence[]];
+  sides: [MarkerFenceData, ...MarkerFenceData[]];
+}
+export interface MarkerFenceData {
+  cell: {
+    row: number;
+    col: number;
+  };
+  side: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+  /**
+   * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+   */
+  colour?: PositiveInteger | Colourstrings;
+  /**
+   * Expressed as a multiple of the base stroke width
+   */
+  width?: number;
+  /**
+   * A valid `dasharray` appropriate for the game's display.
+   */
+  dashed?: number[];
 }
 export interface MarkerGlyph {
   /**
@@ -840,7 +858,6 @@ export interface BoardEntropy {
    * The opacity of lines drawn to construct the board, includes the labels.
    */
   strokeOpacity?: number;
-  [k: string]: unknown;
 }
 /**
  * Board schema for `freespace` boards
@@ -1147,7 +1164,6 @@ export interface AreaButtonBar {
        * Pattern for hex colour strings
        */
       fill?: string | string;
-      [k: string]: unknown;
     },
     ...{
       /**
@@ -1177,7 +1193,6 @@ export interface AreaButtonBar {
        * Pattern for hex colour strings
        */
       fill?: string | string;
-      [k: string]: unknown;
     }[]
   ];
   /**
@@ -1227,7 +1242,6 @@ export interface AreaScrollBar {
     downOne?: string;
     downAll?: string;
     bar?: string;
-    [k: string]: unknown;
   };
   /**
    * Where you want the bar to appear relative to the board.
@@ -1261,7 +1275,6 @@ export interface AreaScrollBar {
      * Pattern for hex colour strings
      */
     strokes?: string | string;
-    [k: string]: unknown;
   };
 }
 /**
@@ -1314,12 +1327,10 @@ export interface AnnotationBasic {
     {
       row: number;
       col: number;
-      [k: string]: unknown;
     },
     ...{
       row: number;
       col: number;
-      [k: string]: unknown;
     }[]
   ];
   style?: "solid" | "dashed";
@@ -1342,7 +1353,6 @@ export interface AnnotationBasic {
    * A valid `dasharray` appropriate for the game's display.
    */
   dashed?: number[];
-  [k: string]: unknown;
 }
 /**
  * Delta annotations for the `sowing-*` renderers
@@ -1364,5 +1374,4 @@ export interface AnnotationHomeworlds {
    * The index of the colour, indicating the action used (1 = Red, 2 = Blue, 3 = Green, 4 = Yellow)
    */
   action: number;
-  [k: string]: unknown;
 }

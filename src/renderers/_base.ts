@@ -5,7 +5,7 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../grids/_base";
-import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaScrollBar, BoardBasic, Glyph, Gradient, MarkerOutline, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaScrollBar, BoardBasic, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly } from "../common/plotting";
@@ -870,8 +870,8 @@ export abstract class RendererBase {
         if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
             throw new Error("This function requires that a board style be defined.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize;
         const style = this.json.board.style;
 
@@ -898,13 +898,13 @@ export abstract class RendererBase {
         let tiley = 0;
         let tileSpace = 0;
         if (this.json.board.tileWidth !== undefined) {
-            tilex = this.json.board.tileWidth as number;
+            tilex = this.json.board.tileWidth;
         }
         if (this.json.board.tileHeight !== undefined) {
-            tiley = this.json.board.tileHeight as number;
+            tiley = this.json.board.tileHeight;
         }
         if (this.json.board.tileSpacing !== undefined) {
-            tileSpace = this.json.board.tileSpacing as number;
+            tileSpace = this.json.board.tileSpacing;
         }
 
         // Get a grid of points
@@ -946,7 +946,6 @@ export abstract class RendererBase {
         // create buffer zone first if requested
         let bufferwidth = 0;
         let show: CompassDirection[] = ["N", "E", "S", "W"];
-        // @ts-expect-error
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
             if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
@@ -961,7 +960,7 @@ export abstract class RendererBase {
                 show = [...newshow];
             }
             let pattern: string | undefined;
-            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && ((this.json.board.buffer.pattern as string[]).length > 0) ) {
+            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
                 pattern = (this.json.board.buffer as IBuffer).pattern;
             }
             if (pattern !== undefined) {
@@ -1050,11 +1049,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -1064,7 +1063,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+                customLabels = this.json.board.columnLabels;
             }
             let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -1347,8 +1346,8 @@ export abstract class RendererBase {
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) && (style !== "pegboard") ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
-            const clickDeltaX = (this.json.board.clickDeltaX ?? 0) as number;
-            const clickDeltaY = (this.json.board.clickDeltaX ?? 0) as number;
+            const clickDeltaX = (this.json.board.clickDeltaX ?? 0);
+            const clickDeltaY = (this.json.board.clickDeltaX ?? 0);
             const root = this.rootSvg;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                 const point = root.point(e.clientX, e.clientY);
@@ -1474,8 +1473,8 @@ export abstract class RendererBase {
         if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
             throw new Error("This function requires that a board style be defined.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize;
         const style = this.json.board.style;
 
@@ -1497,13 +1496,13 @@ export abstract class RendererBase {
         let tiley = 0;
         let tileSpace = 0;
         if (this.json.board.tileWidth !== undefined) {
-            tilex = this.json.board.tileWidth as number;
+            tilex = this.json.board.tileWidth;
         }
         if (this.json.board.tileHeight !== undefined) {
-            tiley = this.json.board.tileHeight as number;
+            tiley = this.json.board.tileHeight;
         }
         if (this.json.board.tileSpacing !== undefined) {
-            tileSpace = this.json.board.tileSpacing as number;
+            tileSpace = this.json.board.tileSpacing;
         }
 
         // Get a grid of points
@@ -1518,7 +1517,6 @@ export abstract class RendererBase {
         // create buffer zone first if requested
         let bufferwidth = 0;
         let show: CompassDirection[] = ["N", "E", "S", "W"];
-        // @ts-expect-error
         if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
             if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
@@ -1533,7 +1531,7 @@ export abstract class RendererBase {
                 show = [...newshow];
             }
             let pattern: string | undefined;
-            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && ((this.json.board.buffer.pattern as string[]).length > 0) ) {
+            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
                 pattern = (this.json.board.buffer as IBuffer).pattern;
             }
             if (pattern !== undefined) {
@@ -1622,11 +1620,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -1636,7 +1634,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+                customLabels = this.json.board.columnLabels;
             }
             let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -1843,8 +1841,8 @@ export abstract class RendererBase {
 
         if (this.options.boardClick !== undefined) {
             if ( (this.json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
-                const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0) as number;
-                const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0) as number;
+                const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0);
+                const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0);
                 const originX = grid[0][0].x;
                 const originY = grid[0][0].y;
                 const maxX = grid[0][grid[0].length - 1].x;
@@ -1941,8 +1939,8 @@ export abstract class RendererBase {
         if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
             throw new Error("This function requires that a board style be defined.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
@@ -1976,11 +1974,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -1990,7 +1988,7 @@ export abstract class RendererBase {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+                customLabels = this.json.board.columnLabels;
             }
             let columnLabels = this.getLabels(customLabels, (width * 2) - 1);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -2132,8 +2130,8 @@ export abstract class RendererBase {
         if (this.options.boardClick !== undefined) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
-            const clickDeltaX = (this.json.board.clickDeltaX ?? 0) as number;
-            const clickDeltaY = (this.json.board.clickDeltaX ?? 0) as number;
+            const clickDeltaX = (this.json.board.clickDeltaX ?? 0);
+            const clickDeltaY = (this.json.board.clickDeltaX ?? 0);
             const root = this.rootSvg;
             const realwidth = (width * 2) - 1;
             const realheight = (height * 2) - 1;
@@ -2188,8 +2186,8 @@ export abstract class RendererBase {
         if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
             throw new Error("This function requires that a board style be defined.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize * 0.8;
         const style = this.json.board.style;
 
@@ -2281,13 +2279,13 @@ export abstract class RendererBase {
         const labels = this.rootSvg.group().id("labels");
         let labelStyle: "internal"|"external" = "internal";
         if ("labelStyle" in this.json.board && this.json.board.labelStyle !== undefined && this.json.board.labelStyle !== null) {
-            labelStyle = this.json.board.labelStyle as "internal"|"external";
+            labelStyle = this.json.board.labelStyle;
         }
         const fontSize = this.cellsize / 5;
         const seenEdges = new Set<string>();
         let customLabels: string[]|undefined;
         if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-            customLabels = this.json.board.columnLabels as string[];
+            customLabels = this.json.board.columnLabels;
         }
         let rowLabels = this.getLabels(customLabels, height);
         rowLabels.reverse();
@@ -2314,11 +2312,11 @@ export abstract class RendererBase {
 
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         for (const hex of grid) {
             // don't draw "blocked" hexes
@@ -2500,8 +2498,8 @@ export abstract class RendererBase {
         if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
             throw new Error("This function requires that a board style be defined.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize * 0.8;
 
         let baseStroke = 1;
@@ -2587,7 +2585,7 @@ export abstract class RendererBase {
         const seenEdges = new Set<string>();
         let customLabels: string[]|undefined;
         if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-            customLabels = this.json.board.columnLabels as string[];
+            customLabels = this.json.board.columnLabels;
         }
         const columnLabels = this.getLabels(customLabels, width * 2);
         if (this.options.rotate === 180) {
@@ -2599,11 +2597,11 @@ export abstract class RendererBase {
 
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         for (const hex of grid) {
             // don't draw "blocked" hexes
@@ -2760,8 +2758,8 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize;
 
         let baseStroke = 1;
@@ -2787,11 +2785,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -2941,8 +2939,8 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize;
         if (width % 2 !== 0) {
             throw new Error("The number of sections in a cobweb board must be even.");
@@ -2964,7 +2962,7 @@ export abstract class RendererBase {
 
         let start = 0;
         if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
-            start = this.json.board["circular-start"] as number;
+            start = this.json.board["circular-start"];
         }
 
         // Get a grid of points
@@ -2979,11 +2977,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labelPts = cobwebLabels(args);
@@ -3043,14 +3041,14 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("minWidth" in this.json.board)) || (! ("maxWidth" in this.json.board)) || (this.json.board.minWidth === undefined) || (this.json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = this.json.board.minWidth as number;
-        const maxWidth: number = this.json.board.maxWidth as number;
+        const minWidth: number = this.json.board.minWidth;
+        const maxWidth: number = this.json.board.maxWidth;
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
         let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
-            half = this.json.board.half as ("top"|"bottom");
+            half = this.json.board.half;
             height = maxWidth - minWidth + 1;
         } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
             alternating = true;
@@ -3082,11 +3080,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -3094,7 +3092,7 @@ export abstract class RendererBase {
             // Rows (numbers)
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+                customLabels = this.json.board.columnLabels;
             }
             const columnLabels = this.getLabels(customLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -3252,14 +3250,14 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("minWidth" in this.json.board)) || (! ("maxWidth" in this.json.board)) || (this.json.board.minWidth === undefined) || (this.json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = this.json.board.minWidth as number;
-        const maxWidth: number = this.json.board.maxWidth as number;
+        const minWidth: number = this.json.board.minWidth;
+        const maxWidth: number = this.json.board.maxWidth;
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
         let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
-            half = this.json.board.half as ("top"|"bottom");
+            half = this.json.board.half;
             height = maxWidth - minWidth + 1;
         } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
             alternating = true;
@@ -3305,11 +3303,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -3317,7 +3315,7 @@ export abstract class RendererBase {
             // Rows (numbers)
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+                customLabels = this.json.board.columnLabels;
             }
             const columnLabels = this.getLabels(customLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -3389,14 +3387,14 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("minWidth" in this.json.board)) || (! ("maxWidth" in this.json.board)) || (this.json.board.minWidth === undefined) || (this.json.board.maxWidth === undefined) ) {
             throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
         }
-        const minWidth: number = this.json.board.minWidth as number;
-        const maxWidth: number = this.json.board.maxWidth as number;
+        const minWidth: number = this.json.board.minWidth;
+        const maxWidth: number = this.json.board.maxWidth;
         const cellsize = this.cellsize;
         let height = ((maxWidth - minWidth) * 2) + 1;
         let half: "top"|"bottom"|undefined;
         let alternating = false;
         if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
-            half = this.json.board.half as ("top"|"bottom");
+            half = this.json.board.half;
             height = maxWidth - minWidth + 1;
         } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
             alternating = true;
@@ -3451,11 +3449,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
@@ -3463,7 +3461,7 @@ export abstract class RendererBase {
             // Rows (numbers)
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+                customLabels = this.json.board.columnLabels;
             }
             const columnLabels = this.getLabels(customLabels, height);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -3749,10 +3747,10 @@ export abstract class RendererBase {
         let gridWidth: number|undefined;
         let gridHeight: number|undefined;
         if ( ("width" in this.json.board) && (this.json.board.width !== undefined)) {
-            gridWidth = this.json.board.width as number;
+            gridWidth = this.json.board.width;
         }
         if ( ("height" in this.json.board) && (this.json.board.height !== undefined)) {
-            gridHeight = this.json.board.height as number;
+            gridHeight = this.json.board.height;
         }
         if (gridHeight === undefined && gridWidth !== undefined) {
             gridHeight = gridWidth + 1;
@@ -3830,7 +3828,7 @@ export abstract class RendererBase {
         // Check required properties
         let gridWidth: number|undefined;
         if ( ("minWidth" in this.json.board) && (this.json.board.minWidth !== undefined)) {
-            gridWidth = this.json.board.minWidth as number;
+            gridWidth = this.json.board.minWidth;
         }
         if (gridWidth === undefined) {
             throw new Error(`The property 'minWidth' is required.`);
@@ -3903,8 +3901,8 @@ export abstract class RendererBase {
         if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
             throw new Error("This function requires that a board style be defined.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         const cellsize = this.cellsize;
         let endpits = true;
         if ( ("showEndPits" in this.json.board) && (this.json.board.showEndPits === false) )  {
@@ -3956,17 +3954,17 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
             let customLabels: string[]|undefined;
             if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
-                customLabels = this.json.board.columnLabels as string[];
+                customLabels = this.json.board.columnLabels;
             }
             const columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
@@ -4220,8 +4218,8 @@ export abstract class RendererBase {
         }
 
         // Check required properties
-        let width = this.json.board.width as number|undefined;
-        let height = this.json.board.height as number|undefined;
+        let width = this.json.board.width;
+        let height = this.json.board.height;
         if (width === undefined && height === undefined) {
             throw new Error("You must provide at least one of `width` or `height`");
         }
@@ -4650,8 +4648,8 @@ export abstract class RendererBase {
         if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("Both the `width` and `height` properties are required for this board type.");
         }
-        const width: number = this.json.board.width as number;
-        const height: number = this.json.board.height as number;
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
         if (width < 2 || height < 2) {
             throw new Error(`The 'cairo-catalan' board must be at least two cells wide and two cells high.`);
         }
@@ -4736,11 +4734,11 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
-            labelOpacity = this.json.board.labelOpacity as number;
+            labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let hideHalf = false;
@@ -4865,6 +4863,9 @@ export abstract class RendererBase {
                 }
                 const cloned = {...note};
                 if ("targets" in cloned) {
+                    // This exception is fine because cloned is only used
+                    // to create a UUID.
+                    // @ts-expect-error
                     delete cloned.targets;
                 }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
@@ -4874,7 +4875,7 @@ export abstract class RendererBase {
 
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) && (note.colour !== null) ) {
-                        colour = this.resolveColour(note.colour as string|number) as string;
+                        colour = this.resolveColour(note.colour ) as string;
                     }
                     let style = "solid";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -4882,15 +4883,15 @@ export abstract class RendererBase {
                     }
                     let arrow = true;
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
-                        arrow = note.arrow as boolean;
+                        arrow = note.arrow;
                     }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
-                        opacity = note.opacity as number;
+                        opacity = note.opacity;
                     }
                     let strokeWidth = 0.03;
                     if ( ("strokeWidth" in note) && (note.strokeWidth !== undefined) ) {
-                        strokeWidth = note.strokeWidth as number;
+                        strokeWidth = note.strokeWidth;
                     }
                     const unit = strokeWidth / 0.03;
                     const s = this.cellsize * strokeWidth / 2;
@@ -4914,7 +4915,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = (4 * Math.ceil(strokeWidth / 0.03)).toString();
                         if (note.dashed !== undefined && note.dashed !== null) {
-                            stroke.dasharray = (note.dashed as number[]).join(" ");
+                            stroke.dasharray = (note.dashed ).join(" ");
                         }
                     }
                     const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
@@ -4931,7 +4932,7 @@ export abstract class RendererBase {
 
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = this.resolveColour(note.colour as string|number, "#000") as string;
+                        colour = this.resolveColour(note.colour , "#000") as string;
                     }
                     let style = "dashed";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -4939,11 +4940,11 @@ export abstract class RendererBase {
                     }
                     let arrow = false;
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
-                        arrow = note.arrow as boolean;
+                        arrow = note.arrow;
                     }
                     let opacity = 0.5;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
-                        opacity = note.opacity as number;
+                        opacity = note.opacity;
                     }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
@@ -4968,7 +4969,7 @@ export abstract class RendererBase {
                     if (style === "dashed") {
                         stroke.dasharray = "4";
                         if (note.dashed !== undefined && note.dashed !== null) {
-                            stroke.dasharray = (note.dashed as number[]).join(" ");
+                            stroke.dasharray = (note.dashed ).join(" ");
                         }
                     }
                     const line = notes.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
@@ -4991,7 +4992,7 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = this.resolveColour(note.colour as string|number) as string;
+                        colour = this.resolveColour(note.colour ) as string;
                     }
                     let strokeWeight = this.cellsize* 0.05;
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
@@ -4999,7 +5000,7 @@ export abstract class RendererBase {
                     }
                     let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
                     if (note.dashed !== undefined && note.dashed !== null) {
-                        dasharray = (note.dashed as number[]).join(" ");
+                        dasharray = (note.dashed ).join(" ");
                     }
                     for (const node of (note.targets as ITarget[])) {
                         // outline the polygon if provided
@@ -5067,7 +5068,7 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = this.resolveColour(note.colour as string|number) as string;
+                        colour = this.resolveColour(note.colour ) as string;
                     }
                     let strokeWeight = this.cellsize* 0.05;
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
@@ -5075,7 +5076,7 @@ export abstract class RendererBase {
                     }
                     let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
                     if (note.dashed !== undefined && note.dashed !== null) {
-                        dasharray = (note.dashed as number[]).join(" ");
+                        dasharray = (note.dashed ).join(" ");
                     }
                     for (const node of (note.targets as ITarget[])) {
                         // outline the polygon if provided
@@ -5143,11 +5144,11 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "outline") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = this.resolveColour(note.colour as string|number) as string;
+                        colour = this.resolveColour(note.colour ) as string;
                     }
                     let dasharray = "4";
                     if (note.dashed !== undefined && note.dashed !== null) {
-                        dasharray = (note.dashed as number[]).join(" ");
+                        dasharray = (note.dashed ).join(" ");
                     }
                     const pts: IPoint[] = [];
                     for (const node of (note.targets as ITarget[])) {
@@ -5168,11 +5169,11 @@ export abstract class RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = this.resolveColour(note.colour as string|number) as string;
+                        colour = this.resolveColour(note.colour ) as string;
                     }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
-                        opacity = note.opacity as number;
+                        opacity = note.opacity;
                     }
                     let diameter = 0.2;
                     if ( ("size" in note) && (note.size !== undefined) ) {
@@ -5365,20 +5366,24 @@ export abstract class RendererBase {
             }
 
             const allMarkers = this.json.board.markers.filter(m => m.type !== "fences");
-            const fences = (this.json.board.markers.filter(m => m.type === "fences") as unknown[]) as {type: "fences", sides: {[k: string]: any}[]}[];
+            const fences = this.json.board.markers.filter(m => m.type === "fences") as MarkerFences[];
             if (fences.length > 0) {
                 for (const decl of fences) {
                     for (const side of decl.sides) {
-                        allMarkers.push({type: "fence", ...side});
+                        allMarkers.push({type: "fence", ...side} as MarkerFence);
                     }
                 }
             }
 
             for (const marker of allMarkers) {
+                let belowGrid: boolean|undefined;
                 if ((marker.type === "flood") && marker.belowGrid === undefined) {
                     marker.belowGrid = true;
                 }
-                if (! ((preGridLines && marker.belowGrid === true) || (!preGridLines && (marker.belowGrid === undefined || marker.belowGrid === false)) || (preGridLines && marker.type === "halo") )) {
+                if ("belowGrid" in marker) {
+                    belowGrid = marker.belowGrid;
+                }
+                if (! ((preGridLines && belowGrid === true) || (!preGridLines && (belowGrid === undefined || belowGrid === false)) || (preGridLines && marker.type === "halo") )) {
                     continue;
                 }
                 const cloned = {...marker as {[k:string]: any}};
@@ -5392,11 +5397,11 @@ export abstract class RendererBase {
                     }
                     let opacity = baseOpacity;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
-                        opacity = marker.opacity as number;
+                        opacity = marker.opacity;
                     }
                     let diameter = 0.2;
                     if ( ("size" in marker) && (marker.size !== undefined) ) {
-                        diameter = marker.size as number;
+                        diameter = marker.size;
                     }
                     const pts: [number, number][] = [];
                     for (const point of marker.points as ITarget[]) {
@@ -5422,7 +5427,7 @@ export abstract class RendererBase {
                     }
                     let opacity = 0.25;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
-                        opacity = marker.opacity as number;
+                        opacity = marker.opacity;
                     }
                     const points: [number, number][] = [];
                     if ( ( (this.json.board.style.startsWith("squares")) || (this.json.board.style.startsWith("sowing")) || this.json.board.style === "pegboard") && (gridExpanded !== undefined) ) {
@@ -5449,11 +5454,11 @@ export abstract class RendererBase {
                         if (typeof marker.colour === "object") {
                             isGradient = true;
                         }
-                        colour = this.resolveColour(marker.colour as string|number|Gradient);
+                        colour = this.resolveColour(marker.colour );
                     }
                     let opacity = 0.25;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
-                        opacity = marker.opacity as number;
+                        opacity = marker.opacity;
                     }
                     let fill: FillData|SVGGradient;
                     if (isGradient) {
@@ -5485,15 +5490,15 @@ export abstract class RendererBase {
                 } else if (marker.type === "line") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        colour = this.resolveColour(marker.colour as string|number) as string;
+                        colour = this.resolveColour(marker.colour ) as string;
                     }
                     let opacity = baseOpacity;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
-                        opacity = marker.opacity as number;
+                        opacity = marker.opacity;
                     }
                     let width = baseStroke;
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
-                        width = marker.width as number;
+                        width = marker.width;
                     }
                     const stroke: StrokeData = {
                         color: colour,
@@ -5524,10 +5529,10 @@ export abstract class RendererBase {
                         [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y];
                     }
 
-                    if ("shorten" in marker && marker.shorten > 0) {
+                    if ("shorten" in marker && marker.shorten !== undefined && marker.shorten > 0) {
                         // https://math.stackexchange.com/questions/3058210/how-to-shorten-a-line-but-maintain-its-angle
-                        const t0 = marker.shorten as number;
-                        const t1 = 1 - (marker.shorten as number);
+                        const t0 = marker.shorten;
+                        const t1 = 1 - (marker.shorten);
                         const newx1 = x1 + (t0 * (x2 - x1));
                         const newy1 = y1 + (t0 * (y2 - y1));
                         const newx2 = x1 + (t1 * (x2 - x1));
@@ -5592,7 +5597,7 @@ export abstract class RendererBase {
                             if (typeof marker.fill === "number") {
                                 fill = this.options.colours[marker.fill - 1];
                             } else {
-                                fill = marker.fill as string;
+                                fill = marker.fill;
                             }
                         }
                         if (fill !== undefined) {
@@ -5605,15 +5610,15 @@ export abstract class RendererBase {
                     } else {
                         let width = baseStroke;
                         if ( ("width" in marker) && (marker.width !== undefined) ) {
-                            width = marker.width as number;
+                            width = marker.width;
                         }
                         rx += width / 2;
                         let degStart = 0;
                         if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
-                            degStart = this.json.board["circular-start"] as number;
+                            degStart = this.json.board["circular-start"];
                         }
                         if ( ("offset" in marker) && (marker.offset !== undefined) ) {
-                            degStart += marker.offset as number;
+                            degStart += marker.offset;
                         }
                         const phi = 360 / (marker.segments as any[]).length;
                         for (let i = 0; i < marker.segments.length; i++) {
@@ -5663,7 +5668,7 @@ export abstract class RendererBase {
                 } else if (marker.type === "label") {
                     let colour = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        colour = this.resolveColour(marker.colour as string|number) as string;
+                        colour = this.resolveColour(marker.colour ) as string;
                     }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
@@ -5687,11 +5692,11 @@ export abstract class RendererBase {
                     }
                     let font = 'font-size: 17px;';
                     if ( ("size" in marker) && (marker.size !== undefined) ) {
-                        font = `font-size: ${marker.size as number}px;`;
+                        font = `font-size: ${marker.size }px;`;
                     }
                     font += marker.font ?? '';
                     const text = svgGroup.text((add) => {
-                            add.tspan(marker.label as string).attr('style', font);
+                            add.tspan(marker.label ).attr('style', font);
                         })
                         .addClass(`aprender-marker-${x2uid(cloned)}`)
                         .font({ fill: colour, anchor: "middle"})
@@ -5702,11 +5707,11 @@ export abstract class RendererBase {
                 } else if (marker.type === "edge") {
                     let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        colour = this.resolveColour(marker.colour as string|number) as string;
+                        colour = this.resolveColour(marker.colour ) as string;
                     }
                     let opacity = baseOpacity + ((1 - baseOpacity) / 2);
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
-                        opacity = marker.opacity as number;
+                        opacity = marker.opacity;
                     }
                     const style = this.json.board.style;
                     if ( (style === "vertex") || (style === "vertex-cross") || (style.startsWith("conhex")) ) {
@@ -6155,11 +6160,11 @@ export abstract class RendererBase {
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        colour = this.resolveColour(marker.colour as string|number) as string;
+                        colour = this.resolveColour(marker.colour ) as string;
                     }
                     let multiplier = 6;
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
-                        multiplier = marker.width as number;
+                        multiplier = marker.width;
                     }
                     const stroke: StrokeData = {
                         color: colour,
@@ -6168,12 +6173,12 @@ export abstract class RendererBase {
                         linejoin: "round",
                     };
                     if ( ("dashed" in marker) && (marker.dashed !== undefined) && (Array.isArray(marker.dashed)) && (marker.dashed.length > 0) ) {
-                        stroke.dasharray = (marker.dashed as number[]).join(" ");
+                        stroke.dasharray = (marker.dashed ).join(" ");
                     }
                     const style = this.json.board.style;
                     if ( (style.startsWith("squares") || style === "pegboard") && (gridExpanded !== undefined) ) {
-                        const row = marker.cell.row as number;
-                        const col = marker.cell.col as number;
+                        const row = marker.cell.row;
+                        const col = marker.cell.col;
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         const cell = gridExpanded[row][col];
@@ -6211,8 +6216,8 @@ export abstract class RendererBase {
                         delete newclone.side;
                         svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
-                        let row = marker.cell.row as number;
-                        let col = marker.cell.col as number;
+                        let row = marker.cell.row;
+                        let col = marker.cell.col;
                         if (this.options.rotate === 180) {
                             row = hexHeight - row - 1;
                             col = hexWidth - col - 1;
@@ -6234,7 +6239,7 @@ export abstract class RendererBase {
                         }
                     }
                 } else if (marker.type === "glyph") {
-                    const key = marker.glyph as string;
+                    const key = marker.glyph;
                     const piece = svgGroup.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
@@ -6603,7 +6608,7 @@ export abstract class RendererBase {
         // initialize values
         let labelColour = this.options.colourContext.labels;
         if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour as string;
+            labelColour = this.json.board.labelColour;
         }
         let height = this.cellsize * 0.333;
         if (key.height !== undefined) {
@@ -6964,7 +6969,7 @@ export abstract class RendererBase {
                 // Add area label
                 let labelColour = this.options.colourContext.labels;
                 if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-                    labelColour = this.json.board.labelColour as string;
+                    labelColour = this.json.board.labelColour;
                 }
                 const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: labelColour});
                 const txtWidth = tmptxt.bbox().w;

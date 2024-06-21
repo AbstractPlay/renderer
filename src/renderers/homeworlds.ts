@@ -1,7 +1,7 @@
 import { Box, Svg, Use } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import type { IPoint } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
+import { APRenderRep, AreaHWStash } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
 
@@ -93,7 +93,7 @@ export class HomeworldsRenderer extends RendererBase {
                     if ( (! ("action" in note)) || (note.action === undefined) ) {
                         throw new Error("Invalid annotation found");
                     }
-                    node.highlight = note.action as number;
+                    node.highlight = note.action;
                 }
             }
             if (node.seat !== undefined) {
@@ -252,7 +252,7 @@ export class HomeworldsRenderer extends RendererBase {
         if (Array.isArray(this.json.areas[0])) {
             throw new Error("Malformed `areas` definition");
         }
-        const stash = this.json.areas[0];
+        const stash = this.json.areas[0] as AreaHWStash;
         if ("stack" in stash) {
             throw new Error("Malformed stash. The properties 'R', 'B', 'G', and 'Y' are required.");
         }
