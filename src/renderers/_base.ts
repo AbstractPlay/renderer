@@ -5,7 +5,7 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../grids/_base";
-import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaScrollBar, BoardBasic, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaScrollBar, BoardBasic, ButtonBarButton, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly } from "../common/plotting";
@@ -6506,7 +6506,7 @@ export abstract class RendererBase {
         // Composite each into a group, all at 0,0
         const groups: Svg[] = [];
         for (let i = 0; i < labels.length; i++) {
-            const b = bar.buttons[i];
+            const b: ButtonBarButton = bar.buttons[i];
             const symlabel = labels[i];
             const symrect = rects[i];
             let value = b.label.replace(/\s/g, "");

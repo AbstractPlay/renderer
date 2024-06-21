@@ -635,6 +635,46 @@
             "required": ["type", "label", "stash"],
             "additionalProperties": false
         },
+        "buttonBarButton": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "description": "The label that will be visible on the rendered image.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "value": {
+                    "description": "The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.",
+                    "type": "string",
+                    "pattern": "^\\S+$"
+                },
+                "attributes": {
+                    "description": "Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name", "value"],
+                        "additionalProperties": false
+                    }
+                },
+                "fill": {
+                    "description": "Optional fill for this specific button.",
+                    "$ref": "#/definitions/colourstrings",
+                    "default": "#000"
+                }
+            },
+            "required": ["label"],
+            "additionalProperties": false
+        },
         "areaButtonBar": {
             "description": "Used to create a button bar for clicking.",
             "type": "object",
@@ -646,46 +686,7 @@
                     "description": "The array of the buttons themselves, which will be presented in the order given.",
                     "type": "array",
                     "minItems": 1,
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "label": {
-                                "description": "The label that will be visible on the rendered image.",
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "value": {
-                                "description": "The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.",
-                                "type": "string",
-                                "pattern": "^\\S+$"
-                            },
-                            "attributes": {
-                                "description": "Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.",
-                                "type": "array",
-                                "minItems": 1,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "value": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": ["name", "value"],
-                                    "additionalProperties": false
-                                }
-                            },
-                            "fill": {
-                                "description": "Optional fill for this specific button.",
-                                "$ref": "#/definitions/colourstrings",
-                                "default": "#000"
-                            }
-                        },
-                        "required": ["label"],
-                        "additionalProperties": false
-                    }
+                    "items": {"$ref": "#/definitions/buttonBarButton"}
                 },
                 "position": {
                     "description": "Where you want the bar to appear relative to the board.",

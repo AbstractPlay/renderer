@@ -1047,66 +1047,7 @@ export interface AreaButtonBar {
    *
    * @minItems 1
    */
-  buttons: [
-    {
-      /**
-       * The label that will be visible on the rendered image.
-       */
-      label: string;
-      /**
-       * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
-       */
-      value?: string;
-      /**
-       * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
-       *
-       * @minItems 1
-       */
-      attributes?: [
-        {
-          name: string;
-          value: string;
-        },
-        ...{
-          name: string;
-          value: string;
-        }[]
-      ];
-      /**
-       * Pattern for hex colour strings
-       */
-      fill?: string | string;
-    },
-    ...{
-      /**
-       * The label that will be visible on the rendered image.
-       */
-      label: string;
-      /**
-       * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
-       */
-      value?: string;
-      /**
-       * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
-       *
-       * @minItems 1
-       */
-      attributes?: [
-        {
-          name: string;
-          value: string;
-        },
-        ...{
-          name: string;
-          value: string;
-        }[]
-      ];
-      /**
-       * Pattern for hex colour strings
-       */
-      fill?: string | string;
-    }[]
-  ];
+  buttons: [ButtonBarButton, ...ButtonBarButton[]];
   /**
    * Where you want the bar to appear relative to the board.
    */
@@ -1127,6 +1068,35 @@ export interface AreaButtonBar {
    * Pattern for hex colour strings
    */
   colour?: string | string;
+}
+export interface ButtonBarButton {
+  /**
+   * The label that will be visible on the rendered image.
+   */
+  label: string;
+  /**
+   * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
+   */
+  value?: string;
+  /**
+   * Lets you pass attributes to the `<text>` tag for things like strikethrough and italics. See the SVG spec for a list of applicable attributes.
+   *
+   * @minItems 1
+   */
+  attributes?: [
+    {
+      name: string;
+      value: string;
+    },
+    ...{
+      name: string;
+      value: string;
+    }[]
+  ];
+  /**
+   * Pattern for hex colour strings
+   */
+  fill?: string | string;
 }
 /**
  * Used to create a clickable vertical scroll bar used for hiding/showing layers of pieces.
