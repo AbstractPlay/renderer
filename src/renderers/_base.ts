@@ -1898,6 +1898,7 @@ export abstract class RendererBase {
             pts.forEach((p) => {
                 const pt = grid[p[0]][p[1]];
                 gridlines.circle(baseStroke * 7.5)
+                    .attr({ 'pointer-events': 'none' })
                     .fill(baseColour)
                     .opacity(baseOpacity)
                     .stroke({width: 0})
@@ -1908,6 +1909,7 @@ export abstract class RendererBase {
             for (let i = 0; i < total - pts.length; i++) {
                 gridlines.circle(baseStroke * 7.5)
                     .id(`aprender-ghost-star-${i+1}`)
+                    .attr({ 'pointer-events': 'none' })
                     .fill(baseColour)
                     .opacity(0)
                     .stroke({width: 0})
