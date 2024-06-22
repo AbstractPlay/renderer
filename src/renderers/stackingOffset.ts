@@ -46,6 +46,7 @@ export class StackingOffsetRenderer extends RendererBase {
 
         switch (this.json.board.style) {
             case "squares-checkered":
+            case "squares-beveled":
             case "squares":
                 [gridPoints, polys] = this.squares();
                 break;
