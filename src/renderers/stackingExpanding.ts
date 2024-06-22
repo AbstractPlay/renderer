@@ -1,6 +1,6 @@
 import { Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
+import { APRenderRep, AreaStackingExpanded } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
 
@@ -36,14 +36,13 @@ export class StackingExpandingRenderer extends RendererBase {
             this.loadLegend();
 
             if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-                const area = this.json.areas.find((x) => x.type === "expandedColumn");
+                const area = this.json.areas.find((x) => x.type === "expandedColumn") as AreaStackingExpanded;
                 if (area !== undefined) {
                     // Create a group to store the column and place all the pieces at 0,0 within it
                     const columnWidth = this.cellsize * 1;
                     const used: [SVGUse, number][] = [];
                     const nested = this.rootSvg.group().id("_expansion").width(columnWidth);
-                    // @ts-expect-error
-                    for (const p of (area.stack as string[]).reverse()) {
+                    for (const p of area.stack.reverse()) {
                         const piece = this.rootSvg.findOne("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
@@ -151,15 +150,14 @@ export class StackingExpandingRenderer extends RendererBase {
 
             // Add expanded column, if requested
             if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-                const area = this.json.areas.find((x) => x.type === "expandedColumn");
+                const area = this.json.areas.find((x) => x.type === "expandedColumn") as AreaStackingExpanded;
                 if (area !== undefined) {
                     // Create a group to store the column and place all the pieces at 0,0 within it
                     const boardHeight = gridPoints[gridPoints.length - 1][0].x - gridPoints[0][0].x + (this.cellsize * 2);
                     const columnWidth = this.cellsize * 1;
                     const used: [SVGUse, number][] = [];
                     const nested = this.rootSvg.defs().group().id("_expansion").size(columnWidth, boardHeight);
-                    // @ts-expect-error
-                    for (const p of (area.stack as string[]).reverse()) {
+                    for (const p of area.stack.reverse()) {
                         const piece = this.rootSvg.findOne("#" + p) as Svg;
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);

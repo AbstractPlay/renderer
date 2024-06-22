@@ -1,6 +1,6 @@
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase, IKey } from "./_base";
+import { APRenderRep, AnnotationFreespace, AreaKey } from "../schemas/schema";
+import { IRendererOptionsIn, RendererBase } from "./_base";
 import { IPoint } from "../grids/_base";
 import { rotate, usePieceAt } from "../common/plotting";
 import { x2uid} from "../common/glyph2uid";
@@ -65,8 +65,8 @@ export class FreespaceRenderer extends RendererBase {
         if ( (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
             throw new Error("At the very least, the `board` property requires the `width` and `height` properties.");
         }
-        const width = this.json.board.width as number;
-        const height = this.json.board.height as number;
+        const width = this.json.board.width;
+        const height = this.json.board.height;
         let [ox, oy] = [0,0];
         if ( ("origin" in this.json.board) && (this.json.board !== undefined) ) {
             const origin = this.json.board.origin as {[k: string]: number};
@@ -169,7 +169,7 @@ export class FreespaceRenderer extends RendererBase {
 
         if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
             const notes = field.group().id("annotations");
-            for (const note of this.json.annotations) {
+            for (const note of this.json.annotations as AnnotationFreespace[]) {
                 if ( (! ("type" in note)) || (note.type === undefined) ) {
                     throw new Error("Invalid annotation format found.");
                 }
@@ -179,28 +179,28 @@ export class FreespaceRenderer extends RendererBase {
                         if (typeof note.stroke === "number") {
                             stroke = this.options.colours[note.stroke - 1];
                         } else {
-                            stroke = note.stroke as string;
+                            stroke = note.stroke;
                         }
                     }
                     let strokeWidth = 1;
                     if ( ("strokeWidth" in note) && (note.strokeWidth !== undefined) ) {
-                        strokeWidth = note.strokeWidth as number;
+                        strokeWidth = note.strokeWidth;
                     }
                     let strokeOpacity = 1;
                     if ( ("strokeOpacity" in note) && (note.strokeOpacity !== undefined) ) {
-                        strokeOpacity = note.strokeOpacity as number;
+                        strokeOpacity = note.strokeOpacity;
                     }
                     let fill = "#fff";
                     if ( ("fill" in note) && (note.fill !== undefined) ) {
                         if (typeof note.fill === "number") {
                             fill = this.options.colours[note.fill - 1];
                         } else {
-                            fill = note.fill as string;
+                            fill = note.fill;
                         }
                     }
                     let fillOpacity = 1;
                     if ( ("fillOpacity" in note) && (note.fillOpacity !== undefined) ) {
-                        fillOpacity = note.fillOpacity as number;
+                        fillOpacity = note.fillOpacity;
                     }
                     const strokeData: StrokeData = {
                         color: stroke,
@@ -210,9 +210,9 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("dashed" in note) && (note.dashed !== undefined) && (Array.isArray(note.dashed)) && (note.dashed.length > 0) ) {
                         strokeData.dasharray = (note.dashed).join(" ");
                     }
-                    notes.path(note.path as string).addClass(`aprender-annotation-${x2uid(note)}`).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
+                    notes.path(note.path ).addClass(`aprender-annotation-${x2uid(note)}`).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
                 } else if (note.type === "glyph") {
-                    const key = note.glyph as string;
+                    const key = note.glyph;
                     const piece = field.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
@@ -338,7 +338,7 @@ export class FreespaceRenderer extends RendererBase {
             throw new Error("Invalid object state.");
         }
         if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-            const keys = this.json.areas.filter((b) => b.type === "key") as IKey[];
+            const keys = this.json.areas.filter((b) => b.type === "key") as AreaKey[];
             if (keys.length > 1) {
                 throw new Error("Only one key may be defined.");
             }

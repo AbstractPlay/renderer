@@ -76,7 +76,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
                     if ( (! ("action" in note)) || (note.action === undefined) ) {
                         throw new Error("Invalid annotation found");
                     }
-                    node.highlight = note.action as number;
+                    node.highlight = note.action;
                 }
             }
             if (node.seat !== undefined) {

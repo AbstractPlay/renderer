@@ -148,9 +148,9 @@ export class Stacking3DRenderer extends RendererBase {
 
         this.findaft(-0.25, 0.6, 0.6);
 
-        this.width = this.json.board.width as number;
+        this.width = this.json.board.width;
         const width = this.width;
-        this.height = this.json.board.height as number;
+        this.height = this.json.board.height;
         const height: number = this.height;
         const cellsize = this.cellsize;
 
@@ -360,6 +360,9 @@ export class Stacking3DRenderer extends RendererBase {
                 }
                 const cloned = {...note};
                 if ("targets" in cloned) {
+                    // This exception is ok.
+                    // cloned is only used for generating a UUID.
+                    // @ts-expect-error
                     delete cloned.targets;
                 }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
@@ -379,11 +382,11 @@ export class Stacking3DRenderer extends RendererBase {
                     }
                     let arrow = true;
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
-                        arrow = note.arrow as boolean;
+                        arrow = note.arrow;
                     }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
-                        opacity = note.opacity as number;
+                        opacity = note.opacity;
                     }
 
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
@@ -426,11 +429,11 @@ export class Stacking3DRenderer extends RendererBase {
                     }
                     let arrow = false;
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
-                        arrow = note.arrow as boolean;
+                        arrow = note.arrow;
                     }
                     let opacity = 0.5;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
-                        opacity = note.opacity as number;
+                        opacity = note.opacity;
                     }
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
@@ -527,7 +530,7 @@ export class Stacking3DRenderer extends RendererBase {
                     }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
-                        opacity = note.opacity as number;
+                        opacity = note.opacity;
                     }
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
