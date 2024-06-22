@@ -86,6 +86,14 @@ export class StackingOffsetRenderer extends RendererBase {
             case "cairo-catalan":
                 [gridPoints, polys] = this.cairoCatalan();
                 break;
+            // Adding support for conical-hex* and pyramid-hex purely for the designer
+            case "conical-hex":
+            case "conical-hex-narrow":
+                [gridPoints, polys] = this.conicalHex();
+                break;
+            case "pyramid-hex":
+                [gridPoints, polys] = this.pyramidHex();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
