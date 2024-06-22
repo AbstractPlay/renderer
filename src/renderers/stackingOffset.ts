@@ -52,6 +52,7 @@ export class StackingOffsetRenderer extends RendererBase {
                 break;
             case "vertex":
             case "vertex-cross":
+            case "vertex-fanorona":
                 gridPoints = this.vertex();
                 break;
             case "snubsquare":
