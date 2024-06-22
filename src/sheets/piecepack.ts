@@ -53,6 +53,7 @@ sheet.glyphs.set("piecepack-number-1", (canvas: SVGContainer) => {
     group.path("M175,456l-69,175l254,169h207V127H324v437L175,456z")
         .attr("data-playerfill", true)
         .attr("data-context-stroke", true)
+        // All the @ts-expect-errors in this file are due to poor SVGjs typing
         // @ts-expect-error
         .rotate(180, 0, 0).flip("x", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
