@@ -14,6 +14,34 @@ export type PositiveInteger = number;
  * Schema for the `matrix` part of a polyomino-related feature
  */
 export type Polymatrix = (PositiveInteger | Colourstrings | 0 | null)[][];
+export type BoardStyles =
+  | "squares"
+  | "squares-checkered"
+  | "squares-beveled"
+  | "squares-stacked"
+  | "vertex"
+  | "vertex-cross"
+  | "vertex-fanorona"
+  | "pegboard"
+  | "hex-slanted"
+  | "hex-odd-p"
+  | "hex-even-p"
+  | "hex-odd-f"
+  | "hex-even-f"
+  | "hex-of-hex"
+  | "hex-of-tri"
+  | "hex-of-cir"
+  | "snubsquare"
+  | "circular-cobweb"
+  | "sowing"
+  | "conhex-dots"
+  | "conhex-cells"
+  | "cairo-collinear"
+  | "cairo-catalan"
+  | "triangles-stacked"
+  | "conical-hex"
+  | "conical-hex-narrow"
+  | "pyramid-hex";
 /**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
@@ -229,34 +257,7 @@ export interface GradientStop {
  * One of the preset boards.
  */
 export interface BoardBasic {
-  style:
-    | "squares"
-    | "squares-checkered"
-    | "squares-beveled"
-    | "squares-stacked"
-    | "vertex"
-    | "vertex-cross"
-    | "vertex-fanorona"
-    | "pegboard"
-    | "hex-slanted"
-    | "hex-odd-p"
-    | "hex-even-p"
-    | "hex-odd-f"
-    | "hex-even-f"
-    | "hex-of-hex"
-    | "hex-of-tri"
-    | "hex-of-cir"
-    | "snubsquare"
-    | "circular-cobweb"
-    | "sowing"
-    | "conhex-dots"
-    | "conhex-cells"
-    | "cairo-collinear"
-    | "cairo-catalan"
-    | "triangles-stacked"
-    | "conical-hex"
-    | "conical-hex-narrow"
-    | "pyramid-hex";
+  style: BoardStyles;
   /**
    * Pattern for hex colour strings
    */

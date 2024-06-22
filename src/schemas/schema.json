@@ -3,7 +3,7 @@
     "$id": "https://www.abstractplay.com/schemas/rendergame/0-7-0.json#",
     "title": "AP Render Rep",
     "description": "Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.",
-    "definitions": {
+    "$defs": {
         "positiveInteger": {
             "type": "integer",
             "minimum": 1
@@ -42,6 +42,37 @@
             "required": ["row", "col"],
             "additionalProperties": false
         },
+        "boardStyles": {
+            "enum": [
+                "squares",
+                "squares-checkered",
+                "squares-beveled",
+                "squares-stacked",
+                "vertex",
+                "vertex-cross",
+                "vertex-fanorona",
+                "pegboard",
+                "hex-slanted",
+                "hex-odd-p",
+                "hex-even-p",
+                "hex-odd-f",
+                "hex-even-f",
+                "hex-of-hex",
+                "hex-of-tri",
+                "hex-of-cir",
+                "snubsquare",
+                "circular-cobweb",
+                "sowing",
+                "conhex-dots",
+                "conhex-cells",
+                "cairo-collinear",
+                "cairo-catalan",
+                "triangles-stacked",
+                "conical-hex",
+                "conical-hex-narrow",
+                "pyramid-hex"
+            ]
+        },
         "gradientStop": {
             "description": "Schema for a gradient stop",
             "type": "object",
@@ -55,8 +86,8 @@
                 "colour": {
                     "description": "Hex string or player number of the desired colour",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ]
                 },
                 "opacity": {
@@ -100,7 +131,7 @@
                 "stops": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/gradientStop"
+                        "$ref": "#/$defs/gradientStop"
                     },
                     "minItems": 2
                 }
@@ -124,9 +155,9 @@
                 "colour": {
                     "description": "A 3- or 6-digit hex colour value, a player position, or a gradient.",
                     "anyOf": [
-                        {"$ref": "#/definitions/colourstrings"},
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/gradient"}
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/gradient"}
                     ]
                 },
                 "scale": {
@@ -175,8 +206,8 @@
                 "type": "array",
                 "items": {
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"},
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"},
                         {
                             "type": "number",
                             "enum": [0]
@@ -205,7 +236,7 @@
                     "type": "number"
                 },
                 "matrix": {
-                    "$ref": "#/definitions/polymatrix"
+                    "$ref": "#/$defs/polymatrix"
                 },
                 "z": {
                     "description": "Determines the order of overlap. Higher z values will overlap lower ones. Objects with equal z values will be rendered in the order of declaration (later objects will overlap earlier ones).",
@@ -236,7 +267,7 @@
                     "description": "The cells involved in the annotation",
                     "type": "array",
                     "minItems": 1,
-                    "items": {"$ref": "#/definitions/rowCol"}
+                    "items": {"$ref": "#/$defs/rowCol"}
                 },
                 "style": {
                     "enum": [
@@ -259,8 +290,8 @@
                 },
                 "colour": {
                     "anyOf": [
-                        {"$ref": "#/definitions/colourstrings"},
-                        {"$ref": "#/definitions/positiveInteger"}
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/positiveInteger"}
                     ],
                     "default": "#000"
                 },
@@ -355,8 +386,8 @@
                         },
                         "fill": {
                             "anyOf": [
-                                {"$ref": "#/definitions/positiveInteger"},
-                                {"$ref": "#/definitions/colourstrings"}
+                                {"$ref": "#/$defs/positiveInteger"},
+                                {"$ref": "#/$defs/colourstrings"}
                             ],
                             "default": "#fff"
                         },
@@ -368,8 +399,8 @@
                         },
                         "stroke": {
                             "anyOf": [
-                                {"$ref": "#/definitions/positiveInteger"},
-                                {"$ref": "#/definitions/colourstrings"}
+                                {"$ref": "#/$defs/positiveInteger"},
+                                {"$ref": "#/$defs/colourstrings"}
                             ],
                             "default": "#000"
                         },
@@ -518,18 +549,18 @@
                 },
                 "width": {
                     "description": "By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "background": {
                     "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
-                    "$ref": "#/definitions/colourstrings",
+                    "$ref": "#/$defs/colourstrings",
                     "default": "#fff"
                 },
                 "ownerMark": {
                     "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ]
                 }
             },
@@ -547,11 +578,11 @@
                     "type": "string"
                 },
                 "matrix": {
-                    "$ref": "#/definitions/polymatrix"
+                    "$ref": "#/$defs/polymatrix"
                 },
                 "background": {
                     "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
-                    "$ref": "#/definitions/colourstrings",
+                    "$ref": "#/$defs/colourstrings",
                     "default": "#fff"
                 }
             },
@@ -566,16 +597,16 @@
                     "enum": ["globalStash"]
                 },
                 "R": {
-                    "$ref": "#/definitions/stashstrings"
+                    "$ref": "#/$defs/stashstrings"
                 },
                 "G": {
-                    "$ref": "#/definitions/stashstrings"
+                    "$ref": "#/$defs/stashstrings"
                 },
                 "B": {
-                    "$ref": "#/definitions/stashstrings"
+                    "$ref": "#/$defs/stashstrings"
                 },
                 "Y": {
-                    "$ref": "#/definitions/stashstrings"
+                    "$ref": "#/$defs/stashstrings"
                 }
             },
             "required": [
@@ -668,7 +699,7 @@
                 },
                 "fill": {
                     "description": "Optional fill for this specific button.",
-                    "$ref": "#/definitions/colourstrings",
+                    "$ref": "#/$defs/colourstrings",
                     "default": "#000"
                 }
             },
@@ -686,7 +717,7 @@
                     "description": "The array of the buttons themselves, which will be presented in the order given.",
                     "type": "array",
                     "minItems": 1,
-                    "items": {"$ref": "#/definitions/buttonBarButton"}
+                    "items": {"$ref": "#/$defs/buttonBarButton"}
                 },
                 "position": {
                     "description": "Where you want the bar to appear relative to the board.",
@@ -712,7 +743,7 @@
                 },
                 "colour": {
                     "description": "The colour of the button border and text.",
-                    "$ref": "#/definitions/colourstrings",
+                    "$ref": "#/$defs/colourstrings",
                     "default": "#000"
                 }
             },
@@ -797,15 +828,15 @@
                     "properties": {
                         "background": {
                             "description": "Defaults to fully transparent background",
-                            "$ref": "#/definitions/colourstrings"
+                            "$ref": "#/$defs/colourstrings"
                         },
                         "fill": {
-                            "$ref": "#/definitions/colourstrings",
+                            "$ref": "#/$defs/colourstrings",
                             "default": "#000"
                         },
                         "strokes": {
                             "description": "Lines and text",
-                            "$ref": "#/definitions/colourstrings",
+                            "$ref": "#/$defs/colourstrings",
                             "default": "#000"
                         }
                     },
@@ -879,7 +910,7 @@
                 "points": {
                     "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 1
                 },
                 "size": {
@@ -890,8 +921,8 @@
                 "colour": {
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -920,14 +951,14 @@
                 "points": {
                     "description": "It expects at least three points, forming an auto-closed polygon. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required to enclose the area you want.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 3
                 },
                 "colour": {
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -957,15 +988,15 @@
                 "points": {
                     "description": "One or more grid coordinates of spaces to fill.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 1
                 },
                 "colour": {
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"},
-                        {"$ref": "#/definitions/gradient"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/gradient"}
                     ],
                     "default": "#000"
                 },
@@ -990,14 +1021,14 @@
                 "points": {
                     "description": "One or more grid coordinates of spaces to fill.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 1
                 },
                 "colour": {
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -1029,8 +1060,8 @@
                             "colour": {
                                 "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                                 "anyOf": [
-                                    {"$ref": "#/definitions/positiveInteger"},
-                                    {"$ref": "#/definitions/colourstrings"}
+                                    {"$ref": "#/$defs/positiveInteger"},
+                                    {"$ref": "#/$defs/colourstrings"}
                                 ]
                             },
                             "opacity": {
@@ -1066,8 +1097,8 @@
                 "fill": {
                     "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ]
                 }
             },
@@ -1084,15 +1115,15 @@
                 "points": {
                     "description": "Expects exactly two points. Board styles where a point is the center of a space (like the `squares` board style) instead point to the top-left corner of the space. Some experimentation may be required.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 2,
                     "maxItems": 2
                 },
                 "colour": {
                     "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -1159,7 +1190,7 @@
                 "points": {
                     "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 2,
                     "maxItems": 2
                 },
@@ -1180,8 +1211,8 @@
                 "colour": {
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -1213,8 +1244,8 @@
                 "colour": {
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ]
                 },
                 "opacity": {
@@ -1230,15 +1261,15 @@
         "markerFenceData": {
             "type": "object",
             "properties": {
-                "cell": {"$ref": "#/definitions/rowCol"},
+                "cell": {"$ref": "#/$defs/rowCol"},
                 "side": {
                     "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
                 },
                 "colour": {
                     "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -1265,15 +1296,15 @@
                     "description": "Only works for the `squares*` and rect-of-hex board styles. Draws a thick line between two adjacent cells. It doesn't check adjacency, but the results will not be what you expect otherwise.",
                     "enum": ["fence"]
                 },
-                "cell": {"$ref": "#/definitions/rowCol"},
+                "cell": {"$ref": "#/$defs/rowCol"},
                 "side": {
                     "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
                 },
                 "colour": {
                     "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -1303,7 +1334,7 @@
                 "sides": {
                     "type": "array",
                     "minItems": 1,
-                    "items": {"$ref": "#/definitions/markerFenceData"}
+                    "items": {"$ref": "#/$defs/markerFenceData"}
                 }
             },
             "required": ["type", "sides"],
@@ -1327,7 +1358,7 @@
                 "points": {
                     "description": "Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 1
                 }
             },
@@ -1367,8 +1398,8 @@
                 "colour": {
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -1429,8 +1460,8 @@
                 },
                 "fill": {
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#fff"
                 },
@@ -1442,8 +1473,8 @@
                 },
                 "stroke": {
                     "anyOf": [
-                        {"$ref": "#/definitions/positiveInteger"},
-                        {"$ref": "#/definitions/colourstrings"}
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
                 },
@@ -1487,50 +1518,20 @@
             "description": "One of the preset boards.",
             "type": "object",
             "properties": {
-                "style": {
-                    "enum": [
-                        "squares",
-                        "squares-checkered",
-                        "squares-beveled",
-                        "squares-stacked",
-                        "vertex",
-                        "vertex-cross",
-                        "vertex-fanorona",
-                        "pegboard",
-                        "hex-slanted",
-                        "hex-odd-p",
-                        "hex-even-p",
-                        "hex-odd-f",
-                        "hex-even-f",
-                        "hex-of-hex",
-                        "hex-of-tri",
-                        "hex-of-cir",
-                        "snubsquare",
-                        "circular-cobweb",
-                        "sowing",
-                        "conhex-dots",
-                        "conhex-cells",
-                        "cairo-collinear",
-                        "cairo-catalan",
-                        "triangles-stacked",
-                        "conical-hex",
-                        "conical-hex-narrow",
-                        "pyramid-hex"
-                    ]
-                },
+                "style": {"$ref": "#/$defs/boardStyles"},
                 "labelColour": {
                     "description": "The colour for the board labels. Defaults to the colour passed into the context (default black).",
-                    "$ref": "#/definitions/colourstrings",
+                    "$ref": "#/$defs/colourstrings",
                     "default": "#000"
                 },
                 "strokeColour": {
                     "description": "The colour for lines drawn to construct the board.",
-                    "$ref": "#/definitions/colourstrings",
+                    "$ref": "#/$defs/colourstrings",
                     "default": "#000"
                 },
                 "strokeWeight": {
                     "description": "The base stroke weight of lines drawn to construct the board.",
-                    "$ref": "#/definitions/positiveInteger",
+                    "$ref": "#/$defs/positiveInteger",
                     "default": 1
                 },
                 "labelOpacity": {
@@ -1557,7 +1558,7 @@
                             "default": "full"
                         },
                         "colour": {
-                            "$ref": "#/definitions/colourstrings"
+                            "$ref": "#/$defs/colourstrings"
                         },
                         "opacity": {
                             "type": "number",
@@ -1572,16 +1573,16 @@
                 "blocked": {
                     "description": "On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, top column.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 1
                 },
                 "minWidth": {
                     "description": "Only meaningful for the 'hex_of_*' styles. Determines the minimum width at the top and bottom of the board.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "maxWidth": {
                     "description": "Only meaningful for the 'hex_as_*' styles. Determines the maximum width at the centre of the board.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "half": {
                     "description": "Only meaningful for the `hex-of-*` boards. Tells the system to only render the top or bottom half of the hex, letting you build things like triangles and some rhomboids. Mutually exclusive with `alternatingSymmetry`.",
@@ -1589,11 +1590,11 @@
                 },
                 "width": {
                     "description": "Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of slices.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "height": {
                     "description": "Required for the `squares*`, `vertex`, and `go` styles. For `circular-*` boards, specifies the number of rings.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "showEndPits": {
                     "description": "Only applies to the `sowing` board style. Determines whether to include full-height end pits on the board.",
@@ -1603,16 +1604,16 @@
                 "squarePits": {
                     "description": "Only applies to the `sowing` board style. By default, pits have rounded corners. In games like Bao, specific spaces are distinct. This property tells the renderer the row and column of these spaces.",
                     "type": "array",
-                    "items": {"$ref": "#/definitions/rowCol"},
+                    "items": {"$ref": "#/$defs/rowCol"},
                     "minItems": 1
                 },
                 "clickDeltaX": {
                     "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area around left and right sides of the board. So an invisisble 'bearing off' area.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "clickDeltaY": {
                     "description": "Only meaningful for the `squares*` and `vertex` boards. Defines the size (in board square units) of the clickable area above and below the board. So an invisisble 'bearing off' area.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "startLight": {
                     "description": "Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.",
@@ -1652,11 +1653,11 @@
                 },
                 "tileWidth": {
                     "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells wide as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "tileHeight": {
                     "description": "Only meaningful for the `squares` and `vertex` boards. Defines sections X cells high as tiles. If `tileSpacing` is given, these tiles will be broken apart from each other. Otherwise, a heavier line is drawn to delineate.",
-                    "$ref": "#/definitions/positiveInteger"
+                    "$ref": "#/$defs/positiveInteger"
                 },
                 "tileSpacing": {
                     "description": "If given, instead of drawing heavier lines to create tiles, it insteads breaks the boards into pieces and spreads them apart by this amount. This number represents the percent of one cell size. So a value of `1` is one cell size of spacing; `0.5` is half, `2` is double.",
@@ -1721,17 +1722,17 @@
                     "type": "array",
                     "items": {
                         "anyOf": [
-                            {"$ref": "#/definitions/markerDots"},
-                            {"$ref": "#/definitions/markerShading"},
-                            {"$ref": "#/definitions/markerFlood"},
-                            {"$ref": "#/definitions/markerOutline"},
-                            {"$ref": "#/definitions/markerHalo"},
-                            {"$ref": "#/definitions/markerLine"},
-                            {"$ref": "#/definitions/markerLabel"},
-                            {"$ref": "#/definitions/markerEdge"},
-                            {"$ref": "#/definitions/markerFence"},
-                            {"$ref": "#/definitions/markerFences"},
-                            {"$ref": "#/definitions/markerGlyph"}
+                            {"$ref": "#/$defs/markerDots"},
+                            {"$ref": "#/$defs/markerShading"},
+                            {"$ref": "#/$defs/markerFlood"},
+                            {"$ref": "#/$defs/markerOutline"},
+                            {"$ref": "#/$defs/markerHalo"},
+                            {"$ref": "#/$defs/markerLine"},
+                            {"$ref": "#/$defs/markerLabel"},
+                            {"$ref": "#/$defs/markerEdge"},
+                            {"$ref": "#/$defs/markerFence"},
+                            {"$ref": "#/$defs/markerFences"},
+                            {"$ref": "#/$defs/markerGlyph"}
                         ]
                     }
                 }
@@ -1825,12 +1826,12 @@
                 },
                 "strokeWeight": {
                     "description": "The base stroke weight of lines drawn to construct the board.",
-                    "$ref": "#/definitions/positiveInteger",
+                    "$ref": "#/$defs/positiveInteger",
                     "default": 1
                 },
                 "strokeColour": {
                     "description": "The colour for lines drawn to construct the board, includes the labels.",
-                    "$ref": "#/definitions/colourstrings",
+                    "$ref": "#/$defs/colourstrings",
                     "default": "#000"
                 },
                 "strokeOpacity": {
@@ -1866,7 +1867,7 @@
                             "default": "full"
                         },
                         "colour": {
-                            "$ref": "#/definitions/colourstrings"
+                            "$ref": "#/$defs/colourstrings"
                         },
                         "opacity": {
                             "type": "number",
@@ -1898,9 +1899,9 @@
                     "type": "array",
                     "items": {
                         "anyOf": [
-                            {"$ref": "#/definitions/markerPath"},
-                            {"$ref": "#/definitions/markerFreespaceLabel"},
-                            {"$ref": "#/definitions/markerFreespaceGlyph"}
+                            {"$ref": "#/$defs/markerPath"},
+                            {"$ref": "#/$defs/markerFreespaceLabel"},
+                            {"$ref": "#/$defs/markerFreespaceGlyph"}
                         ]
                     }
                 }
@@ -1948,18 +1949,18 @@
                         "type": "string"
                     },
                     {
-                        "$ref": "#/definitions/glyph"
+                        "$ref": "#/$defs/glyph"
                     },
                     {
                         "description": "The array version is for compositing glyphs into a single piece. Each glyph is simply stacked on top of the others.",
                         "type": "array",
                         "minItems": 1,
                         "items": {
-                            "$ref": "#/definitions/glyph"
+                            "$ref": "#/$defs/glyph"
                         }
                     },
                     {
-                        "$ref": "#/definitions/polymatrix"
+                        "$ref": "#/$defs/polymatrix"
                     }
                 ]
             }
@@ -1971,10 +1972,10 @@
                     "description": "Used to render a single glyph",
                     "type": "null"
                 },
-                {"$ref": "#/definitions/boardBasic"},
-                {"$ref": "#/definitions/boardHomeworlds"},
-                {"$ref": "#/definitions/boardEntropy"},
-                {"$ref": "#/definitions/boardFreespace"}
+                {"$ref": "#/$defs/boardBasic"},
+                {"$ref": "#/$defs/boardHomeworlds"},
+                {"$ref": "#/$defs/boardEntropy"},
+                {"$ref": "#/$defs/boardFreespace"}
             ]
         },
         "pieces": {
@@ -2013,23 +2014,23 @@
                         }
                     }
                 },
-                {"$ref": "#/definitions/piecesHomeworlds"},
+                {"$ref": "#/$defs/piecesHomeworlds"},
                 {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/freepiece"
+                        "$ref": "#/$defs/freepiece"
                     }
                 },
                 {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/multipiece"
+                        "$ref": "#/$defs/multipiece"
                     }
                 },
                 {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/polypiece"
+                        "$ref": "#/$defs/polypiece"
                     }
                 }
             ]
@@ -2039,14 +2040,14 @@
             "type": "array",
             "items": {
                 "anyOf": [
-                    {"$ref": "#/definitions/areaPieces"},
-                    {"$ref": "#/definitions/areaPolyomino"},
-                    {"$ref": "#/definitions/areaHWStash"},
-                    {"$ref": "#/definitions/areaStackingExpanded"},
-                    {"$ref": "#/definitions/areaVolcanoStash"},
-                    {"$ref": "#/definitions/areaButtonBar"},
-                    {"$ref": "#/definitions/areaScrollBar"},
-                    {"$ref": "#/definitions/areaKey"}
+                    {"$ref": "#/$defs/areaPieces"},
+                    {"$ref": "#/$defs/areaPolyomino"},
+                    {"$ref": "#/$defs/areaHWStash"},
+                    {"$ref": "#/$defs/areaStackingExpanded"},
+                    {"$ref": "#/$defs/areaVolcanoStash"},
+                    {"$ref": "#/$defs/areaButtonBar"},
+                    {"$ref": "#/$defs/areaScrollBar"},
+                    {"$ref": "#/$defs/areaKey"}
                 ]
             }
         },
@@ -2055,10 +2056,10 @@
             "type": "array",
             "items": {
                 "anyOf": [
-                    {"$ref": "#/definitions/annotationBasic"},
-                    {"$ref": "#/definitions/annotationSowing"},
-                    {"$ref": "#/definitions/annotationHomeworlds"},
-                    {"$ref": "#/definitions/annotationFreespace"}
+                    {"$ref": "#/$defs/annotationBasic"},
+                    {"$ref": "#/$defs/annotationSowing"},
+                    {"$ref": "#/$defs/annotationHomeworlds"},
+                    {"$ref": "#/$defs/annotationFreespace"}
                 ]
             }
         }

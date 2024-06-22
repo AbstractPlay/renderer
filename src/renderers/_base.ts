@@ -1713,14 +1713,14 @@ export abstract class RendererBase {
                 const y1 = grid[row][idxLeft].y;
                 const x2 = grid[row][idxRight].x;
                 const y2 = grid[row][idxRight].y;
-                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
 
                 if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && (row > 0) && (row % tiley === tiley - 1) ) ) {
                     const lastx1 = grid[row][idxLeft].x;
                     const lasty1 = grid[row][idxLeft].y;
                     const lastx2 = grid[row][idxRight].x;
                     const lasty2 = grid[row][idxRight].y;
-                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                 }
             }
         }
@@ -1758,14 +1758,14 @@ export abstract class RendererBase {
                 const y1 = grid[idxTop][col].y;
                 const x2 = grid[idxBottom][col].x;
                 const y2 = grid[idxBottom][col].y;
-                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
 
                 if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && (col > 0) && (col % tilex === tilex - 1) ) ) {
                     const lastx1 = grid[idxTop][col].x;
                     const lasty1 = grid[idxTop][col].y;
                     const lastx2 = grid[idxBottom][col].x;
                     const lasty2 = grid[idxBottom][col].y;
-                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                 }
             }
         }
@@ -1792,12 +1792,12 @@ export abstract class RendererBase {
                             // if not last column, do next
                             if (col < colLast) {
                                 const next = grid[row - 1][col + 1];
-                                gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                                gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                             }
                             // if not first column, do previous
                             if (col > colFirst) {
                                 const prev = grid[row - 1][col - 1];
-                                gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                                gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                             }
                         }
                     }
@@ -1825,12 +1825,12 @@ export abstract class RendererBase {
                                 // if not last column, do next
                                 if (col < colLast) {
                                     const next = grid[row + 1][col + 1];
-                                    gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                                    gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                                 }
                                 // if not first column, do previous
                                 if (col > colFirst) {
                                     const prev = grid[row + 1][col - 1];
-                                    gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                                    gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                                 }
                             }
                         }
@@ -1898,6 +1898,7 @@ export abstract class RendererBase {
             pts.forEach((p) => {
                 const pt = grid[p[0]][p[1]];
                 gridlines.circle(baseStroke * 7.5)
+                    .attr({ 'pointer-events': 'none' })
                     .fill(baseColour)
                     .opacity(baseOpacity)
                     .stroke({width: 0})
@@ -1908,6 +1909,7 @@ export abstract class RendererBase {
             for (let i = 0; i < total - pts.length; i++) {
                 gridlines.circle(baseStroke * 7.5)
                     .id(`aprender-ghost-star-${i+1}`)
+                    .attr({ 'pointer-events': 'none' })
                     .fill(baseColour)
                     .opacity(0)
                     .stroke({width: 0})

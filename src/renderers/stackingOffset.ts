@@ -46,11 +46,13 @@ export class StackingOffsetRenderer extends RendererBase {
 
         switch (this.json.board.style) {
             case "squares-checkered":
+            case "squares-beveled":
             case "squares":
                 [gridPoints, polys] = this.squares();
                 break;
             case "vertex":
             case "vertex-cross":
+            case "vertex-fanorona":
                 gridPoints = this.vertex();
                 break;
             case "snubsquare":
@@ -85,6 +87,14 @@ export class StackingOffsetRenderer extends RendererBase {
                 break;
             case "cairo-catalan":
                 [gridPoints, polys] = this.cairoCatalan();
+                break;
+            // Adding support for conical-hex* and pyramid-hex purely for the designer
+            case "conical-hex":
+            case "conical-hex-narrow":
+                [gridPoints, polys] = this.conicalHex();
+                break;
+            case "pyramid-hex":
+                [gridPoints, polys] = this.pyramidHex();
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
