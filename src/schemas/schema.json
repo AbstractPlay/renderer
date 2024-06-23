@@ -31,11 +31,11 @@
             "type": "object",
             "properties": {
                 "row": {
-                    "type": "integer",
+                    "type": "number",
                     "minimum": 0
                 },
                 "col": {
-                    "type": "integer",
+                    "type": "number",
                     "minimum": 0
                 }
             },
