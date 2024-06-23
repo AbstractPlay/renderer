@@ -499,6 +499,10 @@ export interface MarkerFlood {
    * 1 is fully opaque. 0 is fully transparent.
    */
   opacity?: number;
+  /**
+   * Makes the the fill pulse opacity over the defined interval in milliseconds
+   */
+  pulse?: number;
 }
 export interface MarkerOutline {
   /**

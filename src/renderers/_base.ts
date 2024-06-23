@@ -1,6 +1,6 @@
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Element as SVGElement, G as SVGG, Rect as SVGRect, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
@@ -5469,24 +5469,29 @@ export abstract class RendererBase {
                         fill = {color: colour as string, opacity};
                     }
                     for (const point of marker.points as ITarget[]) {
+                        let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
                         const cell = polys[point.row][point.col];
                         // the following eslint and ts exceptions are due to poor SVGjs typing
                         switch (cell.type) {
                             case "circle":
                                 // @ts-ignore
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                                svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill(fill).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+                                floodEle = svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill(fill).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
                                 // @ts-ignore
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                                svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+                                floodEle = svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
                                 // @ts-ignore
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                                svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+                                floodEle = svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
+                        }
+                        if (marker.pulse !== undefined && floodEle !== undefined) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                            floodEle.animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike).during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
                         }
                     }
                 } else if (marker.type === "line") {
@@ -7210,7 +7215,7 @@ export abstract class RendererBase {
             const y2 = val.y2 !== undefined ? val.y2 : 0;
             colour = this.rootSvg.defs().gradient("linear", add => {
                 for (const stop of val.stops) {
-                    add.stop({offset: stop.offset, color: this.resolveColour(stop.colour, "#000") as string, opacity: stop.opacity || 1});
+                    add.stop({offset: stop.offset, color: this.resolveColour(stop.colour, "#000") as string, opacity: stop.opacity !== undefined ? stop.opacity : 1});
                 }
             });
             colour.from(x1,y1).to(x2,y2);
