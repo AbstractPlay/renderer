@@ -5348,7 +5348,10 @@ export abstract class RendererBase {
             if (preGridLines) {
                 if (this.options.rotate === 180) {
                     if (gridExpanded !== undefined) {
-                    gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+                        gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+                    }
+                    if (polys !== undefined) {
+                        polys = polys.map((r) => r.reverse()).reverse();
                     }
                     grid = grid.map((r) => r.reverse()).reverse();
                 }
@@ -6267,6 +6270,9 @@ export abstract class RendererBase {
                 if (this.options.rotate === 180) {
                     if (gridExpanded !== undefined) {
                     gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
+                    }
+                    if (polys !== undefined) {
+                        polys = polys.map((r) => r.reverse()).reverse();
                     }
                     grid = grid.map((r) => r.reverse()).reverse();
                 }
