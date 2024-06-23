@@ -5590,7 +5590,10 @@ export abstract class RendererBase {
                         const allCoords: IPoint[] = (polys.flat() as IPolyPolygon[]).map(p => p.points).flat();
                         const minx = Math.min(...allCoords.map(pt => pt.x));
                         const maxx = Math.max(...allCoords.map(pt => pt.x));
-                        const miny = Math.min(...allCoords.map(pt => pt.y));
+                        let miny = Math.min(...allCoords.map(pt => pt.y));
+                        if (this.json.board.style.endsWith("narrow")) {
+                            miny -= 15;
+                        }
                         const maxy = Math.max(...allCoords.map(pt => pt.y));
                         const width = maxx - minx;
                         const height = maxy - miny;
