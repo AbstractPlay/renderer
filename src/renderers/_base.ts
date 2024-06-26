@@ -7044,31 +7044,33 @@ export abstract class RendererBase {
                 throw new Error(`We can only do a "board" backfill if the board was built with polygons.`);
             }
 
-            if (bgtype === "full") {
-                const bbox = this.rootSvg.bbox();
-                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
-            } else {
-                const turfed = polys!.flat().map(p => {
-                    let pts: [number,number][];
-                    if (p.type === "circle") {
-                        pts = circle2poly(p.cx, p.cy, p.r);
-                    } else {
-                        pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
+            if (backFillObj !== undefined) {
+                if (bgtype === "full") {
+                    const bbox = this.rootSvg.bbox();
+                    this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
+                } else {
+                    const turfed = polys!.flat().map(p => {
+                        let pts: [number,number][];
+                        if (p.type === "circle") {
+                            pts = circle2poly(p.cx, p.cy, p.r);
+                        } else {
+                            pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
+                        }
+                        if (pts[0] !== pts[pts.length - 1]) {
+                            pts.push(pts[0])
+                        }
+                        return turfPoly([pts]);
+                    });
+                    let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
+                    while (turfed.length > 0) {
+                        const next = turfed.pop()!;
+                        union = turfUnion(union, next);
+                        if (union === null) {
+                            throw new Error(`Got null while joining polygons in backFill()`);
+                        }
                     }
-                    if (pts[0] !== pts[pts.length - 1]) {
-                        pts.push(pts[0])
-                    }
-                    return turfPoly([pts]);
-                });
-                let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
-                while (turfed.length > 0) {
-                    const next = turfed.pop()!;
-                    union = turfUnion(union, next);
-                    if (union === null) {
-                        throw new Error(`Got null while joining polygons in backFill()`);
-                    }
+                    this.rootSvg.polygon(union.geometry.coordinates.flat().map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity}).back();
                 }
-                this.rootSvg.polygon(union.geometry.coordinates.flat().map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity}).back();
             }
         }
     }
