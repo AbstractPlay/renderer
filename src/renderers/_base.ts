@@ -14,6 +14,7 @@ import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import turfUnion from "@turf/union";
 import { polygon as turfPoly, Properties, Feature, Polygon, MultiPolygon } from "@turf/helpers";
+import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph } from "../graphs";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -1679,6 +1680,26 @@ export abstract class RendererBase {
         }
 
         // Draw grid lines
+        // use graphs to determine connections and then draw each connection
+        let graph: Graph;
+        if (style === "vertex-cross") {
+            graph = new SquareGraph(width, height);
+        } else if (style === "vertex-fanorona") {
+            graph = new SquareFanoronaGraph(width, height);
+        } else {
+            graph = new SquareOrthGraph(width, height);
+        }
+
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+        if (blocked !== undefined) {
+            for (const entry of blocked) {
+                graph.dropNode([entry.col, entry.row]);
+            }
+        }
 
         // Horizontal, top of each row, then bottom line after loop
         let numcols = 1;
@@ -1704,23 +1725,21 @@ export abstract class RendererBase {
                     }
                 }
                 let thisStroke = baseStroke;
-                if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
-                    thisStroke = baseStroke * 3;
-                } else if (tiley === 0 && (row === 0 || row === height - 1)) {
-                    thisStroke = baseStroke * 2;
+                if (blocked === undefined) {
+                    if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    } else if (tiley === 0 && (row === 0 || row === height - 1)) {
+                        thisStroke = baseStroke * 2;
+                    }
                 }
-                const x1 = grid[row][idxLeft].x;
-                const y1 = grid[row][idxLeft].y;
-                const x2 = grid[row][idxRight].x;
-                const y2 = grid[row][idxRight].y;
-                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
-
-                if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && (row > 0) && (row % tiley === tiley - 1) ) ) {
-                    const lastx1 = grid[row][idxLeft].x;
-                    const lasty1 = grid[row][idxLeft].y;
-                    const lastx2 = grid[row][idxRight].x;
-                    const lasty2 = grid[row][idxRight].y;
-                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                for (let idxX = idxLeft; idxX < idxRight; idxX++) {
+                    if (graph.sharesEdge([idxX, row], [idxX+1, row])) {
+                        const x1 = grid[row][idxX].x;
+                        const y1 = grid[row][idxX].y;
+                        const x2 = grid[row][idxX+1].x;
+                        const y2 = grid[row][idxX+1].y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                    }
                 }
             }
         }
@@ -1749,23 +1768,21 @@ export abstract class RendererBase {
                     }
                 }
                 let thisStroke = baseStroke;
-                if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
-                    thisStroke = baseStroke * 3;
-                } else if (tilex === 0 && (col === 0 || col === width - 1)) {
-                    thisStroke = baseStroke * 2;
+                if (blocked === undefined) {
+                    if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    } else if (tilex === 0 && (col === 0 || col === width - 1)) {
+                        thisStroke = baseStroke * 2;
+                    }
                 }
-                const x1 = grid[idxTop][col].x;
-                const y1 = grid[idxTop][col].y;
-                const x2 = grid[idxBottom][col].x;
-                const y2 = grid[idxBottom][col].y;
-                gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
-
-                if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && (col > 0) && (col % tilex === tilex - 1) ) ) {
-                    const lastx1 = grid[idxTop][col].x;
-                    const lasty1 = grid[idxTop][col].y;
-                    const lastx2 = grid[idxBottom][col].x;
-                    const lasty2 = grid[idxBottom][col].y;
-                    gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                for (let idxY = idxTop; idxY < idxBottom; idxY++) {
+                    if (graph.sharesEdge([col, idxY], [col, idxY+1])) {
+                        const x1 = grid[idxY][col].x;
+                        const y1 = grid[idxY][col].y;
+                        const x2 = grid[idxY+1][col].x;
+                        const y2 = grid[idxY+1][col].y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                    }
                 }
             }
         }
@@ -1791,13 +1808,17 @@ export abstract class RendererBase {
                             const curr = grid[row][col];
                             // if not last column, do next
                             if (col < colLast) {
-                                const next = grid[row - 1][col + 1];
-                                gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                if (graph.sharesEdge([col, row], [col+1, row-1])) {
+                                    const next = grid[row - 1][col + 1];
+                                    gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                }
                             }
                             // if not first column, do previous
                             if (col > colFirst) {
-                                const prev = grid[row - 1][col - 1];
-                                gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                if (graph.sharesEdge([col, row], [col-1, row-1])) {
+                                    const prev = grid[row - 1][col - 1];
+                                    gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                }
                             }
                         }
                     }
@@ -1824,13 +1845,17 @@ export abstract class RendererBase {
                             if (connect) {
                                 // if not last column, do next
                                 if (col < colLast) {
-                                    const next = grid[row + 1][col + 1];
-                                    gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                    if (graph.sharesEdge([col, row], [col+1, row+1])) {
+                                        const next = grid[row + 1][col + 1];
+                                        gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                    }
                                 }
                                 // if not first column, do previous
                                 if (col > colFirst) {
-                                    const prev = grid[row + 1][col - 1];
-                                    gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                    if (graph.sharesEdge([col, row], [col-1, row+1])) {
+                                        const prev = grid[row + 1][col - 1];
+                                        gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                    }
                                 }
                             }
                         }
@@ -1840,43 +1865,11 @@ export abstract class RendererBase {
         }
 
         if (this.options.boardClick !== undefined) {
-            if ( (this.json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
-                const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0);
-                const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0);
-                const originX = grid[0][0].x;
-                const originY = grid[0][0].y;
-                const maxX = grid[0][grid[0].length - 1].x;
-                const maxY = grid[grid.length - 1][0].y;
-                const root = this.rootSvg;
-                let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = root.point(e.clientX, e.clientY);
-                    const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
-                    const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
-                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                        // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                        if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                            this.options.boardClick!(y, x, "");
-                        }
-                    }
-                });
-                if (this.options.rotate === 180) {
-                    genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                        const point = root.point(e.clientX, e.clientY);
-                        const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
-                        const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
-                        if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                            // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                            if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                                this.options.boardClick!(y, x, "");
-                            }
-                        }
-                    });
-                }
-                this.rootSvg.click(genericCatcher);
-            } else {
-                const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
-                for (let row = 0; row < grid.length; row++) {
-                    for (let col = 0; col < grid[row].length; col++) {
+            // moving to click catchers across the board to make arbitrary rotation easier
+            const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    if (graph.hasNode([col, row])) {
                         const {x, y} = grid[row][col];
                         const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
                         if (this.options.rotate === 180) {
@@ -1892,8 +1885,8 @@ export abstract class RendererBase {
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
-        // If square `vertex` board, consider adding star points
-        if (style === "vertex" && width === height && (this.json.options === undefined || !this.json.options.includes("hide-star-points"))) {
+        // If square `vertex` board, not tiled, and no blocked cells, consider adding star points
+        if (style === "vertex" && width === height && tileSpace === 0 && blocked === undefined && (this.json.options === undefined || !this.json.options.includes("hide-star-points"))) {
             const pts = calcStarPoints(width);
             pts.forEach((p) => {
                 const pt = grid[p[0]][p[1]];
