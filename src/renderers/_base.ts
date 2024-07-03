@@ -1725,10 +1725,12 @@ export abstract class RendererBase {
                     }
                 }
                 let thisStroke = baseStroke;
-                if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
-                    thisStroke = baseStroke * 3;
-                } else if (tiley === 0 && (row === 0 || row === height - 1)) {
-                    thisStroke = baseStroke * 2;
+                if (blocked === undefined) {
+                    if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    } else if (tiley === 0 && (row === 0 || row === height - 1)) {
+                        thisStroke = baseStroke * 2;
+                    }
                 }
                 for (let idxX = idxLeft; idxX < idxRight; idxX++) {
                     if (graph.sharesEdge([idxX, row], [idxX+1, row])) {
@@ -1766,10 +1768,12 @@ export abstract class RendererBase {
                     }
                 }
                 let thisStroke = baseStroke;
-                if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
-                    thisStroke = baseStroke * 3;
-                } else if (tilex === 0 && (col === 0 || col === width - 1)) {
-                    thisStroke = baseStroke * 2;
+                if (blocked === undefined) {
+                    if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    } else if (tilex === 0 && (col === 0 || col === width - 1)) {
+                        thisStroke = baseStroke * 2;
+                    }
                 }
                 for (let idxY = idxTop; idxY < idxBottom; idxY++) {
                     if (graph.sharesEdge([col, idxY], [col, idxY+1])) {
