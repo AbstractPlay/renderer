@@ -1885,8 +1885,8 @@ export abstract class RendererBase {
             grid = grid.map((r) => r.reverse()).reverse();
         }
 
-        // If square `vertex` board, consider adding star points
-        if (style === "vertex" && width === height && tileSpace === 0 && (this.json.options === undefined || !this.json.options.includes("hide-star-points"))) {
+        // If square `vertex` board, not tiled, and no blocked cells, consider adding star points
+        if (style === "vertex" && width === height && tileSpace === 0 && blocked === undefined && (this.json.options === undefined || !this.json.options.includes("hide-star-points"))) {
             const pts = calcStarPoints(width);
             pts.forEach((p) => {
                 const pt = grid[p[0]][p[1]];
