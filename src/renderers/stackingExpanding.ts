@@ -240,7 +240,7 @@ export class StackingExpandingRenderer extends RendererBase {
                 }
             }
 
-            const box = this.rotateBoard({ignore: true});
+            const box = this.rotateBoard({ignoreRotation: true});
 
             // button bar (override a left-hand placement)
             this.placeButtonBar(box, "right");

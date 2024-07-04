@@ -113,7 +113,7 @@ export class PolyominoRenderer extends RendererBase {
         // if there's a board backfill, it needs to be done before rotation
         const backfilled = this.backFill(polys, true);
 
-        const box = this.rotateBoard({ignore: true});
+        const box = this.rotateBoard({ignoreRotation: true});
 
         // `pieces` area, if present
         this.piecesArea(box);
