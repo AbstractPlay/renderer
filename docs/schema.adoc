@@ -48,6 +48,7 @@ scale:: This is a factor for growing or shrinking a glyph. Values <1 cause the g
 opacity:: Applies an opacity to the entire glyph. A number between 0 and 1 where 0 is completely transparent.
 rotate:: A number between -360 and 360 representing the number of degrees to rotate the glyph. A negative value rotates counterclockwise.
 nudge:: A way of nudging a glyph off mathematical centre. Negative values nudge the piece up and to the left.
+orientation:: Can either be `fluid` (the default) or `vertical`. If explicitly `vertical`, then the glyph will be reoriented vertically after the user applies any rotation. This is most commonly used for textual elements to ensure they are always legible.
 
 === `board`
 
@@ -89,6 +90,7 @@ tileHeight:: Only applies to `squares*` and `vertex*` boards. Defines tiles X ce
 tileSpacing:: If given, defines the space to place between the tiles, expressed as a percentage of a cell size (i.e., `1` is one cell size, `0.5` is half, and `2` is double).
 stackOffset:: Used by the `stacking-offset` renderer to adjust how the pieces are stacked.
 buffer:: This property is only used by the default renderer and places buffer zones around the board for use by click handlers.
+rotate:: The game itself can request a base rotation for the entire board space. It is expressed in degrees, with 0 being the top of the screen, and positive rotation moving clockwise.
 
 For the Homeworlds renderer, this is instead an array of objects that include the following properties:
 

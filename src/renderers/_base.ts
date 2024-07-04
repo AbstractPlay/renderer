@@ -404,6 +404,9 @@ export abstract class RendererBase {
         // Validate rotation
         if ( (opts.rotate !== undefined) && (opts.rotate !== 0) ) {
             let normalized = opts.rotate;
+            if (typeof normalized === "string") {
+                normalized = parseInt(normalized, 10);
+            }
             while (normalized < 0) {
                 normalized += 360;
             }
@@ -2034,15 +2037,21 @@ export abstract class RendererBase {
 
         if (this.options.boardClick !== undefined) {
             // moving to click catchers across the board to make arbitrary rotation easier
-            const catcher = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
+            // for this board, double the height and width as each cell is broken into quadrants
+            const catcher = this.rootSvg.defs().rect(this.cellsize / 2, this.cellsize / 2).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
             for (let row = 0; row < grid.length; row++) {
+                const realRow = row * 2;
                 for (let col = 0; col < grid[row].length; col++) {
-                    // if (blocked !== undefined && blocked.find(entry => entry.row === row && entry.col === col) !== undefined) {
-                    //     continue;
-                    // }
+                    const realCol = col * 2
                     const {x, y} = grid[row][col];
-                    const t = tiles.use(catcher).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                    t.click(() => this.options.boardClick!(row, col, ""));
+                    const tl = tiles.use(catcher).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                    tl.click(() => this.options.boardClick!(realRow, realCol, ""));
+                    const tr = tiles.use(catcher).dmove(x, y - (cellsize / 2));
+                    tr.click(() => this.options.boardClick!(realRow, realCol + 1, ""));
+                    const bl = tiles.use(catcher).dmove(x - (cellsize / 2), y);
+                    bl.click(() => this.options.boardClick!(realRow + 1, realCol, ""));
+                    const br = tiles.use(catcher).dmove(x, y);
+                    br.click(() => this.options.boardClick!(realRow + 1, realCol + 1, ""));
                 }
             }
         }
