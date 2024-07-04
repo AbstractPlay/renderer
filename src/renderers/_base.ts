@@ -1,6 +1,6 @@
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
@@ -190,10 +190,10 @@ interface IEdge {
     dir: CompassDirection;
     corners: [0|1|2|3|4|5,0|1|2|3|4|5];
 }
-const oppDir = new Map<CompassDirection,CompassDirection>([
-    ["N","S"],["NE","SW"],["E","W"],["SE","NW"],
-    ["S","N"],["SW","NE"],["W","E"],["NW","SE"],
-]);
+// const oppDir = new Map<CompassDirection,CompassDirection>([
+//     ["N","S"],["NE","SW"],["E","W"],["SE","NW"],
+//     ["S","N"],["SW","NE"],["W","E"],["NW","SE"],
+// ]);
 const edges2corners = new Map<Orientation, IEdge[]>([
     [Orientation.FLAT, [
         {dir: "N", corners: [5,0]},
@@ -407,6 +407,9 @@ export abstract class RendererBase {
             while (normalized < 0) {
                 normalized += 360;
             }
+            while (normalized > 0) {
+                normalized -= 360;
+            }
             this.options.rotate = normalized;
         } else {
             this.options.rotate = 0;
@@ -619,6 +622,7 @@ export abstract class RendererBase {
                     } else {
                         throw new Error(`Could not load one of the components of the glyph '${key}': ${JSON.stringify(g)}.`);
                     }
+
                     // tag glyph symbol for styling
                     got.id(glyph2uid(g));
 
@@ -687,9 +691,19 @@ export abstract class RendererBase {
                     const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
                     // const use = nested.use(got).height(cellsize).width(cellsize).x(0).y(0);
 
-                    // Rotate if requested
-                    if (g.rotate !== undefined) {
-                        rotate(use, g.rotate, 0, 0);
+                    // Rotate if requested, or preemptively if global rotation given and vertical
+                    if (g.rotate !== undefined || (g.orientation !== undefined && g.orientation === "vertical")) {
+                        let rotation = 0;
+                        if (g.rotate !== undefined) {
+                            rotation = g.rotate;
+                        }
+                        if (this.options.rotate !== undefined) {
+                            rotation -= this.options.rotate;
+                        }
+                        if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
+                            rotation -= this.json.board.rotate;
+                        }
+                        rotate(use, rotation, 0, 0);
                     }
 
                     // Scale it appropriately
@@ -909,10 +923,10 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
 
         // create polys for flood fills and other potential uses
-        let polys: Poly[][] = [];
+        const polys: Poly[][] = [];
         for (let y = 0; y < height; y++) {
             const rowPolys: Poly[] = [];
             for (let x = 0; x < width; x++) {
@@ -952,14 +966,6 @@ export abstract class RendererBase {
             if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
                 show = [...(this.json.board.buffer as IBuffer).show!];
             }
-            // adjust `show` to account for rotation
-            if (this.options.rotate === 180) {
-                const newshow: CompassDirection[] = [];
-                for (const dir of show) {
-                    newshow.push(oppDir.get(dir)!);
-                }
-                show = [...newshow];
-            }
             let pattern: string | undefined;
             if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
                 pattern = (this.json.board.buffer as IBuffer).pattern;
@@ -982,10 +988,7 @@ export abstract class RendererBase {
             let y = grid[0][0].y - (cellsize / 2) - (h + offset);
             let buffN: SVGRect | undefined;
             if (show.includes("N")) {
-                let key = "_buffer_N";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_S";
-                }
+                const key = "_buffer_N";
                 buffN = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -995,10 +998,7 @@ export abstract class RendererBase {
             y = grid[grid.length - 1][0].y + (cellsize / 2) + offset;
             let buffS: SVGRect | undefined;
             if (show.includes("S")) {
-                let key = "_buffer_S";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_N";
-                }
+                const key = "_buffer_S";
                 buffS = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -1010,10 +1010,7 @@ export abstract class RendererBase {
             y = grid[0][0].y - (cellsize / 2);
             let buffW: SVGRect | undefined;
             if (show.includes("W")) {
-                let key = "_buffer_W";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_E";
-                }
+                const key = "_buffer_W";
                 buffW = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -1023,10 +1020,7 @@ export abstract class RendererBase {
             y = grid[0][0].y - (cellsize / 2);
             let buffE: SVGRect | undefined;
             if (show.includes("E")) {
-                let key = "_buffer_E";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_W";
-                }
+                const key = "_buffer_E";
                 buffE = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -1068,9 +1062,6 @@ export abstract class RendererBase {
             }
             let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
-                columnLabels.reverse();
-            }
-            if (this.options.rotate === 180) {
                 columnLabels.reverse();
             }
 
@@ -1167,13 +1158,6 @@ export abstract class RendererBase {
                     startLight = 1;
                 }
             }
-            // This setting is based on the upright board
-            // and needs to be adjusted based on rotation, but not blindly.
-            if (this.options.rotate === 180) {
-                if ( (width !== height) && (height % 2 !== 0) ) {
-                    startLight = startLight === 0 ? 1 : 0;
-                }
-            }
 
             // Place them
             for (let row = 0; row < height; row++) {
@@ -1237,11 +1221,7 @@ export abstract class RendererBase {
                         used = tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
                     } else {
                         used = tiles.use(tileLight).size(cellsize, cellsize).center(x, y);
-                        if (this.options.rotate === 180) {
-                            used.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
-                        } else {
-                            used.click(() => this.options.boardClick!(row, col, ""));
-                        }
+                        used.click(() => this.options.boardClick!(row, col, ""));
                     }
                 }
             }
@@ -1345,42 +1325,18 @@ export abstract class RendererBase {
         }
 
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) && (style !== "pegboard") ) {
-            const originX = grid[0][0].x;
-            const originY = grid[0][0].y;
-            const clickDeltaX = (this.json.board.clickDeltaX ?? 0);
-            const clickDeltaY = (this.json.board.clickDeltaX ?? 0);
-            const root = this.rootSvg;
-            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = root.point(e.clientX, e.clientY);
-                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
-                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
-                if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                    let idx = -1;
-                    if (blocked !== undefined) {
-                        idx = blocked.findIndex(o => o.col === x && o.row === y);
+            // moving to click catchers across the board to make arbitrary rotation easier
+            const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    if (blocked !== undefined && blocked.find(entry => entry.row === row && entry.col === col) !== undefined) {
+                        continue;
                     }
-                    if (idx === -1) {
-                        this.options.boardClick!(y, x, "");
-                    }
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                    t.click(() => this.options.boardClick!(row, col, ""));
                 }
-            });
-            if (this.options.rotate === 180) {
-                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = root.point(e.clientX, e.clientY);
-                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
-                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
-                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                        let idx = -1;
-                        if (blocked !== undefined) {
-                            idx = blocked.findIndex(o => o.col === x && o.row === y);
-                        }
-                        if (idx === -1) {
-                            this.options.boardClick!(y, x, "");
-                        }
-                    }
-                });
             }
-            this.rootSvg.click(genericCatcher);
         }
 
         // Add edge click handlers if requested
@@ -1429,26 +1385,13 @@ export abstract class RendererBase {
                                 throw new Error(`Invalid direction passed: ${dir}`);
                         }
                         const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke * 5, color: baseColour, opacity: 0, linecap: "round" });
-                        if (this.options.rotate === 180) {
-                            edgeLine.click((e: MouseEvent) => {
-                                this.options.boardClick!(height - row - 1, width - col - 1, oppDir.get(dir)!);
-                                e.stopPropagation();
-                            });
-                        } else {
-                            edgeLine.click((e: MouseEvent) => {
-                                this.options.boardClick!(row, col, dir);
-                                e.stopPropagation();
-                            });
-                        }
+                        edgeLine.click((e: MouseEvent) => {
+                            this.options.boardClick!(row, col, dir);
+                            e.stopPropagation();
+                        });
                     }
                 }
             }
-        }
-
-        if (this.options.rotate === 180) {
-            gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
-            grid = grid.map((r) => r.reverse()).reverse();
-            polys = polys.map((r) => r.reverse()).reverse();
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded, polys});
@@ -1507,7 +1450,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = this.rootSvg.group().id("board");
 
         // have to define tiles early for clickable markers to work
@@ -1522,14 +1465,6 @@ export abstract class RendererBase {
             bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
             if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
                 show = [...(this.json.board.buffer as IBuffer).show!];
-            }
-            // adjust `show` to account for rotation
-            if (this.options.rotate === 180) {
-                const newshow: CompassDirection[] = [];
-                for (const dir of show) {
-                    newshow.push(oppDir.get(dir)!);
-                }
-                show = [...newshow];
             }
             let pattern: string | undefined;
             if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
@@ -1553,10 +1488,7 @@ export abstract class RendererBase {
             let y = grid[0][0].y - (h + offset);
             let buffN: SVGRect | undefined;
             if (show.includes("N")) {
-                let key = "_buffer_N";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_S";
-                }
+                const key = "_buffer_N";
                 buffN = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -1566,10 +1498,7 @@ export abstract class RendererBase {
             y = grid[grid.length - 1][0].y + offset;
             let buffS: SVGRect | undefined;
             if (show.includes("S")) {
-                let key = "_buffer_S";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_N";
-                }
+                const key = "_buffer_S";
                 buffS = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -1581,10 +1510,7 @@ export abstract class RendererBase {
             y = grid[0][0].y;
             let buffW: SVGRect | undefined;
             if (show.includes("W")) {
-                let key = "_buffer_W";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_E";
-                }
+                const key = "_buffer_W";
                 buffW = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -1594,10 +1520,7 @@ export abstract class RendererBase {
             y = grid[0][0].y;
             let buffE: SVGRect | undefined;
             if (show.includes("E")) {
-                let key = "_buffer_E";
-                if (this.options.rotate === 180) {
-                    key = "_buffer_W";
-                }
+                const key = "_buffer_E";
                 buffE = board.rect(w, h).id(key)
                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                 .move(x, y);
@@ -1639,9 +1562,6 @@ export abstract class RendererBase {
             }
             let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
-                columnLabels.reverse();
-            }
-            if (this.options.rotate === 180) {
                 columnLabels.reverse();
             }
 
@@ -1872,17 +1792,10 @@ export abstract class RendererBase {
                     if (graph.hasNode([col, row])) {
                         const {x, y} = grid[row][col];
                         const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                        if (this.options.rotate === 180) {
-                            t.click(() => this.options.boardClick!(height - row - 1, width - col - 1, ""));
-                        } else {
-                            t.click(() => this.options.boardClick!(row, col, ""));
-                        }
+                        t.click(() => this.options.boardClick!(row, col, ""));
                     }
                 }
             }
-        }
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
         }
 
         // If square `vertex` board, not tiled, and no blocked cells, consider adding star points
@@ -1952,7 +1865,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: 0, tileWidth: 0, tileSpacing: 0});
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: 0, tileWidth: 0, tileSpacing: 0});
 
         const board = this.rootSvg.group().id("board");
 
@@ -1987,9 +1900,6 @@ export abstract class RendererBase {
             }
             let columnLabels = this.getLabels(customLabels, (width * 2) - 1);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
-                columnLabels.reverse();
-            }
-            if (this.options.rotate === 180) {
                 columnLabels.reverse();
             }
 
@@ -2123,38 +2033,18 @@ export abstract class RendererBase {
         }
 
         if (this.options.boardClick !== undefined) {
-            const originX = grid[0][0].x;
-            const originY = grid[0][0].y;
-            const clickDeltaX = (this.json.board.clickDeltaX ?? 0);
-            const clickDeltaY = (this.json.board.clickDeltaX ?? 0);
-            const root = this.rootSvg;
-            const realwidth = (width * 2) - 1;
-            const realheight = (height * 2) - 1;
-            const realsize = cellsize / 2;
-            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = root.point(e.clientX, e.clientY);
-                const x = Math.floor((point.x - (originX - (realsize / 2))) / realsize);
-                const y = Math.floor((point.y - (originY - (realsize / 2))) / realsize);
-                if (x >= 0 - clickDeltaX && x < realwidth + clickDeltaX && y >= 0 - clickDeltaY && y < realheight + clickDeltaY) {
-                    this.options.boardClick!(y, x, "");
+            // moving to click catchers across the board to make arbitrary rotation easier
+            const catcher = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    // if (blocked !== undefined && blocked.find(entry => entry.row === row && entry.col === col) !== undefined) {
+                    //     continue;
+                    // }
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(catcher).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                    t.click(() => this.options.boardClick!(row, col, ""));
                 }
-            });
-            if (this.options.rotate === 180) {
-                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = root.point(e.clientX, e.clientY);
-                    const x = width - Math.floor((point.x - (originX - (realsize / 2))) / realsize) - 1;
-                    const y = height - Math.floor((point.y - (originY - (realsize / 2))) / realsize) - 1;
-                    if (x >= 0 - clickDeltaX && x < realwidth + clickDeltaX && y >= 0 - clickDeltaY && y < realheight + clickDeltaY) {
-                        this.options.boardClick!(y, x, "");
-                    }
-                });
             }
-            this.rootSvg.click(genericCatcher);
-        }
-
-        if (this.options.rotate === 180) {
-            gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
-            grid = grid.map((r) => r.reverse()).reverse();
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
@@ -2213,9 +2103,6 @@ export abstract class RendererBase {
         if (style.includes("-even")) {
             offset = 1;
         }
-        if ( (this.options.rotate === 180) && (height % 2 !== 0) ) {
-            offset = (offset * -1) as HexOffset;
-        }
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const myHex = defineHex({
@@ -2225,9 +2112,9 @@ export abstract class RendererBase {
         });
         const grid = new Grid(myHex, rectangle({width, height}));
         const board = this.rootSvg.group().id("board");
-        let gridPoints: GridPoints = [];
+        const gridPoints: GridPoints = [];
         // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
-        let polys: IPolyPolygon[][] = [];
+        const polys: IPolyPolygon[][] = [];
         for (let y = 0; y < height; y++) {
             const rowPolys: IPolyPolygon[] = [];
             const node: IPoint[] = [];
@@ -2285,9 +2172,6 @@ export abstract class RendererBase {
         let rowLabels = this.getLabels(customLabels, height);
         rowLabels.reverse();
         if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
-            rowLabels.reverse();
-        }
-        if (this.options.rotate === 180) {
             rowLabels.reverse();
         }
 
@@ -2353,11 +2237,7 @@ export abstract class RendererBase {
                 .translate(transX, transY);
             }
             if (this.options.boardClick !== undefined) {
-                if (this.options.rotate === 180) {
-                    used.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, ""));
-                } else {
-                    used.click(() => this.options.boardClick!(hex.row, hex.col, ""));
-                }
+                used.click(() => this.options.boardClick!(hex.row, hex.col, ""));
             }
         }
 
@@ -2455,19 +2335,11 @@ export abstract class RendererBase {
                     }
                     seenEdges.add(vid);
                     const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
-                    if (this.options.rotate === 180) {
-                        edgeLine.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, oppDir.get(edge.dir)!));
-                    } else {
-                        edgeLine.click(() => this.options.boardClick!(hex.row, hex.col, edge.dir));
-                    }
+                    edgeLine.click(() => this.options.boardClick!(hex.row, hex.col, edge.dir));
                 }
             }
         }
 
-        if (this.options.rotate === 180) {
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
-            polys = polys.map((r) => r.reverse()).reverse();
-        }
         this.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
         return [gridPoints, polys];
@@ -2517,10 +2389,7 @@ export abstract class RendererBase {
         // Get a grid of points
         const orientation = Orientation.POINTY;
         const edges = edges2corners.get(orientation)!;
-        let offset: HexOffset = 1;
-        if ( (this.options.rotate === 180) && (height % 2 !== 0) ) {
-            offset = (offset * -1) as HexOffset;
-        }
+        const offset: HexOffset = 1;
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const myHex = defineHex({
@@ -2530,9 +2399,9 @@ export abstract class RendererBase {
         });
         const grid = new Grid(myHex, rectangle({width, height}));
         const board = this.rootSvg.group().id("board");
-        let gridPoints: GridPoints = [];
+        const gridPoints: GridPoints = [];
         // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
-        let polys: Poly[][] = [];
+        const polys: Poly[][] = [];
         for (let y = 0; y < height; y++) {
             const rowPolys: Poly[] = [];
             const node: IPoint[] = [];
@@ -2583,9 +2452,6 @@ export abstract class RendererBase {
             customLabels = this.json.board.columnLabels;
         }
         const columnLabels = this.getLabels(customLabels, width * 2);
-        if (this.options.rotate === 180) {
-            columnLabels.reverse();
-        }
 
         const rowLabels = this.getRowLabels(this.json.board.rowLabels, height * 3);
         rowLabels.reverse();
@@ -2609,11 +2475,7 @@ export abstract class RendererBase {
             const { x, y } = hex;
             const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
             if (this.options.boardClick !== undefined) {
-                if (this.options.rotate === 180) {
-                    used.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, ""));
-                } else {
-                    used.click(() => this.options.boardClick!(hex.row, hex.col, ""));
-                }
+                used.click(() => this.options.boardClick!(hex.row, hex.col, ""));
             }
         }
 
@@ -2719,19 +2581,11 @@ export abstract class RendererBase {
                     }
                     seenEdges.add(vid);
                     const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
-                    if (this.options.rotate === 180) {
-                        edgeLine.click(() => this.options.boardClick!(height - hex.row - 1, width - hex.col - 1, oppDir.get(edge.dir)!));
-                    } else {
-                        edgeLine.click(() => this.options.boardClick!(hex.row, hex.col, edge.dir));
-                    }
+                    edgeLine.click(() => this.options.boardClick!(hex.row, hex.col, edge.dir));
                 }
             }
         }
 
-        if (this.options.rotate === 180) {
-            gridPoints = gridPoints.map((r) => r.reverse()).reverse();
-            polys = polys.map((r) => r.reverse()).reverse();
-        }
         this.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
         return {points: gridPoints, polys};
@@ -2771,7 +2625,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -2796,19 +2650,10 @@ export abstract class RendererBase {
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels.reverse();
             }
-            if (this.options.rotate === 180) {
-                columnLabels.reverse();
-            }
 
             let rowLabels: string[] = [];
-            if (this.options.rotate === 180) {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((row + 1).toString());
-                }
-            } else {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((height - row).toString());
-                }
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
             }
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
                 rowLabels.reverse();
@@ -2911,9 +2756,6 @@ export abstract class RendererBase {
             this.rootSvg.click(genericCatcher);
         }
 
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
-        }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
@@ -3066,7 +2908,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
+        const grid = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -3093,17 +2935,10 @@ export abstract class RendererBase {
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels.reverse();
             }
-            if (this.options.rotate === 180) {
-                columnLabels.reverse();
-            }
 
             for (let row = 0; row < grid.length; row++) {
                 let leftNum = "1";
                 let rightNum = grid[row].length.toString();
-                if (this.options.rotate === 180) {
-                    leftNum = rightNum;
-                    rightNum = "1";
-                }
                 if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
                     const scratch = leftNum;
                     leftNum = rightNum;
@@ -3222,9 +3057,6 @@ export abstract class RendererBase {
             this.rootSvg.click(genericCatcher);
         }
 
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
-        }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
@@ -3275,22 +3107,18 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
+        const grid = hexOfCir({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("circles");
 
         // build polys
-        let polys: IPolyCircle[][] = [];
+        const polys: IPolyCircle[][] = [];
         for (const row of grid) {
             const polyRow: IPolyCircle[] = [];
             for (const p of row) {
                 polyRow.push({type: "circle", r: cellsize/2, cx: p.x, cy: p.y});
             }
             polys.push(polyRow);
-        }
-
-        if (this.options.rotate === 180) {
-            polys = polys.map((r) => r.reverse()).reverse();
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
@@ -3316,16 +3144,10 @@ export abstract class RendererBase {
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels.reverse();
             }
-            if (this.options.rotate === 180) {
-                columnLabels.reverse();
-            }
+
             for (let row = 0; row < height; row++) {
                 let leftNum = "1";
                 let rightNum = grid[row].length.toString();
-                if (this.options.rotate === 180) {
-                    leftNum = rightNum;
-                    rightNum = "1";
-                }
                 if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
                     const scratch = leftNum;
                     leftNum = rightNum;
@@ -3350,18 +3172,11 @@ export abstract class RendererBase {
                 const p = row[iCol];
                 const c = gridlines.use(circle).size(cellsize, cellsize).center(p.x, p.y);
                 if (this.options.boardClick !== undefined) {
-                    if (this.options.rotate === 180) {
-                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
-                    } else {
-                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
-                    }
+                    c.click(() => this.options.boardClick!(iRow, iCol, ""));
                 }
             }
         }
 
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
-        }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return [grid, polys];
@@ -3412,7 +3227,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
+        const grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
@@ -3423,7 +3238,7 @@ export abstract class RendererBase {
 
         const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
-        let polys: IPolyPolygon[][] = [];
+        const polys: IPolyPolygon[][] = [];
         for (const row of grid) {
             const rowPolys: IPolyPolygon[] = [];
             for (const p of row) {
@@ -3434,9 +3249,6 @@ export abstract class RendererBase {
                 });
             }
             polys.push(rowPolys);
-        }
-        if (this.options.rotate === 180) {
-            polys = polys.map((r) => r.reverse()).reverse();
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
@@ -3462,16 +3274,10 @@ export abstract class RendererBase {
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels.reverse();
             }
-            if (this.options.rotate === 180) {
-                columnLabels.reverse();
-            }
+
             for (let row = 0; row < height; row++) {
                 let leftNum = "1";
                 let rightNum = grid[row].length.toString();
-                if (this.options.rotate === 180) {
-                    leftNum = rightNum;
-                    rightNum = "1";
-                }
                 if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
                     const scratch = leftNum;
                     leftNum = rightNum;
@@ -3521,17 +3327,11 @@ export abstract class RendererBase {
                 }
                 const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 if (this.options.boardClick !== undefined) {
-                    if (this.options.rotate === 180) {
-                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
-                    } else {
-                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
-                    }
+                    c.click(() => this.options.boardClick!(iRow, iCol, ""));
                 }
             }
         }
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
-        }
+
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return [grid, polys];
@@ -3571,7 +3371,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = hexSlanted({gridWidth, gridHeight, cellSize: cellsize});
+        const grid = hexSlanted({gridWidth, gridHeight, cellSize: cellsize});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("hexes");
 
@@ -3583,7 +3383,7 @@ export abstract class RendererBase {
         const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
 
-        let polys: IPolyPolygon[][] = [];
+        const polys: IPolyPolygon[][] = [];
         for (const row of grid) {
             const rowPolys: IPolyPolygon[] = [];
             for (const p of row) {
@@ -3594,9 +3394,6 @@ export abstract class RendererBase {
                 });
             }
             polys.push(rowPolys);
-        }
-        if (this.options.rotate === 180) {
-            polys = polys.map((r) => r.reverse()).reverse();
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
@@ -3627,9 +3424,6 @@ export abstract class RendererBase {
             }
             let rowLabels = this.getRowLabels(customLabels, gridHeight);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
-                rowLabels.reverse();
-            }
-            if (this.options.rotate === 180) {
                 rowLabels.reverse();
             }
 
@@ -3708,16 +3502,9 @@ export abstract class RendererBase {
                 }
                 const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
                 if (this.options.boardClick !== undefined) {
-                    if (this.options.rotate === 180) {
-                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
-                    } else {
-                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
-                    }
+                    c.click(() => this.options.boardClick!(iRow, iCol, ""));
                 }
             }
-        }
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
@@ -3791,18 +3578,11 @@ export abstract class RendererBase {
                 const p = row[iCol];
                 const c = gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
                 if (this.options.boardClick !== undefined) {
-                    // if (this.options.rotate === 180) {
-                    //     c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
-                    // } else {
-                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
-                    // }
+                    c.click(() => this.options.boardClick!(iRow, iCol, ""));
                 }
             }
         }
-        // if (this.options.rotate === 180) {
-        //     grid = grid.map((r) => r.reverse()).reverse();
-        //     polys = polys.map((r) => r.reverse()).reverse();
-        // }
+
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return [grid, polys];
@@ -3861,18 +3641,11 @@ export abstract class RendererBase {
                 const p = row[iCol];
                 const c = gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
                 if (this.options.boardClick !== undefined) {
-                    // if (this.options.rotate === 180) {
-                    //     c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
-                    // } else {
-                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
-                    // }
+                    c.click(() => this.options.boardClick!(iRow, iCol, ""));
                 }
             }
         }
-        // if (this.options.rotate === 180) {
-        //     grid = grid.map((r) => r.reverse()).reverse();
-        //     polys = polys.map((r) => r.reverse()).reverse();
-        // }
+
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return [grid, polys];
@@ -3922,7 +3695,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         const board = this.rootSvg.group().id("board");
 
         // Make an expanded grid for markers, to accommodate edge marking and shading
@@ -3965,9 +3738,7 @@ export abstract class RendererBase {
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels.reverse();
             }
-            if (this.options.rotate === 180) {
-                columnLabels.reverse();
-            }
+
             // Columns (letters)
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
@@ -4077,12 +3848,8 @@ export abstract class RendererBase {
                     this.rootSvg.defs().add(tile);
                 }
 
-                let pxrow = row;
-                let pxcol = col;
-                if (this.options.rotate === 180) {
-                    pxrow = height - row - 1;
-                    pxcol = width - col - 1;
-                }
+                const pxrow = row;
+                const pxcol = col;
                 const {x, y} = grid[pxrow][pxcol];
                 const used = tiles.use(tile).size(cellsize, cellsize).center(x, y);
                 if (this.options.boardClick !== undefined) {
@@ -4095,10 +3862,7 @@ export abstract class RendererBase {
             // lefthand
             let {x, y} = grid[0][0];
             let tileToUse = tileEnd;
-            let leftCol = 0;
-            if (this.options.rotate === 180) {
-                leftCol = 1;
-            }
+            const leftCol = 0;
             let outlined = outlines.find(o => o.points.find(p => p.col === leftCol && p.row === height) !== undefined);
             if (outlined !== undefined) {
                 const outWidth = baseStroke;
@@ -4120,20 +3884,14 @@ export abstract class RendererBase {
             }
             const left = tiles.use(tileToUse).size(cellsize, cellsize * height).move(x - (cellsize * 1.5), y - (cellsize / 2));
             if (this.options.boardClick !== undefined) {
-                let name = "_east";
-                if (this.options.rotate === 180) {
-                    name = "_west";
-                }
+                const name = "_east";
                 left.click(() => this.options.boardClick!(-1, -1, name));
             }
 
             // righthand
             ({x, y} = grid[0][width - 1]);
             tileToUse = tileEnd;
-            let rightCol = 1;
-            if (this.options.rotate === 180) {
-                rightCol = 0;
-            }
+            const rightCol = 1;
             outlined = outlines.find(o => o.points.find(p => p.col === rightCol && p.row === height) !== undefined);
             if (outlined !== undefined) {
                 const outWidth = baseStroke;
@@ -4155,10 +3913,7 @@ export abstract class RendererBase {
             }
             const right = tiles.use(tileToUse).size(cellsize, cellsize * height).move(x + (cellsize / 2), y - (cellsize / 2));
             if (this.options.boardClick !== undefined) {
-                let name = "_west";
-                if (this.options.rotate === 180) {
-                    name = "_east";
-                }
+                const name = "_west";
                 right.click(() => this.options.boardClick!(-1, -1, name));
             }
         }
@@ -4177,21 +3932,6 @@ export abstract class RendererBase {
             const y2 = y1;
             gridlines.line(x1, y1, x2, y2)
                 .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-        }
-
-        if (this.options.rotate === 180) {
-            // GridExpanded is fine because it does not contain the end pit coords.
-            gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
-            // The grid however, if there are end pits, we need to hold the
-            // last row aside and reinsert it after reversing.
-            let holding: IPoint[]|undefined;
-            if (endpits) {
-                holding = grid.splice(-1, 1)[0];
-            }
-            grid = grid.map((r) => r.reverse()).reverse();
-            if (holding !== undefined) {
-                grid.push(holding.reverse());
-            }
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
@@ -4333,16 +4073,6 @@ export abstract class RendererBase {
         if ( ("cairoStart" in boardTyped) && (boardTyped.cairoStart !== undefined) ) {
             startOrientation = boardTyped.cairoStart as PentagonOrientation;
         }
-        // flip starting orientation when rotated, if necessary
-        if (this.options.rotate === 180) {
-            if (width % 2 !== height % 2) {
-                if (startOrientation === "H") {
-                    startOrientation = "V";
-                } else {
-                    startOrientation = "H";
-                }
-            }
-        }
 
         let baseStroke = 1;
         let baseColour = this.options.colourContext.strokes;
@@ -4358,7 +4088,7 @@ export abstract class RendererBase {
         }
 
         // Get a grid of points
-        let grid = cairo({gridWidth: width, gridHeight: height, cellSize: cellsize, cairoStart: startOrientation});
+        const grid = cairo({gridWidth: width, gridHeight: height, cellSize: cellsize, cairoStart: startOrientation});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("pentagons");
 
@@ -4419,7 +4149,7 @@ export abstract class RendererBase {
             symbolPolyW.fill({color: hexFill, opacity: 1});
         }
 
-        let polys: IPolyPolygon[][] = [];
+        const polys: IPolyPolygon[][] = [];
         let orientation = startOrientation;
         for (let iRow = 0; iRow < height; iRow++) {
             const row = grid[iRow];
@@ -4483,10 +4213,6 @@ export abstract class RendererBase {
             polys.push(rowPolys);
         }
 
-        if (this.options.rotate === 180) {
-            polys = polys.map((r) => r.reverse()).reverse();
-        }
-
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // now actually draw pentagons
@@ -4543,11 +4269,7 @@ export abstract class RendererBase {
                     }
                     const c = gridlines.use(sym).size(w, h).center(pt.x, pt.y);
                     if (this.options.boardClick !== undefined) {
-                        if (this.options.rotate === 180) {
-                            c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - col - 1, ""));
-                        } else {
-                            c.click(() => this.options.boardClick!(iRow, col, ""));
-                        }
+                        c.click(() => this.options.boardClick!(iRow, col, ""));
                     }
                 }
                 if (orientation === "H") {
@@ -4579,9 +4301,6 @@ export abstract class RendererBase {
             }
             let columnLabels = this.getLabels(customLabels, width);
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
-                columnLabels.reverse();
-            }
-            if (this.options.rotate === 180) {
                 columnLabels.reverse();
             }
 
@@ -4619,10 +4338,6 @@ export abstract class RendererBase {
             }
         }
 
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
-            polys = polys.map((r) => r.reverse()).reverse();
-        }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return [grid, polys];
@@ -4668,7 +4383,7 @@ export abstract class RendererBase {
 
         // build the list of polys
         // there are four different shapes
-        let polys: IPolyPolygon[][] = [];
+        const polys: IPolyPolygon[][] = [];
         for (let ssRow = 0; ssRow < height; ssRow++) {
             const polyRow: IPolyPolygon[] = [];
             for (let ssCol = 0; ssCol < width; ssCol++) {
@@ -4711,7 +4426,7 @@ export abstract class RendererBase {
         }
 
         // build the final grid of points from the centroids of the polys
-        let grid: GridPoints = [];
+        const grid: GridPoints = [];
         for (const row of polys) {
             const rowNode: IPoint[] = [];
             for (const poly of row) {
@@ -4745,19 +4460,10 @@ export abstract class RendererBase {
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels.reverse();
             }
-            if (this.options.rotate === 180) {
-                columnLabels.reverse();
-            }
 
             let rowLabels: string[] = [];
-            if (this.options.rotate === 180) {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((row + 1).toString());
-                }
-            } else {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((height - row).toString());
-                }
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
             }
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
                 rowLabels.reverse();
@@ -4804,7 +4510,6 @@ export abstract class RendererBase {
         }
 
         for (let iRow = 0; iRow < height; iRow++) {
-            const row = grid[iRow];
             for (let iCol = 0; iCol < width; iCol++) {
                 if (blocked !== undefined) {
                     if (blocked.find(p => p.row === iRow && p.col === iCol) !== undefined) {
@@ -4818,19 +4523,11 @@ export abstract class RendererBase {
                     c.fill({color: hexFill, opacity: 1});
                 }
                 if (this.options.boardClick !== undefined) {
-                    if (this.options.rotate === 180) {
-                        c.click(() => this.options.boardClick!(grid.length - iRow - 1, row.length - iCol - 1, ""));
-                    } else {
-                        c.click(() => this.options.boardClick!(iRow, iCol, ""));
-                    }
+                    c.click(() => this.options.boardClick!(iRow, iCol, ""));
                 }
             }
         }
 
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
-            polys = polys.map((r) => r.reverse()).reverse();
-        }
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
         return [grid, polys];
@@ -4848,7 +4545,8 @@ export abstract class RendererBase {
         }
 
         if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
-            const notes = this.rootSvg.group().id("annotations");
+            const board = this.rootSvg.findOne("#board") as SVGG;
+            const notes = board.group().id("annotations");
             const rIncrement = this.cellsize / 2;
             let radius = rIncrement;
             let direction = 1;
@@ -5203,9 +4901,9 @@ export abstract class RendererBase {
                         }
                         const use = usePieceAt(notes, piece, this.cellsize, point.x, point.y, 1);
                         use.attr({ 'pointer-events': 'none' });
-                        if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
-                            rotate(use, this.options.rotate, point.x, point.y);
-                        }
+                        // if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
+                        //     rotate(use, this.options.rotate, point.x, point.y);
+                        // }
                     }
                 } else if ( (note.type !== undefined) && (note.type === "deltas") ) {
                     type Delta = {
@@ -5307,7 +5005,7 @@ export abstract class RendererBase {
     protected markBoard(opts: IMarkBoardOptions): void {
         const svgGroup = opts.svgGroup;
         const preGridLines = opts.preGridLines;
-        let grid = opts.grid;
+        const grid = opts.grid;
         let gridExpanded: GridPoints|undefined;
         if (opts.gridExpanded !== undefined) {
             gridExpanded = opts.gridExpanded;
@@ -5336,18 +5034,6 @@ export abstract class RendererBase {
         if ( ("board" in this.json) && (this.json.board !== undefined) && ("markers" in this.json.board!) && (this.json.board.markers !== undefined) && (Array.isArray(this.json.board.markers)) && (this.json.board.markers.length > 0) ) {
             if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
                 throw new Error("This `markBoard` function only works with renderers that include a `style` property.");
-            }
-
-            if (preGridLines) {
-                if (this.options.rotate === 180) {
-                    if (gridExpanded !== undefined) {
-                        gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
-                    }
-                    if (polys !== undefined) {
-                        polys = polys.map((r) => r.reverse()).reverse();
-                    }
-                    grid = grid.map((r) => r.reverse()).reverse();
-                }
             }
 
             let baseStroke = 1;
@@ -6222,18 +5908,11 @@ export abstract class RendererBase {
                         delete newclone.side;
                         svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
-                        let row = marker.cell.row;
-                        let col = marker.cell.col;
-                        if (this.options.rotate === 180) {
-                            row = hexHeight - row - 1;
-                            col = hexWidth - col - 1;
-                        }
+                        const row = marker.cell.row;
+                        const col = marker.cell.col;
                         const hex = hexGrid.getHex({col, row});
                         if (hex !== undefined) {
-                            let side = marker.side as CompassDirection;
-                            if (this.options.rotate === 180) {
-                                side = oppDir.get(side)!;
-                            }
+                            const side = marker.side as CompassDirection;
                             const edges = edges2corners.get(hex.orientation)!;
                             const edge = edges.find(e => e.dir === side);
                             if (edge !== undefined) {
@@ -6254,23 +5933,10 @@ export abstract class RendererBase {
                         const point = grid[pt.row][pt.col];
                         const use = usePieceAt(svgGroup, piece, this.cellsize, point.x, point.y, 1);
                         use.attr({ 'pointer-events': 'none' });
-                        if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
-                            rotate(use, this.options.rotate, point.x, point.y);
-                        }
+                        // if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
+                        //     rotate(use, this.options.rotate, point.x, point.y);
+                        // }
                     }
-                }
-            }
-
-            // Undo
-            if (preGridLines) {
-                if (this.options.rotate === 180) {
-                    if (gridExpanded !== undefined) {
-                    gridExpanded = gridExpanded.map((r) => r.reverse()).reverse();
-                    }
-                    if (polys !== undefined) {
-                        polys = polys.map((r) => r.reverse()).reverse();
-                    }
-                    grid = grid.map((r) => r.reverse()).reverse();
                 }
             }
         }
@@ -6347,21 +6013,11 @@ export abstract class RendererBase {
 
     protected getRowLabels(override: unknown, height: number) : string[] {
         if (override !== undefined) {
-            if (this.options.rotate === 180) {
-                return [...(override as string[])];
-            } else {
-                return ([...(override as string[])]).reverse();
-            }
+            return ([...(override as string[])]).reverse();
         }
         const rowLabels: string[] = [];
-        if (this.options.rotate === 180) {
-            for (let row = 0; row < height; row++) {
-                rowLabels.push((row + 1).toString());
-            }
-        } else {
-            for (let row = 0; row < height; row++) {
-                rowLabels.push((height - row).toString());
-            }
+        for (let row = 0; row < height; row++) {
+            rowLabels.push((height - row).toString());
         }
         return rowLabels;
     }
@@ -6385,7 +6041,7 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeButtonBar(grid: GridPoints, position?: "left"|"right"): void {
+    protected placeButtonBar(box: SVGBox, position?: "left"|"right"): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -6397,7 +6053,7 @@ export abstract class RendererBase {
             if (bars.length === 1) {
                 const bar = bars[0];
                 const barimg = this.buildButtonBar(bar);
-                const y = grid[0][0].y - this.cellsize;
+                const y = box.y; // - this.cellsize;
                 // Position defaults to "right"
                 // If a position is passed by the renderer, it overrides everything
                 // Otherwise, the JSON prevails
@@ -6409,9 +6065,9 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = grid[0][0].x - (this.cellsize * 1.5) - barimg.viewbox().w;
+                    x = box.x - barimg.viewbox().w - this.cellsize;
                 } else {
-                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 1.5);
+                    x = box.x2 + this.cellsize;
                 }
                 const used = this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).move(x, y);
                 if (this.options.boardClick !== undefined) {
@@ -6547,7 +6203,7 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeKey(grid: GridPoints, position?: "left"|"right"): void {
+    protected placeKey(box: SVGBox, position?: "left"|"right"): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -6559,7 +6215,7 @@ export abstract class RendererBase {
             if (keys.length === 1) {
                 const key = keys[0];
                 const keyimg = this.buildKey(key);
-                const y = grid[0][0].y - this.cellsize;
+                const y = box.y; // - this.cellsize;
                 // Position defaults to "right"
                 // If a position is passed by the renderer, it overrides everything
                 // Otherwise, the JSON prevails
@@ -6571,9 +6227,9 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = grid[0][0].x - (this.cellsize * 1.5) - keyimg.viewbox().w;
+                    x = box.x - keyimg.viewbox().w - this.cellsize;
                 } else {
-                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 1.5);
+                    x = box.x2 + this.cellsize;
                 }
                 const used = this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
                 let clickable = true;
@@ -6689,7 +6345,7 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeScroll(grid: GridPoints, position?: "left"|"right"): void {
+    protected placeScroll(box: SVGBox, position?: "left"|"right"): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -6701,7 +6357,7 @@ export abstract class RendererBase {
             if (scrolls.length === 1) {
                 const scroll = scrolls[0];
                 const scrollImg = this.buildScroll(scroll);
-                const y = grid[0][0].y - this.cellsize;
+                const y = box.y; // - this.cellsize;
                 // Position defaults to "right"
                 // If a position is passed by the renderer, it overrides everything
                 // Otherwise, the JSON prevails
@@ -6713,9 +6369,9 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = grid[0][0].x - (this.cellsize * 2) - scrollImg.viewbox().w;
+                    x = box.x - scrollImg.viewbox().w - this.cellsize;
                 } else {
-                    x = grid[0][grid[0].length - 1].x + (this.cellsize * 2);
+                    x = box.x2 + this.cellsize;
                 }
                 let min = 0;
                 if (scroll.min !== undefined) {
@@ -6917,15 +6573,15 @@ export abstract class RendererBase {
      *
      * @param gridPoints -
      */
-    protected piecesArea(gridPoints: GridPoints) {
+    protected piecesArea(box: SVGBox) {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
         }
         if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const areas = this.json.areas.filter((x) => x.type === "pieces") as AreaPieces[];
-            const boardBottom = Math.max(gridPoints[0][0].y, gridPoints[gridPoints.length - 1][0].y) + this.cellsize;
+            const boardBottom = box.y2; // + this.cellsize;
             // Width in number of cells, taking the maximum board width
-            const boardWidth = Math.max(...gridPoints.map(r => r.length));
+            const boardWidth = Math.floor(box.width / this.cellsize);
             let placeY = boardBottom + (this.cellsize / 2);
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea];
@@ -6996,13 +6652,13 @@ export abstract class RendererBase {
 
                 // Now place the whole group below the board
                 // const placed = this.rootSvg.use(nested);
-                nested.move(Math.min(...gridPoints.map(r => Math.min(r[0].x, r[r.length - 1].x))), placeY);
+                nested.move(box.x, placeY);
                 placeY += nested.bbox().height + (this.cellsize * 0.5);
             }
         }
     }
 
-    protected backFill(polys?: Poly[][]) {
+    protected backFill(polys?: Poly[][], preRotation = false): boolean {
         type BackFill = {
             type?: "full"|"board";
             colour: string;
@@ -7020,16 +6676,19 @@ export abstract class RendererBase {
             if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
                 backFillObj = this.json.board.backFill as BackFill;
             }
-            let bgcolour = this.options.colourContext.background;
-            if ( backFillObj !== undefined ) {
-                bgcolour = backFillObj.colour;
+
+            // if there is no backFill object, then don't try again
+            if (backFillObj === undefined) {
+                return true;
             }
+
+            const bgcolour = backFillObj.colour;
             let bgopacity = 1;
-            if ( backFillObj !== undefined && backFillObj.opacity !== undefined ) {
+            if ( backFillObj.opacity !== undefined ) {
                 bgopacity = backFillObj.opacity;
             }
             let bgtype: "full"|"board" = "full";
-            if (backFillObj !== undefined && backFillObj.type !== undefined) {
+            if (backFillObj.type !== undefined) {
                 bgtype = backFillObj.type;
             }
 
@@ -7037,34 +6696,89 @@ export abstract class RendererBase {
                 throw new Error(`We can only do a "board" backfill if the board was built with polygons.`);
             }
 
-            if (backFillObj !== undefined) {
-                if (bgtype === "full") {
-                    const bbox = this.rootSvg.bbox();
-                    this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
-                } else {
-                    const turfed = polys!.flat().map(p => {
-                        let pts: [number,number][];
-                        if (p.type === "circle") {
-                            pts = circle2poly(p.cx, p.cy, p.r);
-                        } else {
-                            pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
-                        }
-                        if (pts[0] !== pts[pts.length - 1]) {
-                            pts.push(pts[0])
-                        }
-                        return turfPoly([pts]);
-                    });
-                    let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
-                    while (turfed.length > 0) {
-                        const next = turfed.pop()!;
-                        union = turfUnion(union, next);
-                        if (union === null) {
-                            throw new Error(`Got null while joining polygons in backFill()`);
-                        }
-                    }
-                    this.rootSvg.polygon(union.geometry.coordinates.flat().map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity}).back();
-                }
+            // if we're pre-rotation but we want to do a full fill, then try again later
+            if (preRotation && bgtype === "full") {
+                return false;
             }
+
+            if (bgtype === "full") {
+                const bbox = this.rootSvg.bbox();
+                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
+            } else {
+                const board = this.rootSvg.findOne("#board") as SVGG|null;
+                if (board === null) {
+                    throw new Error(`Can't do a board fill if there's no board.`);
+                }
+                const turfed = polys!.flat().map(p => {
+                    let pts: [number,number][];
+                    if (p.type === "circle") {
+                        pts = circle2poly(p.cx, p.cy, p.r);
+                    } else {
+                        pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
+                    }
+                    if (pts[0] !== pts[pts.length - 1]) {
+                        pts.push(pts[0])
+                    }
+                    return turfPoly([pts]);
+                });
+                let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
+                while (turfed.length > 0) {
+                    const next = turfed.pop()!;
+                    union = turfUnion(union, next);
+                    if (union === null) {
+                        throw new Error(`Got null while joining polygons in backFill()`);
+                    }
+                }
+                const poly = this.rootSvg.polygon(union.geometry.coordinates.flat().map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
+                // `board` backfill can't just be pushed to the back but must be inside the `board` group
+                board.add(poly, 0);
+            }
+            return true;
+        }
+
+        // if board is null, don't try again
+        return true;
+    }
+
+    protected rotateBoard({ignore} = {ignore: false}): SVGBox {
+        if (this.rootSvg === undefined || !this.json || !this.json.board) {
+            throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
+        }
+        const board = this.rootSvg.findOne("#board") as SVGG|null;
+        if (board === null) {
+            throw new Error("Could not find the core board group to rotate.");
+        }
+        let rotation = 0;
+        if (this.options.rotate !== undefined) {
+            rotation += this.options.rotate;
+        }
+        if (("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
+            rotation += this.json.board.rotate;
+        }
+        if (ignore) {
+            rotation = 0;
+        }
+        const startingBox = board.bbox();
+        if (rotation === 0) {
+            return startingBox;
+        } else {
+            rotate(board, rotation, startingBox.cx, startingBox.cy);
+            // reorient all labels
+            const labels = this.rootSvg.findOne("#labels") as SVGG|null;
+            if (labels !== null) {
+                // labels.find("[data-orientation-vertical=true]").each(this: SVGElement => {
+                labels.find("text").each((e: SVGElement) => {
+                    const box = e.bbox();
+                    rotate(e, rotation * -1, box.cx, box.cy);
+                });
+            }
+            // // reorient any element explicitly flagged as vertical
+            // this.rootSvg.defs().find("[data-orientation-vertical=true]").each((e: SVGElement) => {
+            //     const box = e.bbox();
+            //     rotate(e, rotation * -1, box.cx, box.cy);
+            // });
+            return board.rbox(this.rootSvg);
+            // return board.bbox();
         }
     }
 
@@ -7162,11 +6876,7 @@ export abstract class RendererBase {
         }
         let point = pts[result.gridrow][result.gridcol];
         if (result.offset) {
-            if (this.options.rotate === 180) {
-                point = {x: point.x - (this.cellsize / 2), y: point.y - (this.cellsize / 2)}
-            } else {
-                point = {x: point.x + (this.cellsize / 2), y: point.y + (this.cellsize / 2)}
-            }
+            point = {x: point.x + (this.cellsize / 2), y: point.y + (this.cellsize / 2)}
         }
         return point;
     }

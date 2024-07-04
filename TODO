@@ -13,7 +13,8 @@ Todo:
   ✔ Produce more useful JSON schema validation error messages. @done(21-12-23 16:59)
   ✔ Make it possible to disable expanding `eject` annotations. @done(21-12-23 17:12)
   ✔ Alfred's Wyke is clipping in Firefox. @done(21-12-28 11:46)
+  ✘ See if you can figure out why `board.markers` are not being interpreted properly in `src/renderers/_base.ts`, thus needing the blanket ESLint rule at the top of the file. @cancelled(24-07-03 16:34)
   - Write proper tests
   - Pyramid rotation at odd angles clips a little (e.g., Pikemen).
   - Make the `squares-beveled` style actually look chiseled (drop shadow effects)
-  - See if you can figure out why `board.markers` are not being interpreted properly in `src/renderers/_base.ts`, thus needing the blanket ESLint rule at the top of the file.
+

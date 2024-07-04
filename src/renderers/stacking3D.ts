@@ -2,7 +2,7 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rectOfRects } from "../grids";
-import { Svg, StrokeData } from "@svgdotjs/svg.js";
+import { Svg, StrokeData, G as SVGG } from "@svgdotjs/svg.js";
 import { usePieceAt } from "../common/plotting";
 import { x2uid } from "../common/glyph2uid";
 
@@ -173,16 +173,13 @@ export class Stacking3DRenderer extends RendererBase {
         const tileSpace = 0;
 
         // Get a grid of points
-        let grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = this.rootSvg.group().id("board");
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             const labels = board.group().id("labels");
-            let columnLabels = this.getLabels(undefined, width);
-            if (this.options.rotate === 180) {
-                columnLabels = columnLabels.reverse();
-            }
+            const columnLabels = this.getLabels(undefined, width);
             // Columns (letters)
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
@@ -193,14 +190,8 @@ export class Stacking3DRenderer extends RendererBase {
 
             // Rows (numbers)
             const rowLabels: string[] = [];
-            if (this.options.rotate === 180) {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((row + 1).toString());
-                }
-            } else {
-                for (let row = 0; row < height; row++) {
-                    rowLabels.push((height - row).toString());
-                }
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
             }
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
@@ -308,7 +299,9 @@ export class Stacking3DRenderer extends RendererBase {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
             const root = this.rootSvg;
-            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+            // We don't need to use click catchers here because this renderer
+            // does not support rotation at all.
+            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                 const pnt = root.point(e.clientX, e.clientY);
                 const point = this.unproject(pnt.x, pnt.y);
                 const x = Math.floor((point[0] - (originX - (cellsize / 2))) / cellsize);
@@ -317,22 +310,7 @@ export class Stacking3DRenderer extends RendererBase {
                     this.options.boardClick!(y, x, "");
                 }
             });
-            if (this.options.rotate === 180) {
-                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const pnt = root.point(e.clientX, e.clientY);
-                    const point = this.unproject(pnt.x, pnt.y);
-                    const x = width - Math.floor((point[0] - (originX - (cellsize / 2))) / cellsize) - 1;
-                    const y = height - Math.floor((point[1] - (originY - (cellsize / 2))) / cellsize) - 1;
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
-                        this.options.boardClick!(y, x, "");
-                    }
-                });
-            }
             this.rootSvg.click(genericCatcher);
-        }
-
-        if (this.options.rotate === 180) {
-            grid = grid.map((r) => r.reverse()).reverse();
         }
 
         return grid;
@@ -582,7 +560,8 @@ export class Stacking3DRenderer extends RendererBase {
         }
 
         // PIECES
-        const group = this.rootSvg.group().id("pieces");
+        const board = this.rootSvg.findOne("#board") as SVGG;
+        const group = board.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];
@@ -621,15 +600,9 @@ export class Stacking3DRenderer extends RendererBase {
                 offsetPercent = this.json.board.stackOffset;
             }
             const offset = this.cellsize * offsetPercent;
-            // if the board is rotated, you have to place the pieces in reverse row order
-            let start = 0;
-            let end = pieces.length - 1;
-            let inc = 1;
-            if (this.options.rotate === 180) {
-                start = pieces.length - 1;
-                end = 0;
-                inc = -1;
-            }
+            const start = 0;
+            const end = pieces.length - 1;
+            const inc = 1;
             for (let row = start; inc === 1 ? row <= end : row >= end; row += inc) {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (let i = 0; i < pieces[row][col].length; i++) {
