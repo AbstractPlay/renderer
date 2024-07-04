@@ -1,8 +1,14 @@
-import { Svg, G as SVGG } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase} from "./_base";
-import { usePieceAt } from "../common/plotting";
+import { rotate, usePieceAt } from "../common/plotting";
+
+export interface IPiecesArea {
+    type: "pieces";
+    pieces: [string, ...string[]];
+    label: string;
+}
 
 /**
  * This is the default renderer used for most games.
@@ -102,8 +108,7 @@ export class DefaultRenderer extends RendererBase {
         }
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const group = this.rootSvg.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];
@@ -173,14 +178,11 @@ export class DefaultRenderer extends RendererBase {
                             }
                             const factor = 0.85;
                             const use = usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
-                            // if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
-                            //     rotate(use, options.rotate, point.x, point.y);
-                            if ( (this.options.boardClick !== undefined) && ( (this.json.options === undefined) || (! this.json.options.includes("no-piece-click")) ) ) {
-                                // if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
-                                if (this.json.board.style !== "squares-stacked") {
+                            if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
+                                rotate(use, options.rotate, point.x, point.y);
+                            if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
+                                if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
-                                } else {
-                                    use.attr({"pointer-events": "none"});
                                 }
                             } else {
                                 use.attr({"pointer-events": "none"});
@@ -196,26 +198,25 @@ export class DefaultRenderer extends RendererBase {
             this.annotateBoard(gridPoints, polys);
         }
 
-        // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
-
-        const box = this.rotateBoard();
+        // rotate gridpoints if necessary
+        let modGrid = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+        if (this.options.rotate === 180) {
+            modGrid = modGrid.map((r) => r.reverse()).reverse();
+        }
 
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(modGrid);
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(modGrid);
 
         // key
-        this.placeKey(box);
+        this.placeKey(modGrid);
 
         // scrollBar
-        this.placeScroll(box);
+        this.placeScroll(modGrid);
 
-        if (!backfilled) {
-            this.backFill(polys);
-        }
+        this.backFill(polys);
     }
 
     /**

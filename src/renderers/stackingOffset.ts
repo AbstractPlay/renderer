@@ -1,8 +1,14 @@
-import { Svg, G as SVGG } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
+
+export interface IPiecesArea {
+    type: "pieces";
+    pieces: [string, ...string[]];
+    label: string;
+}
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
@@ -95,8 +101,7 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const group = this.rootSvg.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];
@@ -135,28 +140,59 @@ export class StackingOffsetRenderer extends RendererBase {
                 offsetPercent = this.json.board.stackOffset;
             }
             const offset = this.cellsize * offsetPercent;
-            for (let row = 0; row < pieces.length; row++) {
-                for (let col = 0; col < pieces[row].length; col++) {
-                    for (let i = 0; i < pieces[row][col].length; i++) {
-                        const key = pieces[row][col][i];
-                        if ( (key !== null) && (key !== "-") ) {
-                            const point = gridPoints[row][col];
-                            const piece = this.rootSvg.findOne("#" + key) as Svg;
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                            }
-                            let sheetCellSize = piece.viewbox().h;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize") as number;
+            // if the board is rotated, you have to place the pieces in reverse row order
+            // for now the code is duplicated
+            if (this.options.rotate === 180) {
+                // for (let row = 0; row < pieces.length; row++) {
+                for (let row = pieces.length - 1; row >= 0; row--) {
+                    for (let col = 0; col < pieces[row].length; col++) {
+                        for (let i = 0; i < pieces[row][col].length; i++) {
+                            const key = pieces[row][col][i];
+                            if ( (key !== null) && (key !== "-") ) {
+                                const point = gridPoints[row][col];
+                                const piece = this.rootSvg.findOne("#" + key) as Svg;
+                                if ( (piece === null) || (piece === undefined) ) {
+                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                                }
+                                let sheetCellSize = piece.viewbox().h;
                                 if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    sheetCellSize = piece.attr("data-cellsize") as number;
+                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    }
+                                }
+                                const use = usePieceAt(group, piece, this.cellsize, point.x, point.y - (offset * i), 0.85);
+                                if (this.options.boardClick !== undefined) {
+                                    use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                                 }
                             }
-                            const use = usePieceAt(group, piece, this.cellsize, point.x, point.y - (offset * i), 0.85);
-                            if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
-                                use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
-                            } else {
-                                use.attr({"pointer-events": "none"});
+                        }
+                    }
+                }
+            } else {
+                for (let row = 0; row < pieces.length; row++) {
+                    for (let col = 0; col < pieces[row].length; col++) {
+                        for (let i = 0; i < pieces[row][col].length; i++) {
+                            const key = pieces[row][col][i];
+                            if ( (key !== null) && (key !== "-") ) {
+                                const point = gridPoints[row][col];
+                                const piece = this.rootSvg.findOne("#" + key) as Svg;
+                                if ( (piece === null) || (piece === undefined) ) {
+                                    throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                                }
+                                let sheetCellSize = piece.viewbox().h;
+                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                    sheetCellSize = piece.attr("data-cellsize") as number;
+                                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                        throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                                    }
+                                }
+                                const use = usePieceAt(group, piece, this.cellsize, point.x, point.y - (offset * i), 0.85);
+                                if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
+                                    use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
+                                } else {
+                                    use.attr({"pointer-events": "none"});
+                                }
                             }
                         }
                     }
@@ -169,22 +205,21 @@ export class StackingOffsetRenderer extends RendererBase {
             this.annotateBoard(gridPoints, polys);
         }
 
-        // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
-
-        const box = this.rotateBoard();
+        // rotate gridpoints if necessary
+        let modGrid = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+        if (this.options.rotate === 180) {
+            modGrid = modGrid.map((r) => r.reverse()).reverse();
+        }
 
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(modGrid);
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(modGrid);
 
         // key
-        this.placeKey(box);
+        this.placeKey(modGrid);
 
-        if (!backfilled) {
-            this.backFill(polys);
-        }
+        this.backFill(polys);
     }
 }

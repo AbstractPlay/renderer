@@ -1,8 +1,14 @@
-import { Svg, G as SVGG } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
 import { APRenderRep, type Multipiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
+
+export interface IPiecesArea {
+    type: "pieces";
+    pieces: [string, ...string[]];
+    label: string;
+}
 
 /**
  * This renderer deforms pieces to fit into rectangular areas that can span
@@ -49,8 +55,7 @@ export class MulticellSquareRenderer extends RendererBase {
         }
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const group = this.rootSvg.group().id("pieces");
         if ( (this.json.pieces !== null) && (Array.isArray(this.json.pieces)) && (! Array.isArray(this.json.pieces[0])) ) {
             const pieces = this.json.pieces as Multipiece[];
             pieces.forEach(p => {
@@ -66,13 +71,22 @@ export class MulticellSquareRenderer extends RendererBase {
             });
             pieces.sort((a, b) => a.z! - b.z!);
 
+            let cloned = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+            if (this.options.rotate === 180) {
+                cloned = cloned.map((r) => r.reverse()).reverse();
+            }
             for (const piece of pieces) {
-                const {row, col} = piece;
+                let {row, col} = piece;
+                // adjust if rotated
+                if (this.options.rotate === 180) {
+                    row += piece.height || 0;
+                    col += piece.width || 0;
+                }
                 const svg = this.rootSvg.findOne("#" + piece.glyph) as Svg;
                 if ( (svg === null) || (svg === undefined) ) {
                     throw new Error(`Could not find the requested piece (${piece.glyph}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
-                let {x: tlx, y: tly} = gridPoints[row][col];
+                let {x: tlx, y: tly} = cloned[row][col];
                 const factor = 1.25;
                 let realwidth = ((piece.width || 1) * this.cellsize);
                 tlx += (realwidth * (1 - factor)) / 2;
@@ -98,23 +112,22 @@ export class MulticellSquareRenderer extends RendererBase {
             this.annotateBoard(origPoints);
         }
 
-        // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
-
-        const box = this.rotateBoard();
+        // rotate gridpoints if necessary
+        let modGrid = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+        if (this.options.rotate === 180) {
+            modGrid = modGrid.map((r) => r.reverse()).reverse();
+        }
 
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(modGrid);
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(modGrid);
 
         // key
-        this.placeKey(box);
+        this.placeKey(modGrid);
 
-        if (!backfilled) {
-            this.backFill(polys);
-        }
+        this.backFill(polys);
     }
 
     /**

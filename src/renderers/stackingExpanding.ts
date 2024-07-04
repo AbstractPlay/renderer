@@ -1,4 +1,4 @@
-import { Svg, Use as SVGUse, G as SVGG } from "@svgdotjs/svg.js";
+import { Svg, Use as SVGUse } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep, AreaStackingExpanded } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -106,9 +106,8 @@ export class StackingExpandingRenderer extends RendererBase {
             this.loadLegend();
 
             // Now place the pieces
-            const board = this.rootSvg.findOne("#board") as SVGG;
-            const group = board.group().id("pieces");
-                if (this.json.pieces !== null) {
+            const group = this.rootSvg.group().id("pieces");
+            if (this.json.pieces !== null) {
                 // Generate pieces array
                 let pieces: string[][][] = [];
 
@@ -240,13 +239,11 @@ export class StackingExpandingRenderer extends RendererBase {
                 }
             }
 
-            const box = this.rotateBoard({ignore: true});
-
             // button bar (override a left-hand placement)
-            this.placeButtonBar(box, "right");
+            this.placeButtonBar(gridPoints, "right");
 
             // key (override a left-hand placement)
-            this.placeKey(box, "right");
+            this.placeKey(gridPoints, "right");
         }
     }
 }

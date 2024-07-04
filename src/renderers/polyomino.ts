@@ -1,9 +1,23 @@
-import { Svg, G as SVGG, Box as SVGBox } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
-import { APRenderRep, type Polypiece, type AreaPieces as IPiecesArea, type AreaPolyomino as IPolyArea } from "../schemas/schema";
+import { APRenderRep, type Polypiece, type Polymatrix } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt } from "../common/plotting";
+import { matrixRectRot90, usePieceAt } from "../common/plotting";
 import { x2uid } from "../common/glyph2uid";
+
+export interface IPiecesArea {
+    type: "pieces";
+    pieces: [string, ...string[]];
+    label: string;
+    width?: number;
+}
+
+export interface IPolyArea {
+    type: "polyomino";
+    label: string;
+    matrix: Polymatrix;
+    background?: string;
+}
 
 const icons = new Map<string, string>([
     ["flipy", `<symbol id="_icon-flipy" viewBox="0 0 24 24" fill="none"><path d="M2 18.1136V5.88641C2 4.18426 2 3.33319 2.54242 3.05405C3.08484 2.77491 3.77738 3.26959 5.16247 4.25894L6.74371 5.3884C7.35957 5.8283 7.6675 6.04825 7.83375 6.3713C8 6.69435 8 7.07277 8 7.8296V16.1705C8 16.9273 8 17.3057 7.83375 17.6288C7.6675 17.9518 7.35957 18.1718 6.74372 18.6117L5.16248 19.7411C3.77738 20.7305 3.08484 21.2251 2.54242 20.946C2 20.6669 2 19.8158 2 18.1136Z" stroke="#1C274C" stroke-width="1.5"/><path d="M22 18.1136V5.88641C22 4.18426 22 3.33319 21.4576 3.05405C20.9152 2.77491 20.2226 3.26959 18.8375 4.25894L17.2563 5.3884C16.6404 5.8283 16.3325 6.04825 16.1662 6.3713C16 6.69435 16 7.07277 16 7.8296V16.1705C16 16.9273 16 17.3057 16.1662 17.6288C16.3325 17.9518 16.6404 18.1718 17.2563 18.6117L18.8375 19.7411C20.2226 20.7305 20.9152 21.2251 21.4576 20.946C22 20.6669 22 19.8158 22 18.1136Z" stroke="#1C274C" stroke-width="1.5"/><path opacity="0.5" d="M12 14V10" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/><path opacity="0.5" d="M12 6V2" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/><path opacity="0.5" d="M12 22V18" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/></symbol>`],
@@ -67,8 +81,7 @@ export class PolyominoRenderer extends RendererBase {
         const cellsize = this.cellsize;
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const group = this.rootSvg.group().id("pieces");
         if ( (this.json.pieces !== null) && (Array.isArray(this.json.pieces)) && (! Array.isArray(this.json.pieces[0])) ) {
             const pieces = this.json.pieces as Polypiece[];
             pieces.forEach(p => {
@@ -78,6 +91,10 @@ export class PolyominoRenderer extends RendererBase {
             });
             pieces.sort((a, b) => a.z! - b.z!);
 
+            let cloned = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+            if (this.options.rotate === 180) {
+                cloned = cloned.map((r) => r.reverse()).reverse();
+            }
             for (const piece of pieces) {
                 const uid = x2uid(piece);
                 // eslint-disable-next-line prefer-const
@@ -87,13 +104,22 @@ export class PolyominoRenderer extends RendererBase {
                 if (height > 0) {
                     width = matrix[0].length;
                 }
-                const {x: tlx, y: tly} = gridPoints[row][col];
+                // adjust if rotated
+                if (this.options.rotate === 180) {
+                    row += height;
+                    col += width;
+                }
+                const {x: tlx, y: tly} = cloned[row][col];
                 const realwidth = (width * cellsize);
                 const realheight = (height * cellsize);
 
                 // create nested SVG of the piece, with border
                 const nested = this.rootSvg.defs().nested().id(`aprender-polyomino-${uid}`).viewbox(0, 0, realwidth, realheight);
-                this.buildPoly(nested, matrix);
+                let working = matrix.map(lst => [...lst]);
+                if (this.options.rotate === 180) {
+                    working = matrixRectRot90(matrixRectRot90(working)) as (string|number|null)[][];
+                }
+                this.buildPoly(nested, working);
 
                 // place it on the overall board
                 const use = group.use(nested).width(realwidth).height(realheight).move(tlx, tly);
@@ -110,34 +136,33 @@ export class PolyominoRenderer extends RendererBase {
             this.annotateBoard(gridPoints);
         }
 
-        // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
-
-        const box = this.rotateBoard({ignore: true});
+        // rotate gridpoints if necessary
+        let modGrid = [...gridPoints.map(lst => [...lst.map(pt => { return {...pt};})])];
+        if (this.options.rotate === 180) {
+            modGrid = modGrid.map((r) => r.reverse()).reverse();
+        }
 
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(modGrid);
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(modGrid);
 
         // key
-        this.placeKey(box);
+        this.placeKey(modGrid);
 
-        if (!backfilled) {
-            this.backFill(polys);
-        }
+        this.backFill(polys);
     }
 
-    protected piecesArea(box: SVGBox) {
+    protected piecesArea(gridPoints: GridPoints) {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
         }
         if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const areas = this.json.areas.filter((x) => x.type === "pieces" || x.type === "polyomino");
-            const boardBottom = box.y2 + this.cellsize;
+            const boardBottom = Math.max(gridPoints[0][0].y, gridPoints[gridPoints.length - 1][0].y) + this.cellsize;
             // Width in number of cells, taking the maximum board width
-            const boardWidth = Math.floor(box.width / this.cellsize);
+            const boardWidth = Math.max(...gridPoints.map(r => r.length));
             let placeY = boardBottom + (this.cellsize * 0.33);
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea] as IPiecesArea|IPolyArea;
@@ -159,7 +184,7 @@ export class PolyominoRenderer extends RendererBase {
                         if (typeof area.ownerMark === "number") {
                             markColour = this.options.colours[area.ownerMark - 1];
                         } else {
-                            markColour = area.ownerMark;
+                            markColour = area.ownerMark as string;
                         }
                     }
                     const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
@@ -202,7 +227,7 @@ export class PolyominoRenderer extends RendererBase {
 
                     // Now place the whole group below the board
                     // const placed = this.rootSvg.use(nested);
-                    nested.move(box.x, placeY);
+                    nested.move(Math.min(...gridPoints.map(r => Math.min(r[0].x, r[r.length - 1].x))), placeY);
                     placeY += nested.bbox().height + (this.cellsize * 0.5);
                 } else {
                     const numRows = 5;
@@ -275,7 +300,7 @@ export class PolyominoRenderer extends RendererBase {
 
                     // Now place the whole group below the board
                     // const placed = this.rootSvg.use(nested);
-                    nested.move(box.x, placeY);
+                    nested.move(Math.min(...gridPoints.map(r => Math.min(r[0].x, r[r.length - 1].x))), placeY);
                     placeY += nested.bbox().height + (this.cellsize * 0.33);
                 }
             }

@@ -5,6 +5,12 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
 import { IPoint, rectOfRects, IPolyCircle } from "../grids";
 
+export interface IPiecesArea {
+    type: "pieces";
+    pieces: [string, ...string[]];
+    label: string;
+}
+
 /**
  * Generates the pattern of 0s and 1s that denote whether
  * a dot is present on a given row in the top half of the board.
@@ -193,7 +199,9 @@ export class ConhexRenderer extends RendererBase {
             if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
                 columnLabels = columnLabels.reverse();
             }
-
+            // if (this.options.rotate === 180) {
+            //     columnLabels = columnLabels.reverse();
+            // }
             // Columns (letters)
             for (let col = 0; col < boardsize; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
@@ -293,16 +301,14 @@ export class ConhexRenderer extends RendererBase {
             this.annotateBoard(grid, dots);
         }
 
-        const box = this.rotateBoard({ignore: true});
-
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(grid);
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(grid);
 
         // key
-        this.placeKey(box);
+        this.placeKey(grid);
 
         this.backFill();
     }
