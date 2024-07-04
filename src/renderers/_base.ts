@@ -8,7 +8,7 @@ import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../gri
 import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaScrollBar, BoardBasic, ButtonBarButton, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly, rotatePoint } from "../common/plotting";
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
@@ -2036,30 +2036,25 @@ export abstract class RendererBase {
         }
 
         if (this.options.boardClick !== undefined) {
-            // moving to click catchers across the board to make arbitrary rotation easier
-            // for this board, double the height and width as each cell is broken into quadrants
-            const catcher = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
-            for (let row = 0; row < grid.length; row++) {
-                const realRow = row * 2;
-                for (let col = 0; col < grid[row].length; col++) {
-                    const realCol = col * 2
-                    const {x, y} = grid[row][col];
-                    const tl = tiles.use(catcher).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                    tl.click(() => this.options.boardClick!(realRow, realCol, ""));
-                    if (col !== grid[row].length - 1) {
-                        const tr = tiles.use(catcher).dmove(x, y - (cellsize / 2));
-                        tr.click(() => this.options.boardClick!(realRow, realCol + 1, ""));
-                    }
-                    if (row !== grid.length - 1) {
-                        const bl = tiles.use(catcher).dmove(x - (cellsize / 2), y);
-                        bl.click(() => this.options.boardClick!(realRow + 1, realCol, ""));
-                        if (col !== grid[row].length - 1) {
-                            const br = tiles.use(catcher).dmove(x, y);
-                            br.click(() => this.options.boardClick!(realRow + 1, realCol + 1, ""));
-                        }
-                    }
+            const rotation = this.getRotation();
+            const centre = this.getBoardCentre();
+            const originX = grid[0][0].x;
+            const originY = grid[0][0].y;
+            const clickDeltaX = (this.json.board.clickDeltaX ?? 0);
+            const clickDeltaY = (this.json.board.clickDeltaX ?? 0);
+            const root = this.rootSvg;
+            const realwidth = (width * 2) - 1;
+            const realheight = (height * 2) - 1;
+            const realsize = cellsize / 2;
+            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                const x = Math.floor((point.x - (originX - (realsize / 2))) / realsize);
+                const y = Math.floor((point.y - (originY - (realsize / 2))) / realsize);
+                if (x >= 0 - clickDeltaX && x < realwidth + clickDeltaX && y >= 0 - clickDeltaY && y < realheight + clickDeltaY) {
+                    this.options.boardClick!(y, x, "");
                 }
-            }
+            });
+            this.rootSvg.click(genericCatcher);
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
@@ -6755,13 +6750,9 @@ export abstract class RendererBase {
         return true;
     }
 
-    protected rotateBoard({ignore} = {ignore: false}): SVGBox {
-        if (this.rootSvg === undefined || !this.json || !this.json.board) {
+    protected getRotation(): number {
+        if (!this.json || !this.json.board) {
             throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
-        }
-        const board = this.rootSvg.findOne("#board") as SVGG|null;
-        if (board === null) {
-            throw new Error("Could not find the core board group to rotate.");
         }
         let rotation = 0;
         if (this.options.rotate !== undefined) {
@@ -6770,6 +6761,30 @@ export abstract class RendererBase {
         if (("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
             rotation += this.json.board.rotate;
         }
+        return rotation;
+    }
+
+    protected getBoardCentre(): IPoint {
+        if (this.rootSvg === undefined) {
+            throw new Error("Cannot calculate the board centre unless SVG is initialized and a board is present.");
+        }
+        const board = this.rootSvg.findOne("#board") as SVGG|null;
+        if (board === null) {
+            throw new Error("Could not find the core board group to calculate the centre.");
+        }
+        const bbox = board.bbox();
+        return {x: bbox.cx, y: bbox.cy}
+    }
+
+    protected rotateBoard({ignore} = {ignore: false}): SVGBox {
+        if (this.rootSvg === undefined) {
+            throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
+        }
+        const board = this.rootSvg.findOne("#board") as SVGG|null;
+        if (board === null) {
+            throw new Error("Could not find the core board group to rotate.");
+        }
+        let rotation = this.getRotation();
         if (ignore) {
             rotation = 0;
         }
