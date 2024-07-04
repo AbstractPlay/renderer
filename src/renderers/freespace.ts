@@ -1,39 +1,9 @@
 import { Svg, StrokeData } from "@svgdotjs/svg.js";
-import { APRenderRep, AnnotationFreespace, AreaKey } from "../schemas/schema";
+import { APRenderRep, AnnotationFreespace, AreaKey, Freepiece as IPiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { IPoint } from "../grids/_base";
 import { rotate, usePieceAt } from "../common/plotting";
 import { x2uid} from "../common/glyph2uid";
-
-export interface IPiecesArea {
-    type: "pieces";
-    pieces: [string, ...string[]];
-    label: string;
-}
-
-// from .d.ts file
-interface IPiece {
-    /**
-     * The name of the glyph. Must appear in the legend. Can be composed and transformed just as for any other renderer.
-     */
-    glyph: string;
-    /**
-     * A unique ID that should be passed to the click handler. If not provided, it will just return the glyph name.
-     */
-    id?: string;
-    /**
-     * Absolute x coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
-     */
-    x: number;
-    /**
-     * Absolute y coordinate of the centre of the glyph. Glyphs placed outside of the visible playing area will not appear.
-     */
-    y: number;
-    /**
-     * Expressed in degrees, relative to 0&deg; being towards the top of the display and positive rotation moving in a clockwise direction. So the glyph is placed as composed in the legend and then rotated. 90&deg; would turn the glyph to the right. Negative degrees are fine.
-     */
-    orientation?: number;
-};
 
 type BackFill = {
     type?: "full"|"board";

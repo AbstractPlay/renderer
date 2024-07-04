@@ -10,5 +10,16 @@ import { conicalHex, genPolys as genConicalHexPolys } from "./conicalHex";
 import { pyramidHex, genPolys as genPyramidHexPolys } from "./pyramidHex";
 
 import { GridPoints, IPoint, Poly, IPolyCircle, IPolyPath, IPolyPolygon } from "./_base";
+import { deg2rad } from "../common/plotting";
 
 export {GridPoints, IPoint, hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, Poly, IPolyCircle, IPolyPath, IPolyPolygon};
+
+export const rotateGrid = (grid: GridPoints, deg: number, cx: number, cy: number): GridPoints => {
+    const rad = deg2rad(deg);
+    return grid.map(row => row.map(pt => {
+        return {
+            x: ((pt.x - cx) * Math.cos(rad)) - ((pt.y - cy) * Math.sin(rad)) + cx,
+            y: ((pt.y - cy) * Math.cos(rad)) + ((pt.x - cx) * Math.sin(rad)) + cy,
+        }
+    }));
+}

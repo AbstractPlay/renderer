@@ -64,11 +64,7 @@ export class HomeworldsRenderer extends RendererBase {
         }
 
         // Base render should have north at the bottom facing up
-        if (this.options.rotate === undefined) {
-            this.options.rotate = 180;
-        } else {
-            this.options.rotate += 180;
-        }
+        this.options.rotate = 180;
 
         // PIECES
         // Load all the pieces in the legend

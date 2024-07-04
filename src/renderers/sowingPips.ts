@@ -1,14 +1,8 @@
-import { Svg } from "@svgdotjs/svg.js";
+import { Svg, G as SVGG } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
-
-export interface IPiecesArea {
-    type: "pieces";
-    pieces: [string, ...string[]];
-    label: string;
-}
 
 /**
  * This is the default renderer used for most games.
@@ -48,7 +42,8 @@ export class SowingPipsRenderer extends RendererBase {
         }
 
         // PIECES
-        const group = this.rootSvg.group().id("pieces");
+        const board = this.rootSvg.findOne("#board") as SVGG;
+        const group = board.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];
@@ -181,16 +176,23 @@ export class SowingPipsRenderer extends RendererBase {
             this.annotateBoard(gridPoints);
         }
 
+        // if there's a board backfill, it needs to be done before rotation
+        const backfilled = this.backFill(undefined, true);
+
+        const box = this.rotateBoard();
+
         // `pieces` area, if present
-        this.piecesArea(gridPoints);
+        this.piecesArea(box);
 
         // button bar
-        this.placeButtonBar(gridPoints);
+        this.placeButtonBar(box);
 
         // key
-        this.placeKey(gridPoints);
+        this.placeKey(box);
 
-        this.backFill();
+        if (!backfilled){
+            this.backFill();
+        }
     }
 
     /**

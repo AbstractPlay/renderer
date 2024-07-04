@@ -1,4 +1,4 @@
-import { Svg } from "@svgdotjs/svg.js";
+import { Svg, G as SVGG } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -66,7 +66,8 @@ export class StackingTilesRenderer extends RendererBase {
         }
 
         // Now place the pieces
-        const group = this.rootSvg.group().id("pieces");
+        const board = this.rootSvg.findOne("#board") as SVGG;
+        const group = board.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];
@@ -142,12 +143,19 @@ export class StackingTilesRenderer extends RendererBase {
             this.annotateBoard(gridPoints);
         }
 
+        // if there's a board backfill, it needs to be done before rotation
+        const backfilled = this.backFill(polys, true);
+
+        const box = this.rotateBoard();
+
         // button bar
-        this.placeButtonBar(gridPoints);
+        this.placeButtonBar(box);
 
         // key
-        this.placeKey(gridPoints);
+        this.placeKey(box);
 
-        this.backFill(polys);
+        if (!backfilled) {
+            this.backFill(polys);
+        }
     }
 }
