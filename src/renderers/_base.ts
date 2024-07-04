@@ -2046,12 +2046,18 @@ export abstract class RendererBase {
                     const {x, y} = grid[row][col];
                     const tl = tiles.use(catcher).dmove(x - (cellsize / 2), y - (cellsize / 2));
                     tl.click(() => this.options.boardClick!(realRow, realCol, ""));
-                    const tr = tiles.use(catcher).dmove(x, y - (cellsize / 2));
-                    tr.click(() => this.options.boardClick!(realRow, realCol + 1, ""));
-                    const bl = tiles.use(catcher).dmove(x - (cellsize / 2), y);
-                    bl.click(() => this.options.boardClick!(realRow + 1, realCol, ""));
-                    const br = tiles.use(catcher).dmove(x, y);
-                    br.click(() => this.options.boardClick!(realRow + 1, realCol + 1, ""));
+                    if (col !== grid[row].length - 1) {
+                        const tr = tiles.use(catcher).dmove(x, y - (cellsize / 2));
+                        tr.click(() => this.options.boardClick!(realRow, realCol + 1, ""));
+                    }
+                    if (row !== grid.length - 1) {
+                        const bl = tiles.use(catcher).dmove(x - (cellsize / 2), y);
+                        bl.click(() => this.options.boardClick!(realRow + 1, realCol, ""));
+                        if (col !== grid[row].length - 1) {
+                            const br = tiles.use(catcher).dmove(x, y);
+                            br.click(() => this.options.boardClick!(realRow + 1, realCol + 1, ""));
+                        }
+                    }
                 }
             }
         }
