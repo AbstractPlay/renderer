@@ -2038,7 +2038,7 @@ export abstract class RendererBase {
         if (this.options.boardClick !== undefined) {
             // moving to click catchers across the board to make arbitrary rotation easier
             // for this board, double the height and width as each cell is broken into quadrants
-            const catcher = this.rootSvg.defs().rect(this.cellsize / 2, this.cellsize / 2).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
+            const catcher = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
             for (let row = 0; row < grid.length; row++) {
                 const realRow = row * 2;
                 for (let col = 0; col < grid[row].length; col++) {
