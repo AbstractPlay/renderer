@@ -183,6 +183,8 @@ export class DefaultRenderer extends RendererBase {
                             if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
                                 if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
                                     use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
+                                } else {
+                                    use.attr({"pointer-events": "none"});
                                 }
                             } else {
                                 use.attr({"pointer-events": "none"});
