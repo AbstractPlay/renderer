@@ -2,7 +2,7 @@ import { Svg, G as SVGG } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
-import { projectPoint, usePieceAt } from "../common/plotting";
+import { matrixRectRot90, projectPoint, usePieceAt } from "../common/plotting";
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
@@ -129,38 +129,69 @@ export class StackingOffsetRenderer extends RendererBase {
                 throw new Error("Unrecognized `pieces` property.");
             }
 
-            // Place the pieces according to the grid
+            /**
+             * Place the pieces according to the grid.
+             * This is done in a two-pass process so that stacks are rendered,
+             * as well as we can, from the "top" to the "bottom" so lower stacks
+             * overlap higher ones. So first generate a matrix of keys and coordinates,
+             * then rotate that matrix as necessary and render from top to bottom.
+            */
             const rotation = this.getRotation();
             let offsetPercent = 0.13;
             if ( ("stackOffset" in this.json.board) && (this.json.board.stackOffset !== undefined) ) {
                 offsetPercent = this.json.board.stackOffset;
             }
             const offset = this.cellsize * offsetPercent;
+            type Entries = {
+                key: string;
+                x: number;
+                y: number;
+                row: number;
+                col: number;
+                idx: number;
+            }
+            let pcs: Entries[][][] = [];
             for (let row = 0; row < pieces.length; row++) {
+                const newrow: Entries[][] = [];
                 for (let col = 0; col < pieces[row].length; col++) {
+                    const entry: Entries[] = [];
                     for (let i = 0; i < pieces[row][col].length; i++) {
                         const key = pieces[row][col][i];
                         if ( (key !== null) && (key !== "-") ) {
                             const point = gridPoints[row][col];
-                            const piece = this.rootSvg.findOne("#" + key) as Svg;
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                            }
-                            let sheetCellSize = piece.viewbox().h;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize") as number;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                            }
                             const dist = offset * i;
                             const [offsetX, offsetY] = projectPoint(point.x, point.y, dist, rotation * -1);
-                            const use = usePieceAt(group, piece, this.cellsize, offsetX, offsetY, 0.85);
-                            if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
-                                use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
-                            } else {
-                                use.attr({"pointer-events": "none"});
+                            entry.push({key, x: offsetX, y: offsetY, row, col, idx: i});
+                        }
+                    }
+                    newrow.push(entry);
+                }
+                pcs.push(newrow);
+            }
+            for (let i = 0; i < Math.floor(rotation / 90); i++) {
+                pcs = matrixRectRot90(pcs) as Entries[][][];
+            }
+            for (const row of pcs) {
+                for (const col of row) {
+                    for (const entry of col) {
+                        // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
+                        const { key, x, y, row, col, idx } = entry;
+                        const piece = this.rootSvg.findOne("#" + key) as Svg;
+                        if ( (piece === null) || (piece === undefined) ) {
+                            throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                        }
+                        let sheetCellSize = piece.viewbox().h;
+                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                            sheetCellSize = piece.attr("data-cellsize") as number;
+                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
+                                throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                             }
+                        }
+                        const use = usePieceAt(group, piece, this.cellsize, x, y, 0.85);
+                        if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
+                            use.click((e : Event) => {this.options.boardClick!(row, col, idx.toString()); e.stopPropagation();});
+                        } else {
+                            use.attr({"pointer-events": "none"});
                         }
                     }
                 }
