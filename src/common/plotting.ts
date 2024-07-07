@@ -148,6 +148,15 @@ export const rotate: (element: Element, angle: number, x: number, y: number) => 
     element.transform({a, b, c, d, e, f}, true);
 }
 
+export const rotatePoint = (pt: IPoint, deg: number, cpt: IPoint): IPoint => {
+    const rad = deg2rad(deg);
+    const {x: cx, y: cy} = cpt;
+    return {
+        x: ((pt.x - cx) * Math.cos(rad)) - ((pt.y - cy) * Math.sin(rad)) + cx,
+        y: ((pt.y - cy) * Math.cos(rad)) + ((pt.x - cx) * Math.sin(rad)) + cy,
+    }
+}
+
 /**
  * Place (use) piece in svg with center at (x,y), scaling it to fit a cell of size cellsize and further scaling it by scalingFactor.
  * This assumes that the piece was loaded with loadLegend (in particular that it was "designed" for a cell of size 500).

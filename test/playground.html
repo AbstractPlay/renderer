@@ -26,11 +26,14 @@
                 } else if (radio === "patterns") {
                     options.patterns = true;
                 }
-                if (document.getElementById("rot180").checked) {
-                    options.rotate = 180;
+                let rotation = 0;
+                const freestyle = parseInt(document.getElementById("rotFree").value, 10);
+                if (freestyle === 0) {
+                    rotation = document.querySelector('input[name="rotation"]:checked').value;
                 } else {
-                    options.rotate = 0;
+                    rotation = freestyle;
                 }
+                options.rotate = rotation;
                 options.boardClick = handleClick;
 
                 // add colour context
@@ -84,8 +87,8 @@
                 },
                 "pieces-text": {
                     "name": "Glyphs: Text",
-                    "description": "An example of glyphs created from arbitrary text",
-                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":12,\"height\":12},\"legend\":{\"A\":{\"name\":\"piece\",\"colour\":1},\"AQ\":[{\"name\":\"piece\",\"colour\":1},{\"text\":\"18\",\"colour\":\"#000\",\"scale\":0.75}],\"B\":{\"name\":\"piece\",\"colour\":2},\"BQ\":[{\"name\":\"piece\",\"colour\":2},{\"text\":\"19\",\"colour\":\"#000\",\"scale\":0.75}]},\"pieces\":\",,,,,,,BQ,,,,\\n,,,,B,,,,,,,\\n_\\n_\\n_\\n_\\n_\\n,,,,,,AQ,,,,,\\n_\\n,,,,,A,,,,,,\\n_\\n,,,,,,A,,,,,\"}"
+                    "description": "An example of glyphs created from arbitrary text. Note that in this case you set `orientation` to `vertical` so that, even if rotated, the text is still legible.",
+                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":12,\"height\":12},\"legend\":{\"A\":{\"name\":\"piece\",\"colour\":1},\"AQ\":[{\"name\":\"piece\",\"colour\":1},{\"text\":\"18\",\"orientation\":\"vertical\",\"colour\":\"#000\",\"scale\":0.75}],\"B\":{\"name\":\"piece\",\"colour\":2},\"BQ\":[{\"name\":\"piece\",\"colour\":2},{\"text\":\"19\",\"orientation\":\"vertical\",\"colour\":\"#000\",\"scale\":0.75}]},\"pieces\":\",,,,,,,BQ,,,,\\n,,,,B,,,,,,,\\n_\\n_\\n_\\n_\\n_\\n,,,,,,AQ,,,,,\\n_\\n,,,,,A,,,,,,\\n_\\n,,,,,,A,,,,,\"}"
                 },
                 "board-akron1": {
                     "name": "Boards: Akron1",
@@ -222,6 +225,11 @@
                     "description": "This is an alternate Cairo tiling that is the dual of the snubsquare board. Tilted at an angle, the spaces are much easier to index.",
                     "render": `{"renderer":"stacking-offset","board":{"style":"cairo-catalan","width":6,"height":6,"markers":[{"type":"flood","points":[{"row":0,"col":2}],"colour":1},{"type":"flood","points":[{"row":3,"col":3}],"colour":2},{"type":"edge","edge":"N","colour":1},{"type":"edge","edge":"S","colour":1},{"type":"edge","edge":"E","colour":2},{"type":"edge","edge":"W","colour":2}]},"legend":{"A":{"name":"piece","colour":1,"scale":0.75},"B":{"name":"piece","colour":2,"scale":0.75}},"pieces":"AB,"}`
                 },
+                "formatting-rotation": {
+                    "name": "Formatting: Rotation",
+                    "descriptions": "Games can request a base, default rotation of a board by including the `rotate` property. This rotation will be added to any user-requested rotation. Not all renderers support rotation.",
+                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8,\"rotate\":-45,\"markers\":[{\"type\":\"shading\",\"colour\":1,\"opacity\":0.75,\"points\":[{\"col\":0,\"row\":7},{\"col\":1,\"row\":7},{\"col\":1,\"row\":8},{\"col\":0,\"row\":8}]},{\"type\":\"shading\",\"colour\":2,\"opacity\":0.75,\"points\":[{\"col\":7,\"row\":0},{\"col\":7,\"row\":1},{\"col\":8,\"row\":1},{\"col\":8,\"row\":0}]}]},\"legend\":{\"A\":{\"name\":\"piece\",\"colour\":1},\"B\":{\"name\":\"piece-chariot\",\"colour\":1},\"Y\":{\"name\":\"piece\",\"colour\":2},\"Z\":{\"name\":\"piece-chariot\",\"colour\":2}},\"pieces\":\"-YYYYYYZ\\nA-YYYYYY\\nAA-YYYYY\\nAAA-YYYY\\nAAAA-YYY\\nAAAAA-YY\\nAAAAAA-Y\\nBAAAAAA-\",\"renderer\":\"default\"}"
+                },
                 "formatting-custom-labels": {
                     "name": "Formatting: Custom Labels",
                     "description": "The row and column labels can be customized.",
@@ -245,7 +253,7 @@
                 "formatting-buffers": {
                     "name": "Formatting: Buffer zones",
                     "description": "Adds buffer zones around edges of the board for click handling. Individual sides can be hidden, and they rotate correctly.",
-                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8,\"buffer\":{\"width\":0.2,\"pattern\":\"slant\"}},\"legend\":{\"A1\":{\"name\":\"piece\",\"colour\":1},\"B1\":{\"name\":\"piece\",\"colour\":2},\"X12\":[{\"name\":\"piece\",\"colour\":1},{\"text\":\"12\",\"colour\":\"#000\",\"scale\":0.75}],\"Y12\":[{\"name\":\"piece\",\"colour\":2},{\"text\":\"12\",\"colour\":\"#000\",\"scale\":0.75}]},\"pieces\":\",,,Y12,,,,\\n_\\n_\\n_\\n_\\n_\\n_\\n,,,,X12,,,\"}"
+                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8,\"buffer\":{\"width\":0.2,\"pattern\":\"slant\"}},\"legend\":{\"A1\":{\"name\":\"piece\",\"colour\":1},\"B1\":{\"name\":\"piece\",\"colour\":2},\"X12\":[{\"name\":\"piece\",\"colour\":1},{\"text\":\"12\",\"orientation\":\"vertical\",\"colour\":\"#000\",\"scale\":0.75}],\"Y12\":[{\"name\":\"piece\",\"colour\":2},{\"text\":\"12\",\"orientation\":\"vertical\",\"colour\":\"#000\",\"scale\":0.75}]},\"pieces\":\",,,Y12,,,,\\n_\\n_\\n_\\n_\\n_\\n_\\n,,,,X12,,,\"}"
                 },
                 "markers-dots": {
                     "name": "Markers: Dots",
@@ -325,7 +333,7 @@
                 "notes-glyph": {
                     "name": "Annotations: Glyphs",
                     "description": "You can also use glyphs as annotations, which could consist of simple Unicode characters, like in this example, or full-blown composite pieces.",
-                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"colour\":1},\"B\":{\"name\":\"piece\",\"colour\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"_context_strokes\"},\"note\":{\"text\":\"\\u2718\",\"scale\":0.5}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"glyph\",\"glyph\":\"note\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
+                    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":9,\"height\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"colour\":1},\"B\":{\"name\":\"piece\",\"colour\":2},\"X\":{\"name\":\"piecepack-number-void\",\"colour\":\"_context_strokes\"},\"note\":{\"text\":\"\\u2718\",\"orientation\":\"vertical\",\"scale\":0.5}},\"pieces\":\"--BABA-A-\\nB-------B\\nA--ABA---\\nB-----B-B\\nA---X---A\\nBB--A----\\nA-----B-A\\nBB------B\\n--AA---A-\",\"annotations\":[{\"type\":\"glyph\",\"glyph\":\"note\",\"targets\":[{\"row\":5,\"col\":3},{\"row\":5,\"col\":0},{\"row\":0,\"col\":1},{\"row\":4,\"col\":5}]},{\"type\":\"move\",\"targets\":[{\"row\":6,\"col\":2},{\"row\":7,\"col\":1}]}]}"
                 },
                 "blocking": {
                     "name": "Blocking cells",
@@ -526,8 +534,21 @@
                 </div>
                 <hr>
                 <div>
-                    <input type="checkbox" id="rot180" name="rotate">
-                    <label for="rot180">Rotate 180&deg;</label>
+                    <fieldset>
+                        <legend>Rotation</legend>
+                        <input type="radio" name="rotation" value="0" checked>0&emsp;
+                        <input type="radio" name="rotation" value="45">45&emsp;
+                        <input type="radio" name="rotation" value="90">90&emsp;
+                        <input type="radio" name="rotation" value="135">135&emsp;
+                        <input type="radio" name="rotation" value="180">180&emsp;
+                        <input type="radio" name="rotation" value="225">225&emsp;
+                        <input type="radio" name="rotation" value="270">270&emsp;
+                        <input type="radio" name="rotation" value="315">315&emsp;
+                    </fieldset>
+                </div>
+                <div>
+                    <label for="rotFree">Freestyle rotation</label>
+                    <input type="number" name="rotFree" id="rotFree" value="0">
                 </div>
                 <button id="submit" name="submit" type="button">Generate SVG</button>&emsp;
                 <input type="reset" value="Reset Form">&emsp;

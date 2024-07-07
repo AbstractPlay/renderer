@@ -136,7 +136,7 @@ export interface APRenderRep {
     | "multicell-square"
     | "polyomino";
   /**
-   * A list of flags to pass to the renderer. `rotate-pieces` signals that the pieces must also rotate when the board rotates. It's not done by default because it's so rarely needed. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
+   * A list of flags to pass to the renderer. `rotate-pieces` is deprecated and will eventually be removed. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
   options?: (
     | "rotate-pieces"
@@ -213,6 +213,10 @@ export interface Glyph {
    */
   rotate?: number;
   /**
+   * Determines how the piece (usually a text element) is reorientated after rotation is done. 'vertical' means it will always be reorientated vertically. Otherwise, it rotates along with everything else.
+   */
+  orientation?: "vertical" | "fluid";
+  /**
    * The number of units to nudge the glyph from centre.
    */
   nudge?: {
@@ -258,6 +262,10 @@ export interface GradientStop {
  */
 export interface BoardBasic {
   style: BoardStyles;
+  /**
+   * Allows the game itself to rotate the base board. This is added to whatever user-provided rotation is requested. Rotation is applied after the entire board is rendered, and then key elements are reoriented vertically.
+   */
+  rotate?: number;
   /**
    * Pattern for hex colour strings
    */
@@ -983,7 +991,7 @@ export interface AreaPieces {
    */
   label: string;
   /**
-   * By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width.
+   * By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width. Expressed as number of pieces.
    */
   width?: number;
   /**
