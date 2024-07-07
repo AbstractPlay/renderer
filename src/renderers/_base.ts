@@ -2207,6 +2207,7 @@ export abstract class RendererBase {
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
             labelOpacity = this.json.board.labelOpacity;
         }
+        const rotation = this.getRotation();
         for (const hex of grid) {
             // don't draw "blocked" hexes
             if (blocked !== undefined) {
@@ -2230,10 +2231,20 @@ export abstract class RendererBase {
                 let labelY = corners[5].y;
                 const transX = x;
                 let transY = y + fontSize;
+                if (rotation > 90 && rotation < 270) {
+                    labelX = corners[2].x;
+                    labelY = corners[2].y;
+                    transY = y - fontSize;
+                }
                 if (style.endsWith("f")) {
                     labelX = (corners[5].x + corners[0].x) / 2;
                     labelY = (corners[5].y + corners[0].y) / 2;
                     transY = y + (fontSize / 2);
+                    if (rotation > 90 && rotation < 270) {
+                        labelX = (corners[3].x + corners[2].x) / 2;
+                        labelY = (corners[3].y + corners[2].y) / 2;
+                        transY = y - (fontSize / 2);
+                    }
                 }
                 labels.text(label)
                 .font({
@@ -6766,6 +6777,8 @@ export abstract class RendererBase {
         if (("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
             rotation += this.json.board.rotate;
         }
+        rotation = rotation % 360;
+        while (rotation < 0) { rotation += 360; }
         return rotation;
     }
 
@@ -6793,6 +6806,7 @@ export abstract class RendererBase {
         if (this.rootSvg === undefined) {
             throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
         }
+
         const board = this.rootSvg.findOne("#board") as SVGG|null;
         if (board === null) {
             throw new Error("Could not find the core board group to rotate.");
