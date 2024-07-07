@@ -2,7 +2,7 @@ import { Svg, G as SVGG } from "@svgdotjs/svg.js";
 import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt, scale } from "../common/plotting";
+import { usePieceAt, scale, rotate } from "../common/plotting";
 
 /**
  * This is the default renderer used for most games.
@@ -124,6 +124,7 @@ export class SowingNumeralsRenderer extends RendererBase {
             }
 
             // Place the pieces according to the grid
+            const rotation = this.getRotation();
             for (let row = 0; row < pieces.length; row++) {
                 for (let col = 0; col < pieces[row].length; col++) {
                     for (const key of pieces[row][col]) {
@@ -134,7 +135,8 @@ export class SowingNumeralsRenderer extends RendererBase {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
                             const factor = 1; // 0.85;
-                            usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
+                            const used = usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
+                            rotate(used, rotation * -1, point.x, point.y);
                         }
                     }
                 }
