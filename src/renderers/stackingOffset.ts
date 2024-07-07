@@ -2,7 +2,7 @@ import { Svg, G as SVGG } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt } from "../common/plotting";
+import { projectPoint, usePieceAt } from "../common/plotting";
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
@@ -130,6 +130,7 @@ export class StackingOffsetRenderer extends RendererBase {
             }
 
             // Place the pieces according to the grid
+            const rotation = this.getRotation();
             let offsetPercent = 0.13;
             if ( ("stackOffset" in this.json.board) && (this.json.board.stackOffset !== undefined) ) {
                 offsetPercent = this.json.board.stackOffset;
@@ -152,7 +153,9 @@ export class StackingOffsetRenderer extends RendererBase {
                                     throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                                 }
                             }
-                            const use = usePieceAt(group, piece, this.cellsize, point.x, point.y - (offset * i), 0.85);
+                            const dist = offset * i;
+                            const [offsetX, offsetY] = projectPoint(point.x, point.y, dist, rotation * -1);
+                            const use = usePieceAt(group, piece, this.cellsize, offsetX, offsetY, 0.85);
                             if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
                                 use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                             } else {
