@@ -2168,7 +2168,7 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
-        const labels = this.rootSvg.group().id("labels");
+        const labels = board.group().id("labels");
         let labelStyle: "internal"|"external" = "internal";
         if ("labelStyle" in this.json.board && this.json.board.labelStyle !== undefined && this.json.board.labelStyle !== null) {
             labelStyle = this.json.board.labelStyle;
@@ -2207,6 +2207,7 @@ export abstract class RendererBase {
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
             labelOpacity = this.json.board.labelOpacity;
         }
+        const rotation = this.getRotation();
         for (const hex of grid) {
             // don't draw "blocked" hexes
             if (blocked !== undefined) {
@@ -2230,10 +2231,20 @@ export abstract class RendererBase {
                 let labelY = corners[5].y;
                 const transX = x;
                 let transY = y + fontSize;
+                if (rotation > 90 && rotation < 270) {
+                    labelX = corners[2].x;
+                    labelY = corners[2].y;
+                    transY = y - fontSize;
+                }
                 if (style.endsWith("f")) {
                     labelX = (corners[5].x + corners[0].x) / 2;
                     labelY = (corners[5].y + corners[0].y) / 2;
                     transY = y + (fontSize / 2);
+                    if (rotation > 90 && rotation < 270) {
+                        labelX = (corners[3].x + corners[2].x) / 2;
+                        labelY = (corners[3].y + corners[2].y) / 2;
+                        transY = y - (fontSize / 2);
+                    }
                 }
                 labels.text(label)
                 .font({
@@ -2455,7 +2466,7 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
-        const labels = this.rootSvg.group().id("labels");
+        const labels = board.group().id("labels");
         const seenEdges = new Set<string>();
         let customLabels: string[]|undefined;
         if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
@@ -4555,8 +4566,13 @@ export abstract class RendererBase {
         }
 
         if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
-            const board = this.rootSvg.findOne("#board") as SVGG;
-            const notes = board.group().id("annotations");
+            const board = this.rootSvg.findOne("#board") as SVGG|null;
+            let notes: SVGG;
+            if (board !== null) {
+                notes = board.group().id("annotations");
+            } else {
+                notes = this.rootSvg.group().id("annotations");
+            }
             const rIncrement = this.cellsize / 2;
             let radius = rIncrement;
             let direction = 1;
@@ -6761,6 +6777,8 @@ export abstract class RendererBase {
         if (("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
             rotation += this.json.board.rotate;
         }
+        rotation = rotation % 360;
+        while (rotation < 0) { rotation += 360; }
         return rotation;
     }
 
@@ -6776,16 +6794,25 @@ export abstract class RendererBase {
         return {x: bbox.cx, y: bbox.cy}
     }
 
-    protected rotateBoard({ignore} = {ignore: false}): SVGBox {
+    protected rotateBoard(opts?: {ignoreRotation?: boolean, ignoreLabels?: boolean}): SVGBox {
+        let ignoreRotation = false;
+        if (opts !== undefined && opts.ignoreRotation !== undefined) {
+            ignoreRotation = opts.ignoreRotation;
+        }
+        let ignoreLabels = false;
+        if (opts !== undefined && opts.ignoreLabels !== undefined) {
+            ignoreLabels = opts.ignoreLabels;
+        }
         if (this.rootSvg === undefined) {
             throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
         }
+
         const board = this.rootSvg.findOne("#board") as SVGG|null;
         if (board === null) {
             throw new Error("Could not find the core board group to rotate.");
         }
         let rotation = this.getRotation();
-        if (ignore) {
+        if (ignoreRotation) {
             rotation = 0;
         }
         const startingBox = board.bbox();
@@ -6794,21 +6821,23 @@ export abstract class RendererBase {
         } else {
             rotate(board, rotation, startingBox.cx, startingBox.cy);
             // reorient all labels
-            const labels = this.rootSvg.findOne("#labels") as SVGG|null;
-            if (labels !== null) {
-                // labels.find("[data-orientation-vertical=true]").each(this: SVGElement => {
-                labels.find("text").each((e: SVGElement) => {
-                    const box = e.bbox();
-                    rotate(e, rotation * -1, box.cx, box.cy);
-                });
+            if (!ignoreLabels) {
+                const labels = this.rootSvg.findOne("#labels") as SVGG|null;
+                if (labels !== null) {
+                    labels.find("text").each((e: SVGElement) => {
+                        // const box = e.bbox();
+                        const box = e.rbox(board);
+                        rotate(e, rotation * -1, box.cx, box.cy);
+                    });
+                }
             }
-            // // reorient any element explicitly flagged as vertical
-            // this.rootSvg.defs().find("[data-orientation-vertical=true]").each((e: SVGElement) => {
-            //     const box = e.bbox();
-            //     rotate(e, rotation * -1, box.cx, box.cy);
-            // });
+
+            // reorientation of `vertical` glyphs has to happen in `loadLegend()`
+            // because you can't otherwise access the bboxes of symbols
+
+            // must be rbox relative to the root instead of bbox to pass the
+            // correct coordinates to the different `areas`
             return board.rbox(this.rootSvg);
-            // return board.bbox();
         }
     }
 
