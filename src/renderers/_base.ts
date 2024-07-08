@@ -4940,6 +4940,7 @@ export abstract class RendererBase {
                         delta: number;
                     };
                     // generate numerical glyphs for each unique delta
+                    const rotation = this.getRotation();
                     const deltas = new Set<number>((note.deltas as Delta[]).map(d => d.delta));
                     for (const delta of deltas) {
                         if (delta === 0) {
@@ -4980,6 +4981,7 @@ export abstract class RendererBase {
                         }
 
                         const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
+                        use.rotate(rotation * -1, 0, 0);
 
                         // Scale it appropriately
                         scale(use, 0.5, 0, 0);
@@ -4997,8 +4999,14 @@ export abstract class RendererBase {
                                 throw new Error(`Could not find the requested delta (${key}).`);
                             }
                             const factor = 0.33; // 0.85;
-                            const cornerX = point.x + (this.cellsize / 2) - (this.cellsize / 5);
-                            const cornerY = point.y - (this.cellsize / 2) + (this.cellsize / 5);
+                            let cornerX: number; let cornerY: number;
+                            if (rotation === 180) {
+                                cornerX = point.x - (this.cellsize / 2) + (this.cellsize / 5);
+                                cornerY = point.y + (this.cellsize / 2) - (this.cellsize / 5);
+                            } else {
+                                cornerX = point.x + (this.cellsize / 2) - (this.cellsize / 5);
+                                cornerY = point.y - (this.cellsize / 2) + (this.cellsize / 5);
+                            }
                             usePieceAt(notes, piece, this.cellsize, cornerX, cornerY, factor);
                         }
                     }
