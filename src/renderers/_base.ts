@@ -700,11 +700,13 @@ export abstract class RendererBase {
                         if (g.rotate !== undefined) {
                             rotation = g.rotate;
                         }
-                        if (this.options.rotate !== undefined) {
-                            rotation -= this.options.rotate;
-                        }
-                        if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
-                            rotation -= this.json.board.rotate;
+                        if (this.json.renderer !== "homeworlds") {
+                            if (this.options.rotate !== undefined) {
+                                rotation -= this.options.rotate;
+                            }
+                            if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
+                                rotation -= this.json.board.rotate;
+                            }
                         }
                         rotate(use, rotation, 0, 0);
                     }

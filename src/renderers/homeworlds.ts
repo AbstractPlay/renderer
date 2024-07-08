@@ -63,8 +63,9 @@ export class HomeworldsRenderer extends RendererBase {
             this.contrastColour = scratch;
         }
 
-        // Base render should have north at the bottom facing up
-        this.options.rotate = 180;
+        // // Base render should have north at the bottom facing up
+        // this.options.rotate = 180;
+        const rotation = this.getRotation();
 
         // PIECES
         // Load all the pieces in the legend
@@ -114,7 +115,7 @@ export class HomeworldsRenderer extends RendererBase {
                 bordercolour = this.options.colours[sys.highlight - 1];
             }
             let orientation: "H"|"V" = "H";
-            const seat = HomeworldsRenderer.effectiveSeat(sys.seat!, this.options.rotate);
+            const seat = HomeworldsRenderer.effectiveSeat(sys.seat!, rotation);
             if ( (seat === "E") || (seat === "W") ) {
                 orientation = "V";
             }
@@ -201,7 +202,7 @@ export class HomeworldsRenderer extends RendererBase {
 
             let x: number;
             let y: number;
-            const seat = HomeworldsRenderer.effectiveSeat(sys.seat!, this.options.rotate);
+            const seat = HomeworldsRenderer.effectiveSeat(sys.seat!, rotation);
             switch (seat) {
                 case "N":
                     x = (periphWidth / 2) - (width / 2);
@@ -367,10 +368,9 @@ export class HomeworldsRenderer extends RendererBase {
      * @param deg - The amount of rotation in degrees, only in increments of 90
      * @returns The new seat designation given the new perspective
      */
-    private static effectiveSeat(seat: Seat, deg?: number): Seat {
-        if ( (deg === undefined) || (deg === 0) ) {
-            return seat;
-        }
+    private static effectiveSeat(seat: Seat, deg: number): Seat {
+        deg = deg % 360;
+        while (deg < 0) { deg += 360; }
         if (deg % 90 !== 0) {
             throw new Error("We can only rotate in 90 degree increments. This error should never happen.");
         }
@@ -404,10 +404,7 @@ export class HomeworldsRenderer extends RendererBase {
         const grid = rectOfRects({cellSize, gridHeight, gridWidth});
         const nested = this.rootSvg!.nested().id(id);
 
-        let rotation: number | undefined;
-        if ( ("rotate" in this.options) && (this.options.rotate !== undefined) ) {
-            rotation = this.options.rotate;
-        }
+        const rotation = this.getRotation();
 
         // Add the stars and ships
         // map real ships to their effective seat
