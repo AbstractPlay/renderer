@@ -700,7 +700,17 @@ export abstract class RendererBase {
                         rotation += g.rotate
                     }
                     // Re-jigger rotation for `vertical` glyphs
-                    if (g.orientation !== undefined || g.orientation === "vertical") {
+                    let vertical = false;
+                    if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
+                        if (g.orientation === undefined || g.orientation !== "fluid") {
+                            vertical = true;
+                        }
+                    } else {
+                        if (g.orientation !== undefined && g.orientation === "vertical") {
+                            vertical = true;
+                        }
+                    }
+                    if (vertical) {
                         if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
                             rotation -= this.json.board.rotate;
                         }
