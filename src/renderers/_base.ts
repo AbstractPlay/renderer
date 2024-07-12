@@ -694,22 +694,21 @@ export abstract class RendererBase {
                     const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
                     // const use = nested.use(got).height(cellsize).width(cellsize).x(0).y(0);
 
-                    // Rotate if requested, or preemptively if global rotation given and vertical
-                    if (g.rotate !== undefined || (g.orientation !== undefined && g.orientation === "vertical")) {
-                        let rotation = 0;
-                        if (g.rotate !== undefined) {
-                            rotation = g.rotate;
-                        }
-                        // if (this.json.renderer !== "homeworlds") {
-                            // if (this.options.rotate !== undefined) {
-                            //     rotation -= this.options.rotate;
-                            // }
-                            if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
-                                rotation -= this.json.board.rotate;
-                            }
-                        // }
-                        rotate(use, rotation, 0, 0);
+                    // Rotate if requested
+                    let rotation = 0;
+                    if (g.rotate !== undefined) {
+                        rotation += g.rotate
                     }
+                    // Re-jigger rotation for `vertical` glyphs
+                    if (g.orientation !== undefined || g.orientation === "vertical") {
+                        if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
+                            rotation -= this.json.board.rotate;
+                        }
+                        if (this.options.rotate !== undefined) {
+                            rotation -= this.options.rotate;
+                        }
+                    }
+                    rotate(use, rotation, 0, 0);
 
                     // Scale it appropriately
                     let factor = 1;
