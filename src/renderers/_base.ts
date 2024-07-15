@@ -695,12 +695,12 @@ export abstract class RendererBase {
                     // const use = nested.use(got).height(cellsize).width(cellsize).x(0).y(0);
 
                     // Rotate if requested
+                    // `null` rotation means no rotation whatsoever, including offsetting
                     let rotation = 0;
-                    if (g.rotate !== undefined && g.rotate !== null) {
-                        rotation += g.rotate;
-                    }
-                    // `null` rotation means no rotation whatsoever
-                    if (g.rotate !== undefined && g.rotate !== null) {
+                    if (g.rotate !== null) {
+                        if (g.rotate !== undefined) {
+                            rotation += g.rotate;
+                        }
                         // Re-jigger rotation for `vertical` glyphs
                         let vertical = false;
                         if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
