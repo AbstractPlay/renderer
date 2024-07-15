@@ -136,10 +136,9 @@ export interface APRenderRep {
     | "multicell-square"
     | "polyomino";
   /**
-   * A list of flags to pass to the renderer. `rotate-pieces` is deprecated and will eventually be removed. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
+   * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
   options?: (
-    | "rotate-pieces"
     | "hide-labels"
     | "hide-labels-half"
     | "hide-star-points"
@@ -211,7 +210,7 @@ export interface Glyph {
   /**
    * A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.
    */
-  rotate?: number;
+  rotate?: number | null;
   /**
    * Determines how the piece (usually a text element) is reorientated after rotation is done. 'vertical' means it will always be reorientated vertically. Otherwise, it rotates along with everything else.
    */

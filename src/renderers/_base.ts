@@ -696,29 +696,32 @@ export abstract class RendererBase {
 
                     // Rotate if requested
                     let rotation = 0;
-                    if (g.rotate !== undefined) {
-                        rotation += g.rotate
+                    if (g.rotate !== undefined && g.rotate !== null) {
+                        rotation += g.rotate;
                     }
-                    // Re-jigger rotation for `vertical` glyphs
-                    let vertical = false;
-                    if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
-                        if (g.orientation === undefined || g.orientation !== "fluid") {
-                            vertical = true;
+                    // `null` rotation means no rotation whatsoever
+                    if (g.rotate !== undefined && g.rotate !== null) {
+                        // Re-jigger rotation for `vertical` glyphs
+                        let vertical = false;
+                        if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
+                            if (g.orientation === undefined || g.orientation !== "fluid") {
+                                vertical = true;
+                            }
+                        } else {
+                            if (g.orientation !== undefined && g.orientation === "vertical") {
+                                vertical = true;
+                            }
                         }
-                    } else {
-                        if (g.orientation !== undefined && g.orientation === "vertical") {
-                            vertical = true;
+                        if (vertical) {
+                            if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
+                                rotation -= this.json.board.rotate;
+                            }
+                            if (this.options.rotate !== undefined) {
+                                rotation -= this.options.rotate;
+                            }
                         }
+                        rotate(use, rotation, 0, 0);
                     }
-                    if (vertical) {
-                        if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
-                            rotation -= this.json.board.rotate;
-                        }
-                        if (this.options.rotate !== undefined) {
-                            rotation -= this.options.rotate;
-                        }
-                    }
-                    rotate(use, rotation, 0, 0);
 
                     // Scale it appropriately
                     let factor = 1;
