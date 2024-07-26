@@ -3065,31 +3065,20 @@ export abstract class RendererBase {
         }
 
         if (this.options.boardClick !== undefined) {
-            const root = this.rootSvg;
-            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = root.point(e.clientX, e.clientY);
-                let min = Number.MAX_VALUE;
-                let row0 = 0;
-                let col0 = 0;
-                for (let row = 0; row < grid.length; row++) {
-                    const currRow = grid[row];
-                    for (let col = 0; col < grid[row].length; col++) {
-                        const found = blocked?.find(b => b.row === row && b.col === col);
-                        if (found !== undefined) {
-                            continue;
-                        }
-                        const curr = currRow[col];
-                        const dist2 = Math.pow(point.x - curr.x, 2.0) + Math.pow(point.y - curr.y, 2.0);
-                        if (dist2 < min) {
-                            min = dist2;
-                            row0 = row;
-                            col0 = col;
-                        }
+            // moving to click catchers across the board to make arbitrary rotation easier
+            const tiles = board.group().id("tiles");
+            const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const found = blocked?.find(b => b.row === row && b.col === col);
+                    if (found !== undefined) {
+                        continue;
                     }
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                    t.click(() => this.options.boardClick!(row, col, ""));
                 }
-                this.options.boardClick!(row0, col0, "");
-            });
-            this.rootSvg.click(genericCatcher);
+            }
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
