@@ -13,13 +13,12 @@ import { SowingPipsRenderer } from "./sowingPips";
 import { ConhexRenderer } from "./conhex";
 import { MulticellSquareRenderer } from "./multicellSquare";
 import { PolyominoRenderer } from "./polyomino";
-import { IsometricRenderer } from "./isometric";
 
 export {
     RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer,
     StackingExpandingRenderer, HomeworldsOrigRenderer, HomeworldsRenderer, EntropyRenderer,
     FreespaceRenderer, SowingNumeralsRenderer, SowingPipsRenderer, ConhexRenderer,
-    MulticellSquareRenderer, PolyominoRenderer, IsometricRenderer,
+    MulticellSquareRenderer, PolyominoRenderer,
 };
 
 const renderers: (name: string) => RendererBase = (name) =>{
@@ -52,8 +51,6 @@ const renderers: (name: string) => RendererBase = (name) =>{
       return new MulticellSquareRenderer();
     case PolyominoRenderer.rendererName:
       return new PolyominoRenderer();
-    case IsometricRenderer.rendererName:
-      return new IsometricRenderer();
     default:
       throw new Error(`Don't know a renderer called ${name}`);
   }
