@@ -602,6 +602,15 @@ export abstract class RendererBase {
                             player = g.colour;
                         }
                         got = this.loadGlyph(g.name, player, nested);
+                        // // if this is the first glyph, migrate any important attributes to
+                        // // the root glyph
+                        // if (idx === 0) {
+                        //     const blacklist = ["data-playerfill"]
+                        //     const attributes = Object.keys(got.attr() as object).filter(s => s.startsWith("data-") && !s.startsWith("data-context") && !blacklist.includes(s));
+                        //     for (const a of attributes) {
+                        //         nested.attr(a, got.attr(a));
+                        //     }
+                        // }
                     } else if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;
@@ -633,7 +642,9 @@ export abstract class RendererBase {
                     const contextStroke = this.options.colourContext.strokes;
                     const contextFill = this.options.colourContext.fill;
                     const contextBorder = this.options.colourContext.borders;
+                    const contextBackground = this.options.colourContext.background;
                     got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
+                    got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
                     got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
                     got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
 
@@ -943,9 +954,9 @@ export abstract class RendererBase {
         const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
 
         // create polys for flood fills and other potential uses
-        const polys: Poly[][] = [];
+        const polys: IPolyPolygon[][] = [];
         for (let y = 0; y < height; y++) {
-            const rowPolys: Poly[] = [];
+            const rowPolys: IPolyPolygon[] = [];
             for (let x = 0; x < width; x++) {
                 const {x: cx, y: cy} = grid[y][x];
                 const half = cellsize / 2;

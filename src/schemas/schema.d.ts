@@ -41,7 +41,8 @@ export type BoardStyles =
   | "triangles-stacked"
   | "conical-hex"
   | "conical-hex-narrow"
-  | "pyramid-hex";
+  | "pyramid-hex"
+  | "heightmap-squares";
 /**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
@@ -134,7 +135,8 @@ export interface APRenderRep {
     | "sowing-pips"
     | "conhex"
     | "multicell-square"
-    | "polyomino";
+    | "polyomino"
+    | "isometric";
   /**
    * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
@@ -155,7 +157,7 @@ export interface APRenderRep {
    * Map each `piece` to an actual glyph with possible options.
    */
   legend?: {
-    [k: string]: string | Glyph | [Glyph, ...Glyph[]] | Polymatrix;
+    [k: string]: string | Glyph | [Glyph, ...Glyph[]] | Polymatrix | IsoPiece;
   };
   /**
    * This is the game board itself.
@@ -255,6 +257,17 @@ export interface GradientStop {
    */
   colour: PositiveInteger | Colourstrings;
   opacity?: number;
+}
+/**
+ * Schema for a single piece in an `isoPieces` object.
+ */
+export interface IsoPiece {
+  /**
+   * The predetermined types of pieces available to this renderer.
+   */
+  piece: "cube" | "cylinder";
+  height: number;
+  colour: Colourstrings | PositiveInteger;
 }
 /**
  * One of the preset boards.
@@ -411,6 +424,12 @@ export interface BoardBasic {
      */
     show?: ("N" | "E" | "S" | "W")[];
   };
+  /**
+   * Only meaningful in the `isometric` renderer where it gives the heights of the various cells of the board. The two-dimensional array needs to map to the chosen playing field. The heights can be arbitrary, and the glyphs are generated on the fly. The glyphs in the contact sheet are for playing pieces.
+   *
+   * @minItems 1
+   */
+  heightmap?: [[number, ...number[]], ...[number, ...number[]][]];
   /**
    * Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.
    */
