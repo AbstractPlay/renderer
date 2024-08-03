@@ -1,11 +1,27 @@
-import { Svg, G as SVGG } from "@svgdotjs/svg.js";
+import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/_base";
-import { APRenderRep, IsoPiece } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, IsoPiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
 import { generateCubes } from "./isometric/cubes";
 import { generateCylinders } from "./isometric/cylinders";
+import { x2uid } from "../common/glyph2uid";
+
+type PointEntry = {
+    col: number;
+    row: number;
+    x: number;
+    y: number;
+    xOrig: number;
+    yOrig: number;
+    poly: Poly;
+};
+
+interface ITarget {
+    row: number;
+    col: number;
+}
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
@@ -97,14 +113,6 @@ export class IsometricRenderer extends RendererBase {
 
         // sort the points in order of top to bottom, left to right
         // to ensure that everything overlaps appropriately
-        type PointEntry = {
-            col: number;
-            row: number;
-            x: number;
-            y: number;
-            xOrig: number;
-            yOrig: number;
-        };
         const transformedPoints: PointEntry[] = [];
         for (let iRow = 0; iRow < gridPoints.length; iRow++) {
             const row = gridPoints[iRow];
@@ -117,6 +125,7 @@ export class IsometricRenderer extends RendererBase {
                     y: point.y,
                     xOrig: point.x,
                     yOrig: point.y,
+                    poly: polys[iRow][iCol],
                 });
             }
         }
@@ -187,8 +196,6 @@ export class IsometricRenderer extends RendererBase {
         }
 
         // now place the cubes and any pieces on top of them, one cell at a time
-        // const group = board.group().id("pieces");
-        // const surface = board.group().id("surface");
         for (const entry of transformedPoints) {
             let height = 0;
             if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
@@ -218,8 +225,16 @@ export class IsometricRenderer extends RendererBase {
                 used.attr({"pointer-events": "none"});
             }
             // move polys so they are at the correct height
-            const newpts: IPoint[] = (polys[entry.row][entry.col] as IPolyPolygon).points.map(pt => {return {...pt, y: pt.y - Math.abs(entry.yOrig - entry.y)}});
-            (polys[entry.row][entry.col] as IPolyPolygon).points = newpts;
+            const newpts: IPoint[] = (entry.poly as IPolyPolygon).points.map(pt => {return {...pt, y: pt.y - Math.abs(entry.yOrig - entry.y)}});
+            (entry.poly as IPolyPolygon).points = newpts;
+
+            // do markers
+            this.isoMark(board, entry);
+
+            // do pre-annotations
+            if (this.options.showAnnotations) {
+                this.preAnnotate(board, entry);
+            }
 
             // place any pieces that belong on this cell
             if (pieces !== undefined) {
@@ -248,6 +263,10 @@ export class IsometricRenderer extends RendererBase {
                 }
             }
         }
+        // do post-annotations
+        if (this.options.showAnnotations) {
+            this.postAnnotate(board, transformedPoints);
+        }
 
         // Create a new gridPoints with the new top coords of each cell
         for (let iRow = 0; iRow < gridPoints.length; iRow++) {
@@ -259,11 +278,6 @@ export class IsometricRenderer extends RendererBase {
                 }
                 gridPoints[iRow][iCol] = {x: entry.x, y: entry.y};
             }
-        }
-
-        // annotations
-        if (this.options.showAnnotations) {
-            this.annotateBoard(gridPoints, polys);
         }
 
         // if there's a board backfill, it needs to be done before rotation
@@ -285,4 +299,413 @@ export class IsometricRenderer extends RendererBase {
             this.backFill(polys);
         }
     }
+
+    private preAnnotate(group: SVGG, entry: PointEntry) {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
+            for (const note of this.json.annotations as AnnotationBasic[]) {
+                if ( (! ("type" in note)) || (note.type === undefined) ) {
+                    throw new Error("Invalid annotation format found.");
+                }
+                const cloned = {...note};
+                if ("targets" in cloned) {
+                    // This exception is fine because cloned is only used
+                    // to create a UUID.
+                    // @ts-expect-error
+                    delete cloned.targets;
+                }
+                if ((note.targets as ITarget[]).find(t => t.col === entry.col && t.row === entry.row) === undefined) {
+                    continue;
+                }
+
+                if ( (note.type !== undefined) && (note.type === "enter") ) {
+                    let colour = this.options.colourContext.annotations;
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = this.resolveColour(note.colour ) as string;
+                    }
+                    let strokeWeight = this.cellsize* 0.05;
+                    if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
+                        strokeWeight = this.json.board.strokeWeight;
+                    }
+                    let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    if (note.dashed !== undefined && note.dashed !== null) {
+                        dasharray = (note.dashed ).join(" ");
+                    }
+                    const poly = entry.poly;
+                    if (poly.type === "circle") {
+                        group.circle(poly.r * 2)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                            .center(poly.cx, poly.cy)
+                            .attr({ 'pointer-events': 'none' });
+                        group.circle(poly.r * 2)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                            .center(poly.cx, poly.cy)
+                            .attr({ 'pointer-events': 'none' });
+                    } else if (poly.type === "path") {
+                        group.path(poly.path)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                        group.path(poly.path)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                    } else {
+                        group.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                        group.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "exit") ) {
+                    let colour = this.options.colourContext.annotations;
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = this.resolveColour(note.colour ) as string;
+                    }
+                    let strokeWeight = this.cellsize* 0.05;
+                    if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
+                        strokeWeight = this.json.board.strokeWeight;
+                    }
+                    let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    if (note.dashed !== undefined && note.dashed !== null) {
+                        dasharray = (note.dashed ).join(" ");
+                    }
+                    const poly = entry.poly;
+                    if (poly.type === "circle") {
+                        group.circle(poly.r * 2)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                            .center(poly.cx, poly.cy)
+                            .attr({ 'pointer-events': 'none' });
+                        group.circle(poly.r * 2)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                            .center(poly.cx, poly.cy)
+                            .attr({ 'pointer-events': 'none' });
+                    } else if (poly.type === "path") {
+                        group.path(poly.path)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                        group.path(poly.path)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                    } else {
+                        group.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                        group.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill("none")
+                            .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                            .attr({ 'pointer-events': 'none' });
+                    }
+                }
+            }
+        }
+    }
+
+    private postAnnotate(group: SVGG, entries: PointEntry[]) {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
+            const rIncrement = this.cellsize / 2;
+            let radius = rIncrement;
+            let direction = 1;
+            for (const note of this.json.annotations as AnnotationBasic[]) {
+                if ( (! ("type" in note)) || (note.type === undefined) ) {
+                    throw new Error("Invalid annotation format found.");
+                }
+                const cloned = {...note};
+                if ("targets" in cloned) {
+                    // This exception is fine because cloned is only used
+                    // to create a UUID.
+                    // @ts-expect-error
+                    delete cloned.targets;
+                }
+
+                if ( (note.type !== undefined) && (note.type === "move") ) {
+                    if ((note.targets as any[]).length < 2) {
+                        throw new Error("Move annotations require at least two 'targets'.");
+                    }
+
+                    let colour = this.options.colourContext.annotations;
+                    if ( ("colour" in note) && (note.colour !== undefined) && (note.colour !== null) ) {
+                        colour = this.resolveColour(note.colour ) as string;
+                    }
+                    let style = "solid";
+                    if ( ("style" in note) && (note.style !== undefined) ) {
+                        style = note.style as string;
+                    }
+                    let arrow = true;
+                    if ( ("arrow" in note) && (note.arrow !== undefined)) {
+                        arrow = note.arrow;
+                    }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity;
+                    }
+                    let strokeWidth = 0.03;
+                    if ( ("strokeWidth" in note) && (note.strokeWidth !== undefined) ) {
+                        strokeWidth = note.strokeWidth;
+                    }
+                    const unit = strokeWidth / 0.03;
+                    const s = this.cellsize * strokeWidth / 2;
+                    // const markerArrow = group.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
+                    const markerArrow = group.marker(4 * unit + 3 * s, 4 * unit + 2 * s, (add) => add.path(`M${s},${s} L${s + 4 * unit},${s + 2 * unit} ${s},${s + 4 * unit} Z`).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = group.marker(2 * unit + 2 * s, 2 * unit + 2 * s, (add) => add.circle(2 * unit).center(unit + s, unit + s).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const points: string[] = [];
+                    for (const node of (note.targets as ITarget[])) {
+                        const entry = entries.find(e => e.col === node.col && e.row === node.row);
+                        if (entry === undefined) {
+                            throw new Error(`Annotation - Move: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
+                        points.push(`${entry.x},${entry.y}`);
+                    }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width: this.cellsize * strokeWidth,
+                        linecap: "round", linejoin: "round"
+                    };
+                    if (style === "dashed") {
+                        stroke.dasharray = (4 * Math.ceil(strokeWidth / 0.03)).toString();
+                        if (note.dashed !== undefined && note.dashed !== null) {
+                            stroke.dasharray = (note.dashed ).join(" ");
+                        }
+                    }
+                    const line = group.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    line.marker("start", markerCircle);
+                    if (arrow) {
+                        line.marker("end", markerArrow);
+                    } else {
+                        line.marker("end", markerCircle);
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "eject") ) {
+                    if ((note.targets as any[]).length !== 2) {
+                        throw new Error("Eject annotations require exactly two 'targets'.");
+                    }
+
+                    let colour = this.options.colourContext.annotations;
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = this.resolveColour(note.colour , "#000") as string;
+                    }
+                    let style = "dashed";
+                    if ( ("style" in note) && (note.style !== undefined) ) {
+                        style = note.style as string;
+                    }
+                    let arrow = false;
+                    if ( ("arrow" in note) && (note.arrow !== undefined)) {
+                        arrow = note.arrow;
+                    }
+                    let opacity = 0.5;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity;
+                    }
+
+                    // const markerArrow = group.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
+                    const markerArrow = group.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = group.marker(2, 2, (add) => add.circle(2).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const [from, to] = note.targets as ITarget[];
+                    const entryFrom = entries.find(e => e.col === from.col && e.row === from.row);
+                    if (entryFrom === undefined) {
+                        throw new Error(`Annotation - Ejenct: Could not find coordinates for row ${from.row}, column ${from.col}.`);
+                    }
+                    const ptFrom = {x: entryFrom.x, y: entryFrom.y};
+                    const entryTo = entries.find(e => e.col === to.col && e.row === to.row);
+                    if (entryTo === undefined) {
+                        throw new Error(`Annotation - Eject: Could not find coordinates for row ${to.row}, column ${to.col}.`);
+                    }
+                    const ptTo = {x: entryTo.x, y: entryTo.y};
+                    const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width: this.cellsize * 0.03,
+                        linecap: "round", linejoin: "round"
+                    };
+                    if (style === "dashed") {
+                        stroke.dasharray = "4";
+                        if (note.dashed !== undefined && note.dashed !== null) {
+                            stroke.dasharray = (note.dashed ).join(" ");
+                        }
+                    }
+                    const line = group.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    line.marker("start", markerCircle);
+                    if (arrow) {
+                        line.marker("end", markerArrow);
+                    } else {
+                        line.marker("end", markerCircle);
+                    }
+                    direction *= -1;
+                    let fixed = false;
+                    if ( ("static" in note) && (note.static !== undefined) && (typeof note.static === "boolean") ) {
+                        fixed = note.static;
+                    }
+                    if (! fixed) {
+                        if (direction > 0) {
+                            radius += rIncrement;
+                        }
+                    }
+                } else if ( (note.type !== undefined) && (note.type === "dots") ) {
+                    let colour = this.options.colourContext.annotations;
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = this.resolveColour(note.colour ) as string;
+                    }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity;
+                    }
+                    let diameter = 0.1;
+                    if ( ("size" in note) && (note.size !== undefined) ) {
+                        diameter = note.size;
+                    }
+                    for (const node of (note.targets as ITarget[])) {
+                        const entry = entries.find(e => e.col === node.col && e.row === node.row);
+                        if (entry === undefined) {
+                            throw new Error(`Annotation - Dots: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
+                        const pt = {x: entry.x, y: entry.y};
+                        group.circle(this.cellsize * diameter)
+                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                            .fill(colour)
+                            .opacity(opacity)
+                            .stroke({width: 0})
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' });
+                    }
+                }
+            }
+        }
+    }
+
+    private isoMark(group: SVGG, entry: PointEntry): void {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        if ( ("board" in this.json) && (this.json.board !== undefined) && ("markers" in this.json.board!) && (this.json.board.markers !== undefined) && (Array.isArray(this.json.board.markers)) && (this.json.board.markers.length > 0) ) {
+            if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+                throw new Error("This `markBoard` function only works with renderers that include a `style` property.");
+            }
+
+            let baseStroke = 1;
+            // let baseColour = this.options.colourContext.strokes;
+            let baseOpacity = 1;
+            if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+                baseStroke = this.json.board.strokeWeight;
+            }
+            // if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            //     baseColour = this.json.board.strokeColour;
+            // }
+            if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+                baseOpacity = this.json.board.strokeOpacity;
+            }
+
+            for (const marker of this.json.board.markers) {
+                const cloned = {...marker as {[k:string]: any}};
+                if ("points" in cloned) {
+                    delete cloned.points;
+                }
+                if ( (!("points" in marker)) || (marker.points.find(p => p.col === entry.col && p.row === entry.row) === undefined) ) {
+                    continue;
+                }
+                if (marker.type === "dots") {
+                    let isGradient = false;
+                    let colour: string|SVGGradient = this.options.colourContext.fill;
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "object") {
+                            isGradient = true;
+                        }
+                        colour = this.resolveColour(marker.colour);
+                    }
+                    let opacity = baseOpacity;
+                    if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                        opacity = marker.opacity;
+                    }
+                    let diameter = 0.1;
+                    if ( ("size" in marker) && (marker.size !== undefined) ) {
+                        diameter = marker.size;
+                    }
+                    const pt = {x: entry.x, y: entry.y};
+                    // these exceptions are due to poor SVGjs typing
+                    const dot = group.circle(this.cellsize * diameter)
+                        .opacity(opacity)
+                        .stroke({width: 0})
+                        .center(pt.x, pt.y)
+                        .attr({ 'pointer-events': 'none' })
+                        .addClass(`aprender-marker-${x2uid(cloned)}`);
+                    if (isGradient) {
+                        dot.fill(colour as SVGGradient);
+                    } else {
+                        dot.fill({color: colour, opacity} as FillData)
+                    }
+                } else if (marker.type === "flood") {
+                    let isGradient = false;
+                    let colour: string|SVGGradient = this.options.colourContext.fill;
+                    if ( ("colour" in marker) && (marker.colour !== undefined) ) {
+                        if (typeof marker.colour === "object") {
+                            isGradient = true;
+                        }
+                        colour = this.resolveColour(marker.colour);
+                    }
+                    let opacity = 0.25;
+                    if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
+                        opacity = marker.opacity;
+                    }
+                    let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
+                    const cell = entry.poly;
+                    // the following eslint and ts exceptions are due to poor SVGjs typing
+                    switch (cell.type) {
+                        case "circle":
+                            floodEle = group.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                            break;
+                        case "poly":
+                            floodEle = group.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                            break;
+                        case "path":
+                            floodEle = group.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                            break;
+                    }
+                    if (floodEle !== undefined) {
+                        if (isGradient) {
+                            floodEle.fill(colour as SVGGradient);
+                        } else {
+                            floodEle.fill({color: colour, opacity} as FillData);
+                        }
+                    }
+                    if (marker.pulse !== undefined && floodEle !== undefined) {
+                        floodEle
+                            .animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike)
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                            .during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
+                    }
+                }
+            }
+        }
+    }
+
 }

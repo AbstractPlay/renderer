@@ -167,7 +167,6 @@ interface ITarget {
     col: number;
 }
 
-
 /** Helper functions for drawing edge click handlers */
 const sortPoints = (a: [number,number], b: [number,number]) => {
     if (a[0] === b[0]) {
