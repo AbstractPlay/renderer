@@ -409,6 +409,11 @@
                     "name": "Niche: Polyominos",
                     "description": "This renderer lets you define pieces with a rectangular matrix. It also provides a special \"polyomino\" area for manipulating pieces before placing them. It also demonstrates the `outline` annotation.",
                     "render": `{\"renderer\":\"polyomino\",\"board\":{\"style\":\"squares\",\"width\":4,\"height\":4},\"legend\":{\"SPACER\":{\"name\":\"piece-square-borderless\",\"colour\":\"_context_background\"},\"A1\":[[1]],\"A2\":[[1,1]],\"A3\":[[1,1],[0,1]],\"A4\":[[1,1],[1,1]],\"B1\":[[2]],\"B2\":[[2,2]],\"B3\":[[2,2],[0,2]],\"B4\":[[2,2],[2,2]]},\"pieces\":[{\"row\":1,\"col\":1,\"matrix\":[[1,1],[1,0]]}],\"annotations\":[{\"type\":\"outline\",\"targets\":[{\"row\":1,\"col\":1},{\"row\":1,\"col\":3},{\"row\":3,\"col\":3},{\"row\":3,\"col\":1}]}],\"areas\":[{\"type\":\"polyomino\",\"label\":\"Testing\",\"matrix\":[[1,1],[1,0],[1,0],[1,0]],\"background\":\"_context_fill\"},{\"type\":\"pieces\",\"label\":\"P1 stash\",\"width\":4,\"pieces\":[\"A1\",\"SPACER\",\"A3\",\"A4\",\"B1\",\"B2\",\"B3\",\"B4\"]},{\"type\":\"pieces\",\"label\":\"P2 stash\",\"width\":4,\"pieces\":[\"A1\",\"A2\",\"SPACER\",\"A4\",\"B1\",\"B2\",\"B3\",\"B4\"]}]}`
+                },
+                "niche-isometric": {
+                    "name": "Niche: Isometric",
+                    "description": "This is still experimental! Not all features will work as expected. The only glyphs currently supported are cubes and cylinders. Glyphs are generated on the fly, with a special legend structure. 90-degree rotation works correctly.",
+                    "render": `{"renderer":"isometric","board":{"style":"squares","width":6,"height":6,"heightmap":[[100,75,50,50,75,100],[75,50,25,25,50,75],[50,25,0,0,25,50],[50,25,0,0,25,50],[75,50,25,25,50,75],[100,75,50,50,75,100]]},"legend":{"A":{"piece":"cylinder","height":20,"colour":1},"B":{"piece":"cylinder","height":20,"colour":2}},"pieces":"_\\n_\\n_\\n-,-,-,B,-,-\\n-,-,B,A,B,-\\n-,A,-,A,BA,B\\n-,-,-,-,ABA,-"}`
                 }
             }
 

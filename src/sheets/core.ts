@@ -430,7 +430,8 @@ const lighten = (rgb: [number, number, number], ds: number, dl: number) => {
 }
 
 // orb with no highlights
-sheet.glyphs.set("orb", (canvas: SVGContainer, color:string) => {
+sheet.glyphs.set("orb", (canvas: SVGContainer, color?:string) => {
+    if (color === undefined) { color = "#fff"; }
     const rgb = convert_hex.rgb(color);
     let col = lighten(rgb, 3, 1);
     const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
@@ -484,7 +485,8 @@ sheet.glyphs.set("orb0", (canvas: SVGContainer) => {
 });
 
 // orb with three small highlights
-sheet.glyphs.set("orb1", (canvas: SVGContainer, color:string) => {
+sheet.glyphs.set("orb1", (canvas: SVGContainer, color?:string) => {
+    if (color === undefined) { color = "#fff"; }
     const rgb = convert_hex.rgb(color);
     let col = lighten(rgb, 3, 1);
     const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
@@ -546,7 +548,8 @@ sheet.glyphs.set("orb1", (canvas: SVGContainer, color:string) => {
 });
 
 // orb with one big highlight
-sheet.glyphs.set("orb2", (canvas: SVGContainer, color:string) => {
+sheet.glyphs.set("orb2", (canvas: SVGContainer, color?:string) => {
+    if (color === undefined) { color = "#fff"; }
     const rgb = convert_hex.rgb(color);
     let col = lighten(rgb, 3, 1);
     const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
@@ -579,7 +582,8 @@ sheet.glyphs.set("orb2", (canvas: SVGContainer, color:string) => {
 });
 
 // orb with big "rectangular" highlight
-sheet.glyphs.set("orb3", (canvas: SVGContainer, color:string) => {
+sheet.glyphs.set("orb3", (canvas: SVGContainer, color?:string) => {
+    if (color === undefined) { color = "#fff"; }
     const rgb = convert_hex.rgb(color);
     let col = lighten(rgb, 3, 1);
     const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])

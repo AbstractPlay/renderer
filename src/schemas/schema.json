@@ -70,7 +70,8 @@
                 "triangles-stacked",
                 "conical-hex",
                 "conical-hex-narrow",
-                "pyramid-hex"
+                "pyramid-hex",
+                "heightmap-squares"
             ]
         },
         "gradientStop": {
@@ -255,6 +256,30 @@
                 }
             },
             "required": ["col", "row", "matrix"],
+            "additionalProperties": false
+        },
+        "isoPiece": {
+            "description": "Schema for a single piece in an `isoPieces` object.",
+            "type": "object",
+            "properties": {
+                "piece": {
+                    "description": "The predetermined types of pieces available to this renderer.",
+                    "enum": ["cube", "cylinder"]
+                },
+                "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "colour": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/positiveInteger"}
+                    ],
+                    "default": "#000"
+                }
+            },
+            "required": ["piece", "height", "colour"],
             "additionalProperties": false
         },
         "annotationBasic": {
@@ -1738,6 +1763,18 @@
                     "required": ["width"],
                     "additionalProperties": false
                 },
+                "heightmap": {
+                    "description": "Only meaningful in the `isometric` renderer where it gives the heights of the various cells of the board. The two-dimensional array needs to map to the chosen playing field. The heights can be arbitrary, and the glyphs are generated on the fly. The glyphs in the contact sheet are for playing pieces.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                },
                 "markers": {
                     "description": "Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.",
                     "type": "array",
@@ -1949,7 +1986,8 @@
                 "sowing-pips",
                 "conhex",
                 "multicell-square",
-                "polyomino"
+                "polyomino",
+                "isometric"
             ],
             "default": "default"
         },
@@ -1982,7 +2020,8 @@
                     },
                     {
                         "$ref": "#/$defs/polymatrix"
-                    }
+                    },
+                    {"$ref": "#/$defs/isoPiece"}
                 ]
             }
         },
