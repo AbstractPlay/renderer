@@ -84,14 +84,8 @@ export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: St
     const tSize = 100;
 
     for (const sideHeight of heights) {
-        let idTop = tSize.toString();
-        while (idTop.length < 3) {
-            idTop = "0" + idTop;
-        }
-        let idSide = sideHeight.toString();
-        while (idSide.length < 3) {
-            idSide = "0" + idSide;
-        }
+        const idTop = tSize.toString().replace(".", "_");
+        const idSide = sideHeight.toString().replace(".", "_");
         const cube = genCube(tSize, sideHeight);
         const dWidth = 0;
         const dHeight = 0;

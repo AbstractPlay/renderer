@@ -201,10 +201,7 @@ export class IsometricRenderer extends RendererBase {
             if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
                 height = heightmap[entry.row][entry.col];
             }
-            let idHeight = height.toString();
-            while (idHeight.length < 3) {
-                idHeight = "0" + idHeight;
-            }
+            const idHeight = height.toString().replace(".", "_");
             const cube = this.rootSvg.findOne(`#_isoCube_${idHeight}`) as Svg;
             if ( (cube === null) || (cube === undefined) ) {
                 throw new Error(`Could not find the requested cube of height ${idHeight}.`);
