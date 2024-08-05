@@ -415,13 +415,13 @@ export class IsometricRenderer extends RendererBase {
         const box = board.rbox(this.rootSvg);
 
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(box, {padding: 0});
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(box, undefined, {padding: 0});
 
         // key
-        this.placeKey(box);
+        this.placeKey(box, undefined, {padding: 0});
 
         if (!backfilled) {
             this.backFill(polys);
@@ -840,5 +840,4 @@ export class IsometricRenderer extends RendererBase {
             }
         }
     }
-
 }

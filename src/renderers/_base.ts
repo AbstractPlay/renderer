@@ -6102,9 +6102,13 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeButtonBar(box: SVGBox, position?: "left"|"right"): void {
+    protected placeButtonBar(box: SVGBox, position?: "left"|"right", opts?: {padding?: number}): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
+        }
+        let padding = this.cellsize;
+        if (opts !== undefined && opts.padding !== undefined) {
+            padding = opts.padding;
         }
         if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const bars = this.json.areas.filter((b) => b.type === "buttonBar") as AreaButtonBar[];
@@ -6126,9 +6130,9 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = box.x - barimg.viewbox().w - this.cellsize;
+                    x = box.x - barimg.viewbox().w - padding;
                 } else {
-                    x = box.x2 + this.cellsize;
+                    x = box.x2 + padding;
                 }
                 const used = this.rootSvg.use(barimg).size(barimg.viewbox().w, barimg.viewbox().h).move(x, y);
                 if (this.options.boardClick !== undefined) {
@@ -6264,9 +6268,13 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeKey(box: SVGBox, position?: "left"|"right"): void {
+    protected placeKey(box: SVGBox, position?: "left"|"right", opts?: {padding?: number}): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
+        }
+        let padding = this.cellsize;
+        if (opts !== undefined && opts.padding !== undefined) {
+            padding = opts.padding;
         }
         if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const keys = this.json.areas.filter((b) => b.type === "key") as AreaKey[];
@@ -6288,9 +6296,9 @@ export abstract class RendererBase {
                 }
                 let x = 0;
                 if (pos === "left") {
-                    x = box.x - keyimg.viewbox().w - this.cellsize;
+                    x = box.x - keyimg.viewbox().w - padding;
                 } else {
-                    x = box.x2 + this.cellsize;
+                    x = box.x2 + padding;
                 }
                 const used = this.rootSvg.use(keyimg).size(keyimg.viewbox().w, keyimg.viewbox().h).dmove(x, y);
                 let clickable = true;
@@ -6634,16 +6642,20 @@ export abstract class RendererBase {
      *
      * @param gridPoints -
      */
-    protected piecesArea(box: SVGBox) {
+    protected piecesArea(box: SVGBox, opts?: {padding?: number}) {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
+        }
+        let padding = this.cellsize / 2;
+        if (opts !== undefined && opts.padding !== undefined) {
+            padding = opts.padding;
         }
         if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const areas = this.json.areas.filter((x) => x.type === "pieces") as AreaPieces[];
             const boardBottom = box.y2; // + this.cellsize;
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.floor(box.width / this.cellsize);
-            let placeY = boardBottom + (this.cellsize / 2);
+            let placeY = boardBottom + padding;
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea];
                 const numPieces = area.pieces.length;
