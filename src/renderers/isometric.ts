@@ -1,12 +1,14 @@
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/_base";
+import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
 import { AnnotationBasic, APRenderRep, IsoPiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
 import { generateCubes } from "./isometric/cubes";
 import { generateCylinders } from "./isometric/cylinders";
+import { generateHexes } from "./isometric/hexes";
 import { x2uid } from "../common/glyph2uid";
+import { Orientation } from "honeycomb-grid";
 
 type PointEntry = {
     col: number;
@@ -60,15 +62,27 @@ export class IsometricRenderer extends RendererBase {
         // // Load all the pieces in the legend (have to do this early so the glyphs are available for marking the board)
         // this.loadLegend();
 
+        let basePcScale = 1;
         switch (this.json.board.style) {
             case "squares":
-                [gridPoints, polys] = this.squares();
+                [gridPoints, polys] = this.squares({noSvg: true});
+                break;
+            case "hex-of-hex":
+                [gridPoints, polys] = this.hexOfHex({noSvg: true});
+                basePcScale = 0.85;
+                break;
+            case "hex-of-cir":
+                [gridPoints, polys] = this.hexOfCir({noSvg: true});
+                basePcScale = 0.85;
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ IsometricRenderer.rendererName }' renderer.`);
         }
 
-        const board = this.rootSvg.findOne("#board") as SVGG;
+        let board = this.rootSvg.findOne("#board") as SVGG;
+        if (board === null) {
+            board = this.rootSvg.group().id("board");
+        }
         // any user-specified rotation has to happen before laying everything out
         if (this.options.rotate !== undefined) {
             // ensure it's a multiple of 90
@@ -98,17 +112,12 @@ export class IsometricRenderer extends RendererBase {
         const tShear = new Matrix().shearX(Math.tan(deg2rad(-30)));
         const tRotate = new Matrix().rotate(deg2rad(30));
         const tFinal = tRotate.multiply(tShear.multiply(tScale));
-        if (this.json.board.style === "squares") {
-            // delete gridlines, labels, and tiles
-            const gridlines = this.rootSvg.findOne(`#gridlines`) as SVGG;
-            gridlines.remove();
-            const tiles = this.rootSvg.findOne(`#tiles`) as SVGG;
-            tiles.remove();
-            const labels = this.rootSvg.findOne(`#labels`) as SVGG;
-            labels.remove();
-            // "isometricize" the points and polys
-            gridPoints = gridPoints.map(row => row = row.map(pt => tFinal.applyToPoint(pt.x, pt.y)));
+        // "isometricize" the points and polys
+        gridPoints = gridPoints.map(row => row = row.map(pt => tFinal.applyToPoint(pt.x, pt.y)));
+        if (this.json.board.style === "squares" || this.json.board.style === "hex-of-hex") {
             polys = (polys as IPolyPolygon[][]).map(row => row = row.map(poly => poly = {...poly, points: poly.points.map(pt => tFinal.applyToPoint(pt.x, pt.y))} as IPolyPolygon));
+        } else if (this.json.board.style === "hex-of-cir") {
+            polys = (polys as IPolyCircle[][]).map(row => row = row.map(poly => poly = {...poly, cx: tFinal.applyToPoint(poly.cx, poly.cy).x, y: tFinal.applyToPoint(poly.cx, poly.cy).y} as IPolyCircle));
         }
 
         // sort the points in order of top to bottom, left to right
@@ -145,16 +154,37 @@ export class IsometricRenderer extends RendererBase {
             heightmap = this.json.board.heightmap;
             allHeights = [...new Set(heightmap.flat()).values()];
         }
-        generateCubes({rootSvg: this.rootSvg, heights: allHeights, stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.options.colourContext.background}});
+        for (const height of allHeights) {
+            const id = `_surface_${height.toString().replace(".", "_")}`;
+            switch (this.json.board.style) {
+                case "squares":
+                    generateCubes({rootSvg: this.rootSvg, heights: [height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.options.colourContext.background}, idSymbol: id})
+                    break;
+                case "hex-of-cir":
+                    generateCylinders({rootSvg: this.rootSvg, heights: [height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.options.colourContext.background}, idSymbol: id})
+                    break;
+                case "hex-of-hex":
+                    generateHexes({rootSvg: this.rootSvg, heights: [height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.options.colourContext.background}, idSymbol: id, orientation: Orientation.POINTY})
+                    break;
+                default:
+                    throw new Error("Could not determine how to build the board surface.");
+            }
+        }
 
         // now load the custom legend
         type MyLegend = {[k: string]: IsoPiece};
+        let legend: MyLegend|undefined;
         if (this.json.legend !== null && this.json.legend !== undefined) {
+            legend = this.json.legend as MyLegend;
             for (const [key, pc] of Object.entries(this.json.legend as MyLegend)) {
                 if (pc.piece === "cube") {
                     generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key});
                 } else if (pc.piece === "cylinder") {
                     generateCylinders({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key});
+                } else if (pc.piece === "hexp") {
+                    generateHexes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, orientation: Orientation.POINTY})
+                } else if (pc.piece === "hexf") {
+                    generateHexes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, orientation: Orientation.FLAT})
                 } else {
                     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     throw new Error(`Unrecognized isoPiece type "${pc.piece}"`);
@@ -195,38 +225,53 @@ export class IsometricRenderer extends RendererBase {
             }
         }
 
-        // now place the cubes and any pieces on top of them, one cell at a time
+        // now place the surface components and any pieces on top of them, one cell at a time
         for (const entry of transformedPoints) {
             let height = 0;
             if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
                 height = heightmap[entry.row][entry.col];
             }
             const idHeight = height.toString().replace(".", "_");
-            const cube = this.rootSvg.findOne(`#_isoCube_${idHeight}`) as Svg;
-            if ( (cube === null) || (cube === undefined) ) {
+            const cell = this.rootSvg.findOne(`#_surface_${idHeight}`) as Svg;
+            if ( (cell === null) || (cell === undefined) ) {
                 throw new Error(`Could not find the requested cube of height ${idHeight}.`);
             }
-            let widthRatio = parseFloat(cube.attr("data-width-ratio") as string);
-            let factor = this.cellsize / cube.viewbox().width * widthRatio;
-            let newWidth = factor * cube.viewbox().width;
-            let newHeight = factor * cube.viewbox().height;
-            let dyBottom = parseFloat(cube.attr("data-dy-bottom") as string) * newHeight;
+            let widthRatio = parseFloat(cell.attr("data-width-ratio") as string);
+            let heightRatio: number|undefined;
+            if (cell.attr("data-height-ratio") !== undefined) {
+                heightRatio = parseFloat(cell.attr("data-height-ratio") as string);
+            }
+            let factor = this.cellsize / cell.viewbox().width * widthRatio;
+            let factorHeight: number|undefined;
+            if (heightRatio !== undefined) {
+                factorHeight = this.cellsize / cell.viewbox().height * heightRatio;
+            }
+            let newWidth = factor * cell.viewbox().width;
+            let newHeight = factor * cell.viewbox().height;
+            if (factorHeight !== undefined) {
+                newHeight = factorHeight * cell.viewbox().height;
+            }
+            let dyBottom = parseFloat(cell.attr("data-dy-bottom") as string) * newHeight;
             let newx = entry.x - (newWidth / 2);
             let newy = entry.y - dyBottom;
-            let dyTop = parseFloat(cube.attr("data-dy-top") as string) * newHeight;
+            let dyTop = parseFloat(cell.attr("data-dy-top") as string) * newHeight;
             entry.y = newy + dyTop;
-            let used = board.use(cube).move(newx, newy).size(newWidth, newHeight);
+            let used = board.use(cell).move(newx, newy).size(newWidth, newHeight);
             if (this.options.boardClick !== undefined) {
                 used.click((e : Event) => {this.options.boardClick!(entry.row, entry.col, ""); e.stopPropagation();});
             } else {
                 used.attr({"pointer-events": "none"});
             }
             // move polys so they are at the correct height
-            const newpts: IPoint[] = (entry.poly as IPolyPolygon).points.map(pt => {return {...pt, y: pt.y - Math.abs(entry.yOrig - entry.y)}});
-            (entry.poly as IPolyPolygon).points = newpts;
+            if (entry.poly.type === "poly") {
+                const newpts: IPoint[] = entry.poly.points.map(pt => {return {...pt, y: pt.y - Math.abs(entry.yOrig - entry.y)}});
+                entry.poly.points = newpts;
+            } else if (entry.poly.type === "circle") {
+                entry.poly.cy = entry.poly.cy - Math.abs(entry.yOrig - entry.y);
+            }
 
             // do markers
-            this.isoMark(board, entry);
+            this.isoMark(board, entry, tFinal);
 
             // do pre-annotations
             if (this.options.showAnnotations) {
@@ -243,9 +288,25 @@ export class IsometricRenderer extends RendererBase {
                         throw new Error(`Could not find the requested piece (${pc}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
                     widthRatio = parseFloat(piece.attr("data-width-ratio") as string);
-                    factor = this.cellsize / piece.viewbox().width * widthRatio * 0.75;
+                    heightRatio = undefined;
+                    if (piece.attr("data-height-ratio") !== undefined) {
+                        heightRatio = parseFloat(piece.attr("data-height-ratio") as string);
+                    }
+                    let pcScale = 0.75;
+                    if (legend !== undefined && pc in legend && "scale" in legend[pc] && legend[pc].scale !== undefined) {
+                        pcScale = legend[pc].scale as number;
+                    }
+                    pcScale *= basePcScale;
+                    factor = this.cellsize / piece.viewbox().width * widthRatio * pcScale;
+                    factorHeight = undefined;
+                    if (heightRatio !== undefined) {
+                        factorHeight = this.cellsize / piece.viewbox().height * heightRatio;
+                    }
                     newWidth = factor * piece.viewbox().width;
                     newHeight = factor * piece.viewbox().height;
+                    if (factorHeight !== undefined) {
+                        newHeight = factorHeight * piece.viewbox().height;
+                    }
                     dyBottom = parseFloat(piece.attr("data-dy-bottom") as string) * newHeight;
                     newx = entry.x - (newWidth / 2);
                     newy = entry.y - dyBottom;
@@ -262,7 +323,7 @@ export class IsometricRenderer extends RendererBase {
         }
         // do post-annotations
         if (this.options.showAnnotations) {
-            this.postAnnotate(board, transformedPoints);
+            this.postAnnotate(board, transformedPoints, tFinal);
         }
 
         // Create a new gridPoints with the new top coords of each cell
@@ -423,7 +484,7 @@ export class IsometricRenderer extends RendererBase {
         }
     }
 
-    private postAnnotate(group: SVGG, entries: PointEntry[]) {
+    private postAnnotate(group: SVGG, entries: PointEntry[], transform: Matrix) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -586,12 +647,15 @@ export class IsometricRenderer extends RendererBase {
                             throw new Error(`Annotation - Dots: Could not find coordinates for row ${node.row}, column ${node.col}.`);
                         }
                         const pt = {x: entry.x, y: entry.y};
+                        const tInverted = transform.inverse(false, false);
+                        const ptInverted = tInverted.applyToPoint(pt.x, pt.y);
                         group.circle(this.cellsize * diameter)
                             .addClass(`aprender-annotation-${x2uid(cloned)}`)
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
-                            .center(pt.x, pt.y)
+                            .center(ptInverted.x, ptInverted.y)
+                            .matrix(transform.toArray())
                             .attr({ 'pointer-events': 'none' });
                     }
                 }
@@ -599,7 +663,7 @@ export class IsometricRenderer extends RendererBase {
         }
     }
 
-    private isoMark(group: SVGG, entry: PointEntry): void {
+    private isoMark(group: SVGG, entry: PointEntry, transform: Matrix): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -648,11 +712,13 @@ export class IsometricRenderer extends RendererBase {
                         diameter = marker.size;
                     }
                     const pt = {x: entry.x, y: entry.y};
-                    // these exceptions are due to poor SVGjs typing
+                    const tInverted = transform.inverse(false, false);
+                    const ptInverted = tInverted.applyToPoint(pt.x, pt.y);
                     const dot = group.circle(this.cellsize * diameter)
                         .opacity(opacity)
                         .stroke({width: 0})
-                        .center(pt.x, pt.y)
+                        .center(ptInverted.x, ptInverted.y)
+                        .matrix(transform.toArray())
                         .attr({ 'pointer-events': 'none' })
                         .addClass(`aprender-marker-${x2uid(cloned)}`);
                     if (isGradient) {

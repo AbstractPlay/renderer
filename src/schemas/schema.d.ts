@@ -265,9 +265,13 @@ export interface IsoPiece {
   /**
    * The predetermined types of pieces available to this renderer.
    */
-  piece: "cube" | "cylinder";
+  piece: "cube" | "cylinder" | "hexp" | "hexf";
   height: number;
   colour: Colourstrings | PositiveInteger;
+  /**
+   * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
+   */
+  scale?: number;
 }
 /**
  * One of the preset boards.

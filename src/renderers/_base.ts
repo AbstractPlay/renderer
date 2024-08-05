@@ -900,7 +900,7 @@ export abstract class RendererBase {
      *
      * @returns A map of row/column locations to x,y coordinates
      */
-    protected squares(): [GridPoints, Poly[][]] {
+    protected squares(opts?: {noSvg: boolean}): [GridPoints, Poly[][]] {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -971,6 +971,9 @@ export abstract class RendererBase {
                 });
             }
             polys.push(rowPolys);
+        }
+        if (opts !== undefined && opts.noSvg === true) {
+            return [grid, polys];
         }
 
         const board = this.rootSvg.group().id("board");
@@ -3102,7 +3105,7 @@ export abstract class RendererBase {
      *
      * @returns A map of row/column locations to x,y coordinates
      */
-    protected hexOfCir(): [GridPoints, IPolyCircle[][]] {
+    protected hexOfCir(opts?: {noSvg: boolean}): [GridPoints, IPolyCircle[][]] {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -3153,6 +3156,10 @@ export abstract class RendererBase {
                 polyRow.push({type: "circle", r: cellsize/2, cx: p.x, cy: p.y});
             }
             polys.push(polyRow);
+        }
+
+        if (opts !== undefined && opts.noSvg === true) {
+            return [grid, polys];
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
@@ -3222,7 +3229,7 @@ export abstract class RendererBase {
      *
      * @returns A map of row/column locations to x,y coordinates
      */
-    protected hexOfHex(): [GridPoints, IPolyPolygon[][]] {
+    protected hexOfHex(opts?: {noSvg: boolean}): [GridPoints, IPolyPolygon[][]] {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -3262,16 +3269,16 @@ export abstract class RendererBase {
 
         // Get a grid of points
         const grid = hexOfHex({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
-        const board = this.rootSvg.group().id("board");
-        const gridlines = board.group().id("hexes");
 
         // Build polygons first
+        // const myHex = defineHex({orientation: Orientation.POINTY, dimensions: 25})
+        // const hexObj = new myHex();
         const triWidth = 50 / 2;
         const halfhex = triWidth / 2;
         const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
-        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
+        // const pts = hexObj.corners.map(({x,y}) => { return {x: x+21.650635, y: y+25}; });
         const polys: IPolyPolygon[][] = [];
         for (const row of grid) {
             const rowPolys: IPolyPolygon[] = [];
@@ -3285,6 +3292,12 @@ export abstract class RendererBase {
             polys.push(rowPolys);
         }
 
+        if (opts !== undefined && opts.noSvg === true) {
+            return [grid, polys];
+        }
+
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("hexes");
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
         // Add board labels
@@ -3349,6 +3362,7 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
+        const hex = this.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
         hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
            .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
            .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});

@@ -1,6 +1,7 @@
 import { Matrix } from "transformation-matrix-js";
 import { deg2rad } from "../../common/plotting";
-import { FillData, StrokeData, Svg, Rect as SVGRect } from "@svgdotjs/svg.js";
+import { FillData, StrokeData, Svg, G as SVGG } from "@svgdotjs/svg.js";
+import { IPoint } from "../../grids";
 
 export type Cube = {
     top: Matrix;
@@ -79,9 +80,13 @@ export const genCube = (topSize: number, sideHeight: number): Cube => {
     }
 }
 
-export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, idSymbol?: string}): void => {
+export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, idSymbol?: string, sides?: ("N"|"E"|"S"|"W")[]}): void => {
     const { rootSvg, heights, stroke, fill} = opts;
     const tSize = 100;
+    let sides: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
+    if (opts.sides !== undefined) {
+        sides = opts.sides;
+    }
 
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
@@ -100,34 +105,43 @@ export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: St
             .attr("data-dy-bottom", Math.abs(miny - cube.cyBot) / cube.height)
             .attr("data-dy-top", Math.abs(miny - cube.cyTop) / cube.height);
         const defs = nested.defs();
-        let rectTop: SVGRect|null = null;
+        let rectTop: SVGG|null = null;
         let sourceId = `isoRect${idTop}`;
         if (opts.idSymbol !== undefined) {
             sourceId = `isoRect${idTop}_${opts.idSymbol}`;
         }
-        rectTop = defs.findOne("#" + sourceId) as SVGRect|null;
+        rectTop = defs.findOne("#" + sourceId) as SVGG|null;
         if (rectTop === null) {
-            rectTop = defs.rect(tSize, tSize).id(sourceId)
+            rectTop = defs.group().id(sourceId);
+            rectTop.rect(tSize, tSize).fill(fill).stroke("none");
+            if (sides.includes("N")) {
+                rectTop.line(0,0,tSize,0).stroke({linecap: "round", linejoin: "round", ...stroke});
+            }
+            if (sides.includes("E")) {
+                rectTop.line(tSize,0,tSize,tSize).stroke({linecap: "round", linejoin: "round", ...stroke});
+            }
+            if (sides.includes("S")) {
+                rectTop.line(tSize, tSize,0,tSize).stroke({linecap: "round", linejoin: "round", ...stroke});
+            }
+            if (sides.includes("W")) {
+                rectTop.line(0,0,0,tSize).stroke({linecap: "round", linejoin: "round", ...stroke});
+            }
+        }
+        if (sideHeight > 0 && sides.length > 0) {
+            const a1: IPoint = cube.top.applyToPoint(tSize,0);
+            const a2: IPoint = {x: a1.x, y: a1.y + sideHeight}
+            const a4: IPoint = cube.top.applyToPoint(tSize,tSize);
+            const a3: IPoint = {x: a4.x, y: a4.y + sideHeight};
+            const a6: IPoint = cube.top.applyToPoint(0,tSize);
+            const a5: IPoint = {x: a6.x, y: a6.y + sideHeight};
+            nested.path(`M ${a1.x} ${a1.y} L ${a2.x} ${a2.y} L ${a3.x} ${a3.y} L ${a4.x} ${a4.y}`)
+                .fill(fill)
+                .stroke({linecap: "round", linejoin: "round", ...stroke});
+            nested.path(`M ${a4.x} ${a4.y} L ${a3.x} ${a3.y} L ${a5.x} ${a5.y} L ${a6.x} ${a6.y}`)
                 .fill(fill)
                 .stroke({linecap: "round", linejoin: "round", ...stroke});
         }
-        let rectSide: SVGRect|null = null;
-        if (tSize !== sideHeight && sideHeight > 0) {
-            rectSide = defs.findOne(`#isoRect${idSide}`) as SVGRect|null;
-            if (rectSide === null) {
-                rectSide = defs.rect(tSize, sideHeight).id(`isoRect${idSide}`)
-                    .fill(fill)
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
-            }
-        }
         nested.use(rectTop).matrix(cube.top.toArray());
-        if (rectSide !== null) {
-            nested.use(rectSide).matrix(cube.left.toArray());
-            nested.use(rectSide).matrix(cube.right.toArray());
-        } else if (sideHeight === tSize) {
-            nested.use(rectTop).matrix(cube.left.toArray());
-            nested.use(rectTop).matrix(cube.right.toArray());
-        }
         nested.viewbox([minx, miny, cube.width + dWidth, cube.height + dHeight].join(" "));
     }
 }

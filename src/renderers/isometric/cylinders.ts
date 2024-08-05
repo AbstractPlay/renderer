@@ -77,7 +77,7 @@ const genCylinder = (topSize: number, sideHeight: number): Cylinder => {
 
 export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, idSymbol?: string}): void => {
     const { rootSvg, heights, stroke, fill} = opts;
-    const tSize = 85;
+    const tSize = 100;
 
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
@@ -94,7 +94,7 @@ export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke
         const nested = rootSvg.defs().nested().id(idSymbol)
             .attr("data-width-ratio", cylinder.width / tSize)
             .attr("data-dy-bottom", Math.abs(miny - cylinder.cyBot) / cylinder.height)
-            .attr("data-dy-top", Math.abs(miny - cylinder.cxTop) / cylinder.height);
+            .attr("data-dy-top", Math.abs(miny - cylinder.cyTop) / cylinder.height);
         // add defs
         const defs = nested.defs();
         let circleTop: SVGCircle|null = null;

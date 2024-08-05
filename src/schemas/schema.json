@@ -264,7 +264,7 @@
             "properties": {
                 "piece": {
                     "description": "The predetermined types of pieces available to this renderer.",
-                    "enum": ["cube", "cylinder"]
+                    "enum": ["cube", "cylinder", "hexp", "hexf"]
                 },
                 "height": {
                     "type": "number",
@@ -277,6 +277,12 @@
                         {"$ref": "#/$defs/positiveInteger"}
                     ],
                     "default": "#000"
+                },
+                "scale": {
+                    "description": "As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.75
                 }
             },
             "required": ["piece", "height", "colour"],
