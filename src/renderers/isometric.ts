@@ -2,7 +2,7 @@ import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle a
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
 import { AnnotationBasic, APRenderRep, IsoPiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
-import { deg2rad } from "../common/plotting";
+import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
 import { generateCubes } from "./isometric/cubes";
 import { generateCylinders } from "./isometric/cylinders";
@@ -117,7 +117,12 @@ export class IsometricRenderer extends RendererBase {
         if (this.json.board.style === "squares" || this.json.board.style === "hex-of-hex") {
             polys = (polys as IPolyPolygon[][]).map(row => row = row.map(poly => poly = {...poly, points: poly.points.map(pt => tFinal.applyToPoint(pt.x, pt.y))} as IPolyPolygon));
         } else if (this.json.board.style === "hex-of-cir") {
-            polys = (polys as IPolyCircle[][]).map(row => row = row.map(poly => poly = {...poly, cx: tFinal.applyToPoint(poly.cx, poly.cy).x, y: tFinal.applyToPoint(poly.cx, poly.cy).y} as IPolyCircle));
+            polys = (polys as IPolyCircle[][]).map(row => row.map(poly => {
+                return {
+                    type: "poly",
+                    points: circle2poly(poly.cx, poly.cy, poly.r).map(([x,y]) => tFinal.applyToPoint(x,y)),
+                } as IPolyPolygon;
+            }));
         }
 
         // sort the points in order of top to bottom, left to right
