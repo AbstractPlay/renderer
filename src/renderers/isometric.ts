@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, IsoPiece } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, IsometricPieces, IsoPiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
@@ -26,8 +26,7 @@ interface ITarget {
     col: number;
 }
 
-type PieceType = "cube" | "cylinder" | "hexp" | "hexf" | "lintelN" | "lintelE" | "lintelS" | "lintelW" | "lintelNS" | "lintelEW" | "spaceCube";
-const rotationMap = new Map<PieceType, Map<number, PieceType>>([
+const rotationMap = new Map<IsometricPieces, Map<number, IsometricPieces>>([
     ["lintelN", new Map([
         [1, "lintelE"],
         [2, "lintelS"],
@@ -208,7 +207,7 @@ export class IsometricRenderer extends RendererBase {
                     generateCylinders({rootSvg: this.rootSvg, heights: [height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.options.colourContext.background}, idSymbol: id})
                     break;
                 case "hex-of-hex":
-                    generateHexes({rootSvg: this.rootSvg, heights: [height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.options.colourContext.background}, idSymbol: id, orientation: Orientation.POINTY})
+                    generateHexes({rootSvg: this.rootSvg, heights: [height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.options.colourContext.background}, idSymbol: id, orientation: numRotations % 2 === 0 ? Orientation.POINTY : Orientation.FLAT})
                     break;
                 default:
                     throw new Error("Could not determine how to build the board surface.");
@@ -295,7 +294,9 @@ export class IsometricRenderer extends RendererBase {
             }
         }
 
-        // now place the surface components and any pieces on top of them, one cell at a time
+        // Now place the surface components and any pieces on top of them, one cell at a time.
+        // To make things overlap correctly, we can't sort the board into logical groups.
+        // Instead, each cell has to be rendered in its entirety before moving to the next cell.
         for (const entry of transformedPoints) {
             let height = 0;
             if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
@@ -304,7 +305,7 @@ export class IsometricRenderer extends RendererBase {
             const idHeight = height.toString().replace(".", "_");
             const cell = this.rootSvg.findOne(`#_surface_${idHeight}`) as Svg;
             if ( (cell === null) || (cell === undefined) ) {
-                throw new Error(`Could not find the requested cube of height ${idHeight}.`);
+                throw new Error(`Could not find the requested surface of height ${idHeight}.`);
             }
             let widthRatio = parseFloat(cell.attr("data-width-ratio") as string);
             let heightRatio: number|undefined;

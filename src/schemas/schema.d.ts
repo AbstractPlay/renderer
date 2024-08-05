@@ -14,6 +14,21 @@ export type PositiveInteger = number;
  * Schema for the `matrix` part of a polyomino-related feature
  */
 export type Polymatrix = (PositiveInteger | Colourstrings | 0 | null)[][];
+/**
+ * The types of pieces supported in an isometric legend.
+ */
+export type IsometricPieces =
+  | "cube"
+  | "cylinder"
+  | "hexp"
+  | "hexf"
+  | "lintelN"
+  | "lintelE"
+  | "lintelS"
+  | "lintelW"
+  | "lintelNS"
+  | "lintelEW"
+  | "spaceCube";
 export type BoardStyles =
   | "squares"
   | "squares-checkered"
@@ -262,21 +277,7 @@ export interface GradientStop {
  * Schema for a single piece in an `isoPieces` object.
  */
 export interface IsoPiece {
-  /**
-   * The predetermined types of pieces available to this renderer.
-   */
-  piece:
-    | "cube"
-    | "cylinder"
-    | "hexp"
-    | "hexf"
-    | "lintelN"
-    | "lintelE"
-    | "lintelS"
-    | "lintelW"
-    | "lintelNS"
-    | "lintelEW"
-    | "spaceCube";
+  piece: IsometricPieces;
   height: number;
   colour: Colourstrings | PositiveInteger;
   /**

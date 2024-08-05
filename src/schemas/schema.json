@@ -258,14 +258,15 @@
             "required": ["col", "row", "matrix"],
             "additionalProperties": false
         },
+        "isometricPieces": {
+            "description": "The types of pieces supported in an isometric legend.",
+            "enum": ["cube", "cylinder", "hexp", "hexf", "lintelN", "lintelE", "lintelS", "lintelW", "lintelNS", "lintelEW", "spaceCube"]
+        },
         "isoPiece": {
             "description": "Schema for a single piece in an `isoPieces` object.",
             "type": "object",
             "properties": {
-                "piece": {
-                    "description": "The predetermined types of pieces available to this renderer.",
-                    "enum": ["cube", "cylinder", "hexp", "hexf", "lintelN", "lintelE", "lintelS", "lintelW", "lintelNS", "lintelEW", "spaceCube"]
-                },
+                "piece": {"$ref": "#/$defs/isometricPieces"},
                 "height": {
                     "type": "number",
                     "minimum": 0,
