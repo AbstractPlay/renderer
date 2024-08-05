@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
 import { AnnotationBasic, APRenderRep, IsoPiece } from "../schemas/schema";
@@ -369,7 +370,7 @@ export class IsometricRenderer extends RendererBase {
                     factor = this.cellsize / piece.viewbox().width * widthRatio * pcScale;
                     factorHeight = undefined;
                     if (heightRatio !== undefined) {
-                        factorHeight = this.cellsize / piece.viewbox().height * heightRatio;
+                        factorHeight = this.cellsize / piece.viewbox().height * heightRatio * pcScale;
                     }
                     newWidth = factor * piece.viewbox().width;
                     newHeight = factor * piece.viewbox().height;

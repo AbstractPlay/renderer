@@ -135,62 +135,51 @@ export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: St
             }
             rectSide = defs.findOne("#" + sideSourceId) as SVGRect|null;
             if (rectSide === null) {
-                rectSide = defs.rect(tSize,tSize).id(sideSourceId).fill(fill).stroke("none");
+                rectSide = defs.rect(tSize,sideHeight).id(sideSourceId).fill(fill).stroke("none");
             }
             nested.use(rectSide).matrix(cube.right.toArray());
             nested.use(rectSide).matrix(cube.left.toArray());
 
             const a1: IPoint = cube.top.applyToPoint(tSize,0);
-            const a2: IPoint = {x: a1.x, y: a1.y + sideHeight}
+            const a2: IPoint = cube.right.applyToPoint(tSize,sideHeight);
+            const a3: IPoint = cube.right.applyToPoint(0,sideHeight);
             const a4: IPoint = cube.top.applyToPoint(tSize,tSize);
-            const a3: IPoint = {x: a4.x, y: a4.y + sideHeight};
+            const a5: IPoint = cube.left.applyToPoint(0,sideHeight);
             const a6: IPoint = cube.top.applyToPoint(0,tSize);
-            const a5: IPoint = {x: a6.x, y: a6.y + sideHeight};
             if ( (!sides.includes("N") && !sides.includes("S")) || (!sides.includes("E") && !sides.includes("W")) ) {
-                nested.path(`M ${a2.x} ${a2.y} L ${a3.x} ${a3.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.path(`M ${a3.x} ${a3.y} L ${a5.x} ${a5.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
             } else if (!sides.includes("N")) {
-                nested.path(`M ${a2.x} ${a2.y} L ${a3.x} ${a3.y} L ${a4.x} ${a4.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.path(`M ${a4.x} ${a4.y} L ${a3.x} ${a3.y} L ${a5.x} ${a5.y} L ${a6.x} ${a6.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
             } else if (!sides.includes("E")) {
-                nested.path(`M ${a1.x} ${a1.y} L ${a2.x} ${a2.y} L ${a3.x} ${a3.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.path(`M ${a3.x} ${a3.y} L ${a5.x} ${a5.y} L ${a6.x} ${a6.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a5.x, a5.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
             } else if (!sides.includes("S")) {
-                nested.path(`M ${a1.x} ${a1.y} L ${a2.x} ${a2.y} L ${a3.x} ${a3.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.path(`M ${a3.x} ${a3.y} L ${a5.x} ${a5.y} L ${a6.x} ${a6.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a5.x, a5.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
             } else if (!sides.includes("W")) {
-                nested.path(`M ${a1.x} ${a1.y} L ${a2.x} ${a2.y} L ${a3.x} ${a3.y} L ${a4.x} ${a4.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.path(`M ${a4.x} ${a4.y} L ${a3.x} ${a3.y} L ${a5.x} ${a5.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
             } else {
-                nested.path(`M ${a1.x} ${a1.y} L ${a2.x} ${a2.y} L ${a3.x} ${a3.y} L ${a4.x} ${a4.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.path(`M ${a4.x} ${a4.y} L ${a3.x} ${a3.y} L ${a5.x} ${a5.y} L ${a6.x} ${a6.y}`)
-                    .fill("none")
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
             }
         }
-        nested.use(rectTop).matrix(cube.top.toArray());
+        if (sides.length > 0) {
+            nested.use(rectTop).matrix(cube.top.toArray());
+        }
         nested.viewbox([minx, miny, cube.width + dWidth, cube.height + dHeight].join(" "));
     }
 }
