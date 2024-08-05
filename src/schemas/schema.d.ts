@@ -265,7 +265,18 @@ export interface IsoPiece {
   /**
    * The predetermined types of pieces available to this renderer.
    */
-  piece: "cube" | "cylinder" | "hexp" | "hexf";
+  piece:
+    | "cube"
+    | "cylinder"
+    | "hexp"
+    | "hexf"
+    | "lintelN"
+    | "lintelE"
+    | "lintelS"
+    | "lintelW"
+    | "lintelNS"
+    | "lintelEW"
+    | "spaceCube";
   height: number;
   colour: Colourstrings | PositiveInteger;
   /**

@@ -25,6 +25,40 @@ interface ITarget {
     col: number;
 }
 
+type PieceType = "cube" | "cylinder" | "hexp" | "hexf" | "lintelN" | "lintelE" | "lintelS" | "lintelW" | "lintelNS" | "lintelEW" | "spaceCube";
+const rotationMap = new Map<PieceType, Map<number, PieceType>>([
+    ["lintelN", new Map([
+        [1, "lintelE"],
+        [2, "lintelS"],
+        [3, "lintelW"],
+    ])],
+    ["lintelE", new Map([
+        [1, "lintelS"],
+        [2, "lintelW"],
+        [3, "lintelN"],
+    ])],
+    ["lintelS", new Map([
+        [1, "lintelW"],
+        [2, "lintelN"],
+        [3, "lintelE"],
+    ])],
+    ["lintelW", new Map([
+        [1, "lintelN"],
+        [2, "lintelE"],
+        [3, "lintelS"],
+    ])],
+    ["lintelNS", new Map([
+        [1, "lintelEW"],
+        [2, "lintelNS"],
+        [3, "lintelEW"],
+    ])],
+    ["lintelEW", new Map([
+        [1, "lintelNS"],
+        [2, "lintelEW"],
+        [3, "lintelNS"],
+    ])],
+]);
+
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
  *
@@ -84,9 +118,12 @@ export class IsometricRenderer extends RendererBase {
             board = this.rootSvg.group().id("board");
         }
         // any user-specified rotation has to happen before laying everything out
+        let extraRotation = 0;
         if (this.options.rotate !== undefined) {
             // ensure it's a multiple of 90
-            const extraRotation = 90 * Math.floor(this.options.rotate / 90);
+            extraRotation = 90 * Math.floor(this.options.rotate / 90);
+            while (extraRotation < 0) { extraRotation += 360; }
+            extraRotation = extraRotation % 360;
             if (extraRotation !== 0) {
                 // the points and polys
                 const tUserRotate = new Matrix().rotate(deg2rad(extraRotation));
@@ -94,6 +131,7 @@ export class IsometricRenderer extends RendererBase {
                 polys = (polys as IPolyPolygon[][]).map(row => row = row.map(poly => poly = {...poly, points: poly.points.map(pt => tUserRotate.applyToPoint(pt.x, pt.y))} as IPolyPolygon));
             }
         }
+        const numRotations = Math.floor(extraRotation / 90) % 4;
 
         let strokeWeight = 1;
         if ("strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
@@ -182,13 +220,39 @@ export class IsometricRenderer extends RendererBase {
         if (this.json.legend !== null && this.json.legend !== undefined) {
             legend = this.json.legend as MyLegend;
             for (const [key, pc] of Object.entries(this.json.legend as MyLegend)) {
-                if (pc.piece === "cube") {
+                // pieces may change based on rotation
+                let effPiece = pc.piece;
+                if (numRotations > 0) {
+                    if (rotationMap.has(pc.piece)) {
+                        const next = rotationMap.get(pc.piece)!;
+                        if (next.has(numRotations)) {
+                            effPiece = next.get(numRotations)!;
+                        }
+                    }
+                }
+
+                // generate the pieces
+                if (effPiece === "cube") {
                     generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key});
-                } else if (pc.piece === "cylinder") {
+                } else if (effPiece === "lintelN") {
+                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: ["E", "S", "W"]});
+                } else if (effPiece === "lintelE") {
+                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: ["N", "S", "W"]});
+                } else if (effPiece === "lintelS") {
+                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: ["E", "N", "W"]});
+                } else if (effPiece === "lintelW") {
+                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: ["E", "S", "N"]});
+                } else if (effPiece === "lintelNS") {
+                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: ["E", "W"]});
+                } else if (effPiece === "lintelEW") {
+                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: ["N", "S"]});
+                } else if (effPiece === "spaceCube") {
+                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: []});
+                } else if (effPiece === "cylinder") {
                     generateCylinders({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key});
-                } else if (pc.piece === "hexp") {
+                } else if (effPiece === "hexp") {
                     generateHexes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, orientation: Orientation.POINTY})
-                } else if (pc.piece === "hexf") {
+                } else if (effPiece === "hexf") {
                     generateHexes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, orientation: Orientation.FLAT})
                 } else {
                     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

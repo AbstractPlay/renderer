@@ -264,7 +264,7 @@
             "properties": {
                 "piece": {
                     "description": "The predetermined types of pieces available to this renderer.",
-                    "enum": ["cube", "cylinder", "hexp", "hexf"]
+                    "enum": ["cube", "cylinder", "hexp", "hexf", "lintelN", "lintelE", "lintelS", "lintelW", "lintelNS", "lintelEW", "spaceCube"]
                 },
                 "height": {
                     "type": "number",
