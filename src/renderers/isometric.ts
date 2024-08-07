@@ -607,12 +607,14 @@ export class IsometricRenderer extends RendererBase {
                     const markerArrow = group.marker(4 * unit + 3 * s, 4 * unit + 2 * s, (add) => add.path(`M${s},${s} L${s + 4 * unit},${s + 2 * unit} ${s},${s + 4 * unit} Z`).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const markerCircle = group.marker(2 * unit + 2 * s, 2 * unit + 2 * s, (add) => add.circle(2 * unit).center(unit + s, unit + s).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const points: string[] = [];
+                    const tInverted = transform.inverse();
                     for (const node of (note.targets as ITarget[])) {
                         const entry = entries.find(e => e.col === node.col && e.row === node.row);
                         if (entry === undefined) {
                             throw new Error(`Annotation - Move: Could not find coordinates for row ${node.row}, column ${node.col}.`);
                         }
-                        points.push(`${entry.x},${entry.y}`);
+                        const inverted = tInverted.applyToPoint(entry.x, entry.y);
+                        points.push(`${inverted.x},${inverted.y}`);
                     }
                     const stroke: StrokeData = {
                         color: colour,
@@ -626,7 +628,7 @@ export class IsometricRenderer extends RendererBase {
                             stroke.dasharray = (note.dashed ).join(" ");
                         }
                     }
-                    const line = group.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    const line = group.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' }).matrix(transform.toArray());
                     line.marker("start", markerCircle);
                     if (arrow) {
                         line.marker("end", markerArrow);
@@ -658,17 +660,20 @@ export class IsometricRenderer extends RendererBase {
                     // const markerArrow = group.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
                     const markerArrow = group.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const markerCircle = group.marker(2, 2, (add) => add.circle(2).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const tInverted = transform.inverse();
                     const [from, to] = note.targets as ITarget[];
                     const entryFrom = entries.find(e => e.col === from.col && e.row === from.row);
                     if (entryFrom === undefined) {
-                        throw new Error(`Annotation - Ejenct: Could not find coordinates for row ${from.row}, column ${from.col}.`);
+                        throw new Error(`Annotation - Eject: Could not find coordinates for row ${from.row}, column ${from.col}.`);
                     }
-                    const ptFrom = {x: entryFrom.x, y: entryFrom.y};
+                    const fromInverted = tInverted.applyToPoint(entryFrom.x, entryFrom.y);
+                    const ptFrom = {x: fromInverted.x, y: fromInverted.y};
                     const entryTo = entries.find(e => e.col === to.col && e.row === to.row);
                     if (entryTo === undefined) {
                         throw new Error(`Annotation - Eject: Could not find coordinates for row ${to.row}, column ${to.col}.`);
                     }
-                    const ptTo = {x: entryTo.x, y: entryTo.y};
+                    const toInverted = tInverted.applyToPoint(entryTo.x, entryTo.y);
+                    const ptTo = {x: toInverted.x, y: toInverted.y};
                     const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
                     const stroke: StrokeData = {
                         color: colour,
@@ -683,7 +688,7 @@ export class IsometricRenderer extends RendererBase {
                         }
                     }
                     const line = group.path(`M ${ptFrom.x} ${ptFrom.y} C ${ptCtr.x} ${ptCtr.y} ${ptCtr.x} ${ptCtr.y} ${ptTo.x} ${ptTo.y}`).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
-                    line.marker("start", markerCircle);
+                    line.marker("start", markerCircle).matrix(transform.toArray());
                     if (arrow) {
                         line.marker("end", markerArrow);
                     } else {
@@ -718,7 +723,7 @@ export class IsometricRenderer extends RendererBase {
                             throw new Error(`Annotation - Dots: Could not find coordinates for row ${node.row}, column ${node.col}.`);
                         }
                         const pt = {x: entry.x, y: entry.y};
-                        const tInverted = transform.inverse(false, false);
+                        const tInverted = transform.inverse();
                         const ptInverted = tInverted.applyToPoint(pt.x, pt.y);
                         group.circle(this.cellsize * diameter)
                             .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -783,7 +788,7 @@ export class IsometricRenderer extends RendererBase {
                         diameter = marker.size;
                     }
                     const pt = {x: entry.x, y: entry.y};
-                    const tInverted = transform.inverse(false, false);
+                    const tInverted = transform.inverse();
                     const ptInverted = tInverted.applyToPoint(pt.x, pt.y);
                     const dot = group.circle(this.cellsize * diameter)
                         .opacity(opacity)

@@ -44,7 +44,7 @@ export class Matrix {
 
     interpolateAnim(m2: Matrix|SVGMatrix, t: number, context: CanvasRenderingContext2D, dom: HTMLElement): Matrix;
 
-    inverse(cloneContext: boolean, cloneDOM: boolean): Matrix;
+    inverse(cloneContext?: boolean, cloneDOM?: boolean): Matrix;
 
     isEqual(m: Matrix|SVGMatrix): boolean;
 
