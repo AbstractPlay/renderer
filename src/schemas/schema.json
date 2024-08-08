@@ -322,7 +322,7 @@
                     "description": "The width of the line, expressed as a percentage of cell size.",
                     "type": "number",
                     "minimum": 0,
-                    "default": 0.1
+                    "default": 0.03
                 },
                 "opacity": {
                     "type": "number",
