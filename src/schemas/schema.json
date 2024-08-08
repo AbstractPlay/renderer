@@ -341,6 +341,11 @@
                     "type": "boolean",
                     "default": true
                 },
+                "anchors": {
+                    "description": "Whether the move annotation should have dot anchors.",
+                    "type": "boolean",
+                    "default": true
+                },
                 "size": {
                     "description": "The size of the diameter of the dot as a fraction of cellsize.",
                     "type": "number",

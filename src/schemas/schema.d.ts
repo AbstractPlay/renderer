@@ -1262,6 +1262,10 @@ export interface AnnotationBasic {
   colour?: Colourstrings | PositiveInteger;
   arrow?: boolean;
   /**
+   * Whether the move annotation should have dot anchors.
+   */
+  anchors?: boolean;
+  /**
    * The size of the diameter of the dot as a fraction of cellsize.
    */
   size?: number;

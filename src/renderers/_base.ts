@@ -4631,6 +4631,10 @@ export abstract class RendererBase {
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
                         arrow = note.arrow;
                     }
+                    let anchors = true;
+                    if ( ("anchors" in note) && (note.anchors !== undefined) ) {
+                        anchors = note.anchors;
+                    }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
                         opacity = note.opacity;
@@ -4665,10 +4669,12 @@ export abstract class RendererBase {
                         }
                     }
                     const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
-                    line.marker("start", markerCircle);
+                    if (anchors) {
+                        line.marker("start", markerCircle);
+                    }
                     if (arrow) {
                         line.marker("end", markerArrow);
-                    } else {
+                    } else if (anchors) {
                         line.marker("end", markerCircle);
                     }
                 } else if ( (note.type !== undefined) && (note.type === "eject") ) {
