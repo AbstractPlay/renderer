@@ -71,6 +71,20 @@ export class HomeworldsRenderer extends RendererBase {
         // Load all the pieces in the legend
         this.loadLegend();
 
+        // if `hw-system-only` option is set, render the first system and exit
+        if (this.json.options !== undefined && this.json.options.includes("hw-system-only")) {
+            const sys = this.json.board[0];
+            const ships = this.json.pieces[0] as string[];
+            const node: ISystem = {
+                name: sys.name,
+                seat: sys.seat,
+                stars: [...sys.stars],
+                ships: [...ships],
+            }
+            this.genSystem(`_sysOnly`, node);
+            return;
+        }
+
         // Extract the systems and ships and compose them into two groups: home and peripheral
         const sysHome: ISystem[] = [];
         const sysPeriph: ISystem[] = [];
@@ -424,9 +438,11 @@ export class HomeworldsRenderer extends RendererBase {
         const pieceSpacing = cellSize / 4;
         if (orientation === "H") {
             // stars first
-            this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
-            if (sys.stars.length > 1) {
-                this.placePiece(nested, sys.stars[1], grid[1][0], `${sys.name}|${sys.stars[1]}`);
+            if (sys.stars.length > 0) {
+                this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
+                if (sys.stars.length > 1) {
+                    this.placePiece(nested, sys.stars[1], grid[1][0], `${sys.name}|${sys.stars[1]}`);
+                }
             }
             // now ships
             for (let y = 0; y < seats.length; y++) {
@@ -453,15 +469,17 @@ export class HomeworldsRenderer extends RendererBase {
             const effSeat = HomeworldsRenderer.effectiveSeat(sys.seat!, rotation);
             if (effSeat === "W") {
                 // stars first
-                this.placePiece(nested, sys.stars[0], grid[0][grid[0].length - 1], `${sys.name}|${sys.stars[0]}`);
-                if (sys.stars.length > 1) {
-                    this.placePiece(nested, sys.stars[1], grid[0][grid[0].length - 2], `${sys.name}|${sys.stars[1]}`);
+                if (sys.stars.length > 0) {
+                    this.placePiece(nested, sys.stars[0], grid[0][grid[0].length - 1], `${sys.name}|${sys.stars[0]}`);
+                    if (sys.stars.length > 1) {
+                        this.placePiece(nested, sys.stars[1], grid[0][grid[0].length - 2], `${sys.name}|${sys.stars[1]}`);
+                    }
                 }
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
                     const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
                     const used: Box[] = [];
-                    for (let x = 0; x < sys.ships.length; x++) {
+                    for (let x = 0; x < ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
                         const [use, factor] = this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][grid[0].length - 1 - y], `${sys.name}|${ship}`)
@@ -480,15 +498,17 @@ export class HomeworldsRenderer extends RendererBase {
                 }
             } else {
                 // stars first
-                this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
-                if (sys.stars.length > 1) {
-                    this.placePiece(nested, sys.stars[1], grid[0][1], `${sys.name}|${sys.stars[1]}`);
+                if (sys.stars.length > 0) {
+                    this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
+                    if (sys.stars.length > 1) {
+                        this.placePiece(nested, sys.stars[1], grid[0][1], `${sys.name}|${sys.stars[1]}`);
+                    }
                 }
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
                     const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
                     const used: Box[] = [];
-                    for (let x = 0; x < sys.ships.length; x++) {
+                    for (let x = 0; x < ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
                         const [use, factor] = this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][y], `${sys.name}|${ship}`)
@@ -532,7 +552,7 @@ export class HomeworldsRenderer extends RendererBase {
         // Add name
         // nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
         let sysLabel = sys.name;
-        if ( (sys.stars.length > 1) && ("seat" in sys) && (sys.seat !== undefined) ) {
+        if ( ("seat" in sys) && (sys.seat !== undefined) ) {
             sysLabel += ` (${sys.seat})`;
         }
         const fontsize = labelHeight;

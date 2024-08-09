@@ -71,12 +71,9 @@ export type BoardHomeworlds = {
    */
   seat?: "N" | "E" | "S" | "W";
   /**
-   * Describes the system's stars.
-   *
-   * @minItems 1
-   * @maxItems 2
+   * Describes the system's stars. (For reasons, the schema does not require 1 or 2 stars, but in practice anything other this will give undefined results.)
    */
-  stars: [string] | [string, string];
+  stars: string[];
 }[];
 /**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are allowed because sometimes you need to display an empty home system in the middle of a turn.
@@ -162,6 +159,7 @@ export interface APRenderRep {
     | "no-border"
     | "hw-light"
     | "hw-no-buttons"
+    | "hw-system-only"
     | "clickable-edges"
     | "reverse-letters"
     | "reverse-numbers"
