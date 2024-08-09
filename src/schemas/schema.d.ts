@@ -162,6 +162,7 @@ export interface APRenderRep {
     | "no-border"
     | "hw-light"
     | "hw-no-buttons"
+    | "hw-system-only"
     | "clickable-edges"
     | "reverse-letters"
     | "reverse-numbers"

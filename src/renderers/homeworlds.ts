@@ -71,6 +71,20 @@ export class HomeworldsRenderer extends RendererBase {
         // Load all the pieces in the legend
         this.loadLegend();
 
+        // if `hw-system-only` option is set, render the first system and exit
+        if (this.json.options !== undefined && this.json.options.includes("hw-system-only")) {
+            const sys = this.json.board[0];
+            const ships = this.json.pieces[0] as string[];
+            const node: ISystem = {
+                name: sys.name,
+                seat: sys.seat,
+                stars: [...sys.stars],
+                ships: [...ships],
+            }
+            this.genSystem(`_sysOnly`, node);
+            return;
+        }
+
         // Extract the systems and ships and compose them into two groups: home and peripheral
         const sysHome: ISystem[] = [];
         const sysPeriph: ISystem[] = [];
@@ -532,7 +546,7 @@ export class HomeworldsRenderer extends RendererBase {
         // Add name
         // nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
         let sysLabel = sys.name;
-        if ( (sys.stars.length > 1) && ("seat" in sys) && (sys.seat !== undefined) ) {
+        if ( ("seat" in sys) && (sys.seat !== undefined) ) {
             sysLabel += ` (${sys.seat})`;
         }
         const fontsize = labelHeight;
