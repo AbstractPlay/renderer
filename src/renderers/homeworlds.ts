@@ -438,9 +438,11 @@ export class HomeworldsRenderer extends RendererBase {
         const pieceSpacing = cellSize / 4;
         if (orientation === "H") {
             // stars first
-            this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
-            if (sys.stars.length > 1) {
-                this.placePiece(nested, sys.stars[1], grid[1][0], `${sys.name}|${sys.stars[1]}`);
+            if (sys.stars.length > 0) {
+                this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
+                if (sys.stars.length > 1) {
+                    this.placePiece(nested, sys.stars[1], grid[1][0], `${sys.name}|${sys.stars[1]}`);
+                }
             }
             // now ships
             for (let y = 0; y < seats.length; y++) {
