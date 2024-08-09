@@ -479,7 +479,7 @@ export class HomeworldsRenderer extends RendererBase {
                 for (let y = 0; y < seats.length; y++) {
                     const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
                     const used: Box[] = [];
-                    for (let x = 0; x < sys.ships.length; x++) {
+                    for (let x = 0; x < ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
                         const [use, factor] = this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][grid[0].length - 1 - y], `${sys.name}|${ship}`)
@@ -508,7 +508,7 @@ export class HomeworldsRenderer extends RendererBase {
                 for (let y = 0; y < seats.length; y++) {
                     const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
                     const used: Box[] = [];
-                    for (let x = 0; x < sys.ships.length; x++) {
+                    for (let x = 0; x < ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
                         const [use, factor] = this.placePiece(nested, `${designation}${seats[y]}`, grid[x + 1][y], `${sys.name}|${ship}`)
