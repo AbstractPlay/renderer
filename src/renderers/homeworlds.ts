@@ -467,9 +467,11 @@ export class HomeworldsRenderer extends RendererBase {
             const effSeat = HomeworldsRenderer.effectiveSeat(sys.seat!, rotation);
             if (effSeat === "W") {
                 // stars first
-                this.placePiece(nested, sys.stars[0], grid[0][grid[0].length - 1], `${sys.name}|${sys.stars[0]}`);
-                if (sys.stars.length > 1) {
-                    this.placePiece(nested, sys.stars[1], grid[0][grid[0].length - 2], `${sys.name}|${sys.stars[1]}`);
+                if (sys.stars.length > 0) {
+                    this.placePiece(nested, sys.stars[0], grid[0][grid[0].length - 1], `${sys.name}|${sys.stars[0]}`);
+                    if (sys.stars.length > 1) {
+                        this.placePiece(nested, sys.stars[1], grid[0][grid[0].length - 2], `${sys.name}|${sys.stars[1]}`);
+                    }
                 }
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
@@ -494,9 +496,11 @@ export class HomeworldsRenderer extends RendererBase {
                 }
             } else {
                 // stars first
-                this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
-                if (sys.stars.length > 1) {
-                    this.placePiece(nested, sys.stars[1], grid[0][1], `${sys.name}|${sys.stars[1]}`);
+                if (sys.stars.length > 0) {
+                    this.placePiece(nested, sys.stars[0], grid[0][0], `${sys.name}|${sys.stars[0]}`);
+                    if (sys.stars.length > 1) {
+                        this.placePiece(nested, sys.stars[1], grid[0][1], `${sys.name}|${sys.stars[1]}`);
+                    }
                 }
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
