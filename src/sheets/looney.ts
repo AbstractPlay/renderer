@@ -62,15 +62,15 @@ sheet.glyphs.set("pyramid-flat-large", (canvas: SVGContainer) => {
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
     const xOffset = pipWidth * 1.5;
     const y = halfcell + (height / 2) - (pipHeight / 2);
-    group.circle(pipWidth, pipHeight)
+    group.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
-    group.circle(pipWidth, pipHeight)
+    group.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + xOffset, y);
-    group.circle(pipWidth, pipHeight)
+    group.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + (xOffset * 2), y);
@@ -89,11 +89,11 @@ sheet.glyphs.set("pyramid-flat-medium", (canvas: SVGContainer) => {
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
     const xOffset = pipWidth * 1.5;
     const y = halfcell + (height / 2) - (pipHeight / 2);
-    group.circle(pipWidth, pipHeight)
+    group.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
-    group.circle(pipWidth, pipHeight)
+    group.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + xOffset, y);
@@ -111,7 +111,7 @@ sheet.glyphs.set("pyramid-flat-small", (canvas: SVGContainer) => {
         .fill("#fff");
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
     const y = halfcell + (height / 2) - (pipHeight / 2);
-    group.circle(pipWidth, pipHeight)
+    group.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
@@ -132,15 +132,15 @@ sheet.glyphs.set("pyramid-flattened-large", (canvas: SVGContainer) => {
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
     const xOffset = pipWidth * 1.5;
     const y = halfcell + (height / 2) - (pipHeight / 2);
-    tri.circle(pipWidth, pipHeight)
+    tri.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
-    tri.circle(pipWidth, pipHeight)
+    tri.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + xOffset, y);
-    tri.circle(pipWidth, pipHeight)
+    tri.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + (xOffset * 2), y);
@@ -160,11 +160,11 @@ sheet.glyphs.set("pyramid-flattened-medium", (canvas: SVGContainer) => {
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
     const xOffset = pipWidth * 1.5;
     const y = halfcell + (height / 2) - (pipHeight / 2);
-    tri.circle(pipWidth, pipHeight)
+    tri.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
-    tri.circle(pipWidth, pipHeight)
+    tri.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart + xOffset, y);
@@ -183,7 +183,7 @@ sheet.glyphs.set("pyramid-flattened-small", (canvas: SVGContainer) => {
         .fill("#fff");
     const xStart = halfcell - (base / 2) + (pipWidth * 1.25);
     const y = halfcell + (height / 2) - (pipHeight / 2);
-    tri.circle(pipWidth, pipHeight)
+    tri.ellipse(pipWidth, pipHeight)
         .fill("#000")
         .opacity(pipOpacity)
         .center(xStart, y);
