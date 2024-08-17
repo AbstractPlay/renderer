@@ -4659,9 +4659,14 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) && (note.colour !== null) ) {
                         colour = this.resolveColour(note.colour ) as string;
                     }
-                    let style = "solid";
+                    let style: "solid"|"dashed" = "solid";
+                    let dasharray: string|undefined;
                     if ( ("style" in note) && (note.style !== undefined) ) {
-                        style = note.style as string;
+                        style = note.style;
+                    }
+                    if ( ("dashed" in note) && (Array.isArray(note.dashed)) ) {
+                        style = "dashed";
+                        dasharray = note.dashed.map(n => n.toString()).join(" ");
                     }
                     let arrow = true;
                     if ( ("arrow" in note) && (note.arrow !== undefined)) {
@@ -4699,9 +4704,10 @@ export abstract class RendererBase {
                         linecap: "round", linejoin: "round"
                     };
                     if (style === "dashed") {
-                        stroke.dasharray = (4 * Math.ceil(strokeWidth / 0.03)).toString();
-                        if (note.dashed !== undefined && note.dashed !== null) {
-                            stroke.dasharray = (note.dashed ).join(" ");
+                        if (dasharray !== undefined) {
+                            stroke.dasharray = dasharray;
+                        } else {
+                            stroke.dasharray = (4 * Math.ceil(strokeWidth / 0.03)).toString();
                         }
                     }
                     const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
