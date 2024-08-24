@@ -1170,11 +1170,11 @@ export abstract class RendererBase {
                     .opacity(0)
                     .stroke({width: 0});
             }
-            const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
-            tileBlocked.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill({color: this.options.colourContext.fill, opacity: baseOpacity})
-                .stroke({width: 0});
+            // const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
+            // tileBlocked.rect(cellsize, cellsize)
+            //     .move(0, 0)
+            //     .fill({color: this.options.colourContext.fill, opacity: baseOpacity})
+            //     .stroke({width: 0});
 
             // Determine whether the first row starts with a light or dark square
             let startLight = 1;
@@ -1203,7 +1203,7 @@ export abstract class RendererBase {
                     const {x, y} = grid[row][col];
                     let used: SVGUse;
                     if (idx !== -1) {
-                        used = tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
+                        // used = tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
                     } else {
                         if (col % 2 !== lightCol) {
                             used = tiles.use(tileDark).size(cellsize, cellsize).center(x, y);
@@ -1233,10 +1233,10 @@ export abstract class RendererBase {
                     .fill({color: this.options.colourContext.background, opacity: 0})
                     .stroke({width: 0});
             } else {
-                tileBlocked.rect(cellsize, cellsize)
-                    .move(0, 0)
-                    .fill({color: baseColour, opacity: baseOpacity})
-                    .stroke({width: 0});
+                // tileBlocked.rect(cellsize, cellsize)
+                //     .move(0, 0)
+                //     .fill({color: baseColour, opacity: baseOpacity})
+                //     .stroke({width: 0});
             }
 
             for (let row = 0; row < height; row++) {
@@ -1256,15 +1256,15 @@ export abstract class RendererBase {
                 }
             }
         } else if (blocked !== undefined) {
-            const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
-            tileBlocked.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill({color: this.options.colourContext.fill, opacity: baseOpacity})
-                .stroke({width: 0});
-            for (const coord of blocked) {
-                const {x, y} = grid[coord.row][coord.col];
-                tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
-            }
+            // const tileBlocked = this.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
+            // tileBlocked.rect(cellsize, cellsize)
+            //     .move(0, 0)
+            //     .fill({color: this.options.colourContext.fill, opacity: baseOpacity})
+            //     .stroke({width: 0});
+            // for (const coord of blocked) {
+            //     const {x, y} = grid[coord.row][coord.col];
+            //     tiles.use(tileBlocked).size(cellsize, cellsize).center(x, y);
+            // }
         }
 
         // Draw grid lines
@@ -1272,83 +1272,54 @@ export abstract class RendererBase {
             if (style === "squares-beveled") {
                 baseOpacity *= 0.15;
             }
-            // Horizontal, top of each row, then bottom line after loop
-            let numcols = 1;
-            if (tilex > 0) {
-                numcols = Math.floor(width / tilex);
+
+            // for each unblocked grid node, create a line for each edge
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    let idx = -1;
+                    if (blocked !== undefined) {
+                        idx = blocked.findIndex(b => b.col === x && b.row === y);
+                    }
+                    if (idx === -1) {
+                        const {x: cx, y: cy} = grid[y][x];
+                        const half = cellsize / 2;
+                        const pts: IPoint[] = [
+                            {x: cx - half, y: cy - half},
+                            {x: cx + half, y: cy - half},
+                            {x: cx + half, y: cy + half},
+                            {x: cx - half, y: cy + half},
+                        ];
+                        // have to close the poly
+                        pts.push(pts[0]);
+                        gridlines.polyline(pts.map(pt => [pt.x, pt.y]).flat())
+                                 .fill("none")
+                                 .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    }
+                }
             }
-            for (let tileCol = 0; tileCol < numcols; tileCol++) {
-                let idxLeft = 0;
-                if (tilex > 0) {
-                    idxLeft = tileCol * tilex;
-                }
-                let idxRight = width - 1;
-                if (tilex > 0) {
-                    idxRight = idxLeft + tilex - 1;
-                }
-                for (let row = 0; row < height; row++) {
-                    if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
-                        if ( (row === 0) || (row === height - 1) ) {
-                            continue;
+
+            // check for non-spaced tiling and draw thicker lines
+            if (tileSpace === 0 && (tilex > 0 || tiley > 0)) {
+                if (tiley > 0) {
+                    // horizontal
+                    const xLeft = grid[0][0].x - (cellsize / 2);
+                    const xRight = grid[0][grid[0].length - 1].x + (cellsize / 2);
+                    for (let row = 0; row < height-1; row++) {
+                        if ((row+1) % tiley === 0) {
+                            const y = grid[row][0].y + (cellsize / 2);
+                            gridlines.line(xLeft, y, xRight, y).stroke({width: baseStroke * 3, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                         }
                     }
-                    let thisStroke = baseStroke;
-                    if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
-                        thisStroke = baseStroke * 3;
-                    }
-                    const x1 = grid[row][idxLeft].x - (cellsize / 2);
-                    const y1 = grid[row][idxLeft].y - (cellsize / 2);
-                    const x2 = grid[row][idxRight].x + (cellsize / 2);
-                    const y2 = grid[row][idxRight].y - (cellsize / 2);
-                    gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-
-                    if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && ( (row > 0) || (tiley === 1) ) && (row % tiley === tiley - 1) ) ) {
-                        const lastx1 = grid[row][idxLeft].x - (cellsize / 2);
-                        const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
-                        const lastx2 = grid[row][idxRight].x + (cellsize / 2);
-                        const lasty2 = grid[row][idxRight].y + (cellsize / 2);
-                        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-                    }
                 }
-            }
-
-            // Vertical, left of each column, then right line after loop
-            let numrows = 1;
-            if (tiley > 0) {
-                numrows = Math.floor(height / tiley);
-            }
-            for (let tileRow = 0; tileRow < numrows; tileRow++) {
-                let idxTop = 0;
-                if (tiley > 0) {
-                    idxTop = tileRow * tiley;
-                }
-                let idxBottom = height - 1;
-                if (tiley > 0) {
-                    idxBottom = idxTop + tiley - 1;
-                }
-                for (let col = 0; col < width; col++) {
-                    if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
-                        if ( (col === 0) || (col === width - 1) ) {
-                            continue;
+                if (tilex > 0) {
+                    // vertical
+                    const yTop = grid[0][0].y - (cellsize / 2);
+                    const yBottom = grid[grid.length - 1][0].y + (cellsize / 2);
+                    for (let col = 0; col < width-1; col++) {
+                        if ((col+1) % tilex === 0) {
+                            const x = grid[0][col].x + (cellsize / 2);
+                            gridlines.line(x, yTop, x, yBottom).stroke({width: baseStroke * 3, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                         }
-                    }
-
-                    let thisStroke = baseStroke;
-                    if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
-                        thisStroke = baseStroke * 3;
-                    }
-                    const x1 = grid[idxTop][col].x - (cellsize / 2);
-                    const y1 = grid[idxTop][col].y - (cellsize / 2);
-                    const x2 = grid[idxBottom][col].x - (cellsize / 2);
-                    const y2 = grid[idxBottom][col].y + (cellsize / 2);
-                    gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-
-                    if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && ( (col > 0) || (tilex === 1) ) && (col % tilex === tilex - 1) ) ) {
-                        const lastx1 = grid[idxTop][col].x + (cellsize / 2);
-                        const lasty1 = grid[idxTop][col].y - (cellsize / 2);
-                        const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
-                        const lasty2 = grid[idxBottom][col].y + (cellsize / 2);
-                        gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
             }
