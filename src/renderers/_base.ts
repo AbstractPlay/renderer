@@ -593,7 +593,7 @@ export abstract class RendererBase {
                 }
                 let size = 0;
                 // Layer the glyphs, manipulating as you go
-                for (const g of glyphs) {
+                for (const [idx, g] of glyphs.entries()) {
                     let got: SVGSymbol;
                     if ( ("name" in g) && (g.name !== undefined) ) {
                         let player: number|undefined;
@@ -635,7 +635,7 @@ export abstract class RendererBase {
                     }
 
                     // tag glyph symbol for styling
-                    got.id(glyph2uid(g));
+                    got.id(glyph2uid(g, key, idx));
 
                     // look for context strokes and fills
                     const contextStroke = this.options.colourContext.strokes;
