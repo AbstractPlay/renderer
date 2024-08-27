@@ -1326,18 +1326,40 @@ export abstract class RendererBase {
         }
 
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) && (style !== "pegboard") ) {
-            // moving to click catchers across the board to make arbitrary rotation easier
-            const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
-            for (let row = 0; row < grid.length; row++) {
-                for (let col = 0; col < grid[row].length; col++) {
-                    if (blocked !== undefined && blocked.find(entry => entry.row === row && entry.col === col) !== undefined) {
-                        continue;
+            const rotation = this.getRotation();
+            const centre = this.getBoardCentre();
+            const clickDeltaX: number = (this.json.board.clickDeltaX ?? 0);
+            const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0);
+            const originX = grid[0][0].x;
+            const originY = grid[0][0].y;
+            const maxX = grid[0][grid[0].length - 1].x;
+            const maxY = grid[grid.length - 1][0].y;
+            const root = this.rootSvg;
+            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
+                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
+                if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
+                    // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                    if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                        this.options.boardClick!(y, x, "");
                     }
-                    const {x, y} = grid[row][col];
-                    const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                    t.click(() => this.options.boardClick!(row, col, ""));
                 }
+            });
+            if (this.options.rotate === 180) {
+                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                    const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
+                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
+                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
+                        // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                        if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                            this.options.boardClick!(y, x, "");
+                        }
+                    }
+                });
             }
+            this.rootSvg.click(genericCatcher);
         }
 
         // Add edge click handlers if requested

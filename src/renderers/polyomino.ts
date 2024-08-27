@@ -69,8 +69,6 @@ export class PolyominoRenderer extends RendererBase {
         // PIECES
         const board = this.rootSvg.findOne("#board") as SVGG;
         const group = board.group().id("pieces");
-        const tiles = this.rootSvg.findOne("#tiles") as SVGG;
-        tiles.insertAfter(group);
         if ( (this.json.pieces !== null) && (Array.isArray(this.json.pieces)) && (! Array.isArray(this.json.pieces[0])) ) {
             const pieces = this.json.pieces as Polypiece[];
             pieces.forEach(p => {
