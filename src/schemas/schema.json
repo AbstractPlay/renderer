@@ -71,7 +71,8 @@
                 "conical-hex",
                 "conical-hex-narrow",
                 "pyramid-hex",
-                "heightmap-squares"
+                "heightmap-squares",
+                "dvgc"
             ]
         },
         "gradientStop": {

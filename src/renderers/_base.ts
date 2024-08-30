@@ -4611,6 +4611,376 @@ export abstract class RendererBase {
     }
 
     /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates the very specific board for SQUARES, by Deer Valley Games Company.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected dvgc(): [GridPoints, IPolyPolygon[][]] {
+        if ( this.json === undefined || this.json === null || this.rootSvg === undefined ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if (this.json.board === undefined || this.json.board === null) {
+            throw new Error("Object in an invalid state!");
+        }
+        // const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // build the list of polys
+        // just do it manually; it's a fixed size
+        const polys: IPolyPolygon[][] = [
+            [
+                {
+                    type: "poly",
+                    points: [
+                        {x: 0, y: 0},
+                        {x: 150, y: 0},
+                        {x: 150, y: 50},
+                        {x: 0, y: 50},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 150, y: 0},
+                        {x: 300, y: 0},
+                        {x: 300, y: 50},
+                        {x: 150, y: 50},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 300, y: 0},
+                        {x: 450, y: 0},
+                        {x: 450, y: 50},
+                        {x: 300, y: 50},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 400, y: 50},
+                        {x: 450, y: 50},
+                        {x: 450, y: 150},
+                        {x: 400, y: 150},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 400, y: 150},
+                        {x: 450, y: 150},
+                        {x: 450, y: 250},
+                        {x: 400, y: 250},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 300, y: 250},
+                        {x: 450, y: 250},
+                        {x: 450, y: 300},
+                        {x: 300, y: 300},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 150, y: 250},
+                        {x: 300, y: 250},
+                        {x: 300, y: 300},
+                        {x: 150, y: 300},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 0, y: 250},
+                        {x: 150, y: 250},
+                        {x: 150, y: 300},
+                        {x: 0, y: 300},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 0, y: 150},
+                        {x: 50, y: 150},
+                        {x: 50, y: 250},
+                        {x: 0, y: 250},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 0, y: 50},
+                        {x: 50, y: 50},
+                        {x: 50, y: 150},
+                        {x: 0, y: 150},
+                    ]
+                },
+            ],
+            [
+                {
+                    type: "poly",
+                    points: [
+                        {x: 50, y: 50},
+                        {x: 137.5, y: 50},
+                        {x: 137.5, y: 100},
+                        {x: 50, y: 100},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 137.5, y: 50},
+                        {x: 225, y: 50},
+                        {x: 225, y: 100},
+                        {x: 137.5, y: 100},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 225, y: 50},
+                        {x: 312.5, y: 50},
+                        {x: 312.5, y: 100},
+                        {x: 225, y: 100},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 312.5, y: 50},
+                        {x: 400, y: 50},
+                        {x: 400, y: 100},
+                        {x: 312.5, y: 100},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 350, y: 100},
+                        {x: 400, y: 100},
+                        {x: 400, y: 200},
+                        {x: 350, y: 200},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 312.5, y: 200},
+                        {x: 400, y: 200},
+                        {x: 400, y: 250},
+                        {x: 312.5, y: 250},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 225, y: 200},
+                        {x: 312.5, y: 200},
+                        {x: 312.5, y: 250},
+                        {x: 225, y: 250},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 137.5, y: 200},
+                        {x: 225, y: 200},
+                        {x: 225, y: 250},
+                        {x: 137.5, y: 250},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 50, y: 200},
+                        {x: 137.5, y: 200},
+                        {x: 137.5, y: 250},
+                        {x: 50, y: 250},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 50, y: 100},
+                        {x: 100, y: 100},
+                        {x: 100, y: 200},
+                        {x: 50, y: 200},
+                    ]
+                },
+            ],
+            [
+                {
+                    type: "poly",
+                    points: [
+                        {x: 100, y: 100},
+                        {x: 150, y: 100},
+                        {x: 150, y: 150},
+                        {x: 100, y: 150},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 150, y: 100},
+                        {x: 200, y: 100},
+                        {x: 200, y: 150},
+                        {x: 150, y: 150},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 200, y: 100},
+                        {x: 250, y: 100},
+                        {x: 250, y: 150},
+                        {x: 200, y: 150},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 250, y: 100},
+                        {x: 300, y: 100},
+                        {x: 300, y: 150},
+                        {x: 250, y: 150},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 300, y: 100},
+                        {x: 350, y: 100},
+                        {x: 350, y: 150},
+                        {x: 300, y: 150},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 300, y: 150},
+                        {x: 350, y: 150},
+                        {x: 350, y: 200},
+                        {x: 300, y: 200},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 250, y: 150},
+                        {x: 300, y: 150},
+                        {x: 300, y: 200},
+                        {x: 250, y: 200},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 200, y: 150},
+                        {x: 250, y: 150},
+                        {x: 250, y: 200},
+                        {x: 200, y: 200},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 150, y: 150},
+                        {x: 200, y: 150},
+                        {x: 200, y: 200},
+                        {x: 150, y: 200},
+                    ]
+                },
+                {
+                    type: "poly",
+                    points: [
+                        {x: 100, y: 150},
+                        {x: 150, y: 150},
+                        {x: 150, y: 200},
+                        {x: 100, y: 200},
+                    ]
+                },
+            ],
+        ];
+
+        // build the final grid of points from the centroids of the polys
+        const grid: GridPoints = [];
+        for (const row of polys) {
+            const rowNode: IPoint[] = [];
+            for (const poly of row) {
+                rowNode.push(centroid(poly.points)!)
+            }
+            grid.push(rowNode);
+        }
+
+        // now render the board
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("cells");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
+
+        for (let iRow = 0; iRow < polys.length; iRow++) {
+            for (let iCol = 0; iCol < polys[iRow].length; iCol++) {
+                const c = gridlines.polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+                                   .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+
+                // fill cells appropriately
+                // If the background colour is lighter than the fill colour, then light tiles are fully transparent, and dark tiles are 75% transparent.
+                // If the background colour is darker than the fill colour (dark mode), then light tiles are 75% transparent and dark tiles are fully transparent.
+                // darker cells
+                const cBg = tinycolor(this.options.colourContext.background);
+                const cFill = tinycolor(this.options.colourContext.fill);
+
+                if ( (iRow === 0 && [0,2,6].includes(iCol)) || (iRow === 1 && [1,3,6,8].includes(iCol)) || (iRow === 2 && [0,2,4,6,8].includes(iCol)) ) {
+                    if (cBg.getLuminance() > cFill.getLuminance()) {
+                        c.fill({color: this.options.colourContext.fill, opacity: baseOpacity * 0.25});
+                    } else {
+                        c.fill({color: this.options.colourContext.background, opacity: 0})
+                    }
+                }
+                // forest
+                else if ( (iRow === 0 && [3,4,8,9].includes(iCol)) || (iRow === 1 && [4,9].includes(iCol)) ) {
+                    c.fill({color: "#228b22", opacity: baseOpacity * 0.25});
+                }
+                // light cells
+                else {
+                    if (cBg.getLuminance() > cFill.getLuminance()) {
+                        c.fill({color: this.options.colourContext.background, opacity: 0})
+                    } else {
+                        c.fill({color: this.options.colourContext.fill, opacity: baseOpacity * 0.25});
+                    }
+                }
+
+                if (this.options.boardClick !== undefined) {
+                    c.click(() => this.options.boardClick!(iRow, iCol, ""));
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return [grid, polys];
+    }
+
+    /**
      * This is what applies annotations to a finished board.
      * Annotations are applied at the end, and so overlay pieces.
      *
@@ -5950,6 +6320,26 @@ export abstract class RendererBase {
                         for (const line of lines) {
                             svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
+                    } else if (style === "dvgc") {
+                        let xFrom = 0; let yFrom = 0;
+                        let xTo = 0; let yTo = 0;
+                        switch (marker.edge) {
+                            case "N":
+                                xFrom = 0;
+                                yFrom = 0;
+                                xTo = 450;
+                                yTo = 0;
+                                break;
+                            case "S":
+                                xFrom = 0;
+                                yFrom = 300;
+                                xTo = 450;
+                                yTo = 300;
+                                break;
+                            default:
+                                throw new Error(`The dvgc board can only mark N and S edges.`);
+                        }
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                     }
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;

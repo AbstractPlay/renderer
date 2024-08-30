@@ -97,6 +97,9 @@ export class DefaultRenderer extends RendererBase {
             case "pyramid-hex":
                 [gridPoints, polys] = this.pyramidHex();
                 break;
+            case "dvgc":
+                [gridPoints, polys] = this.dvgc();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }

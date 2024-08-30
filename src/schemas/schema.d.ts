@@ -57,7 +57,8 @@ export type BoardStyles =
   | "conical-hex"
   | "conical-hex-narrow"
   | "pyramid-hex"
-  | "heightmap-squares";
+  | "heightmap-squares"
+  | "dvgc";
 /**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
