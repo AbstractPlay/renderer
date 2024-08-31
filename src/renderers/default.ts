@@ -98,6 +98,7 @@ export class DefaultRenderer extends RendererBase {
                 [gridPoints, polys] = this.pyramidHex();
                 break;
             case "dvgc":
+            case "dvgc-checkered":
                 [gridPoints, polys] = this.dvgc();
                 break;
             default:

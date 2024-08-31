@@ -4625,6 +4625,7 @@ export abstract class RendererBase {
         if (this.json.board === undefined || this.json.board === null) {
             throw new Error("Object in an invalid state!");
         }
+        this.json.board = this.json.board as BoardBasic;
         // const cellsize = this.cellsize;
 
         let baseStroke = 1;
@@ -4740,36 +4741,36 @@ export abstract class RendererBase {
                     type: "poly",
                     points: [
                         {x: 50, y: 50},
-                        {x: 137.5, y: 50},
-                        {x: 137.5, y: 100},
+                        {x: 125, y: 50},
+                        {x: 125, y: 100},
                         {x: 50, y: 100},
                     ]
                 },
                 {
                     type: "poly",
                     points: [
-                        {x: 137.5, y: 50},
+                        {x: 125, y: 50},
                         {x: 225, y: 50},
                         {x: 225, y: 100},
-                        {x: 137.5, y: 100},
+                        {x: 125, y: 100},
                     ]
                 },
                 {
                     type: "poly",
                     points: [
                         {x: 225, y: 50},
-                        {x: 312.5, y: 50},
-                        {x: 312.5, y: 100},
+                        {x: 325, y: 50},
+                        {x: 325, y: 100},
                         {x: 225, y: 100},
                     ]
                 },
                 {
                     type: "poly",
                     points: [
-                        {x: 312.5, y: 50},
+                        {x: 325, y: 50},
                         {x: 400, y: 50},
                         {x: 400, y: 100},
-                        {x: 312.5, y: 100},
+                        {x: 325, y: 100},
                     ]
                 },
                 {
@@ -4784,36 +4785,36 @@ export abstract class RendererBase {
                 {
                     type: "poly",
                     points: [
-                        {x: 312.5, y: 200},
+                        {x: 325, y: 200},
                         {x: 400, y: 200},
                         {x: 400, y: 250},
-                        {x: 312.5, y: 250},
+                        {x: 325, y: 250},
                     ]
                 },
                 {
                     type: "poly",
                     points: [
                         {x: 225, y: 200},
-                        {x: 312.5, y: 200},
-                        {x: 312.5, y: 250},
+                        {x: 325, y: 200},
+                        {x: 325, y: 250},
                         {x: 225, y: 250},
                     ]
                 },
                 {
                     type: "poly",
                     points: [
-                        {x: 137.5, y: 200},
+                        {x: 125, y: 200},
                         {x: 225, y: 200},
                         {x: 225, y: 250},
-                        {x: 137.5, y: 250},
+                        {x: 125, y: 250},
                     ]
                 },
                 {
                     type: "poly",
                     points: [
                         {x: 50, y: 200},
-                        {x: 137.5, y: 200},
-                        {x: 137.5, y: 250},
+                        {x: 125, y: 200},
+                        {x: 125, y: 250},
                         {x: 50, y: 250},
                     ]
                 },
@@ -4950,8 +4951,12 @@ export abstract class RendererBase {
                 const cFill = tinycolor(this.options.colourContext.fill);
 
                 if ( (iRow === 0 && [0,2,6].includes(iCol)) || (iRow === 1 && [1,3,6,8].includes(iCol)) || (iRow === 2 && [0,2,4,6,8].includes(iCol)) ) {
-                    if (cBg.getLuminance() > cFill.getLuminance()) {
-                        c.fill({color: this.options.colourContext.fill, opacity: baseOpacity * 0.25});
+                    if (this.json.board.style === "dvgc-checkered") {
+                        if (cBg.getLuminance() > cFill.getLuminance()) {
+                            c.fill({color: this.options.colourContext.fill, opacity: baseOpacity * 0.25});
+                        } else {
+                            c.fill({color: this.options.colourContext.background, opacity: 0})
+                        }
                     } else {
                         c.fill({color: this.options.colourContext.background, opacity: 0})
                     }
@@ -4962,10 +4967,14 @@ export abstract class RendererBase {
                 }
                 // light cells
                 else {
-                    if (cBg.getLuminance() > cFill.getLuminance()) {
-                        c.fill({color: this.options.colourContext.background, opacity: 0})
+                    if (this.json.board.style === "dvgc-checkered") {
+                        if (cBg.getLuminance() > cFill.getLuminance()) {
+                            c.fill({color: this.options.colourContext.background, opacity: 0})
+                        } else {
+                            c.fill({color: this.options.colourContext.fill, opacity: baseOpacity * 0.25});
+                        }
                     } else {
-                        c.fill({color: this.options.colourContext.fill, opacity: baseOpacity * 0.25});
+                        c.fill({color: this.options.colourContext.background, opacity: 0})
                     }
                 }
 
