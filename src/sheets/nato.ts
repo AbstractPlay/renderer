@@ -83,7 +83,7 @@ sheet.glyphs.set("nato-cavalry-heavy", (canvas: SVGContainer) => {
         .attr("data-context-border-fill", true)
         .attr("alignment-baseline", "auto")
         .attr("dominant-baseline", "auto");
-    text.path(`M5,390 L600,390`)
+    text.path(`M5,380 L600,380`)
         .attr("startOffset", "50%");
     group.viewbox(0,0,605,405);
     return group;
@@ -126,7 +126,7 @@ sheet.glyphs.set("nato-infantry-light", (canvas: SVGContainer) => {
         .attr("data-context-border-fill", true)
         .attr("alignment-baseline", "auto")
         .attr("dominant-baseline", "auto");
-    text.path(`M5,390 L600,390`)
+    text.path(`M5,380 L600,380`)
         .attr("startOffset", "50%");
     group.viewbox(0,0,605,405);
     return group;
@@ -151,7 +151,7 @@ sheet.glyphs.set("nato-infantry-special", (canvas: SVGContainer) => {
         .attr("data-context-border-fill", true)
         .attr("alignment-baseline", "hanging")
         .attr("dominant-baseline", "hanging");
-    text.path(`M5,15 L600,15`)
+    text.path(`M5,20 L600,20`)
         .attr("startOffset", "50%");
     group.viewbox(0,0,605,405);
     return group;
