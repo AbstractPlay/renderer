@@ -151,7 +151,7 @@ sheet.glyphs.set("nato-infantry-special", (canvas: SVGContainer) => {
         .attr("data-context-border-fill", true)
         .attr("alignment-baseline", "hanging")
         .attr("dominant-baseline", "hanging");
-    text.path(`M5,20 L600,20`)
+    text.path(`M5,25 L600,25`)
         .attr("startOffset", "50%");
     group.viewbox(0,0,605,405);
     return group;
