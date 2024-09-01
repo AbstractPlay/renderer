@@ -19,7 +19,7 @@ sheet.glyphs.set("nato-artillery", (canvas: SVGContainer) => {
         .move(5,5)
         .fill({color: "#fff", opacity: 1})
         .attr("data-playerfill", true)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.circle(170)
         .center(302.5, 202.5)
@@ -35,7 +35,7 @@ sheet.glyphs.set("nato-artillery-towed", (canvas: SVGContainer) => {
         .move(5,5)
         .fill({color: "#fff", opacity: 1})
         .attr("data-playerfill", true)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.circle(170)
         .center(302.5, 202.5)
@@ -58,10 +58,10 @@ sheet.glyphs.set("nato-cavalry", (canvas: SVGContainer) => {
         .move(5,5)
         .fill({color: "#fff", opacity: 1})
         .attr("data-playerfill", true)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(600, 5, 5, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.viewbox(0,0,605,405);
     return group;
@@ -73,10 +73,10 @@ sheet.glyphs.set("nato-cavalry-heavy", (canvas: SVGContainer) => {
         .move(5,5)
         .fill({color: "#fff", opacity: 1})
         .attr("data-playerfill", true)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(600, 5, 5, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     const text = group.text("H")
         .font({anchor: "middle", fill: "#000", size: 100, family: "Tahoma,\"IBM Plex Sans\",sans-serif"})
@@ -95,13 +95,13 @@ sheet.glyphs.set("nato-infantry", (canvas: SVGContainer) => {
         .move(5,5)
         .fill({color: "#fff", opacity: 1})
         .attr("data-playerfill", true)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(600, 5, 5, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(5, 5, 600, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.viewbox(0,0,605,405);
     return group;
@@ -113,13 +113,13 @@ sheet.glyphs.set("nato-infantry-light", (canvas: SVGContainer) => {
         .move(5,5)
         .fill({color: "#fff", opacity: 1})
         .attr("data-playerfill", true)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(600, 5, 5, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(5, 5, 600, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     const text = group.text("L")
         .font({anchor: "middle", fill: "#000", size: 100, family: "Tahoma,\"IBM Plex Sans\",sans-serif"})
@@ -138,13 +138,13 @@ sheet.glyphs.set("nato-infantry-special", (canvas: SVGContainer) => {
         .move(5,5)
         .fill({color: "#fff", opacity: 1})
         .attr("data-playerfill", true)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(600, 5, 5, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     group.line(5, 5, 600, 400)
-        .stroke({width: 1.5, color: "#000", linejoin: "round"})
+        .stroke({width: 10, color: "#000", linejoin: "round"})
         .attr("data-context-border", true);
     const text = group.text("SOF")
         .font({anchor: "middle", fill: "#000", size: 100, family: "Tahoma,\"IBM Plex Sans\",sans-serif"})
