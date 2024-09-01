@@ -5,14 +5,15 @@ import type { ISheet } from "./ISheet";
 import { LooneySheet } from "./looney";
 import { PiecepackSheet } from "./piecepack";
 import { StreetcarSheet } from "./streetcar";
+import { NatoSheet } from "./nato";
 import { Box } from "@svgdotjs/svg.js";
 
-export { CoreSheet, ChessSheet, DiceSheet, LooneySheet, PiecepackSheet, StreetcarSheet };
+export { CoreSheet, ChessSheet, DiceSheet, LooneySheet, PiecepackSheet, StreetcarSheet, NatoSheet };
 export type { ISheet };
 
 const sheets = new Map<string, ISheet>();
 // Manually add each sheet to the following array
-[CoreSheet, ChessSheet, DiceSheet, LooneySheet, PiecepackSheet, StreetcarSheet].forEach((sheet) => {
+[CoreSheet, ChessSheet, DiceSheet, LooneySheet, PiecepackSheet, StreetcarSheet, NatoSheet].forEach((sheet) => {
     if (sheets.has(sheet.name)) {
         throw new Error("The sheet name '" + sheet.name + "' has already been used. Duplicates are not allowed.");
     }

@@ -272,7 +272,7 @@ export abstract class RendererBase {
      */
     constructor() {
         this.options = {
-            sheets: ["core", "dice", "looney", "piecepack", "chess", "streetcar"],
+            sheets: ["core", "dice", "looney", "piecepack", "chess", "streetcar", "nato"],
             colourContext: {
                 background: "#fff",
                 fill: "#000",
@@ -646,6 +646,7 @@ export abstract class RendererBase {
                     got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
                     got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
                     got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
+                    got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
 
                     let sheetCellSize = got.viewbox().height;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
