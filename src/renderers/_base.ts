@@ -5888,7 +5888,7 @@ export abstract class RendererBase {
                         opacity = marker.opacity;
                     }
                     const style = this.json.board.style;
-                    if ( (style === "vertex") || (style === "vertex-cross") || (style.startsWith("conhex")) ) {
+                    if ( style.startsWith("vertex")|| style.startsWith("conhex") ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
                         switch (marker.edge) {
