@@ -5,7 +5,7 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../grids/_base";
-import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaScrollBar, BoardBasic, ButtonBarButton, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly, rotatePoint } from "../common/plotting";
@@ -7168,6 +7168,82 @@ export abstract class RendererBase {
                 // const placed = this.rootSvg.use(nested);
                 nested.move(box.x, placeY);
                 placeY += nested.bbox().height + (this.cellsize * 0.5);
+            }
+        }
+    }
+
+    /**
+     * The reserves area is currently only used for the DVGC board.
+     * This creates a label-less `pieces` area with the board itself.
+     * It is designed for two-player games, 180 degree rotation only.
+     * The area itself is clickable, as are the contained pieces.
+     */
+    protected reservesArea(opts: {bottomN: number, topS: number, xLeft: number, xRight: number}) {
+        if (this.rootSvg === undefined) {
+            throw new Error("Can't place a `reserves` area until the root SVG is initialized!");
+        }
+        const board = this.rootSvg.findOne("#board") as SVGG|null;
+        if (board === null) {
+            throw new Error("Can't place a `reserves` area unless a `board` group already exists.");
+        }
+        if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+            const areas = this.json.areas.filter((x) => x.type === "reserves") as AreaReserves[];
+            // Width in number of cells, taking the maximum board width
+            const boardWidth = Math.floor(Math.abs(opts.xLeft - opts.xRight) / this.cellsize);
+            for (let iArea = 0; iArea < areas.length; iArea++) {
+                const area = areas[iArea];
+                const numPieces = area.pieces.length;
+                const numRows = Math.max(Math.ceil(numPieces / boardWidth), 1);
+                const areaWidth = this.cellsize * boardWidth;
+                const areaHeight = this.cellsize * numRows;
+                let markWidth = 0;
+                let markColour: string|undefined;
+                if ( ("ownerMark" in area) && (area.ownerMark !== undefined) ) {
+                    markWidth = 15;
+                    if (typeof area.ownerMark === "number") {
+                        markColour = this.options.colours[area.ownerMark - 1];
+                    } else {
+                        markColour = area.ownerMark;
+                    }
+                }
+                const nested = board.nested().id(`_reserves${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
+                let rect: SVGRect;
+                if ("background" in area) {
+                    rect = nested.rect(areaWidth,areaHeight).fill({ color: this.resolveColour(area.background) as string, opacity: 0.25 });
+                } else {
+                    rect = nested.rect(areaWidth,areaHeight).fill({opacity: 0});
+                }
+                if (this.options.boardClick !== undefined) {
+                    rect.click((e: Event) => {this.options.boardClick!(-1, -1, `_reserves_${area.side}`); e.stopPropagation();});
+                }
+                for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
+                    const p = area.pieces[iPiece];
+                    const row = Math.floor(iPiece / boardWidth);
+                    const col = iPiece % boardWidth;
+                    const piece = this.rootSvg.findOne("#" + p) as Svg;
+                    if ( (piece === null) || (piece === undefined) ) {
+                        throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
+                    }
+                    const newx = (col * this.cellsize) + (this.cellsize / 2);
+                    const newy = (row * this.cellsize) + (this.cellsize / 2);
+                    const use = usePieceAt(nested, piece, this.cellsize * 0.75, newx, newy, 1);
+                    if (this.options.boardClick !== undefined) {
+                        use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
+                    }
+                }
+
+                // add marker line if indicated
+                if ( (markWidth > 0) && (markColour !== undefined) ) {
+                    nested.rect(markWidth, nested.bbox().height).fill(markColour).stroke({width: 1, color: "black", linecap: "round", linejoin: "round"}).dmove((markWidth * -1) - 5, 0);
+                    // nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
+                }
+
+                // Now place the whole group where it belongs
+                if (area.side === "N") {
+                    nested.move(opts.xLeft, opts.bottomN - areaHeight);
+                } else {
+                    nested.move(opts.xLeft, opts.topS);
+                }
             }
         }
     }

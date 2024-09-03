@@ -187,6 +187,7 @@ export interface APRenderRep {
    */
   areas?: (
     | AreaPieces
+    | AreaReserves
     | AreaPolyomino
     | AreaHWStash
     | AreaStackingExpanded
@@ -1032,6 +1033,28 @@ export interface AreaPieces {
    * Pattern for hex colour strings
    */
   background?: string | string;
+  /**
+   * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
+   */
+  ownerMark?: PositiveInteger | Colourstrings;
+}
+/**
+ * This is a special area currently only used for the DVGC games and incorporates a `pieces`-style area into the game board itself. It is currently only designed for two-player use with 180 degree rotation. The area is clickable, as are the pieces within. You must tell the renderer which area belongs to which player.
+ */
+export interface AreaReserves {
+  type: "reserves";
+  /**
+   * A list of strings representing glyphs in the `legend`
+   */
+  pieces: string[];
+  /**
+   * What side of the board does this belong on
+   */
+  side: "N" | "S";
+  /**
+   * Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.
+   */
+  background: PositiveInteger | Colourstrings;
   /**
    * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
    */

@@ -616,6 +616,42 @@
             "required": ["type", "pieces", "label"],
             "additionalProperties": false
         },
+        "areaReserves": {
+            "description": "This is a special area currently only used for the DVGC games and incorporates a `pieces`-style area into the game board itself. It is currently only designed for two-player use with 180 degree rotation. The area is clickable, as are the pieces within. You must tell the renderer which area belongs to which player.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["reserves"]
+                },
+                "pieces": {
+                    "description": "A list of strings representing glyphs in the `legend`",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "side": {
+                    "description": "What side of the board does this belong on",
+                    "enum": ["N", "S"]
+                },
+                "background": {
+                    "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
+                },
+                "ownerMark": {
+                    "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
+                }
+            },
+            "required": ["type", "background", "pieces", "side"],
+            "additionalProperties": false
+        },
         "areaPolyomino": {
             "description": "Used by the `polyomino` renderer to display a selected piece and provide UI for manipulating it. Current maninpulations are rotating in 90-degree increments and flipping horizontally and vertically.",
             "type": "object",
@@ -2113,6 +2149,7 @@
             "items": {
                 "anyOf": [
                     {"$ref": "#/$defs/areaPieces"},
+                    {"$ref": "#/$defs/areaReserves"},
                     {"$ref": "#/$defs/areaPolyomino"},
                     {"$ref": "#/$defs/areaHWStash"},
                     {"$ref": "#/$defs/areaStackingExpanded"},

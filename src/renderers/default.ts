@@ -1,5 +1,5 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, Poly } from "../grids/_base";
+import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase} from "./_base";
 import { usePieceAt } from "../common/plotting";
@@ -202,6 +202,21 @@ export class DefaultRenderer extends RendererBase {
 
         // if there's a board backfill, it needs to be done before rotation
         const backfilled = this.backFill(polys, true);
+
+        // if there are reserves areas, those also need to be placed before rotation
+        if (this.json.board.style.startsWith("dvgc")) {
+            const allPoints = (polys!.flat().flat() as IPolyPolygon[]).map(p => p.points).flat();
+            const xMin = Math.min(...allPoints.map(pt => pt.x));
+            const xMax = Math.max(...allPoints.map(pt => pt.x));
+            const yMin = Math.min(...allPoints.map(pt => pt.y));
+            const yMax = Math.max(...allPoints.map(pt => pt.y));
+            this.reservesArea({
+                bottomN: yMin - (this.cellsize / 2),
+                topS: yMax + (this.cellsize / 2),
+                xLeft: xMin,
+                xRight: xMax,
+            });
+        }
 
         const box = this.rotateBoard();
 
