@@ -402,6 +402,36 @@ sheet.glyphs.set("house", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("humpback", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group()
+        .translate(-1.26, -39.035)
+        .scale(0.37821);
+    group.path("M151.989 159.002c-9.178-6.533-56.74-14.29-57.543-25.526-.957-13.393 24.82 7.848 45.182 4.999 15.567-2.179 35.558-19.917 42.72-7.449 6.022 10.484-2.72 20.743-2.042 32.814 1.522 27.094 54.407 42.477 58.894 69.24 4.915 29.308-28.035 74.662-53.14 90.563-32.684 20.702-87.941 10.547-119.051-12.452-24.202-17.893-43.84-59.104-34.314-87.655 8.85-26.526 48.83-37.87 76.089-44.106 56.93-13.023 50.127 71.126 69.833 51.042 17.408-17.743-6.378-57.055-26.628-71.47z")
+        .fill("white")
+        .attr("data-playerfill", true)
+        .stroke({color: "black", width: 8.00933, linecap: "round", linejoin: "round"});
+    group.ellipse(5.477, 7.59)
+        .center(170.207, 209.366)
+        .fill("white")
+        .attr("data-playerfill", true)
+        .stroke({color: "black", width: 8.01322, linecap: "round", linejoin: "round"})
+        .matrix(0.99307, 0.11749, -0.16115, 0.98693, 0, 0);
+    group.path("M37.902 215.468c29.976 14.774 69.118-5.638 79.176 13.996 10.058 19.634 26.163 13.356 26.163 13.356")
+        .fill("white")
+        .attr("data-playerfill", true)
+        .stroke({color: "black", width: 8.00933, linecap: "round", linejoin: "round"});
+    group.path("M155.36 251.404c5.446 11.312-20.577 55.544-14.16 69.146 6.417 13.602 12.668 26.855 22.736 12.016 10.069-14.839 9.914-50.95 9.914-50.95z")
+        .fill("white")
+        .attr("data-playerfill", true)
+        .stroke({color: "black", width: 8.00933, linecap: "round", linejoin: "round"});
+    group.path("M155.36 251.404c5.446 11.312-20.577 55.544-14.16 69.146 6.417 13.602 12.668 26.855 22.736 12.016 10.069-14.839 9.914-50.95 9.914-50.95")
+        .fill({color: "white", opacity: 0})
+        .stroke({color: "black", width: 8.00933, linecap: "round", linejoin: "round"});
+    symbol.viewbox(8.0985, 7.34, 83.374, 83.374);
+    return symbol;
+});
+
 sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const meeple = group.group();
@@ -613,6 +643,31 @@ sheet.glyphs.set("orb3", (canvas: SVGContainer, color?:string) => {
         .fill(color3);
     group.viewbox(0, 0, 500, 500);
     return group;
+});
+
+sheet.glyphs.set("orca", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    symbol.path("M56.33 21.095c-3.47-2.471-21.46-5.405-21.763-9.655-.362-5.065 9.387 2.969 17.088 1.89 5.888-.823 13.449-7.532 16.158-2.816 2.277 3.965-1.03 7.845-.773 12.41.576 10.248 20.578 16.066 22.275 26.188 1.859 11.085-10.603 28.238-20.098 34.252-12.362 7.83-33.26 3.99-45.027-4.71-9.154-6.767-16.58-22.353-12.978-33.152C14.56 35.47 29.68 31.18 39.99 28.821c21.532-4.926 18.959 26.9 26.412 19.304 6.584-6.71-2.413-21.579-10.071-27.03Z")
+        .fill({color: "black", opacity: 1})
+        .stroke({color: "white", opacity: 1, width: 3, linecap: "round", linejoin: "round"})
+        .attr("data-playerstroke", true);
+    symbol.path("M43.207 47.694c3.804 7.426 9.895 5.052 9.895 5.052l4.584 3.246C59.745 60.271 49.903 77 52.33 82.144c.894 1.897 1.921 3.963 2.816 5.418-10.837.715-22.982-3.122-30.876-8.958-9.154-6.767-16.58-22.353-12.978-33.152.34-1.02.946-2.225 1.51-3.137 11.336 5.581 26.6-2.047 30.405 5.38z")
+        .fill({color: "white", opacity: 1})
+        .attr("data-playerfill", true)
+        .stroke({color: "black", opacity: 1, width: 3.2, linecap: "round", linejoin: "round"});
+    symbol.ellipse(2.071, 2.871)
+        .center(56.937, 40.511)
+        .fill({color: "black", opacity: 1})
+        .stroke({color: "white", opacity: 1, width: 3, linecap: "round", linejoin: "round"})
+        .attr("data-playerstroke", true)
+        .matrix(0.99307, 0.11749, -0.16115, 0.98693, 0, 0);
+    symbol.path("M54.717 86.914c1.7 2.588 3.596 3.562 6.132-.176 3.808-5.612 3.75-19.27 3.75-19.27")
+        .fill({color: "black", opacity: 1})
+        .attr("data-playerfill", true)
+        .stroke({color: "white", opacity: 1, width: 3, linecap: "round", linejoin: "round"})
+        .attr("data-playerstroke", true);
+    symbol.viewbox(8.775, 7.113, 82.234, 82.234);
+    return symbol;
 });
 
 sheet.glyphs.set("palace", (canvas: SVGContainer) => {
