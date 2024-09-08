@@ -214,7 +214,7 @@ export class EntropyRenderer extends RendererBase {
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
-                            usePieceAt(group, piece, this.cellsize, point.x, point.y, 0.85);
+                            usePieceAt({svg: group, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: 0.85});
                         }
                     }
                 }

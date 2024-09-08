@@ -92,7 +92,7 @@ export class FreespaceRenderer extends RendererBase {
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${pc.glyph}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
-                const use = usePieceAt(field, piece, this.cellsize, pc.x, pc.y, 1);
+                const use = usePieceAt({svg: field, piece, cellsize: this.cellsize, x: pc.x, y: pc.y});
                 rotate(use, pc.orientation || 0, pc.x, pc.y);
                 if (this.options.boardClick !== undefined && ( (this.json.options === undefined) || (! this.json.options.includes("no-piece-click")) )) {
                     use.click((e : Event) => {this.options.boardClick!(pc.y, pc.x, pcid || pc.glyph); e.stopPropagation(); });
@@ -188,7 +188,7 @@ export class FreespaceRenderer extends RendererBase {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
                     for (const pt of note.points as IPoint[]) {
-                        usePieceAt(field, piece, this.cellsize, pt.x, pt.y, 1);
+                        usePieceAt({svg: field, piece, cellsize: this.cellsize, x: pt.x, y: pt.y});
                     }
                 }
             }
@@ -249,7 +249,7 @@ export class FreespaceRenderer extends RendererBase {
                         }
                     }
                     for (const pt of marker.points as IPoint[]) {
-                        const use = usePieceAt(field, piece, this.cellsize, pt.x, pt.y, 1);
+                        const use = usePieceAt({svg: field, piece, cellsize: this.cellsize, x: pt.x, y: pt.y});
                         if ( ("orientation" in marker) && (marker.orientation !== undefined) ) {
                             rotate(use, marker.orientation, pt.x, pt.y);
                         }
