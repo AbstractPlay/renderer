@@ -47,7 +47,7 @@ export class StackingExpandingRenderer extends RendererBase {
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
-                        const use = usePieceAt(nested, piece, columnWidth, columnWidth / 2, columnWidth / 2, 0.95);
+                        const use = usePieceAt({svg: nested, piece, cellsize: columnWidth, x: columnWidth / 2, y: columnWidth / 2, scalingFactor: 0.95});
                         used.push([use, 500]);
                     }
 
@@ -128,7 +128,7 @@ export class StackingExpandingRenderer extends RendererBase {
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                                 }
-                                usePieceAt(group, piece, this.cellsize, point.x, point.y, 0.85);
+                                usePieceAt({svg: group, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: 0.85});
                             }
                         }
                     }
@@ -163,7 +163,7 @@ export class StackingExpandingRenderer extends RendererBase {
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
-                        const use = usePieceAt(nested, piece, columnWidth, columnWidth / 2, columnWidth / 2, 0.95);
+                        const use = usePieceAt({svg: nested, piece, cellsize: columnWidth, x: columnWidth / 2, y: columnWidth / 2, scalingFactor: 0.95});
                         used.push([use, columnWidth]);
                     }
 
@@ -221,7 +221,7 @@ export class StackingExpandingRenderer extends RendererBase {
                             }
                             const newx = gridPoints[0][0].x - this.cellsize + iStack * cellsize + (cellsize / 2);
                             const newy = placeY + textHeight + (maxHeight - i) * offset + 0.15 * cellsize + (cellsize / 2);
-                            const use = usePieceAt(this.rootSvg, piece, cellsize, newx, newy, 1);
+                            const use = usePieceAt({svg: this.rootSvg, piece, cellsize, x: newx, y: newy});
                             if (this.options.boardClick !== undefined) {
                                 use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                             }

@@ -311,7 +311,7 @@ export class HomeworldsRenderer extends RendererBase {
 
                 const newx = point.x + evenSpacing + 0.3 * stashCellSize;
                 const newy = point.y - stackingOffset + 0.3 * stashCellSize;
-                const use = usePieceAt(pcgroup, piece, stashCellSize, newx, newy, 1);
+                const use = usePieceAt({svg: pcgroup, piece, cellsize: stashCellSize, x: newx, y: newy});
                 if (this.options.boardClick !== undefined) {
                     use.click((e : Event) => {this.options.boardClick!(-1, -1, `${colour}${size}`); e.stopPropagation();});
                 }
@@ -575,7 +575,7 @@ export class HomeworldsRenderer extends RendererBase {
             throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
         const cellsize = 50;
-        const use = usePieceAt(nested, piece, cellsize, point.x + cellsize / 2, point.y + cellsize / 2, 1);
+        const use = usePieceAt({svg: nested, piece, cellsize, x: point.x + cellsize / 2, y: point.y + cellsize / 2});
         if (this.options.boardClick !== undefined) {
             use.click(() => this.options.boardClick!(0, 0, clickName));
         }

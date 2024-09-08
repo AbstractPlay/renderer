@@ -196,7 +196,7 @@ export class StackingOffsetRenderer extends RendererBase {
                             throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                         }
                     }
-                    const use = usePieceAt(group, piece, this.cellsize, x, y, 0.85);
+                    const use = usePieceAt({svg: group, piece, cellsize: this.cellsize, x, y, scalingFactor: 0.85});
                     if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
                         use.click((e : Event) => {this.options.boardClick!(row, col, idx.toString()); e.stopPropagation();});
                     } else {

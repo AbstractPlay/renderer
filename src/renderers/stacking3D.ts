@@ -615,7 +615,7 @@ export class Stacking3DRenderer extends RendererBase {
                             }
                             const [newx, newy] = this.project(point.x, point.y);
                             const ps = this.scaleAt(newx, newy);
-                            const use = usePieceAt(group, piece, this.cellsize, newx, newy - ps * (offset * i), ps);
+                            const use = usePieceAt({svg: group, piece, cellsize: this.cellsize, x: newx, y: newy - ps * (offset * i), scalingFactor: ps});
                             if (this.options.boardClick !== undefined) {
                                 use.click((e : Event) => {this.options.boardClick!(row, col, i.toString()); e.stopPropagation();});
                             }
@@ -646,7 +646,7 @@ export class Stacking3DRenderer extends RendererBase {
                                 }
                                 const newx = gridPoints[start][start].x - cellsize + iStack * cellsize;
                                 const newy = placeY + cellsize / 2 + textHeight + (maxHeight - i) * stackoffest - 0.1 * cellsize;
-                                const use = usePieceAt(this.rootSvg, piece, cellsize, newx, newy, 1);
+                                const use = usePieceAt({svg: this.rootSvg, piece, cellsize, x: newx, y: newy});
                                 if (this.options.boardClick !== undefined) {
                                     use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                                 }

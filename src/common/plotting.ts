@@ -126,14 +126,14 @@ export const calcBearing = (x1: number, y1: number, x2: number, y2: number): num
 /**
  * Scale an element around a point. For some unknown reason element.scale(factor, x, y) sometimes gives the wrong results in Safari.
  */
-export const scale: (element: Element, factor: number, x: number, y: number) => void = (element, factor, x, y) => {
+export const scale = (element: Element, factor: number, x: number, y: number) => {
     element.transform({a: factor, b: 0, c: 0, d: factor, e: x - factor * x, f: y - factor * y}, true);
 }
 
 /**
  * Rotate an element around a point. For some unknown reason element.rotate(angle, x, y) sometimes gives the wrong results in Safari.
  */
-export const rotate: (element: Element, angle: number, x: number, y: number) => void = (element, angle, x, y) => {
+export const rotate = (element: Element, angle: number, x: number, y: number) => {
     // Convert t to radians
     const rad = deg2rad(angle);
 
@@ -161,8 +161,17 @@ export const rotatePoint = (pt: IPoint, deg: number, cpt: IPoint): IPoint => {
  * Place (use) piece in svg with center at (x,y), scaling it to fit a cell of size cellsize and further scaling it by scalingFactor.
  * This assumes that the piece was loaded with loadLegend (in particular that it was "designed" for a cell of size 500).
 */
-export const usePieceAt: (svg: Container, piece: Element, cellsize: number, x: number, y: number, scalingFactor: number, sheetCellSize?: number) => Use = (svg, piece, cellsize, x, y, scalingFactor, sheetCellSize) => {
-    const factor = cellsize / (sheetCellSize || 500) * scalingFactor;
+export const usePieceAt = (opts: {svg: Container, piece: Element, cellsize: number, x: number, y: number, scalingFactor?: number, sheetCellSize?: number}): Use => {
+    const {svg, piece, cellsize, x, y} = opts;
+    let sheetCellSize = 500;
+    if (opts.sheetCellSize !== undefined) {
+        sheetCellSize = opts.sheetCellSize;
+    }
+    let scalingFactor = 1;
+    if (opts.scalingFactor !== undefined) {
+        scalingFactor = opts.scalingFactor;
+    }
+    const factor = cellsize / (sheetCellSize) * scalingFactor;
     const newsize = factor * (piece.height() as number);
     const newx = x - newsize / 2;
     const newy = y - newsize / 2;

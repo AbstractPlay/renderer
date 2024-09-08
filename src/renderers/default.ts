@@ -176,7 +176,7 @@ export class DefaultRenderer extends RendererBase {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
                             const factor = 0.85;
-                            const use = usePieceAt(group, piece, this.cellsize, point.x, point.y, factor);
+                            const use = usePieceAt({svg: group, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: factor});
                             // if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
                             //     rotate(use, options.rotate, point.x, point.y);
                             if ( (this.options.boardClick !== undefined) && ( (this.json.options === undefined) || (! this.json.options.includes("no-piece-click")) ) ) {
@@ -256,7 +256,7 @@ export class DefaultRenderer extends RendererBase {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
         this.rootSvg.viewbox(0, 0, this.cellsize, this.cellsize);
-        usePieceAt(this.rootSvg, piece, this.cellsize, this.cellsize / 2, this.cellsize / 2, 0.9);
+        usePieceAt({svg: this.rootSvg, piece, cellsize: this.cellsize, x: this.cellsize / 2, y: this.cellsize / 2, scalingFactor: 0.9});
     }
 }
 

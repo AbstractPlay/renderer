@@ -5373,7 +5373,7 @@ export abstract class RendererBase {
                         if (point === undefined) {
                             throw new Error(`Annotation - Enter: Could not find coordinates for row ${pt.row}, column ${pt.col}.`);
                         }
-                        const use = usePieceAt(notes, piece, this.cellsize, point.x, point.y, 1);
+                        const use = usePieceAt({svg: notes, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: 1});
                         use.attr({ 'pointer-events': 'none' });
                         // if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
                         //     rotate(use, this.options.rotate, point.x, point.y);
@@ -5453,7 +5453,7 @@ export abstract class RendererBase {
                                 cornerX = point.x + (this.cellsize / 2) - (this.cellsize / 5);
                                 cornerY = point.y - (this.cellsize / 2) + (this.cellsize / 5);
                             }
-                            usePieceAt(notes, piece, this.cellsize, cornerX, cornerY, factor);
+                            usePieceAt({svg: notes, piece, cellsize: this.cellsize, x: cornerX, y: cornerY, scalingFactor: factor});
                         }
                     }
                 } else {
@@ -6433,7 +6433,7 @@ export abstract class RendererBase {
                     }
                     for (const pt of marker.points as ITarget[]) {
                         const point = grid[pt.row][pt.col];
-                        const use = usePieceAt(svgGroup, piece, this.cellsize, point.x, point.y, 1);
+                        const use = usePieceAt({svg: svgGroup, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: 1});
                         use.attr({ 'pointer-events': 'none' });
                         // if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
                         //     rotate(use, this.options.rotate, point.x, point.y);
@@ -6829,7 +6829,7 @@ export abstract class RendererBase {
                 id = `_key_${k.value}`;
             }
             const g = nested.nested().id(id);
-            usePieceAt(g, piece, height, height / 2, height / 2, 1);
+            usePieceAt({svg: g, piece, cellsize: height, x: height / 2, y: height / 2, scalingFactor: 1});
             // Have to manually calculate the width so Firefox will render it properly.
             const factor = height / symlabel.viewbox().h;
             const usedLabel = g.use(symlabel).size(symlabel.viewbox().w * factor, height).dx(height * 1.1);
@@ -7133,7 +7133,7 @@ export abstract class RendererBase {
                     }
                     const newx = col * cellsize + cellsize / 2;
                     const newy = (textHeight * 2) + (row * cellsize) + cellsize / 2;
-                    const use = usePieceAt(nested, piece, cellsize, newx, newy, 1);
+                    const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1});
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                     }
@@ -7226,7 +7226,7 @@ export abstract class RendererBase {
                     }
                     const newx = (col * this.cellsize) + (this.cellsize / 2);
                     const newy = (row * this.cellsize) + (this.cellsize / 2);
-                    const use = usePieceAt(nested, piece, this.cellsize * 0.75, newx, newy, 1);
+                    const use = usePieceAt({svg: nested, piece, cellsize: this.cellsize * 0.75, x: newx, y: newy, scalingFactor: 1});
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                     }

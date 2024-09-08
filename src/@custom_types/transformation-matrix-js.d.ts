@@ -118,7 +118,7 @@ export class Matrix {
 
     translateY(ty: number): Matrix;
 
-    static from(a: number, b: number, c: number, d: number, e: number, f: number, context: CanvasRenderingContext2D, dom: HTMLElement): Matrix;
+    static from(a: number, b: number, c: number, d: number, e: number, f: number, context?: CanvasRenderingContext2D, dom?: HTMLElement): Matrix;
 
     static fromSVGTransformList(tList: SVGTransformList, context: CanvasRenderingContext2D, dom: HTMLElement): Matrix;
 
