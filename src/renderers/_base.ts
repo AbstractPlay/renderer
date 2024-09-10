@@ -6179,6 +6179,44 @@ export abstract class RendererBase {
                                 break;
                         }
                         svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                    } else if (style === "squares-diamonds") {
+                        const xMin = Math.min(...grid.flat().flat().map(pt => pt.x));
+                        const yMin = Math.min(...grid.flat().flat().map(pt => pt.y));
+                        const xMax = Math.max(...grid.flat().flat().map(pt => pt.x));
+                        const yMax = Math.max(...grid.flat().flat().map(pt => pt.y));
+                        let xFrom = 0; let yFrom = 0;
+                        let xTo = 0; let yTo = 0;
+                        let buffer = (this.cellsize / 2) + (baseStroke * 3);
+                        if ("sdStart" in this.json.board && this.json.board.sdStart === "D") {
+                            buffer = this.cellsize * 0.25;
+                        }
+                        switch (marker.edge) {
+                            case "N":
+                                xFrom = xMin - buffer;
+                                yFrom = yMin - buffer;
+                                xTo = xMax + buffer;
+                                yTo = yFrom;
+                                break;
+                            case "E":
+                                xFrom = xMax + buffer;
+                                yFrom = yMin - buffer;
+                                xTo = xFrom;
+                                yTo = yMax + buffer;
+                                break;
+                            case "S":
+                                xFrom = xMin - buffer;
+                                yFrom = yMax + buffer;
+                                xTo = xMax + buffer;
+                                yTo = yFrom;
+                                break;
+                            case "W":
+                                xFrom = xMin - buffer;
+                                yFrom = yMin - buffer;
+                                xTo = xFrom;
+                                yTo = yMax + buffer;
+                                break;
+                        }
+                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                     } else if (style === "hex-of-tri") {
                         const midrow = Math.floor(grid.length / 2);
                         let xFrom = 0; let yFrom = 0;
