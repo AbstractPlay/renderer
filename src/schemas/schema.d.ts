@@ -34,6 +34,7 @@ export type BoardStyles =
   | "squares-checkered"
   | "squares-beveled"
   | "squares-stacked"
+  | "squares-diamonds"
   | "vertex"
   | "vertex-cross"
   | "vertex-fanorona"
@@ -424,6 +425,10 @@ export interface BoardBasic {
    * For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.
    */
   cairoStart?: "H" | "V";
+  /**
+   * For the `squares-diamonds` board, the board edge can start with diamonds or squares (actually octagons). By default, the edges start with squares, but you can also start them with diamonds.
+   */
+  sdStart?: "S" | "D";
   /**
    * Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.
    */

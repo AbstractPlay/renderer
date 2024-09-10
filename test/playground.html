@@ -120,6 +120,11 @@
                     "desciprion": "This board lets you stack triangles (composed of hexes). The `pieces` property is still two dimensional.",
                     "render": `{\"options\":[\"no-piece-click\"],\"board\":{\"style\":\"triangles-stacked\",\"width\":7,\"height\":7,\"strokeOpacity\":0,\"skipLabels\":[\"n\"],\"blocked\":[{\"row\":0,\"col\":0},{\"row\":0,\"col\":5},{\"row\":0,\"col\":6},{\"row\":1,\"col\":0},{\"row\":1,\"col\":6},{\"row\":2,\"col\":6},{\"row\":4,\"col\":6},{\"row\":5,\"col\":0},{\"row\":5,\"col\":6},{\"row\":6,\"col\":0},{\"row\":6,\"col\":5},{\"row\":6,\"col\":6}]},\"legend\":{\"H\":{\"name\":\"hex-pointy-m21\",\"colour\":\"#999\",\"scale\":1.87},\"A\":{\"name\":\"hex-pointy-m123\",\"colour\":1,\"scale\":1.87},\"B\":{\"name\":\"hex-pointy-m123\",\"colour\":2,\"scale\":1.87}},\"pieces\":\"-HHHH--\\n-HHHHH-\\nBHHAHH-\\nHBHBBHH\\nHHAAHB-\\n-HHHHH-\\n-HHHH--\\n_\\n_\\n--A\\n--A\"}`
                 },
+                "board-squares-diamonds": {
+                    "name": "Boards: Square Diamond",
+                    "description": "This gives you cells and vertices. Pieces can only be placed on the squares, and the `pieces` property ignores rows with diamonds. Otherwise, the rows alternate between diamonds and squares and can all be access by markers and annotations. By default, the board starts with squares, but you can set the `sdStart` property to `D` to have diamonds around the edges.",
+                    "render": `{"board":{"style":"squares-diamonds","width":8,"height":8,"markers":[{"type":"flood","points":[{"row":1,"col":1},{"row":4,"col":4}],"colour":1}]},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":"B\\n--A\\n\\n\\n------B"}`
+                },
                 "board-vertex": {
                     "name": "Boards: Vertex",
                     "description": "Vertex board with stacking pieces",

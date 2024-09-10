@@ -30,6 +30,7 @@ export class DefaultRenderer extends RendererBase {
         this.loadLegend();
 
         let gridPoints: GridPoints;
+        let pcGrid: GridPoints|undefined;
         let polys: Poly[][]|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ DefaultRenderer.rendererName }' renderer.`);
@@ -40,6 +41,9 @@ export class DefaultRenderer extends RendererBase {
             case "squares":
             case "pegboard":
                 [gridPoints, polys] = this.squares();
+                break;
+            case "squares-diamonds":
+                [gridPoints, pcGrid, polys] = this.squaresDiamonds();
                 break;
             case "squares-stacked":
                 gridPoints = this.squaresStacked();
@@ -150,27 +154,33 @@ export class DefaultRenderer extends RendererBase {
                     for (const key of pieces[row][col]) {
                         if ( (key !== null) && (key !== "-") ) {
                             let point: IPoint|undefined;
-                            // handle pieces beyond the grid boundaries
-                            if (row >= gridPoints.length || col >= gridPoints[row].length) {
-                                if (this.json.board.style === "squares-stacked") {
-                                    point = this.getStackedPoint(gridPoints, col, row);
-                                    if (point === undefined) {
-                                        continue;
-                                    }
-                                } else if (this.json.board.style === "triangles-stacked" && polys !== undefined) {
-                                    point = this.getTriStackedPoint(gridPoints, col, row, polys);
-                                    if (point === undefined) {
+                            // first check if pcGrid was provided
+                            if (pcGrid !== undefined) {
+                                point = pcGrid[row][col];
+                            } else {
+                                // handle pieces beyond the grid boundaries
+                                if (row >= gridPoints.length || col >= gridPoints[row].length) {
+                                    if (this.json.board.style === "squares-stacked") {
+                                        point = this.getStackedPoint(gridPoints, col, row);
+                                        if (point === undefined) {
+                                            continue;
+                                        }
+                                    } else if (this.json.board.style === "triangles-stacked" && polys !== undefined) {
+                                        point = this.getTriStackedPoint(gridPoints, col, row, polys);
+                                        if (point === undefined) {
+                                            continue;
+                                        }
+                                    } else {
                                         continue;
                                     }
                                 } else {
-                                    continue;
+                                    point = gridPoints[row][col];
                                 }
-                            } else {
-                                point = gridPoints[row][col];
+                                // if (point === undefined) {
+                                //     continue;
+                                // }
                             }
-                            // if (point === undefined) {
-                            //     continue;
-                            // }
+
                             const piece = this.rootSvg.findOne("#" + key) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
