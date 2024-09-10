@@ -2225,6 +2225,7 @@ export abstract class RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
+        const cells = board.group().id("cells");
         const labels = board.group().id("labels");
         let labelStyle: "internal"|"external" = "internal";
         if ("labelStyle" in this.json.board && this.json.board.labelStyle !== undefined && this.json.board.labelStyle !== null) {
@@ -2274,7 +2275,7 @@ export abstract class RendererBase {
                 }
             }
             const { x, y } = hex;
-            const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
+            const used = cells.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
             if ( ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) && (labelStyle === "internal") ) {
                 const components: string[] = [];
                 components.push(columnLabels[hex.col]);
@@ -2393,6 +2394,7 @@ export abstract class RendererBase {
         }
 
         if (clickEdges) {
+            const gEdges = board.group().id("edges").insertBefore(labels);
             for (const hex of grid) {
                 // add clickable edges
                 // don't draw "blocked" hexes
@@ -2412,7 +2414,7 @@ export abstract class RendererBase {
                         continue;
                     }
                     seenEdges.add(vid);
-                    const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
+                    const edgeLine = gEdges.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
                     edgeLine.click(() => this.options.boardClick!(hex.row, hex.col, edge.dir));
                 }
             }
