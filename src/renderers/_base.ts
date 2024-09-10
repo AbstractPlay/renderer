@@ -1425,6 +1425,235 @@ export abstract class RendererBase {
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates rectangular boards with squares-turned-into-octogons as the main,
+     * cells, and diamonds at each vertex.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected squaresDiamonds(): [GridPoints, GridPoints, Poly[][]] {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
+        // height and width here refer to the number of square/octagon cells
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+        let gridStart: "S"|"D" = "S";
+        if ("sdStart" in this.json.board && this.json.board.sdStart !== undefined) {
+            gridStart = this.json.board.sdStart;
+        }
+
+        // Get a grid of points
+        const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const board = this.rootSvg.group().id("board");
+
+        // construct all diamonds and octagon polys and then pare them down
+        const dr = cellsize * 0.25;
+        let polys: IPolyPolygon[][] = [];
+        for (let row = 0; row < height; row++) {
+            const rowDiamonds: IPolyPolygon[] = [];
+            const rowSquares: IPolyPolygon[] = [];
+            const rowExtraDiamonds: IPolyPolygon[] = [];
+            for (let col = 0; col < width; col++) {
+                const {x: cx, y: cy} = grid[row][col];
+                // top-left diamond
+                const dcx = cx - (cellsize / 2);
+                const dcy = cy - (cellsize / 2);
+                rowDiamonds.push({
+                    type: "poly",
+                    points: [
+                        {x: dcx, y: dcy - dr},
+                        {x: dcx + dr, y: dcy},
+                        {x: dcx, y: dcy + dr},
+                        {x: dcx - dr, y: dcy},
+                    ]
+                });
+                // if last col, top-right diamond
+                if (col === width - 1) {
+                    const dcx2 = cx + (cellsize / 2);
+                    const dcy2 = cy - (cellsize / 2);
+                    rowDiamonds.push({
+                        type: "poly",
+                        points: [
+                            {x: dcx2, y: dcy2 - dr},
+                            {x: dcx2 + dr, y: dcy2},
+                            {x: dcx2, y: dcy2 + dr},
+                            {x: dcx2 - dr, y: dcy2},
+                        ]
+                    });
+                }
+                // square
+                rowSquares.push({
+                    type: "poly",
+                    points: [
+                        {x: cx - (cellsize / 2) + dr, y: cy - (cellsize / 2)},
+                        {x: cx + (cellsize / 2) - dr, y: cy - (cellsize / 2)},
+                        {x: cx + (cellsize / 2), y: cy - (cellsize / 2) + dr},
+                        {x: cx + (cellsize / 2), y: cy + (cellsize / 2) - dr},
+                        {x: cx + (cellsize / 2) - dr, y: cy + (cellsize / 2)},
+                        {x: cx - (cellsize / 2) + dr, y: cy + (cellsize / 2)},
+                        {x: cx - (cellsize / 2), y: cy + (cellsize / 2) - dr},
+                        {x: cx - (cellsize / 2), y: cy - (cellsize / 2) + dr},
+                    ]
+                });
+                // if last row, bottom-left diamond
+                if (row === height - 1) {
+                    const dcxb = cx - (cellsize / 2);
+                    const dcyb = cy + (cellsize / 2);
+                    rowExtraDiamonds.push({
+                        type: "poly",
+                        points: [
+                            {x: dcxb, y: dcyb - dr},
+                            {x: dcxb + dr, y: dcyb},
+                            {x: dcxb, y: dcyb + dr},
+                            {x: dcxb - dr, y: dcyb},
+                        ]
+                    });
+                    // if last row and col, bottom-right diamond
+                    if (col === width - 1) {
+                        const dcx2 = cx + (cellsize / 2);
+                        const dcy2 = cy + (cellsize / 2);
+                        rowExtraDiamonds.push({
+                            type: "poly",
+                            points: [
+                                {x: dcx2, y: dcy2 - dr},
+                                {x: dcx2 + dr, y: dcy2},
+                                {x: dcx2, y: dcy2 + dr},
+                                {x: dcx2 - dr, y: dcy2},
+                            ]
+                        });
+                    }
+                }
+            }
+            polys.push(rowDiamonds);
+            polys.push(rowSquares);
+            if (rowExtraDiamonds.length > 0) {
+                polys.push(rowExtraDiamonds)
+            }
+        }
+        if (gridStart === "S") {
+            polys = polys.slice(1, -1).map(row => row.length > width ? row.slice(1, -1) : row);
+        }
+        const gridPoints: GridPoints = polys.map(row => row.map(poly => centroid(poly.points)!))
+
+        // get list of just squares for placing pieces
+        const pcGrid: GridPoints = [];
+        for (let row = gridStart === "S" ? 0 : 1; row < gridPoints.length; row += 2) {
+            pcGrid.push(gridPoints[row]);
+        }
+
+        // have to define tiles early for clickable markers to work
+        // const tiles = board.group().id("tiles");
+        const gridlines = board.group().id("gridlines");
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid: gridPoints, polys});
+
+        // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
+            const labels = board.group().id("labels");
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels;
+            }
+            let columnLabels = this.getLabels(customLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+
+            let rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
+
+            if (this.json.options?.includes("swap-labels")) {
+                const scratch = [...columnLabels];
+                columnLabels = [...rowLabels];
+                columnLabels.reverse();
+                rowLabels = [...scratch];
+                rowLabels.reverse();
+            }
+
+            // Columns (letters)
+            for (let col = 0; col < width; col++) {
+                const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize)};
+                const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize)};
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                }
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows (numbers)
+            for (let row = 0; row < height; row++) {
+                const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
+                const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+                }
+            }
+        }
+
+        // Draw grid lines
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+        for (let row = 0; row < polys.length; row++) {
+            for (let col = 0; col < polys[row].length; col++) {
+                const isBlocked = blocked?.find(entry => entry.row === row && entry.col === col) !== undefined;
+                if (isBlocked) { continue; }
+                const poly = polys[row][col];
+                const cell = gridlines.polygon(poly.points.map(({ x, y }) => `${x},${y}`).join(" "))
+                                      .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                      .fill({color: "white", opacity: 0});
+                if (this.options.boardClick !== undefined) {
+                    cell.click(() => this.options.boardClick!(row, col, ""));
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid: gridPoints, polys});
+
+        return [gridPoints, pcGrid, polys];
+    }
+
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates square boards where the points are placed on the intersections of lines.
      *
      * @returns A map of row/column locations to x,y coordinates
