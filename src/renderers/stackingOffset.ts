@@ -1,5 +1,5 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, Poly } from "../grids/_base";
+import { GridPoints, IPoint, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { centroid, projectPoint, rotatePoint, usePieceAt } from "../common/plotting";
@@ -30,6 +30,7 @@ export class StackingOffsetRenderer extends RendererBase {
         // BOARD
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
+        let pcGrid: GridPoints|undefined;
         let polys: Poly[][]|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
@@ -43,6 +44,9 @@ export class StackingOffsetRenderer extends RendererBase {
             case "squares-beveled":
             case "squares":
                 [gridPoints, polys] = this.squares();
+                break;
+            case "squares-diamonds":
+                [gridPoints, pcGrid, polys] = this.squaresDiamonds();
                 break;
             case "vertex":
             case "vertex-cross":
@@ -160,7 +164,12 @@ export class StackingOffsetRenderer extends RendererBase {
                     for (let i = 0; i < pieces[row][col].length; i++) {
                         const key = pieces[row][col][i];
                         if ( (key !== null) && (key !== "-") ) {
-                            const point = gridPoints[row][col];
+                            let point: IPoint;
+                            if (pcGrid !== undefined) {
+                                point = pcGrid[row][col];
+                            } else {
+                                point = gridPoints[row][col];
+                            }
                             const dist = offset * i;
                             const [offsetX, offsetY] = projectPoint(point.x, point.y, dist, rotation * -1);
                             const rot = rotatePoint({x: offsetX, y: offsetY}, rotation, ctr);
