@@ -46,7 +46,7 @@ export class StackingOffsetRenderer extends RendererBase {
                 [gridPoints, polys] = this.squares();
                 break;
             case "squares-diamonds":
-                [gridPoints, pcGrid, polys] = this.squaresDiamonds();
+                [gridPoints, polys] = this.squaresDiamonds();
                 break;
             case "vertex":
             case "vertex-cross":

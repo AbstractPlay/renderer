@@ -123,7 +123,7 @@
                 "board-squares-diamonds": {
                     "name": "Boards: Square Diamond",
                     "description": "This gives you cells and vertices. Pieces can only be placed on the squares, and the `pieces` property ignores rows with diamonds. Otherwise, the rows alternate between diamonds and squares and can all be access by markers and annotations. By default, the board starts with squares, but you can set the `sdStart` property to `D` to have diamonds around the edges.",
-                    "render": `{"board":{"style":"squares-diamonds","width":8,"height":8,"markers":[{"type":"flood","points":[{"row":1,"col":1},{"row":4,"col":4}],"colour":1}]},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":"B\\n--A\\n\\n\\n------B"}`
+                    "render": `{"board":{"style":"squares-diamonds","width":8,"height":8,"markers":[{"type":"flood","points":[{"row":1,"col":1},{"row":4,"col":4}],"colour":1}]},"legend":{"A":{"name":"piece","colour":1,"scale":0.5},"B":{"name":"piece","colour":2,"scale":0.95}},"pieces":"B\\nA-A\\n\\n\\n------B"}`
                 },
                 "board-vertex": {
                     "name": "Boards: Vertex",

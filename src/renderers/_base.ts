@@ -1430,7 +1430,7 @@ export abstract class RendererBase {
      *
      * @returns A map of row/column locations to x,y coordinates
      */
-    protected squaresDiamonds(): [GridPoints, GridPoints, Poly[][]] {
+    protected squaresDiamonds(): [GridPoints, Poly[][]] {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -1648,7 +1648,7 @@ export abstract class RendererBase {
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid: gridPoints, polys});
 
-        return [gridPoints, pcGrid, polys];
+        return [gridPoints, polys];
     }
 
 
