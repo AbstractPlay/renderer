@@ -43,7 +43,7 @@ export class DefaultRenderer extends RendererBase {
                 [gridPoints, polys] = this.squares();
                 break;
             case "squares-diamonds":
-                [gridPoints, pcGrid, polys] = this.squaresDiamonds();
+                [gridPoints, polys] = this.squaresDiamonds();
                 break;
             case "squares-stacked":
                 gridPoints = this.squaresStacked();
