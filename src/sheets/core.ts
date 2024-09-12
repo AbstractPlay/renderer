@@ -92,6 +92,28 @@ sheet.glyphs.set("cross-orth", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("cube", (canvas: SVGContainer) => {
+    const sym = canvas.symbol();
+    const border = 5;
+    sym.rect(100, 100)
+       .stroke({color: "black", width: border, linecap: "butt", linejoin: "round"})
+       .fill("white")
+       .attr("data-playerfill", true)
+       .matrix(0.8660254037844387,-0.5,0,1,1.4210854715202004e-14,100);
+    sym.rect(100, 100)
+    .stroke({color: "black", width: border, linecap: "butt", linejoin: "round"})
+    .fill("white")
+       .attr("data-playerfill", true)
+       .matrix(0.8660254037844387,0.5,0,1,-86.60254037844386,50);
+    sym.rect(100, 100)
+    .stroke({color: "black", width: border, linecap: "butt", linejoin: "round"})
+    .fill("white")
+       .attr("data-playerfill", true)
+       .matrix(0.8660254037844387,0.49999999999999994,-0.8660254037844386,0.5000000000000001,0,0);
+    sym.viewbox(-86.603 - border, 0 - border, 173.205 + (border * 2), 200 + (border * 2));
+    return sym;
+});
+
 sheet.glyphs.set("dline-neg", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(-10, -10, 110, 110)
