@@ -105,6 +105,9 @@ export class DefaultRenderer extends RendererBase {
             case "dvgc-checkered":
                 [gridPoints, polys] = this.dvgc();
                 break;
+            case "circular-moon":
+                [gridPoints, polys] = this.moon();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }

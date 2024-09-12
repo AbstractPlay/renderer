@@ -49,6 +49,7 @@ export type BoardStyles =
   | "hex-of-cir"
   | "snubsquare"
   | "circular-cobweb"
+  | "circular-moon"
   | "sowing"
   | "conhex-dots"
   | "conhex-cells"

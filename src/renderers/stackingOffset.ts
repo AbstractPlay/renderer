@@ -94,6 +94,9 @@ export class StackingOffsetRenderer extends RendererBase {
             case "pyramid-hex":
                 [gridPoints, polys] = this.pyramidHex();
                 break;
+            case "circular-moon":
+                [gridPoints, polys] = this.moon();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }
