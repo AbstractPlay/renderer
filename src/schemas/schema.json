@@ -8,6 +8,10 @@
             "type": "integer",
             "minimum": 1
         },
+        "positiveNumber": {
+            "type": "number",
+            "exclusiveMinimum": 0
+        },
         "stashstrings": {
             "description": "Pattern for the global stash definitions for the `homeworlds` renderer.",
             "type": "string",
@@ -63,6 +67,7 @@
                 "hex-of-cir",
                 "snubsquare",
                 "circular-cobweb",
+                "circular-moon",
                 "sowing",
                 "conhex-dots",
                 "conhex-cells",
@@ -1628,7 +1633,7 @@
                 },
                 "strokeWeight": {
                     "description": "The base stroke weight of lines drawn to construct the board.",
-                    "$ref": "#/$defs/positiveInteger",
+                    "$ref": "#/$defs/positiveNumber",
                     "default": 1
                 },
                 "labelOpacity": {
@@ -1939,7 +1944,7 @@
                 },
                 "strokeWeight": {
                     "description": "The base stroke weight of lines drawn to construct the board.",
-                    "$ref": "#/$defs/positiveInteger",
+                    "$ref": "#/$defs/positiveNumber",
                     "default": 1
                 },
                 "strokeColour": {
