@@ -6066,8 +6066,10 @@ export abstract class RendererBase {
                         cy = miny + ry - dy;
 
                         if (this.json.board.style.endsWith("moon")) {
-                            rx = Math.max(rx, ry);
-                            cy++;
+                            const max = Math.max(rx, ry);
+                            rx = max;
+                            ry = max;
+                            // cy++;
                         }
                     }
                     if (preGridLines) {
@@ -6092,6 +6094,7 @@ export abstract class RendererBase {
                             width = marker.width;
                         }
                         rx += width / 2;
+                        ry += width / 2;
                         let degStart = 0;
                         if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
                             degStart = this.json.board["circular-start"];
