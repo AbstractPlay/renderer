@@ -305,3 +305,14 @@ export const circle2poly = (cx: number, cy: number, r: number, steps = 64): [num
     }
     return coordinates;
 }
+
+export const areaPolygon = (...pts: IPoint[]): number => {
+    if (pts[0].x !== pts[pts.length - 1].x || pts[0].y !== pts[pts.length - 1].y) {
+        pts.push(pts[0]);
+    }
+    let sum = 0;
+    for (let i = 0; i < pts.length - 1; i++) {
+        sum += (pts[i].x * pts[i+1].y) - (pts[i].y * pts[i+1].x);
+    }
+    return Math.abs(sum / 2);
+}

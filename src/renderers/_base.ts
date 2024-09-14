@@ -257,7 +257,7 @@ export abstract class RendererBase {
      * The default cell size. It's simply a convenient constant. It has no bearing at all on the final output.
      *
      */
-    protected readonly cellsize = 50;
+    protected cellsize = 50;
     /**
      * The list of received, processed, and validated options. This is available to all class methods.
      *
