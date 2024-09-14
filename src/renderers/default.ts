@@ -106,6 +106,7 @@ export class DefaultRenderer extends RendererBase {
                 [gridPoints, polys] = this.dvgc();
                 break;
             case "circular-moon":
+                this.cellsize = 15;
                 [gridPoints, polys] = this.moon();
                 break;
             default:

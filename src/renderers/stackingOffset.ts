@@ -95,6 +95,7 @@ export class StackingOffsetRenderer extends RendererBase {
                 [gridPoints, polys] = this.pyramidHex();
                 break;
             case "circular-moon":
+                this.cellsize = 15;
                 [gridPoints, polys] = this.moon();
                 break;
             default:
