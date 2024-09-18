@@ -66,6 +66,7 @@
                 "hex-of-tri",
                 "hex-of-cir",
                 "snubsquare",
+                "onyx",
                 "circular-cobweb",
                 "circular-moon",
                 "sowing",
@@ -1792,6 +1793,12 @@
                     "type": "string",
                     "enum": ["H","V"],
                     "default": "H"
+                },
+                "snubStart": {
+                    "description": "For the `snubsquare` board, lets you choose whether the top-right cell forms a square or a triangle. Default is square.",
+                    "type": "string",
+                    "enum": ["S","T"],
+                    "default": "S"
                 },
                 "sdStart": {
                     "description": "For the `squares-diamonds` board, the board edge can start with diamonds or squares (actually octagons). By default, the edges start with squares, but you can also start them with diamonds.",

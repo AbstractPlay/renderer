@@ -1,4 +1,4 @@
-import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
+import { GridPoints, IGeneratorArgs, IPoint, normalizeX, SnubStart} from "./_base";
 
 /**
  * Generates a rectangular snubsquare field.
@@ -23,7 +23,15 @@ export const snubsquare = (args: IGeneratorArgs): GridPoints => {
         gridWidth = args.gridWidth;
     }
 
-    const grid: GridPoints = [];
+    let start: SnubStart = "S";
+    if (args.snubStart !== undefined) {
+        start = args.snubStart;
+    }
+    if (start === "T") {
+        gridWidth++;
+    }
+
+    let grid: GridPoints = [];
     for (let row = 0; row < gridHeight; row++) {
         const node: IPoint[] = [];
         for (let col = 0; col < gridWidth; col++) {
@@ -55,6 +63,11 @@ export const snubsquare = (args: IGeneratorArgs): GridPoints => {
             node.push(point);
         }
         grid.push(node);
+    }
+
+    // if triangle start, delete the first column of points
+    if (start === "T") {
+        grid = grid.map(row => row.slice(1));
     }
 
     // Shift entire grid so it fits in positive space

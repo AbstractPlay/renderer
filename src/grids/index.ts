@@ -9,10 +9,10 @@ import { cairo } from "./cairo";
 import { conicalHex, genPolys as genConicalHexPolys } from "./conicalHex";
 import { pyramidHex, genPolys as genPyramidHexPolys } from "./pyramidHex";
 
-import { GridPoints, IPoint, Poly, IPolyCircle, IPolyPath, IPolyPolygon } from "./_base";
+import { GridPoints, IPoint, Poly, IPolyCircle, IPolyPath, IPolyPolygon, type SnubStart, type PentagonOrientation } from "./_base";
 import { deg2rad } from "../common/plotting";
 
-export {GridPoints, IPoint, hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, Poly, IPolyCircle, IPolyPath, IPolyPolygon};
+export {GridPoints, IPoint, hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, Poly, IPolyCircle, IPolyPath, IPolyPolygon, SnubStart, PentagonOrientation};
 
 export const rotateGrid = (grid: GridPoints, deg: number, cx: number, cy: number): GridPoints => {
     const rad = deg2rad(deg);

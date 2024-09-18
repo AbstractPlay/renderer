@@ -56,6 +56,9 @@ export class StackingOffsetRenderer extends RendererBase {
             case "snubsquare":
                 gridPoints = this.snubSquare();
                 break;
+            case "onyx":
+                gridPoints = this.onyx();
+                break;
             case "hex-of-hex":
                 [gridPoints, polys] = this.hexOfHex();
                 break;
