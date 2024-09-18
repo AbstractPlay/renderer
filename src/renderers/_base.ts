@@ -3104,6 +3104,218 @@ export abstract class RendererBase {
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates snubsquare boards, which are a unique configuration where each cells is connected to five others.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected snubSquareCells(): [GridPoints, IPolyPolygon[][]] {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+        let snubStart: SnubStart = "S";
+        if ("snubStart" in this.json.board && this.json.board.snubStart !== undefined) {
+            snubStart = this.json.board.snubStart;
+        }
+
+        // Get a grid of points
+        const gridOrig = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize, snubStart});
+        const minx = Math.min(...gridOrig.flat().map(pt => pt.x));
+        const maxx = Math.max(...gridOrig.flat().map(pt => pt.x));
+        // const miny = Math.min(...grid.flat().map(pt => pt.y));
+        // const maxy = Math.max(...grid.flat().map(pt => pt.y));
+
+        // create the polys
+        const polys: IPolyPolygon[][] = [];
+        for (let row = 0; row < height - 1; row++) {
+            const node: IPolyPolygon[] = [];
+            for (let col = 0; col < width - 1; col+=2) {
+                if (snubStart === "S") {
+                    if (row % 2 === 0) {
+                        const sqpts = [
+                            gridOrig[row][col],
+                            gridOrig[row][col+1],
+                            gridOrig[row+1][col+1],
+                            gridOrig[row+1][col],
+                        ];
+                        node.push({type: "poly", points: sqpts});
+                        if (gridOrig[row][col+1] !== undefined && gridOrig[row][col+2] !== undefined && gridOrig[row+1][col+1] !== undefined) {
+                            const t1pts = [
+                                gridOrig[row][col+1],
+                                gridOrig[row][col+2],
+                                gridOrig[row+1][col+1],
+                            ];
+                            node.push({type: "poly", points: t1pts});
+                        }
+                        if (gridOrig[row][col+2] !== undefined && gridOrig[row+1][col+2] !== undefined && gridOrig[row+1][col+1] !== undefined) {
+                            const t2pts = [
+                                gridOrig[row][col+2],
+                                gridOrig[row+1][col+2],
+                                gridOrig[row+1][col+1],
+                            ];
+                            node.push({type: "poly", points: t2pts});
+                        }
+                    } else {
+                        const t1pts = [
+                            gridOrig[row][col],
+                            gridOrig[row+1][col+1],
+                            gridOrig[row+1][col],
+                        ];
+                        node.push({type: "poly", points: t1pts});
+                        if (gridOrig[row][col+1] !== undefined && gridOrig[row+1][col+1] !== undefined) {
+                            const t2pts = [
+                                gridOrig[row][col],
+                                gridOrig[row][col+1],
+                                gridOrig[row+1][col+1],
+                            ];
+                            node.push({type: "poly", points: t2pts});
+                        }
+                        if (gridOrig[row][col+1] !== undefined && gridOrig[row][col+2] !== undefined && gridOrig[row+1][col+1] !== undefined && gridOrig[row+1][col+2] !== undefined) {
+                            const sqpts = [
+                                gridOrig[row][col+1],
+                                gridOrig[row][col+2],
+                                gridOrig[row+1][col+2],
+                                gridOrig[row+1][col+1],
+                            ];
+                            node.push({type: "poly", points: sqpts});
+                        }
+                    }
+                }
+                else {
+                    if (row % 2 !== 0) {
+                        const sqpts = [
+                            gridOrig[row][col],
+                            gridOrig[row][col+1],
+                            gridOrig[row+1][col+1],
+                            gridOrig[row+1][col],
+                        ];
+                        node.push({type: "poly", points: sqpts});
+                        if (gridOrig[row][col+1] !== undefined && gridOrig[row+1][col+1] !== undefined && gridOrig[row+1][col+2] !== undefined) {
+                            const t1pts = [
+                                gridOrig[row][col+1],
+                                gridOrig[row+1][col+1],
+                                gridOrig[row+1][col+2],
+                            ];
+                            node.push({type: "poly", points: t1pts});
+                        }
+                        if (gridOrig[row][col+1] !== undefined && gridOrig[row][col+2] !== undefined && gridOrig[row+1][col+2] !== undefined) {
+                            const t2pts = [
+                                gridOrig[row][col+1],
+                                gridOrig[row][col+2],
+                                gridOrig[row+1][col+2],
+                            ];
+                            node.push({type: "poly", points: t2pts});
+                        }
+                    } else {
+                        const t1pts = [
+                            gridOrig[row][col],
+                            gridOrig[row][col+1],
+                            gridOrig[row+1][col],
+                        ];
+                        node.push({type: "poly", points: t1pts});
+                        if (gridOrig[row][col+1] !== undefined && gridOrig[row+1][col] !== undefined && gridOrig[row+1][col+1] !== undefined) {
+                            const t2pts = [
+                                gridOrig[row][col+1],
+                                gridOrig[row+1][col],
+                                gridOrig[row+1][col+1],
+                            ];
+                            node.push({type: "poly", points: t2pts});
+                        }
+                        if (gridOrig[row][col+1] !== undefined && gridOrig[row][col+2] !== undefined && gridOrig[row+1][col+1] !== undefined && gridOrig[row+1][col+2] !== undefined) {
+                            const sqpts = [
+                                gridOrig[row][col+1],
+                                gridOrig[row][col+2],
+                                gridOrig[row+1][col+2],
+                                gridOrig[row+1][col+1],
+                            ];
+                            node.push({type: "poly", points: sqpts});
+                        }
+                    }
+                }
+            }
+            polys.push(node);
+        }
+        const grid = polys.map(row => row.map(poly => centroid(poly.points)!));
+
+        // Start building the SVG
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("gridlines");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys, gridExpanded: gridOrig});
+
+        // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const labels = board.group().id("labels");
+            const columnLabels = this.getLabels(undefined, polys.length);
+            if ( (this.json.options === undefined) || (!this.json.options.includes("reverse-numbers")) ) {
+                columnLabels.reverse();
+            }
+
+            const buffer = cellsize * 0.25;
+            // Rows (combined labels)
+            for (let row = 0; row < grid.length; row++) {
+                const pointL = {x: minx - buffer, y: grid[row][0].y};
+                const pointR = {x: maxx + buffer, y: grid[row][grid[row].length - 1].y};
+                labels.text(columnLabels[row] + "1").fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[row] + polys[row].length.toString()).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+            }
+        }
+
+        // Draw grid lines
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        this.json.board = this.json.board as BoardBasic;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+        for (let row = 0; row < polys.length; row++) {
+            for (let col = 0; col < polys[row].length; col++) {
+                const isBlocked = blocked?.find(e => e.row === row && e.col === col) !== undefined;
+                if (!isBlocked) {
+                    const poly = polys[row][col];
+                    const instance = gridlines.polygon([...poly.points, poly.points[0]].map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).fill({color: "white", opacity: 0});
+                    if (this.options.boardClick !== undefined) {
+                        instance.click(() => this.options.boardClick!(row, col, ""))
+                    }
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys, gridExpanded: gridOrig});
+
+        return [grid, polys];
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates snubsquare boards with a space at the midpoints of squares.
      *
      * @returns A map of row/column locations to x,y coordinates
@@ -6993,6 +7205,23 @@ export abstract class RendererBase {
                         if (style === "onyx") {
                             realgrid = grid.reduce((prev, curr, idx) => idx % 2 === 0 ? [...prev, curr] : [...prev], [] as GridPoints);
                         }
+                        const pts: IPoint[] = [];
+                        switch (marker.edge) {
+                            case "N":
+                                pts.push(...realgrid[0]);
+                                break;
+                            case "S":
+                                pts.push(...realgrid[realgrid.length - 1]);
+                                break;
+                            case "W":
+                                pts.push(...realgrid.map(row => row[0]));
+                                break;
+                            case "E":
+                                pts.push(...realgrid.map(row => row[row.length - 1]))
+                        }
+                        svgGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
+                    } else if (style === "snubsquare-cells" && opts.gridExpanded !== undefined) {
+                        const realgrid = opts.gridExpanded;
                         const pts: IPoint[] = [];
                         switch (marker.edge) {
                             case "N":

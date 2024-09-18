@@ -145,6 +145,11 @@
                     "description": "A snubsquare board where you can also place at the midpoint of squares. The notation and `pieces` string become more complicated. As with the snubsquare board, you can use the `snubStart` property to change whether the top-left corner starts with a triangle (the default) or a square.",
                     "render": `{"board":{"style":"onyx","width":12,"height":12},"legend":{"A":{"name":"piece","colour":1,"scale":0.75},"B":{"name":"piece","colour":2,"scale":0.75}},"pieces":"ABA\\nBA\\n-AB\\nA"}`,
                 },
+                "board-snubsquare-cells": {
+                    "name": "Boards: Snubsquare (Cells)",
+                    "description": "A version of a snubsquare board where you place pieces on the spaces instead of the vertices. The height and width you provide relate to the number of regular vertices. Because at many sizes the number of spaces varies from row to row, the labelling mirrors the `hex-of-*` model.",
+                    "render": `{"board":{"style":"snubsquare-cells","width":8,"height":8,"markers":[{"type":"flood","colour":2,"points":[{"row":2,"col":3},{"row":2,"col":2},{"row":2,"col":4}]},{"type":"edge","edge":"N","colour":1},{"type":"edge","edge":"S","colour":1},{"type":"edge","edge":"E","colour":2},{"type":"edge","edge":"W","colour":2}]},"legend":{"A":{"name":"piece","colour":1,"scale":0.5},"B":{"name":"piece","colour":2,"scale":0.5}},"pieces":"ABA"}`
+                },
                 "board-hextri": {
                     "name": "Boards: Hex of triangles",
                     "description": "A hexagon of triangles, with pieces placed on the intersections.",
