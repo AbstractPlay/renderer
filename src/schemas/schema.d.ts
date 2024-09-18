@@ -48,6 +48,7 @@ export type BoardStyles =
   | "hex-of-tri"
   | "hex-of-cir"
   | "snubsquare"
+  | "snubsquare-cells"
   | "onyx"
   | "circular-cobweb"
   | "circular-moon"
