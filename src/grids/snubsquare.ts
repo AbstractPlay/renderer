@@ -1,3 +1,4 @@
+import { rad2deg, rotatePoint } from "../common/plotting";
 import { GridPoints, IGeneratorArgs, IPoint, normalizeX, SnubStart} from "./_base";
 
 /**
@@ -70,6 +71,13 @@ export const snubsquare = (args: IGeneratorArgs): GridPoints => {
         grid = grid.map(row => row.slice(1));
     }
 
+    // rotate points so top-left and top-right corners share a y coordinate
+    const rise = Math.abs(grid[0][0].y - grid[0][grid[0].length - 1].y);
+    const run = Math.abs(grid[0][0].x - grid[0][grid[0].length - 1].x);
+    const oa = rise/run;
+    const deg = rad2deg(Math.atan(oa));
+    const rotated = grid.map(row => row.map(pt => rotatePoint(pt, deg*-1, grid[0][0])))
+
     // Shift entire grid so it fits in positive space
-    return normalizeX(grid);
+    return normalizeX(rotated);
 }
