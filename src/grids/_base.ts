@@ -11,6 +11,7 @@ export interface IPoint {
 }
 
 export type PentagonOrientation = "H"|"V";
+export type SnubStart = "S"|"T"; // square or triangle
 
 /**
  * Defines the options accepted by every grid point generator.
@@ -100,6 +101,10 @@ export interface IGeneratorArgs {
      * Only used by the cairo generator to determine starting orientation
      */
     readonly cairoStart?: PentagonOrientation;
+    /**
+     * Only used by the snubsquare generator to determine the top-left cell shape
+     */
+    readonly snubStart?: SnubStart;
     /**
      * Only used by the conicalHex generator to determine whether you want the narrow or wide variant.
      */

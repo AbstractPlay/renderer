@@ -4,7 +4,7 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
-import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle } from "../grids/_base";
+import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart } from "../grids/_base";
 import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
@@ -2932,9 +2932,13 @@ export abstract class RendererBase {
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
         }
+        let snubStart: SnubStart = "S";
+        if ("snubStart" in this.json.board && this.json.board.snubStart !== undefined) {
+            snubStart = this.json.board.snubStart;
+        }
 
         // Get a grid of points
-        const grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize});
+        const grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize, snubStart});
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
 
@@ -3020,22 +3024,42 @@ export abstract class RendererBase {
                     let x2 = prev.x;
                     let y2 = prev.y;
                     gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-                    // even row, odd columns connect as well to previous-above cell
-                    if ( ( (row % 2) === 0) && ( (col % 2) !== 0) ) {
-                        prev = grid[row - 1][col - 1];
-                        x1 = curr.x;
-                        y1 = curr.y;
-                        x2 = prev.x;
-                        y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
-                    // odd row, odd columns connect as well to previous-next cell
-                    } else if ( ((row % 2) !== 0) && ((col % 2) !== 0) && (col < (width - 1)) ) {
-                        prev = grid[row - 1][col + 1];
-                        x1 = curr.x;
-                        y1 = curr.y;
-                        x2 = prev.x;
-                        y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    if (snubStart === "S") {
+                        // even row, odd columns connect as well to previous-above cell
+                        if ( ( (row % 2) === 0) && ( (col % 2) !== 0) ) {
+                            prev = grid[row - 1][col - 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        // odd row, odd columns connect as well to previous-next cell
+                        } else if ( ((row % 2) !== 0) && ((col % 2) !== 0) && (col < (width - 1)) ) {
+                            prev = grid[row - 1][col + 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        }
+                    } else {
+                        // even row, even columns > 0 connect as well to previous-above cell
+                        if ( ( (row % 2) === 0) && ( (col % 2) === 0) && col > 0 ) {
+                            prev = grid[row - 1][col - 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        // odd row, even columns connect as well to previous-next cell
+                        } else if ( ((row % 2) !== 0) && ((col % 2) === 0) && (col < (width - 1)) ) {
+                            prev = grid[row - 1][col + 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        }
                     }
                 }
             }
@@ -3072,7 +3096,259 @@ export abstract class RendererBase {
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
-     * This generator creates snubsquare boards, which are a unique configuration where each cells is connected to five others.
+     * This generator creates snubsquare boards with a space at the midpoints of squares.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected onyx(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+        let snubStart: SnubStart = "T";
+        if ("snubStart" in this.json.board && this.json.board.snubStart !== undefined) {
+            snubStart = this.json.board.snubStart;
+        }
+
+        // Get a grid of points
+        const gridOrig = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize, snubStart});
+        // insert midpoint spaces and rows between rows
+        const midpts: GridPoints = [];
+        for (let row = 0; row < gridOrig.length - 1; row++) {
+            const midptNode: IPoint[] = [];
+            for (let col = 0; col < gridOrig[row].length; col+=2) {
+                const corners: IPoint[] = [];
+                if ( (snubStart === "T" && row % 2 === 0) || (snubStart === "S" && row % 2 !== 0) ) {
+                    if (col > gridOrig[row].length - 3) { break; }
+                    corners.push(
+                        gridOrig[row][col+1],
+                        gridOrig[row][col+2],
+                        gridOrig[row+1][col+1],
+                        gridOrig[row+1][col+2]
+                    )
+                } else {
+                    if (col > gridOrig[row].length - 2) { break; }
+                    corners.push(
+                        gridOrig[row][col],
+                        gridOrig[row][col+1],
+                        gridOrig[row+1][col],
+                        gridOrig[row+1][col+1]
+                    )
+                }
+                midptNode.push(centroid(corners)!);
+            }
+            midpts.push(midptNode);
+        }
+        const grid: GridPoints = gridOrig.reduce((prev, curr, idx) => idx === gridOrig.length - 1 ? [...prev, curr] : [...prev, curr, midpts[idx]], [] as GridPoints);
+
+        // start generating the SVG
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("gridlines");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+
+        // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
+            const labels = board.group().id("labels");
+            let columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+
+            let rowLabels: string[] = [];
+            for (let row = 0; row < height; row++) {
+                rowLabels.push((height - row).toString());
+            }
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
+
+            if (this.json.options?.includes("swap-labels")) {
+                const scratch = [...columnLabels];
+                columnLabels = [...rowLabels];
+                columnLabels.reverse();
+                rowLabels = [...scratch];
+                rowLabels.reverse();
+            }
+
+            // Columns (letters)
+            for (let col = 0; col < width; col++) {
+                const pointTop = {x: gridOrig[0][col].x, y: gridOrig[0][col].y - cellsize};
+                const pointBottom = {x: gridOrig[height - 1][col].x, y: gridOrig[height - 1][col].y + cellsize};
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                }
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows (numbers)
+            for (let row = 0; row < height; row++) {
+                const pointL = {x: gridOrig[row][0].x - cellsize, y: gridOrig[row][0].y};
+                const pointR = {x: gridOrig[row][width - 1].x + cellsize, y: gridOrig[row][width - 1].y};
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+                }
+            }
+        }
+
+        // Draw basic grid lines first
+        for (let row = 0; row < gridOrig.length; row++) {
+            for (let col = 0; col < gridOrig[row].length; col++) {
+                const curr = gridOrig[row][col];
+
+                // always connect to previous cell
+                if (col > 0) {
+                    const prev = gridOrig[row][col - 1];
+                    const x1 = curr.x;
+                    const y1 = curr.y;
+                    const x2 = prev.x;
+                    const y2 = prev.y;
+                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                }
+
+                if (row > 0) {
+                    // always connect to cell directly above
+                    let prev = gridOrig[row - 1][col];
+                    let x1 = curr.x;
+                    let y1 = curr.y;
+                    let x2 = prev.x;
+                    let y2 = prev.y;
+                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    if (snubStart === "S") {
+                        // even row, odd columns connect as well to previous-above cell
+                        if ( ( (row % 2) === 0) && ( (col % 2) !== 0) ) {
+                            prev = gridOrig[row - 1][col - 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        // odd row, odd columns connect as well to previous-next cell
+                        } else if ( ((row % 2) !== 0) && ((col % 2) !== 0) && (col < (width - 1)) ) {
+                            prev = gridOrig[row - 1][col + 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        }
+                    } else {
+                        // even row, even columns > 0 connect as well to previous-above cell
+                        if ( ( (row % 2) === 0) && ( (col % 2) === 0) && col > 0 ) {
+                            prev = gridOrig[row - 1][col - 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        // odd row, even columns connect as well to previous-next cell
+                        } else if ( ((row % 2) !== 0) && ((col % 2) === 0) && (col < (width - 1)) ) {
+                            prev = gridOrig[row - 1][col + 1];
+                            x1 = curr.x;
+                            y1 = curr.y;
+                            x2 = prev.x;
+                            y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        }
+                    }
+                }
+            }
+        }
+        // now add midpoint connections
+        for (let row = 0; row < gridOrig.length - 1; row++) {
+            for (let col = 0; col < gridOrig[row].length; col+=2) {
+                const corners: IPoint[] = [];
+                if ( (snubStart === "T" && row % 2 === 0) || (snubStart === "S" && row % 2 !== 0) ) {
+                    if (col > gridOrig[row].length - 3) { break; }
+                    corners.push(
+                        gridOrig[row][col+1],
+                        gridOrig[row][col+2],
+                        gridOrig[row+1][col+1],
+                        gridOrig[row+1][col+2]
+                    )
+                } else {
+                    if (col > gridOrig[row].length - 2) { break; }
+                    corners.push(
+                        gridOrig[row][col],
+                        gridOrig[row][col+1],
+                        gridOrig[row+1][col],
+                        gridOrig[row+1][col+1]
+                    )
+                }
+                const {x: x1, y: y1} = corners[0];
+                const {x: x2, y: y2} = corners[3];
+                const {x: x3, y: y3} = corners[1];
+                const {x: x4, y: y4} = corners[2];
+                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                gridlines.line(x3, y3, x4, y4).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+            }
+        }
+
+        if (this.options.boardClick !== undefined) {
+            const root = this.rootSvg;
+            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const point = root.point(e.clientX, e.clientY);
+                let min = Number.MAX_VALUE;
+                let row0 = 0;
+                let col0 = 0;
+                for (let row = 0; row < grid.length; row++) {
+                    const currRow = grid[row];
+                    for (let col = 0; col < currRow.length; col++) {
+                        const curr = currRow[col];
+                        const dist2 = Math.pow(point.x - curr.x, 2.0) + Math.pow(point.y - curr.y, 2.0);
+                        if (dist2 < min) {
+                            min = dist2;
+                            row0 = row;
+                            col0 = col;
+                        }
+                    }
+                }
+                this.options.boardClick!(row0, col0, "");
+            });
+            this.rootSvg.click(genericCatcher);
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a circular cobweb board.
      *
      * @returns A map of row/column locations to x,y coordinates
      */

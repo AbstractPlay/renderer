@@ -48,6 +48,7 @@ export type BoardStyles =
   | "hex-of-tri"
   | "hex-of-cir"
   | "snubsquare"
+  | "onyx"
   | "circular-cobweb"
   | "circular-moon"
   | "sowing"
@@ -426,6 +427,10 @@ export interface BoardBasic {
    * For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.
    */
   cairoStart?: "H" | "V";
+  /**
+   * For the `snubsquare` board, lets you choose whether the top-right cell forms a square or a triangle. Default is square.
+   */
+  snubStart?: "S" | "T";
   /**
    * For the `squares-diamonds` board, the board edge can start with diamonds or squares (actually octagons). By default, the edges start with squares, but you can also start them with diamonds.
    */

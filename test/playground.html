@@ -137,8 +137,13 @@
                 },
                 "board-snubsquare": {
                     "name": "Boards: Snubsquare",
-                    "description": "Snubsquare board with stacking pieces",
+                    "description": "Snubsquare board with stacking pieces. You can use the `snubStart` property to change whether the top-left corner starts with a square (the default) or a triangle.",
                     "render": "{\"renderer\":\"stacking-offset\",\"board\":{\"style\":\"snubsquare\",\"width\":7,\"height\":7},\"legend\":{\"A\":{\"name\":\"piece\",\"colour\":1},\"B\":{\"name\":\"piece\",\"colour\":2}},\"pieces\":\"-,-,-,-,-,-,-\\nB,A,-,-,-,-,-\\nBA,A,-,-,-,-,-\\nA,B,AB,A,-,-,-\\nAB,BA,B,B,-,-,-\\n-,-,-,-,-,-,-\\n-,-,-,-,-,-,-\"}"
+                },
+                "board-onyx": {
+                    "name": "Boards: Onyx",
+                    "description": "A snubsquare board where you can also place at the midpoint of squares. The notation and `pieces` string become more complicated. As with the snubsquare board, you can use the `snubStart` property to change whether the top-left corner starts with a triangle (the default) or a square.",
+                    "render": `{"board":{"style":"onyx","width":12,"height":12},"legend":{"A":{"name":"piece","colour":1,"scale":0.75},"B":{"name":"piece","colour":2,"scale":0.75}},"pieces":"ABA\\nBA\\n-AB\\nA"}`,
                 },
                 "board-hextri": {
                     "name": "Boards: Hex of triangles",
