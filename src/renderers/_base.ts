@@ -2954,6 +2954,11 @@ export abstract class RendererBase {
             labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const minx = Math.min(...grid.flat().map(pt => pt.x));
+            const maxx = Math.max(...grid.flat().map(pt => pt.x));
+            const miny = Math.min(...grid.flat().map(pt => pt.y));
+            const maxy = Math.max(...grid.flat().map(pt => pt.y));
+
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
                 hideHalf = true;
@@ -2980,10 +2985,11 @@ export abstract class RendererBase {
                 rowLabels.reverse();
             }
 
+            const buffer = cellsize * 0.75;
             // Columns (letters)
             for (let col = 0; col < width; col++) {
-                const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
-                const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+                const pointTop = {x: grid[0][col].x, y: miny - buffer};
+                const pointBottom = {x: grid[height - 1][col].x, y: maxy + buffer};
                 if (! hideHalf) {
                     labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
@@ -2992,8 +2998,8 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
-                const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
-                const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+                const pointL = {x: minx - buffer, y: grid[row][0].y};
+                const pointR = {x: maxx + buffer, y: grid[row][width - 1].y};
                 labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
                     labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
@@ -3066,9 +3072,11 @@ export abstract class RendererBase {
         }
 
         if (this.options.boardClick !== undefined) {
+            const rotation = this.getRotation();
+            const centre = this.getBoardCentre();
             const root = this.rootSvg;
             const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = root.point(e.clientX, e.clientY);
+                const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
                 let min = Number.MAX_VALUE;
                 let row0 = 0;
                 let col0 = 0;
@@ -3177,6 +3185,11 @@ export abstract class RendererBase {
             labelOpacity = this.json.board.labelOpacity;
         }
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const minx = Math.min(...gridOrig.flat().map(pt => pt.x));
+            const maxx = Math.max(...gridOrig.flat().map(pt => pt.x));
+            const miny = Math.min(...gridOrig.flat().map(pt => pt.y));
+            const maxy = Math.max(...gridOrig.flat().map(pt => pt.y));
+
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
                 hideHalf = true;
@@ -3203,10 +3216,11 @@ export abstract class RendererBase {
                 rowLabels.reverse();
             }
 
+            const buffer = cellsize * 0.75;
             // Columns (letters)
             for (let col = 0; col < width; col++) {
-                const pointTop = {x: gridOrig[0][col].x, y: gridOrig[0][col].y - cellsize};
-                const pointBottom = {x: gridOrig[height - 1][col].x, y: gridOrig[height - 1][col].y + cellsize};
+                const pointTop = {x: gridOrig[0][col].x, y: miny - buffer};
+                const pointBottom = {x: gridOrig[height - 1][col].x, y: maxy + buffer};
                 if (! hideHalf) {
                     labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
@@ -3215,8 +3229,8 @@ export abstract class RendererBase {
 
             // Rows (numbers)
             for (let row = 0; row < height; row++) {
-                const pointL = {x: gridOrig[row][0].x - cellsize, y: gridOrig[row][0].y};
-                const pointR = {x: gridOrig[row][width - 1].x + cellsize, y: gridOrig[row][width - 1].y};
+                const pointL = {x: minx - buffer, y: gridOrig[row][0].y};
+                const pointR = {x: maxx + buffer, y: gridOrig[row][width - 1].y};
                 labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 if (! hideHalf) {
                     labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
@@ -3318,15 +3332,17 @@ export abstract class RendererBase {
         }
 
         if (this.options.boardClick !== undefined) {
+            const rotation = this.getRotation();
+            const centre = this.getBoardCentre();
             const root = this.rootSvg;
             const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = root.point(e.clientX, e.clientY);
+                const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
                 let min = Number.MAX_VALUE;
                 let row0 = 0;
                 let col0 = 0;
                 for (let row = 0; row < grid.length; row++) {
                     const currRow = grid[row];
-                    for (let col = 0; col < currRow.length; col++) {
+                    for (let col = 0; col < grid[row].length; col++) {
                         const curr = currRow[col];
                         const dist2 = Math.pow(point.x - curr.x, 2.0) + Math.pow(point.y - curr.y, 2.0);
                         if (dist2 < min) {
@@ -6972,6 +6988,26 @@ export abstract class RendererBase {
                                 throw new Error(`The dvgc board can only mark N and S edges.`);
                         }
                         svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                    } else if (style === "snubsquare" || style === "onyx") {
+                        let realgrid = grid;
+                        if (style === "onyx") {
+                            realgrid = grid.reduce((prev, curr, idx) => idx % 2 === 0 ? [...prev, curr] : [...prev], [] as GridPoints);
+                        }
+                        const pts: IPoint[] = [];
+                        switch (marker.edge) {
+                            case "N":
+                                pts.push(...realgrid[0]);
+                                break;
+                            case "S":
+                                pts.push(...realgrid[realgrid.length - 1]);
+                                break;
+                            case "W":
+                                pts.push(...realgrid.map(row => row[0]));
+                                break;
+                            case "E":
+                                pts.push(...realgrid.map(row => row[row.length - 1]))
+                        }
+                        svgGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
                     }
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;
