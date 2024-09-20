@@ -72,11 +72,17 @@ export const snubsquare = (args: IGeneratorArgs): GridPoints => {
     }
 
     // rotate points so top-left and top-right corners share a y coordinate
-    const rise = Math.abs(grid[0][0].y - grid[0][grid[0].length - 1].y);
-    const run = Math.abs(grid[0][0].x - grid[0][grid[0].length - 1].x);
+    let p1 = grid[0][0];
+    let p2 = grid[0][grid[0].length - 1];
+    if (gridWidth > 3) {
+        p1 = grid[0][1];
+        p2 = grid[0][3];
+    }
+    const rise = Math.abs(p1.y - p2.y);
+    const run = Math.abs(p1.x - p2.x);
     const oa = rise/run;
     const deg = rad2deg(Math.atan(oa));
-    const rotated = grid.map(row => row.map(pt => rotatePoint(pt, deg*-1, grid[0][0])))
+    const rotated = grid.map(row => row.map(pt => rotatePoint(pt, deg*-1, p1)))
 
     // Shift entire grid so it fits in positive space
     return normalizeX(rotated);
