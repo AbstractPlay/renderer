@@ -74,9 +74,11 @@ export const snubsquare = (args: IGeneratorArgs): GridPoints => {
     // rotate points so top-left and top-right corners share a y coordinate
     let p1 = grid[0][0];
     let p2 = grid[0][grid[0].length - 1];
-    if (gridWidth > 3) {
+    if (start === "S" && gridWidth > 3) {
         p1 = grid[0][1];
         p2 = grid[0][3];
+    } else if (start === "T" && gridWidth > 4) {
+        p2 = grid[0][2];
     }
     const rise = Math.abs(p1.y - p2.y);
     const run = Math.abs(p1.x - p2.x);
