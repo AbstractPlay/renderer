@@ -21,7 +21,7 @@ sheet.glyphs.set("piecepack-misc-coin-back", (canvas: SVGContainer) => {
         .rotate(180, 0, 0)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(-680, -800, 680, 680);
+    group.viewbox(-683.5, -803.5, 687, 687);
     return group;
 });
 
@@ -32,8 +32,7 @@ sheet.glyphs.set("piecepack-misc-tile-back", (canvas: SVGContainer) => {
         .attr("data-context-stroke", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-
-    group.viewbox(0, 67, 733, 733);
+    group.viewbox(-3.5, 64, 740, 739);
     return group;
 });
 
@@ -44,7 +43,7 @@ sheet.glyphs.set("piecepack-number-0", (canvas: SVGContainer) => {
         .attr("data-context-stroke", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(52, 52, 696, 696);
+    group.viewbox(62, 48.5, 676, 703);
     return group;
 });
 
@@ -58,7 +57,7 @@ sheet.glyphs.set("piecepack-number-1", (canvas: SVGContainer) => {
         .rotate(180, 0, 0).flip("x", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(4.263256414560601e-14, -800, 673.0000000000001, 673.0000000000001);
+    group.viewbox(101.933, -803.5, 468.567, 680);
     return group;
 });
 
@@ -71,7 +70,7 @@ sheet.glyphs.set("piecepack-number-2", (canvas: SVGContainer) => {
         .rotate(180, 0, 0).flip("x", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0.4898185188319104, -799.5243402392604, 684.0243402392604, 684.0243402392604);
+    group.viewbox(73, -803.024, 539.004, 691.024);
     return group;
 });
 
@@ -80,10 +79,11 @@ sheet.glyphs.set("piecepack-number-3", (canvas: SVGContainer) => {
     group.path("M168,380v147c18-1.3,36-2,54-2c36.7,0,63.7,2.7,81,8c32,6,48,22.3,48,49s-9.8,44.7-29.5,54S279,650,253,650 c-58.7,0-113-8.7-163-26v150c61.3,17.3,135,26,221,26c70,0,134.7-13.7,194-41c66.7-30.7,99.7-79.7,99-147 c-0.7-76.7-44-127.7-130-153v-2c94-22,140.3-73.7,139-155c-0.7-69.3-34.7-121.3-102-156c-52.7-28-117.3-42-194-42 c-84,0.7-162,10-234,28v157c45.3-18.7,102-28.3,170-29c29.3-0.7,52.7,2.3,70,9c25.3,10,38,27.3,38,52c-0.7,44-37.3,66-110,66 C223,387,195.3,384.7,168,380z")
         .attr("data-playerfill", true)
         .attr("data-context-stroke", true)
-        .flip("y")
+        // @ts-expect-error
+        .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0.013313946715186376, 104, 696, 696);
+    group.viewbox(79.5, -803.5, 537.026, 703);
     return group;
 });
 
@@ -96,7 +96,7 @@ sheet.glyphs.set("piecepack-number-4", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 673, 673);
+    group.viewbox(9.5, -803.5, 654, 680);
     return group;
 });
 
@@ -109,7 +109,7 @@ sheet.glyphs.set("piecepack-number-5", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0.5063723989345021, -799.5, 685.0057230828099, 685.0057230828099);
+    group.viewbox(82.5, -803, 521.018, 692.023);
     return group;
 });
 
@@ -122,7 +122,7 @@ sheet.glyphs.set("piecepack-number-6", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0.4905280570116588, -799.5, 696.0189438859767, 696.0189438859767);
+    group.viewbox(31, -803, 635, 703.019);
     return group;
 });
 
@@ -135,7 +135,7 @@ sheet.glyphs.set("piecepack-number-7", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 673, 673);
+    group.viewbox(59.5, -803.5, 554, 680);
     return group;
 });
 
@@ -148,7 +148,7 @@ sheet.glyphs.set("piecepack-number-8", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0.48987625507947996, -799.520247489841, 696.020247489841, 696.020247489841);
+    group.viewbox(26.966, -803.02, 643.034, 703.02);
     return group;
 });
 
@@ -161,7 +161,7 @@ sheet.glyphs.set("piecepack-number-9", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 696, 696);
+    group.viewbox(30.5, -803.5, 635, 703);
     return group;
 });
 
@@ -172,7 +172,7 @@ sheet.glyphs.set("piecepack-number-void", (canvas: SVGContainer) => {
         .attr("data-context-stroke", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, 130, 670, 670);
+    group.viewbox(-3.5, 127, 677, 676);
     return group;
 });
 
@@ -185,7 +185,7 @@ sheet.glyphs.set("piecepack-suit-anchors", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 707, 707);
+    group.viewbox(50.5, -803.5, 606, 715.315);
     return group;
 });
 
@@ -198,7 +198,7 @@ sheet.glyphs.set("piecepack-suit-clubs", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 657, 657);
+    group.viewbox(-3.5, -803, 664, 663);
     return group;
 });
 
@@ -211,7 +211,7 @@ sheet.glyphs.set("piecepack-suit-crowns", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0.4775914634146261, -799.5, 715.0448170731707, 715.0448170731707);
+    group.viewbox(42.5, -803, 631, 722.044);
     return group;
 });
 
@@ -222,7 +222,7 @@ sheet.glyphs.set("piecepack-suit-diamonds", (canvas: SVGContainer) => {
         .attr("data-context-stroke", true)
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, 110, 690, 690);
+    group.viewbox(72.312, 104.915, 545.336, 700.141);
     return group;
 });
 
@@ -235,7 +235,7 @@ sheet.glyphs.set("piecepack-suit-fleurdelis", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0.10000000000014353, -799.8999999999999, 451.79999999999984, 451.79999999999984);
+    group.viewbox(45.8, -802.018, 360.4, 457.418);
     return group;
 });
 
@@ -248,7 +248,7 @@ sheet.glyphs.set("piecepack-suit-hearts", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 671, 671);
+    group.viewbox(35, -803.5, 601, 679.847);
     return group;
 });
 
@@ -261,7 +261,7 @@ sheet.glyphs.set("piecepack-suit-moons", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 645, 645);
+    group.viewbox(6.5, -803.5, 631.849, 652);
     return group;
 });
 
@@ -274,7 +274,7 @@ sheet.glyphs.set("piecepack-suit-spades", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 683, 683);
+    group.viewbox(68.5, -810.587, 546, 697.087);
     return group;
 });
 
@@ -287,7 +287,7 @@ sheet.glyphs.set("piecepack-suit-stars", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 729, 729);
+    group.viewbox(-8.768, -792.17, 746.48, 711.749);
     return group;
 });
 
@@ -300,7 +300,7 @@ sheet.glyphs.set("piecepack-suit-suns", (canvas: SVGContainer) => {
         .flip("y", {x: 0, y: 0})
         .stroke({width: 5, color: "#000"})
         .fill("#000");
-    group.viewbox(0, -800, 758, 758);
+    group.viewbox(-5.516, -806.002, 769.032, 770.023);
     return group;
 });
 
