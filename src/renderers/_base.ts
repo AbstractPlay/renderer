@@ -660,43 +660,50 @@ export abstract class RendererBase {
                     // const clone = got;
 
                     // Colourize (`player` first, then `colour` if defined)
-                    let isStroke = false;
-                    if (g.colour !== undefined && typeof g.colour === "number") {
-                        const player = g.colour;
-                        if  (this.options.patterns) {
-                            if (player > this.options.patternList.length) {
-                                throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                    // adapted for two colours
+                    const colourVals = [g.colour, g.colour2];
+                    const haveStrokes: boolean[] = [];
+                    for (let i = 0; i < colourVals.length; i++) {
+                        const colourVal = colourVals[i];
+                        let isStroke = false;
+                        if (colourVal !== undefined && typeof colourVal === "number") {
+                            const player = colourVal;
+                            if  (this.options.patterns) {
+                                if (player > this.options.patternList.length) {
+                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                                }
+                                const useSize = sheetCellSize;
+                                let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGElement;
+                                if (fill === null) {
+                                    fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGElement;
+                                    fill = fill.clone().id(this.options.patternList[player - 1] + "-" + useSize.toString()).scale(useSize / 150);
+                                    this.rootSvg.defs().add(fill);
+                                }
+                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(fill); });
+                            } else {
+                                if (player > this.options.colours.length) {
+                                    throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
+                                }
+                                const fill = this.options.colours[player - 1];
+                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(fill); });
+                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke(fill); isStroke = true; });
                             }
-                            const useSize = sheetCellSize;
-                            let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGElement;
-                            if (fill === null) {
-                                fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGElement;
-                                fill = fill.clone().id(this.options.patternList[player - 1] + "-" + useSize.toString()).scale(useSize / 150);
-                                this.rootSvg.defs().add(fill);
-                            }
-                            got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
-                        } else {
-                            if (player > this.options.colours.length) {
-                                throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
-                            }
-                            const fill = this.options.colours[player - 1];
-                            got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(fill); });
-                            got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(fill); isStroke = true; });
+                        } else if (colourVal !== undefined) {
+                            const normColour = this.resolveColour(colourVal as string|number|Gradient, "#000");
+                            // This ts-ignore is because of poor SVGjs typing
+                            // @ts-ignore
+                            got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(normColour); });
+                            // This ts-ignore is because of poor SVGjs typing
+                            // @ts-ignore
+                            got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke(normColour); isStroke = true; });
                         }
-                    } else if (g.colour !== undefined) {
-                        const normColour = this.resolveColour(g.colour, "#000");
-                        // This ts-ignore is because of poor SVGjs typing
-                        // @ts-ignore
-                        got.find("[data-playerfill=true]").each(function(this: SVGElement) { this.fill(normColour); });
-                        // This ts-ignore is because of poor SVGjs typing
-                        // @ts-ignore
-                        got.find("[data-playerstroke=true]").each(function(this: SVGElement) { this.stroke(normColour); isStroke = true; });
+                        haveStrokes.push(isStroke);
                     }
 
                     // Apply requested opacity
                     if (g.opacity !== undefined) {
                         got.fill({opacity: g.opacity});
-                        if (isStroke) {
+                        if (haveStrokes.reduce((prev, curr) => prev || curr, false)) {
                             got.stroke({opacity: g.opacity});
                         }
                     }

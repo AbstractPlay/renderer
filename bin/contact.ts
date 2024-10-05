@@ -41,10 +41,10 @@ Array.from(sheets.values()).forEach((sheet) => {
         const name = names[idx];
         const glyph = glyphs[idx];
         const tile = nstSheet.nested().size(tileSizeOuter, tileSizeOuter);
-        if (name.startsWith("ring")) {
-            tile.rect(tileSizeOuter, tileSizeOuter).fill("#ccc");
-        }
-        const symbol = glyph(tile);
+        // if (name.startsWith("ring")) {
+        //     tile.rect(tileSizeOuter, tileSizeOuter).fill("#ccc");
+        // }
+        const symbol = glyph(tile, "#ccc");
 
         const used = tile.use(symbol).size(tileSizeInner,tileSizeInner);
         // Scale it appropriately
