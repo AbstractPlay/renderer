@@ -470,12 +470,12 @@ const lighten = (rgb: [number, number, number], ds: number, dl: number) => {
     return convert_hsl.rgb([hsl[0], s, l]);
 }
 
-const darken = (rgb: [number, number, number], ds: number, dl: number) => {
-    const hsl = convert_rgb.hsl(rgb);
-    const l = 100 * logit(unlogit(hsl[2] / 100) - dl);
-    const s = 100 * logit(unlogit(hsl[1] / 100) - ds);
-    return convert_hsl.rgb([hsl[0], s, l]);
-}
+// const darken = (rgb: [number, number, number], ds: number, dl: number) => {
+//     const hsl = convert_rgb.hsl(rgb);
+//     const l = 100 * logit(unlogit(hsl[2] / 100) - dl);
+//     const s = 100 * logit(unlogit(hsl[1] / 100) - ds);
+//     return convert_hsl.rgb([hsl[0], s, l]);
+// }
 
 // orb with no highlights
 sheet.glyphs.set("orb", (canvas: SVGContainer, color?:string) => {
