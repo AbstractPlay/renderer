@@ -222,6 +222,10 @@ export interface Glyph {
    */
   colour?: Colourstrings | PositiveInteger | Gradient;
   /**
+   * A 3- or 6-digit hex colour value, a player position, or a gradient.
+   */
+  colour2?: Colourstrings | PositiveInteger | Gradient;
+  /**
    * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
    */
   scale?: number;
