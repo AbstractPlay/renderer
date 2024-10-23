@@ -334,7 +334,7 @@ export abstract class RendererBase {
             this.options.colourBlind = false;
         }
         if (this.options.colourBlind) {
-            this.options.colours = ["#ddcc77", "#cc6677", "#aa4499", "#882255", "#332288", "#117733", "#44aa99", "#88ccee"];
+            this.options.colours = ["#ddcc77", "#cc6677", "#aa4499", "#882255", "#332288", "#117733", "#44aa99", "#88ccee", "#999999"];
         } else {
             this.options.colours = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
         }
