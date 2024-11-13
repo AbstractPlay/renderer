@@ -50,6 +50,7 @@ export type BoardStyles =
   | "snubsquare"
   | "snubsquare-cells"
   | "onyx"
+  | "circular-wheel"
   | "circular-cobweb"
   | "circular-moon"
   | "sowing"
@@ -1320,6 +1321,10 @@ export interface AnnotationBasic {
    * A valid `dasharray` appropriate for the game's display.
    */
   dashed?: number[];
+  /**
+   * Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.
+   */
+  shape?: "square" | "circle" | "hexf" | "hexp";
 }
 /**
  * Delta annotations for the `sowing-*` renderers

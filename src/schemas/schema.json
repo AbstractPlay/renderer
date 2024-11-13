@@ -68,6 +68,7 @@
                 "snubsquare",
                 "snubsquare-cells",
                 "onyx",
+                "circular-wheel",
                 "circular-cobweb",
                 "circular-moon",
                 "sowing",
@@ -384,6 +385,11 @@
                     "items": {
                         "type": "number"
                     }
+                },
+                "shape": {
+                    "description": "Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.",
+                    "enum": ["square", "circle", "hexf", "hexp"],
+                    "default": "square"
                 }
             },
             "required": ["type", "targets"],
