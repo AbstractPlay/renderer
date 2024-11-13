@@ -88,6 +88,9 @@ export class DefaultRenderer extends RendererBase {
             case "circular-cobweb":
                 [gridPoints, polys] = this.cobweb();
                 break;
+            case "circular-wheel":
+                [gridPoints, polys] = this.wheel();
+                break;
             case "sowing":
                 gridPoints = this.sowing();
                 break;

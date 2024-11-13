@@ -4,17 +4,18 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
-import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart } from "../grids/_base";
+import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
 import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly, rotatePoint } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly, rotatePoint, ptDistance } from "../common/plotting";
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import turfUnion from "@turf/union";
 import { polygon as turfPoly, Properties, Feature, Polygon, MultiPolygon } from "@turf/helpers";
 import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph } from "../graphs";
+import { IWheelArgs, wheel, wheelLabels, wheelPolys } from "../grids/wheel";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -3583,6 +3584,125 @@ export abstract class RendererBase {
 
     /**
      * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a circular wheel & spoke board.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected wheel(): [GridPoints, Poly[][]] {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
+        const cellsize = this.cellsize;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.json.board.strokeColour;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+        const strokeAttrs: StrokeData = {color: baseColour, width: baseStroke, opacity: baseOpacity, linecap: "round", linejoin: "round"};
+
+        let start = 0;
+        if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
+            start = this.json.board["circular-start"];
+        }
+
+        // Get a grid of points
+        const args: IWheelArgs = {gridHeight: height, gridWidth: width, cellSize: cellsize, start};
+        const grid = wheel(args);
+        // interlace empty rows so that poly coordinates line up
+        const polys: (IPolyPolygon | IPolyPath)[][] = wheelPolys(args).reduce((prev, curr) => [...prev, curr, []], [[]] as (IPolyPolygon | IPolyPath)[][])
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("gridlines");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
+
+        // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.json.board.labelColour;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const labelPts = wheelLabels(args);
+            const labels = board.group().id("labels");
+            const columnLabels = this.getLabels(undefined, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+
+            // Columns (letters)
+            for (let col = 0; col < width; col++) {
+                const pt = labelPts[col];
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pt.x, pt.y);
+            }
+        }
+
+        // Draw grid lines
+        for (const cell of polys.flat()) {
+            switch (cell.type) {
+                case "poly":
+                    gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                    break;
+                case "path":
+                    gridlines.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                    break;
+            }
+        }
+
+        if (this.options.boardClick !== undefined) {
+            const rotation = this.getRotation();
+            const centre = this.getBoardCentre();
+            const root = this.rootSvg;
+            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const clicked = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                // simply find the point that's closest to the click
+                const closest = {
+                    dist: Infinity,
+                    row: null as (null|number),
+                    col: null as (null|number),
+                };
+                for (let row = 0; row < grid.length; row++) {
+                    for (let col = 0; col < grid[row].length; col++) {
+                        const pt = grid[row][col];
+                        const dist = ptDistance(pt.x, pt.y, clicked.x, clicked.y);
+                        if (dist < closest.dist) {
+                            closest.dist = dist;
+                            closest.row = row;
+                            closest.col = col;
+                        }
+                    }
+                }
+                if (closest.dist !== Infinity && closest.row !== null && closest.col !== null) {
+                    this.options.boardClick!(closest.row, closest.col, "");
+                }
+            });
+            this.rootSvg.click(genericCatcher);
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return [grid, polys];
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
      * This generator creates a circular cobweb board.
      *
      * @returns A map of row/column locations to x,y coordinates
@@ -5801,6 +5921,7 @@ export abstract class RendererBase {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
+        type Shape = "square"|"circle"|"hexf"|"hexp";
 
         if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
             const board = this.rootSvg.findOne("#board") as SVGG|null;
@@ -5972,7 +6093,7 @@ export abstract class RendererBase {
                     }
                     for (const node of (note.targets as ITarget[])) {
                         // outline the polygon if provided
-                        if (polys !== undefined) {
+                        if (polys !== undefined && polys[node.row][node.col] !== undefined) {
                             const poly = polys[node.row][node.col];
                             if (poly === null) { continue; }
                             if (poly.type === "circle") {
@@ -6012,25 +6133,65 @@ export abstract class RendererBase {
                                     .attr({ 'pointer-events': 'none' });
                             }
                         }
-                        // otherwise, just draw the square
+                        // otherwise, just draw the shape
                         else {
+                            let shape: Shape = "square";
+                            if ( ("shape" in note) && (note.shape !== undefined) ) {
+                                shape = note.shape as Shape;
+                            }
                             // const pt = grid[node.row][node.col];
                             const pt = this.getStackedPoint(grid, node.col, node.row);
                             if (pt === undefined) {
                                 throw new Error(`Annotation - Enter: Could not find coordinates for row ${node.row}, column ${node.col}.`);
                             }
-                            notes.rect(this.cellsize, this.cellsize)
-                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
-                                .fill("none")
-                                .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
-                                .center(pt.x, pt.y)
-                                .attr({ 'pointer-events': 'none' });
-                            notes.rect(this.cellsize, this.cellsize)
-                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
-                                .fill("none")
-                                .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
-                                .center(pt.x, pt.y)
-                                .attr({ 'pointer-events': 'none' });
+                            if (shape === "square") {
+                                notes.rect(this.cellsize, this.cellsize)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                                notes.rect(this.cellsize, this.cellsize)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                            } else if (shape === "circle") {
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                            } else if (shape.startsWith("hex")) {
+                                let start = 0;
+                                if (shape === "hexf") {
+                                    start = -30;
+                                }
+                                const periph: [number,number][] = [];
+                                for (let i = 0; i < 6; i++) {
+                                    periph.push(projectPoint(pt.x, pt.y, this.cellsize * 1.25 * 0.5, start + (i*60)));
+                                }
+                                notes.polygon(periph)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                                notes.polygon(periph)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                            }
                         }
                     }
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
@@ -6090,23 +6251,63 @@ export abstract class RendererBase {
                         }
                         // otherwise, just draw the square
                         else {
+                            let shape: Shape = "square";
+                            if ( ("shape" in note) && (note.shape !== undefined) ) {
+                                shape = note.shape as Shape;
+                            }
                             // const pt = grid[node.row][node.col];
                             const pt = this.getStackedPoint(grid, node.col, node.row);
                             if (pt === undefined) {
-                                throw new Error(`Annotation - Enter: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                                throw new Error(`Annotation - Exit: Could not find coordinates for row ${node.row}, column ${node.col}.`);
                             }
-                            notes.rect(this.cellsize, this.cellsize)
-                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
-                                .fill("none")
-                                .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
-                                .center(pt.x, pt.y)
-                                .attr({ 'pointer-events': 'none' });
-                            notes.rect(this.cellsize, this.cellsize)
-                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
-                                .fill("none")
-                                .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
-                                .center(pt.x, pt.y)
-                                .attr({ 'pointer-events': 'none' });
+                            if (shape === "square") {
+                                notes.rect(this.cellsize, this.cellsize)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                                notes.rect(this.cellsize, this.cellsize)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                            } else if (shape === "circle") {
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                            } else if (shape.startsWith("hex")) {
+                                let start = 0;
+                                if (shape === "hexf") {
+                                    start = -30;
+                                }
+                                const periph: [number,number][] = [];
+                                for (let i = 0; i < 6; i++) {
+                                    periph.push(projectPoint(pt.x, pt.y, this.cellsize * 1.25 * 0.5, start + (i*60)));
+                                }
+                                notes.polygon(periph)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                                notes.polygon(periph)
+                                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                    .fill("none")
+                                    .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round"})
+                                    .center(pt.x, pt.y)
+                                    .attr({ 'pointer-events': 'none' });
+                            }
                         }
                     }
                 } else if ( (note.type !== undefined) && (note.type === "outline") ) {
@@ -6436,6 +6637,9 @@ export abstract class RendererBase {
                     for (const point of marker.points as ITarget[]) {
                         let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
                         const cell = polys[point.row][point.col];
+                        if (cell === undefined || cell === null) {
+                            throw new Error(`There is no polygon at row ${point.row}, col ${point.col}. (In "wheel" boards, polygons are only present on odd-numbered rows.)`);
+                        }
                         // the following eslint and ts exceptions are due to poor SVGjs typing
                         switch (cell.type) {
                             case "circle":

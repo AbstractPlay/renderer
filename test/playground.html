@@ -200,6 +200,11 @@
                     "description": "The bottom half of a hexhex board folded so the left half of the top (longest) row overlaps with the right half, creating a three-sided board.",
                     "render": `{\"board\":{\"style\":\"pyramid-hex\",\"minWidth\":14,\"markers\":[{\"type\":\"flood\",\"colour\":1,\"opacity\":1,\"points\":[{\"row\":3,\"col\":23},{\"row\":6,\"col\":19},{\"row\":5,\"col\":15}]},{\"type\":\"flood\",\"colour\":2,\"opacity\":1,\"points\":[{\"row\":2,\"col\":8},{\"row\":13,\"col\":2},{\"row\":4,\"col\":4}]}]},\"legend\":{},\"pieces\":null}`
                 },
+                "board-wheel": {
+                    "name": "Boards: Circular (Wheel)",
+                    "decription": "This is a standard wheel & spoke style circular board. You can place pieces on the vertices and the spaces. The vertices are interspersed with the spaces (verts, then spaces, etc. from outside into the centre).",
+                    "render": `{"renderer":"stacking-offset","board":{"style":"circular-wheel","width":8,"height":4,"markers":[{"type":"flood","colour":1,"points":[{"row":1,"col":4}],"opacity":0.5},{"type":"flood","colour":2,"points":[{"row":1,"col":1}],"opacity":0.5}]},"legend":{"A":{"name":"piece","colour":1,"scale":0.75},"B":{"name":"piece","colour":2,"scale":0.75}},"pieces":"-,-,-,B,A,A,-,ABA\\n-,AB,-,BAB,A,-,BA,B\\n\\n\\n\\n\\n-,-,-,B,A\\nA,B","annotations":[{"type":"enter","targets":[{"row":0,"col":3}]},{"type":"enter","targets":[{"row":1,"col":1}]}]}`
+                },
                 "board-circular": {
                     "name": "Boards: Circular (Cobweb)",
                     "description": "This is the cobweb style circular board. This render is quite comprehensive, showing the \"flood\" and \"halo\" markers as well. The \"pieces\" property can be difficult at first. It starts with the outermost ring and works inward, starting from column \"a\" through to the end. The center is a single cell in a row all by itself, at the very end.",
@@ -344,6 +349,11 @@
                     "name": "Annotations: Enter/Exit",
                     "description": "Annotations are the last things drawn and so overlay pieces. They are used to show changes in game state. For now, the enter and exit annotations are the same.",
                     "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8},\"legend\":{\"P11\":{\"name\":\"pyramid-up-small-upscaled\",\"colour\":1},\"P12\":{\"name\":\"pyramid-up-medium-upscaled\",\"colour\":1},\"P13\":{\"name\":\"pyramid-up-large-upscaled\",\"colour\":1},\"P21\":{\"name\":\"pyramid-up-small-upscaled\",\"colour\":2},\"P22\":{\"name\":\"pyramid-up-medium-upscaled\",\"colour\":2},\"P23\":{\"name\":\"pyramid-up-large-upscaled\",\"colour\":2}},\"pieces\":\"-,-,-,-,-,-,-,-\\n-,-,-,-,-,-,-,-\\n-,-,-,-,-,-,-,-\\n-,-,-,-,P12,-,-,-\\n-,-,-,-,-,-,-,-\\n-,-,-,-,-,-,-,-\\n-,-,-,-,-,-,-,-\\n-,-,-,-,-,-,-,-\",\"annotations\":[{\"type\":\"enter\",\"targets\":[{\"row\":3,\"col\":4}]}]}"
+                },
+                "notes-enter-exit-shapes": {
+                    "name": "Annotations: Enter/Exit Shapes",
+                    "description": "The shape of the enter/exit notation can be customized per entry. The default is the square. Note that this only works when pieces are placed on points. If placed in cells, the shape of the cell will determine the shape of the annotation.",
+                    "render": `{"board":{"style":"vertex","width":8,"height":8},"legend":{"A":{"name":"piece","colour":1}},"pieces":"A\\n--A","annotations":[{"type":"enter","targets":[{"row":0,"col":0}]},{"type":"enter","shape":"circle","targets":[{"row":1,"col":2}]},{"type":"exit","shape":"hexf","targets":[{"row":2,"col":4}]},{"type":"exit","shape":"hexp","targets":[{"row":3,"col":6}]}]}`
                 },
                 "notes-eject": {
                     "name": "Annotations: Eject",

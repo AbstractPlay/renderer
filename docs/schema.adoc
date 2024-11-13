@@ -73,6 +73,7 @@ Now for the game board itself. This is rendered first, followed by the pieces.
   hex-of-cir:: A hex-shaped board composed of circles.
   snubsquare:: A basic https://en.wikipedia.org/wiki/Snub_square_tiling[snub square grid].
   circular-cobweb:: A circular board with offset cells.
+  circular-wheel:: A more typical wheel & spoke field with access to vertices and spaces.
   sowing:: A generic board for games like Mancala with customizable width and height and optional end pits.
   conhex-dots:: A standard ConHex board of flexible size (but square) where the `pieces` property represents the dots. Cells are coloured using the `flood` marker. Cells are indexed as a circle, with the first row being the outermost "ring," starting with the top-left corner and counting clockwise. ConHex boards must be square, at least size 5, and always an odd number.
   conhex-cells:: A standard ConHex board of flexible size (but square) where there are no dots. Pieces are placed at the centroid of cells. Cells are not labelled, but pieces are assigned in circular order, from outside in, from top left clockwise. ConHex boards must be square, at least size 5, and always an odd number.
