@@ -1259,6 +1259,13 @@
                     ],
                     "default": "solid"
                 },
+                "dasharray": {
+                    "description": "A valid `dasharray` appropriate for the game's display.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
                 "centered": {
                     "description": "By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.",
                     "type": "boolean",
