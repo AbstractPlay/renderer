@@ -657,6 +657,10 @@ export interface MarkerLine {
   width?: number;
   style?: "solid" | "dashed";
   /**
+   * A valid `dasharray` appropriate for the game's display.
+   */
+  dasharray?: number[];
+  /**
    * By default, on boards like `squares*`, lines anchor to the top-left corner of the cell. If `centered` is true, it will instead anchor to the centre point of the cell.
    */
   centered?: boolean;

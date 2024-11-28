@@ -6683,7 +6683,11 @@ export abstract class RendererBase {
                         linecap: "round", linejoin: "round"
                     };
                     if ( ("style" in marker) && (marker.style !== undefined) && (marker.style === "dashed") ) {
-                        stroke.dasharray = "4";
+                        if ( ("dasharray" in marker) && (marker.dasharray !== undefined) && (Array.isArray(marker.dasharray)) ) {
+                            stroke.dasharray = marker.dasharray.join(" ");
+                        } else {
+                            stroke.dasharray = "4";
+                        }
                     }
                     let centered = false;
                     if ( "centered" in marker && marker.centered !== undefined && marker.centered) {
