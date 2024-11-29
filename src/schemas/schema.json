@@ -321,7 +321,8 @@
                         "exit",
                         "dots",
                         "outline",
-                        "glyph"
+                        "glyph",
+                        "line"
                     ]
                 },
                 "targets": {
