@@ -1290,7 +1290,7 @@ export interface AnnotationBasic {
   /**
    * The type of annotation. `move` draws an arrow between two cells. `eject` draws ever-growing arcs between a sequence of cells. `enter` and `exit` both draw a dotted line around cells. `dots` draws a small dot in the given cells. `outline` expects at least three points and draws a dotted line around the outer edge of the defined polygon.
    */
-  type: "move" | "eject" | "enter" | "exit" | "dots" | "outline" | "glyph";
+  type: "move" | "eject" | "enter" | "exit" | "dots" | "outline" | "glyph" | "line";
   /**
    * The cells involved in the annotation
    *

@@ -6014,6 +6014,54 @@ export abstract class RendererBase {
                     } else if (anchors) {
                         line.marker("end", markerCircle);
                     }
+                } else if ( (note.type !== undefined) && (note.type === "line") ) {
+                    if ((note.targets as any[]).length < 2) {
+                        throw new Error("Line annotations require at least two 'targets'.");
+                    }
+
+                    let colour = this.options.colourContext.annotations;
+                    if ( ("colour" in note) && (note.colour !== undefined) && (note.colour !== null) ) {
+                        colour = this.resolveColour(note.colour ) as string;
+                    }
+                    let style: "solid"|"dashed" = "solid";
+                    let dasharray: string|undefined;
+                    if ( ("style" in note) && (note.style !== undefined) ) {
+                        style = note.style;
+                    }
+                    if ( ("dashed" in note) && (Array.isArray(note.dashed)) ) {
+                        style = "dashed";
+                        dasharray = note.dashed.map(n => n.toString()).join(" ");
+                    }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
+                        opacity = note.opacity;
+                    }
+                    let strokeWidth = 0.03;
+                    if ( ("strokeWidth" in note) && (note.strokeWidth !== undefined) ) {
+                        strokeWidth = note.strokeWidth;
+                    }
+                    const points: string[] = [];
+                    for (const node of (note.targets as ITarget[])) {
+                        const pt = this.getStackedPoint(grid, node.col, node.row);
+                        if (pt === undefined) {
+                            throw new Error(`Annotation - Line: Could not find coordinates for row ${node.row}, column ${node.col}.`);
+                        }
+                        points.push(`${pt.x},${pt.y}`);
+                    }
+                    const stroke: StrokeData = {
+                        color: colour,
+                        opacity,
+                        width: this.cellsize * strokeWidth,
+                        linecap: "round", linejoin: "round"
+                    };
+                    if (style === "dashed") {
+                        if (dasharray !== undefined) {
+                            stroke.dasharray = dasharray;
+                        } else {
+                            stroke.dasharray = (4 * Math.ceil(strokeWidth / 0.03)).toString();
+                        }
+                    }
+                    notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                 } else if ( (note.type !== undefined) && (note.type === "eject") ) {
                     if ((note.targets as any[]).length !== 2) {
                         throw new Error("Eject annotations require exactly two 'targets'.");
