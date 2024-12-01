@@ -350,9 +350,7 @@ export class Stacking3DRenderer extends RendererBase {
 
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour, this.options.colourContext.annotations) as string;
                     }
                     let style = "solid";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -397,9 +395,7 @@ export class Stacking3DRenderer extends RendererBase {
 
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour, this.options.colourContext.annotations) as string;
                     }
                     let style = "dashed";
                     if ( ("style" in note) && (note.style !== undefined) ) {
@@ -450,9 +446,7 @@ export class Stacking3DRenderer extends RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "enter") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour, this.options.colourContext.annotations) as string;
                     }
                     for (const node of (note.targets as ITarget[])) {
                         const center = grid[node.row][node.col];
@@ -476,9 +470,7 @@ export class Stacking3DRenderer extends RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "exit") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour, this.options.colourContext.annotations) as string;
                     }
                     for (const node of (note.targets as ITarget[])) {
                         const center = grid[node.row][node.col];
@@ -502,9 +494,7 @@ export class Stacking3DRenderer extends RendererBase {
                 } else if ( (note.type !== undefined) && (note.type === "dots") ) {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = note.colour as string;
-                    } else if ( ("player" in note) && (note.player !== undefined) ) {
-                        colour = this.options.colours[(note.player as number) - 1];
+                        colour = this.resolveColour(note.colour, this.options.colourContext.annotations) as string;
                     }
                     let opacity = 1;
                     if ( ("opacity" in note) && (note.opacity !== undefined) ) {
