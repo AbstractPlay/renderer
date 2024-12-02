@@ -655,6 +655,9 @@ export class Stacking3DRenderer extends RendererBase {
                     placeY += areaHeight + (this.cellsize * 0);
                 }
             }
+
+            // `pieces` area, if present
+            this.piecesArea(board.rbox(this.rootSvg));
         }
     }
 }
