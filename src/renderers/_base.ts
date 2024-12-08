@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
@@ -13,6 +14,8 @@ import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import getConvexHull from "monotone-chain-convex-hull";
+import turfUnion from "@turf/union";
+import { polygon as turfPoly, Properties, Feature, Polygon, MultiPolygon } from "@turf/helpers";
 import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph } from "../graphs";
 import { IWheelArgs, wheel, wheelLabels, wheelPolys } from "../grids/wheel";
 // import { customAlphabet } from 'nanoid'
@@ -8448,17 +8451,48 @@ export abstract class RendererBase {
                 if (board === null) {
                     throw new Error(`Can't do a board fill if there's no board.`);
                 }
-                const allPts: [number,number][] = polys!.flat().map(p => {
-                    let pts: [number,number][];
-                    if (p.type === "circle") {
-                        pts = circle2poly(p.cx, p.cy, p.r);
-                    } else {
-                        pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
+                // if hexagonal board, we need to use turf
+                let ptsStr: string;
+                if ((this.json.board as BoardBasic).style.startsWith("hex")) {
+                    const turfed = polys!.flat().map(p => {
+                        let pts: [number,number][];
+                        if (p.type === "circle") {
+                            pts = circle2poly(p.cx, p.cy, p.r);
+                        } else {
+                            pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
+                        }
+                        if (pts[0] !== pts[pts.length - 1]) {
+                            pts.push(pts[0])
+                        }
+                        return turfPoly([pts]);
+                    });
+                    let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
+                    while (turfed.length > 0) {
+                        const next = turfed.pop()! as Feature<Polygon|MultiPolygon, Properties>;
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                        union = turfUnion(union, next);
+                        if (union === null) {
+                            throw new Error(`Got null while joining polygons in backFill()`);
+                        }
                     }
-                    return pts;
-                }).flat();
-                const hull = getConvexHull(allPts);
-                const poly = this.rootSvg.polygon(hull.map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
+                    console.log(JSON.stringify(union));
+                    ptsStr = union.geometry.coordinates[0].map(pt => pt.join(",")).join(" ");
+                }
+                // otherwise, use convex hull
+                else {
+                    const allPts: [number,number][] = polys!.flat().map(p => {
+                        let pts: [number,number][];
+                        if (p.type === "circle") {
+                            pts = circle2poly(p.cx, p.cy, p.r);
+                        } else {
+                            pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
+                        }
+                        return pts;
+                    }).flat();
+                    const hull = getConvexHull(allPts);
+                    ptsStr = hull.map(pt => pt.join(",")).join(" ");
+                }
+                const poly = this.rootSvg.polygon(ptsStr).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
                 // `board` backfill can't just be pushed to the back but must be inside the `board` group
                 board.add(poly, 0);
             }
