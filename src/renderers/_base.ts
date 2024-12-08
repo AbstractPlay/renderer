@@ -12,8 +12,7 @@ import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidO
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
-import turfUnion from "@turf/union";
-import { polygon as turfPoly, Properties, Feature, Polygon, MultiPolygon } from "@turf/helpers";
+import getConvexHull from "monotone-chain-convex-hull";
 import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph } from "../graphs";
 import { IWheelArgs, wheel, wheelLabels, wheelPolys } from "../grids/wheel";
 // import { customAlphabet } from 'nanoid'
@@ -933,7 +932,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -1462,7 +1461,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -1690,7 +1689,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -2155,7 +2154,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -2387,7 +2386,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -2693,7 +2692,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -2935,7 +2934,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -3136,7 +3135,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -3348,7 +3347,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -3608,7 +3607,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -3730,7 +3729,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -3841,7 +3840,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -4029,7 +4028,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -4153,7 +4152,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -4304,7 +4303,7 @@ export abstract class RendererBase {
             baseStroke = boardTyped.strokeWeight;
         }
         if ( ("strokeColour" in boardTyped) && (boardTyped.strokeColour !== undefined) ) {
-            baseColour = boardTyped.strokeColour;
+            baseColour = this.resolveColour(boardTyped.strokeColour) as string;
         }
         if ( ("strokeOpacity" in boardTyped) && (boardTyped.strokeOpacity !== undefined) ) {
             baseOpacity = boardTyped.strokeOpacity;
@@ -4491,7 +4490,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -4558,7 +4557,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -4628,7 +4627,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -4923,7 +4922,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -5021,7 +5020,7 @@ export abstract class RendererBase {
             baseStroke = boardTyped.strokeWeight;
         }
         if ( ("strokeColour" in boardTyped) && (boardTyped.strokeColour !== undefined) ) {
-            baseColour = boardTyped.strokeColour;
+            baseColour = this.resolveColour(boardTyped.strokeColour) as string;
         }
         if ( ("strokeOpacity" in boardTyped) && (boardTyped.strokeOpacity !== undefined) ) {
             baseOpacity = boardTyped.strokeOpacity;
@@ -5312,7 +5311,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -5498,7 +5497,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -5876,7 +5875,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -6575,7 +6574,7 @@ export abstract class RendererBase {
                 baseStroke = this.json.board.strokeWeight;
             }
             if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-                baseColour = this.json.board.strokeColour;
+                baseColour = this.resolveColour(this.json.board.strokeColour) as string;
             }
             if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
                 baseOpacity = this.json.board.strokeOpacity;
@@ -8422,7 +8421,7 @@ export abstract class RendererBase {
                 return true;
             }
 
-            const bgcolour = backFillObj.colour;
+            const bgcolour = this.resolveColour(backFillObj.colour) as string;
             let bgopacity = 1;
             if ( backFillObj.opacity !== undefined ) {
                 bgopacity = backFillObj.opacity;
@@ -8449,27 +8448,17 @@ export abstract class RendererBase {
                 if (board === null) {
                     throw new Error(`Can't do a board fill if there's no board.`);
                 }
-                const turfed = polys!.flat().map(p => {
+                const allPts: [number,number][] = polys!.flat().map(p => {
                     let pts: [number,number][];
                     if (p.type === "circle") {
                         pts = circle2poly(p.cx, p.cy, p.r);
                     } else {
                         pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
                     }
-                    if (pts[0] !== pts[pts.length - 1]) {
-                        pts.push(pts[0])
-                    }
-                    return turfPoly([pts]);
-                });
-                let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
-                while (turfed.length > 0) {
-                    const next = turfed.pop()!;
-                    union = turfUnion(union, next);
-                    if (union === null) {
-                        throw new Error(`Got null while joining polygons in backFill()`);
-                    }
-                }
-                const poly = this.rootSvg.polygon(union.geometry.coordinates.flat().map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
+                    return pts;
+                }).flat();
+                const hull = getConvexHull(allPts);
+                const poly = this.rootSvg.polygon(hull.map(pt => pt.join(",")).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
                 // `board` backfill can't just be pushed to the back but must be inside the `board` group
                 board.add(poly, 0);
             }
@@ -8562,7 +8551,7 @@ export abstract class RendererBase {
         }
         let baseColour = this.options.colourContext.strokes;
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
 
         const height = matrix.length;
@@ -8624,7 +8613,7 @@ export abstract class RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
