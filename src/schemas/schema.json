@@ -30,17 +30,24 @@
                 }
             ]
         },
-        "FunctionFlatten": {
+        "functionFlatten": {
+            "description": "This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.",
             "type": "object",
             "properties": {
                 "func": {
                     "enum": ["flatten"]
                 },
                 "fg": {
-                    "$ref": "#/$defs/colourstrings"
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
                 },
                 "bg": {
-                    "$ref": "#/$defs/colourstrings"
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
                 },
                 "opacity": {
                     "type": "number",
@@ -52,10 +59,34 @@
             "required": ["func", "fg", "bg", "opacity"],
             "additionalProperties": false
         },
+        "functionLighten": {
+            "description": "Lightens or darkens a colour by the specified amount of saturation and luminance. Positive deltas lighten, negative darken.",
+            "type": "object",
+            "properties": {
+                "func": {
+                    "enum": ["lighten"]
+                },
+                "colour": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
+                },
+                "ds": {
+                    "type": "number"
+                },
+                "dl": {
+                    "type": "number"
+                }
+            },
+            "required": ["func", "colour", "ds", "dl"],
+            "additionalProperties": false
+        },
         "colourfuncs": {
             "description": "Colours can also be derived using various functions.",
             "anyOf": [
-                {"$ref": "#/$defs/FunctionFlatten"}
+                {"$ref": "#/$defs/functionFlatten"},
+                {"$ref": "#/$defs/functionLighten"}
             ]
         },
         "rowCol": {
@@ -1261,6 +1292,20 @@
                     "description": "By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.",
                     "type": "number",
                     "default": 0
+                },
+                "nudge": {
+                    "description": "By default, the halo is centred on the centre of the combined polygons, but with 'limping' boards, the centre needs to be nudged. This is how you do it.",
+                    "type": "object",
+                    "properties": {
+                        "dx": {
+                            "type": "number"
+                        },
+                        "dy": {
+                            "type": "number"
+                        }
+                    },
+                    "required": ["dx", "dy"],
+                    "additionalProperties": false
                 },
                 "fill": {
                     "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",

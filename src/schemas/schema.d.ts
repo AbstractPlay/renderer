@@ -12,7 +12,7 @@ export type Colourstrings = string;
 /**
  * Colours can also be derived using various functions.
  */
-export type Colourfuncs = FunctionFlatten;
+export type Colourfuncs = FunctionFlatten | FunctionLighten;
 export type PositiveInteger = number;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
@@ -260,11 +260,23 @@ export interface Glyph {
     dy?: number;
   };
 }
+/**
+ * This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.
+ */
 export interface FunctionFlatten {
   func: "flatten";
-  fg: Colourstrings;
-  bg: Colourstrings;
+  fg: PositiveInteger | Colourstrings;
+  bg: PositiveInteger | Colourstrings;
   opacity: number;
+}
+/**
+ * Lightens or darkens a colour by the specified amount of saturation and luminance. Positive deltas lighten, negative darken.
+ */
+export interface FunctionLighten {
+  func: "lighten";
+  colour: PositiveInteger | Colourstrings;
+  ds: number;
+  dl: number;
 }
 /**
  * A gradient one can use for flood fills and the like.
@@ -636,6 +648,13 @@ export interface MarkerHalo {
    * By default, the halo aligns with the board sections (see `circular-start`). Sometimes you want to offset them. Provide the offset in absolute degrees, with positive numbers rotating clockwise.
    */
   offset?: number;
+  /**
+   * By default, the halo is centred on the centre of the combined polygons, but with 'limping' boards, the centre needs to be nudged. This is how you do it.
+   */
+  nudge?: {
+    dx: number;
+    dy: number;
+  };
   /**
    * Fill is drawn before grid lines, segments are drawn after grid lines.
    */

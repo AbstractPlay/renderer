@@ -1,3 +1,5 @@
+import { rgb as convert_rgb, hsl as convert_hsl, hex as convert_hex } from "color-convert";
+
 export const getRandomColor = ():string => {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -14,17 +16,24 @@ export const afterOpacity = (fg: RGB,o: number,bg: RGB = [255,255,255]): RGB => 
 }
 
 export const rgb2hex = (rgb: RGB): string => {
-    return "#" + rgb.map(v => Math.round(v).toString(16)).join("");
+    return "#" + convert_rgb.hex(rgb);
 }
 
 export const hex2rgb = (hex: string): RGB => {
-    let r: string; let g: string; let b: string;
-    if (hex.length === 4) {
-        [r, g, b] = [hex[1], hex[2], hex[3]];
-    } else if (hex.length === 7) {
-        [r, g, b] = [hex.substring(1,3), hex.substring(3,5), hex.substring(5)];
-    } else {
-        throw new Error(`Malformed hexadecimal colour provided: ${hex}`);
-    }
-    return [r,g,b].map(n => parseInt(n, 16)) as RGB;
+    return convert_hex.rgb(hex);
+}
+
+const unlogit = (x: number) => {
+    return Math.log(x / (1 - x));
+}
+
+const logit = (x: number) => {
+    return 1 / (1 + Math.exp(-x));
+}
+
+export const lighten = (rgb: [number, number, number], ds: number, dl: number): RGB => {
+    const hsl = convert_rgb.hsl(rgb);
+    const l = 100 * logit(unlogit(hsl[2] / 100) + dl);
+    const s = 100 * logit(unlogit(hsl[1] / 100) + ds);
+    return convert_hsl.rgb([hsl[0], s, l]);
 }

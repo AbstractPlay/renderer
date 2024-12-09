@@ -15,7 +15,7 @@ import tinycolor from "tinycolor2";
 import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph } from "../graphs";
 import { IWheelArgs, wheel, wheelLabels, wheelPolys } from "../grids/wheel";
 import { convexHullPolys, unionPolys } from "../common/polys";
-import { hex2rgb, rgb2hex, afterOpacity } from "../common/colours";
+import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -6793,13 +6793,19 @@ export abstract class RendererBase {
                             const minx = Math.min(...union.map(pt => pt.x));
                             const maxx = Math.max(...union.map(pt => pt.x));
                             const hullWidth = maxx - minx;
-                            const cx = minx + (hullWidth / 2);
+                            let cx = minx + (hullWidth / 2);
                             const miny = Math.min(...union.map(pt => pt.y));
                             const maxy = Math.max(...union.map(pt => pt.y));
                             const hullHeight = maxy - miny;
-                            const cy = miny + (hullHeight / 2);
+                            let cy = miny + (hullHeight / 2);
                             const diameter = Math.max(hullHeight, hullWidth) + (this.cellsize / 2);
                             const r = diameter / 2;
+
+                            // check for centre nudging
+                            if ("nudge" in marker && marker.nudge !== undefined) {
+                                cx += marker.nudge.dx;
+                                cy += marker.nudge.dy;
+                            }
 
                             let degStart = 0;
                             if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
@@ -6835,11 +6841,6 @@ export abstract class RendererBase {
                                     haloPoly = this.rootSvg.path(`M${xleft},${yleft} A ${r} ${r} 0 0 1 ${xright},${yright} L${cx},${cy} L${xleft},${yleft}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill(fill).stroke("none");
                                 }
                                 haloPoly.back();
-                                // const board = this.rootSvg.findOne("#board") as SVGG|null;
-                                // if (board === null) {
-                                //     throw new Error(`Can't do a board fill if there's no board.`);
-                                // }
-                                // board.add(haloPoly, 0);
                             }
                         }
                     }
@@ -8751,12 +8752,18 @@ export abstract class RendererBase {
                 });
                 colour.from(x1,y1).to(x2,y2);
             }
-            // flatten
+            // Now check for functions
             else if ("func" in val) {
+                // flatten
                 if (val.func === "flatten") {
                     const fg = hex2rgb(this.resolveColour(val.fg) as string);
                     const bg = hex2rgb(this.resolveColour(val.bg) as string);
                     colour = rgb2hex(afterOpacity(fg, val.opacity , bg));
+                }
+                // lighten
+                else if (val.func === "lighten") {
+                    const base = hex2rgb(this.resolveColour(val.colour) as string);
+                    colour = rgb2hex(lighten(base, val.ds, val.dl));
                 }
             }
         } else if (typeof val === "number") {
