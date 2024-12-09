@@ -156,11 +156,7 @@ export class PolyominoRenderer extends RendererBase {
                     let markColour: string|undefined;
                     if ( ("ownerMark" in area) && (area.ownerMark !== undefined) ) {
                         markWidth = 15;
-                        if (typeof area.ownerMark === "number") {
-                            markColour = this.options.colours[area.ownerMark - 1];
-                        } else {
-                            markColour = area.ownerMark;
-                        }
+                        markColour = this.resolveColour(area.ownerMark) as string;
                     }
                     const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
                     if ("background" in area) {
@@ -213,15 +209,8 @@ export class PolyominoRenderer extends RendererBase {
                     const areaHeight = (textHeight * 2) + (cellsize * numRows);
                     const nested = this.rootSvg.nested().id(`_polyomino`).size(areaWidth+2, areaHeight+2).viewbox(-1 - 5, -1, areaWidth+2+10, areaHeight+2);
                     if ("background" in area && area.background !== undefined) {
-                        if (area.background.startsWith("_")) {
-                            const [,,prop] = area.background.split("_");
-                            if (prop in this.options.colourContext) {
-                                const colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
-                                nested.rect(areaWidth,areaHeight).fill(colour).opacity(0.25);
-                            }
-                        } else {
-                            nested.rect(areaWidth,areaHeight).fill(area.background);
-                        }
+                        const colour = this.resolveColour(area.background) as string;
+                        nested.rect(areaWidth,areaHeight).fill(colour); // .opacity(0.25);
                     }
 
                     // load icons

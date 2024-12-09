@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // The following is here because json2ts isn't recognizing json.board.markers correctly
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
@@ -6,18 +5,17 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
-import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, circle2poly, rotatePoint, ptDistance } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance } from "../common/plotting";
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
-import getConvexHull from "monotone-chain-convex-hull";
-import turfUnion from "@turf/union";
-import { polygon as turfPoly, Properties, Feature, Polygon, MultiPolygon } from "@turf/helpers";
 import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph } from "../graphs";
 import { IWheelArgs, wheel, wheelLabels, wheelPolys } from "../grids/wheel";
+import { convexHullPolys, unionPolys } from "../common/polys";
+import { hex2rgb, rgb2hex, afterOpacity } from "../common/colours";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -1085,7 +1083,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -1581,7 +1579,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -1807,7 +1805,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -2181,7 +2179,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -2498,7 +2496,7 @@ export abstract class RendererBase {
 
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -2777,7 +2775,7 @@ export abstract class RendererBase {
 
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -2957,7 +2955,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -3276,7 +3274,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -3400,7 +3398,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -3635,7 +3633,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -3756,7 +3754,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -3859,7 +3857,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -4061,7 +4059,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -4197,7 +4195,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -4343,7 +4341,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in boardTyped) && (boardTyped.labelColour !== undefined) ) {
-            labelColour = boardTyped.labelColour;
+            labelColour = this.resolveColour(boardTyped.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in boardTyped) && (boardTyped.labelOpacity !== undefined) ) {
@@ -4664,7 +4662,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -4776,11 +4774,7 @@ export abstract class RendererBase {
                     let outColor = baseColour;
                     let outOpacity = baseOpacity;
                     if (outlined.colour !== undefined) {
-                        if (/^\d+$/.test(`${outlined.colour}`)) {
-                            outColor = this.options.colours[(outlined.colour as number) - 1];
-                        } else {
-                            outColor = outlined.colour as string;
-                        }
+                        outColor = this.resolveColour(outlined.colour) as string;
                     }
                     if (outlined.opacity !== undefined) {
                         outOpacity = outlined.opacity;
@@ -4811,11 +4805,7 @@ export abstract class RendererBase {
                 let outColor = baseColour;
                 let outOpacity = baseOpacity;
                 if (outlined.colour !== undefined) {
-                    if (/^\d+$/.test(`${outlined.colour}`)) {
-                        outColor = this.options.colours[(outlined.colour as number) - 1];
-                    } else {
-                        outColor = outlined.colour as string;
-                    }
+                    outColor = this.resolveColour(outlined.colour) as string;
                 }
                 if (outlined.opacity !== undefined) {
                     outOpacity = outlined.opacity;
@@ -4840,11 +4830,7 @@ export abstract class RendererBase {
                 let outColor = baseColour;
                 let outOpacity = baseOpacity;
                 if (outlined.colour !== undefined) {
-                    if (/^\d+$/.test(`${outlined.colour}`)) {
-                        outColor = this.options.colours[(outlined.colour as number) - 1];
-                    } else {
-                        outColor = outlined.colour as string;
-                    }
+                    outColor = this.resolveColour(outlined.colour) as string;
                 }
                 if (outlined.opacity !== undefined) {
                     outOpacity = outlined.opacity;
@@ -5225,7 +5211,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in boardTyped) && (boardTyped.labelColour !== undefined) ) {
-            labelColour = boardTyped.labelColour;
+            labelColour = this.resolveColour(boardTyped.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in boardTyped) && (boardTyped.labelOpacity !== undefined) ) {
@@ -5386,7 +5372,7 @@ export abstract class RendererBase {
         // Add board labels
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let labelOpacity = 1;
         if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
@@ -6782,137 +6768,208 @@ export abstract class RendererBase {
                         line.attr({ 'pointer-events': 'none' });
                     }
                 } else if (marker.type === "halo") {
-                    if (! this.json.board.style.startsWith("circular") && ! this.json.board.style.startsWith("conical-hex") ) {
-                        throw new Error("The `halo` marker only works with `circular-*` and `conical-hex*` boards.");
+                    /**
+                     * There are two types of halos:
+                     *   - One drawn with line segments around a circular board
+                     *   - One drawn around `hex-of-*` boards where a board backfill is necessary
+                     *     because it draws a solid circle occluded by the board
+                     */
+                    if (! this.json.board.style.startsWith("circular") && ! this.json.board.style.startsWith("conical-hex") && !this.json.board.style.startsWith("hex-of") ) {
+                        throw new Error("The `halo` marker only works with `circular-*`, `conical-hex*`, and `hex-of*` boards.");
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
-                    let polys: Poly[][]|undefined;
-                    if (opts.polys !== undefined) {
-                        polys = opts.polys;
-                    }
-                    if (polys === undefined) {
-                        throw new Error("The `halo` marker requires that the polygons be passed.");
-                    }
-                    let rx = 0;
-                    let ry = 0;
-                    let cx = 0;
-                    let cy = 0;
-                    if (this.json.board.style.startsWith("circular") && !this.json.board.style.endsWith("moon")) {
-                        for (const poly of polys.flat()) {
-                            if (poly.type !== "circle") {
-                                for (const pt of poly.points) {
-                                    rx = rx === undefined ? Math.max(pt.x, pt.y) : Math.max(rx, pt.x, pt.y);
-                                    ry = rx;
-                                }
-                            }
-                        }
-                    } else {
-                        const allCoords: IPoint[] = (polys.flat() as IPolyPolygon[]).map(p => p.points).flat();
-                        const minx = Math.min(...allCoords.map(pt => pt.x));
-                        const maxx = Math.max(...allCoords.map(pt => pt.x));
-                        let miny = Math.min(...allCoords.map(pt => pt.y));
-                        if (this.json.board.style.endsWith("narrow")) {
-                            miny -= 15;
-                        }
-                        const maxy = Math.max(...allCoords.map(pt => pt.y));
-                        const width = maxx - minx;
-                        const height = maxy - miny;
-                        rx = (width / 2)
-                        if (!this.json.board.style.endsWith("moon")) {
-                            rx *= 1.05;
-                        } else {
-                            rx *= 1.02;
-                        }
-                        const dx = Math.abs(rx - (width / 2));
-                        cx = minx + rx - dx;
-                        ry = (height / 2);
-                        if (!this.json.board.style.endsWith("moon")) {
-                            ry *= 1.05;
-                        } else {
-                            ry *= 1.02;
-                        }
-                        const dy = Math.abs(ry - (height / 2));
-                        cy = miny + ry - dy;
 
-                        if (this.json.board.style.endsWith("moon")) {
-                            const max = Math.max(rx, ry);
-                            rx = max;
-                            ry = max;
-                            // cy++;
+                    // full circle one
+                    if (this.json.board.style.startsWith("hex-of")) {
+                        if (!preGridLines) {
+                            // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
+                            let polys: Poly[][]|undefined;
+                            if (opts.polys !== undefined) {
+                                polys = opts.polys;
+                            }
+                            if (polys === undefined) {
+                                throw new Error("The `halo` marker requires that the polygons be passed.");
+                            }
+                            const union = unionPolys(polys.flat()).map(([x,y]) => {return {x,y}}) as IPoint[];
+                            const minx = Math.min(...union.map(pt => pt.x));
+                            const maxx = Math.max(...union.map(pt => pt.x));
+                            const hullWidth = maxx - minx;
+                            const cx = minx + (hullWidth / 2);
+                            const miny = Math.min(...union.map(pt => pt.y));
+                            const maxy = Math.max(...union.map(pt => pt.y));
+                            const hullHeight = maxy - miny;
+                            const cy = miny + (hullHeight / 2);
+                            const diameter = Math.max(hullHeight, hullWidth) + (this.cellsize / 2);
+                            const r = diameter / 2;
+
+                            let degStart = 0;
+                            if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
+                                degStart = this.json.board["circular-start"];
+                            }
+                            if ( ("offset" in marker) && (marker.offset !== undefined) ) {
+                                degStart += marker.offset;
+                            }
+                            const phi = 360 / (marker.segments as any[]).length;
+                            for (let i = 0; i < marker.segments.length; i++) {
+                                const segment: ISegment = marker.segments[i] as ISegment;
+                                let colour = baseColour;
+                                if ( ("colour" in segment) && (segment.colour !== undefined) ) {
+                                    colour = this.resolveColour(segment.colour) as string;
+                                }
+                                let opacity = baseOpacity;
+                                if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
+                                    opacity = segment.opacity;
+                                }
+                                const fill: FillData = {
+                                    color: colour,
+                                    opacity,
+                                };
+                                // if there's only one segment, draw a full circle/ellipse
+                                let haloPoly: SVGCircle|SVGPath;
+                                if (phi === 360) {
+                                    haloPoly = this.rootSvg.circle(r * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill(fill).stroke("none");
+                                }
+                                // otherwise, draw an arc
+                                else {
+                                    const [xleft, yleft] = projectPoint(cx, cy, r, degStart + (phi * i));
+                                    const [xright, yright] = projectPoint(cx, cy, r, degStart + (phi * (i+1)));
+                                    haloPoly = this.rootSvg.path(`M${xleft},${yleft} A ${r} ${r} 0 0 1 ${xright},${yright} L${cx},${cy} L${xleft},${yleft}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill(fill).stroke("none");
+                                }
+                                haloPoly.back();
+                                // const board = this.rootSvg.findOne("#board") as SVGG|null;
+                                // if (board === null) {
+                                //     throw new Error(`Can't do a board fill if there's no board.`);
+                                // }
+                                // board.add(haloPoly, 0);
+                            }
                         }
                     }
-                    if (preGridLines) {
-                        let fill: string|undefined;
-                        if ( ("fill" in marker) && (marker.fill !== undefined) ) {
-                            if (typeof marker.fill === "number") {
-                                fill = this.options.colours[marker.fill - 1];
-                            } else {
-                                fill = marker.fill;
-                            }
+                    // the line segment one
+                    else {
+                        // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
+                        let polys: Poly[][]|undefined;
+                        if (opts.polys !== undefined) {
+                            polys = opts.polys;
                         }
-                        if (fill !== undefined) {
-                            if (this.json.board.style.startsWith("circular")) {
-                                svgGroup.circle(rx * 2).fill(fill).center(cx,cy);
-                            } else {
-                                svgGroup.ellipse(rx * 2, ry * 2).fill(fill).center(cx,cy);
-                            }
+                        if (polys === undefined) {
+                            throw new Error("The `halo` marker requires that the polygons be passed.");
                         }
-                    } else {
-                        let width = baseStroke;
-                        if ( ("width" in marker) && (marker.width !== undefined) ) {
-                            width = marker.width;
-                        }
-                        rx += width / 2;
-                        ry += width / 2;
-                        let degStart = 0;
-                        if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
-                            degStart = this.json.board["circular-start"];
-                        }
-                        if ( ("offset" in marker) && (marker.offset !== undefined) ) {
-                            degStart += marker.offset;
-                        }
-                        const phi = 360 / (marker.segments as any[]).length;
-                        for (let i = 0; i < marker.segments.length; i++) {
-                            const segment: ISegment = marker.segments[i] as ISegment;
-                            let colour = baseColour;
-                            if ( ("colour" in segment) && (segment.colour !== undefined) ) {
-                                colour = this.resolveColour(segment.colour) as string;
-                            }
-                            let opacity = baseOpacity;
-                            if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
-                                opacity = segment.opacity;
-                            }
-                            const stroke: StrokeData = {
-                                color: colour,
-                                opacity,
-                                width,
-                                linecap: "round", linejoin: "round"
-                            };
-                            if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
-                                stroke.dasharray = "4";
-                            }
-                            // if there's only one segment, draw a full circle/ellipse
-                            if (phi === 360) {
-                                if (this.json.board.style.startsWith("circular")) {
-                                    svgGroup.circle(rx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
-                                } else {
-                                    svgGroup.ellipse(rx * 2, ry * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                        let rx = 0;
+                        let ry = 0;
+                        let cx = 0;
+                        let cy = 0;
+                        if (this.json.board.style.startsWith("circular") && !this.json.board.style.endsWith("moon")) {
+                            for (const poly of polys.flat()) {
+                                if (poly.type !== "circle") {
+                                    for (const pt of poly.points) {
+                                        rx = rx === undefined ? Math.max(pt.x, pt.y) : Math.max(rx, pt.x, pt.y);
+                                        ry = rx;
+                                    }
                                 }
                             }
-                            // otherwise, draw an arc
-                            else {
-                                let xleft: number;
-                                let yleft: number;
-                                let xright: number;
-                                let yright: number;
+                        } else {
+                            const allCoords: IPoint[] = (polys.flat() as IPolyPolygon[]).map(p => p.points).flat();
+                            const minx = Math.min(...allCoords.map(pt => pt.x));
+                            const maxx = Math.max(...allCoords.map(pt => pt.x));
+                            let miny = Math.min(...allCoords.map(pt => pt.y));
+                            if (this.json.board.style.endsWith("narrow")) {
+                                miny -= 15;
+                            }
+                            const maxy = Math.max(...allCoords.map(pt => pt.y));
+                            const width = maxx - minx;
+                            const height = maxy - miny;
+                            rx = (width / 2)
+                            if (!this.json.board.style.endsWith("moon")) {
+                                rx *= 1.05;
+                            } else {
+                                rx *= 1.02;
+                            }
+                            const dx = Math.abs(rx - (width / 2));
+                            cx = minx + rx - dx;
+                            ry = (height / 2);
+                            if (!this.json.board.style.endsWith("moon")) {
+                                ry *= 1.05;
+                            } else {
+                                ry *= 1.02;
+                            }
+                            const dy = Math.abs(ry - (height / 2));
+                            cy = miny + ry - dy;
+
+                            if (this.json.board.style.endsWith("moon")) {
+                                const max = Math.max(rx, ry);
+                                rx = max;
+                                ry = max;
+                                // cy++;
+                            }
+                        }
+                        if (preGridLines) {
+                            let fill: string|undefined;
+                            if ( ("fill" in marker) && (marker.fill !== undefined) ) {
+                                fill = this.resolveColour(marker.fill) as string;
+                            }
+                            if (fill !== undefined) {
                                 if (this.json.board.style.startsWith("circular")) {
-                                    [xleft, yleft] = projectPoint(cx, cy, rx, degStart + (phi * i));
-                                    [xright, yright] = projectPoint(cx, cy, rx, degStart + (phi * (i+1)));
+                                    svgGroup.circle(rx * 2).fill(fill).center(cx,cy);
                                 } else {
-                                    [xleft, yleft] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * i));
-                                    [xright, yright] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * (i+1)));
+                                    svgGroup.ellipse(rx * 2, ry * 2).fill(fill).center(cx,cy);
                                 }
-                                svgGroup.path(`M${xleft},${yleft} A ${rx} ${ry} 0 0 1 ${xright},${yright}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                            }
+                        } else {
+                            let width = baseStroke;
+                            if ( ("width" in marker) && (marker.width !== undefined) ) {
+                                width = marker.width;
+                            }
+                            rx += width / 2;
+                            ry += width / 2;
+                            let degStart = 0;
+                            if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
+                                degStart = this.json.board["circular-start"];
+                            }
+                            if ( ("offset" in marker) && (marker.offset !== undefined) ) {
+                                degStart += marker.offset;
+                            }
+                            const phi = 360 / (marker.segments as any[]).length;
+                            for (let i = 0; i < marker.segments.length; i++) {
+                                const segment: ISegment = marker.segments[i] as ISegment;
+                                let colour = baseColour;
+                                if ( ("colour" in segment) && (segment.colour !== undefined) ) {
+                                    colour = this.resolveColour(segment.colour) as string;
+                                }
+                                let opacity = baseOpacity;
+                                if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
+                                    opacity = segment.opacity;
+                                }
+                                const stroke: StrokeData = {
+                                    color: colour,
+                                    opacity,
+                                    width,
+                                    linecap: "round", linejoin: "round"
+                                };
+                                if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
+                                    stroke.dasharray = "4";
+                                }
+                                // if there's only one segment, draw a full circle/ellipse
+                                if (phi === 360) {
+                                    if (this.json.board.style.startsWith("circular")) {
+                                        svgGroup.circle(rx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                    } else {
+                                        svgGroup.ellipse(rx * 2, ry * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                    }
+                                }
+                                // otherwise, draw an arc
+                                else {
+                                    let xleft: number;
+                                    let yleft: number;
+                                    let xright: number;
+                                    let yright: number;
+                                    if (this.json.board.style.startsWith("circular")) {
+                                        [xleft, yleft] = projectPoint(cx, cy, rx, degStart + (phi * i));
+                                        [xright, yright] = projectPoint(cx, cy, rx, degStart + (phi * (i+1)));
+                                    } else {
+                                        [xleft, yleft] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * i));
+                                        [xright, yright] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * (i+1)));
+                                    }
+                                    svgGroup.path(`M${xleft},${yleft} A ${rx} ${ry} 0 0 1 ${xright},${yright}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                }
                             }
                         }
                     }
@@ -7765,7 +7822,7 @@ export abstract class RendererBase {
         // initialize values
         let colour = this.options.colourContext.strokes;
         if (bar.colour !== undefined) {
-            colour= bar.colour;
+            colour= this.resolveColour(bar.colour) as string;
         }
         let minWidth = 0;
         if (bar.minWidth !== undefined) {
@@ -7818,7 +7875,7 @@ export abstract class RendererBase {
             const symrect = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
             let fill: FillData = {color: this.options.colourContext.background, opacity: 0};
             if ( ("fill" in b) && (b.fill !== undefined) ) {
-                fill = {color: b.fill, opacity: 1};
+                fill = {color: this.resolveColour(b.fill) as string, opacity: 1};
             }
             symrect.rect(width, height).fill(fill).stroke({width: 1, color: colour, linecap: "round", linejoin: "round"});
             // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
@@ -7935,7 +7992,7 @@ export abstract class RendererBase {
         // initialize values
         let labelColour = this.options.colourContext.labels;
         if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-            labelColour = this.json.board.labelColour;
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
         }
         let height = this.cellsize * 0.333;
         if (key.height !== undefined) {
@@ -8268,7 +8325,7 @@ export abstract class RendererBase {
                     if (typeof area.ownerMark === "number") {
                         markColour = this.options.colours[area.ownerMark - 1];
                     } else {
-                        markColour = area.ownerMark;
+                        markColour = this.resolveColour(area.ownerMark) as string;
                     }
                 }
                 const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
@@ -8300,7 +8357,7 @@ export abstract class RendererBase {
                 // Add area label
                 let labelColour = this.options.colourContext.labels;
                 if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-                    labelColour = this.json.board.labelColour;
+                    labelColour = this.resolveColour(this.json.board.labelColour) as string;
                 }
                 const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: labelColour});
                 const txtWidth = tmptxt.bbox().w;
@@ -8352,11 +8409,7 @@ export abstract class RendererBase {
                 let markColour: string|undefined;
                 if ( ("ownerMark" in area) && (area.ownerMark !== undefined) ) {
                     markWidth = 15;
-                    if (typeof area.ownerMark === "number") {
-                        markColour = this.options.colours[area.ownerMark - 1];
-                    } else {
-                        markColour = area.ownerMark;
-                    }
+                    markColour = this.resolveColour(area.ownerMark) as string;
                 }
                 const nested = board.nested().id(`_reserves${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
                 let rect: SVGRect;
@@ -8454,43 +8507,11 @@ export abstract class RendererBase {
                 // if hexagonal board, we need to use turf
                 let ptsStr: string;
                 if ((this.json.board as BoardBasic).style.startsWith("hex")) {
-                    const turfed = polys!.flat().map(p => {
-                        let pts: [number,number][];
-                        if (p.type === "circle") {
-                            pts = circle2poly(p.cx, p.cy, p.r);
-                        } else {
-                            pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
-                        }
-                        if (pts[0] !== pts[pts.length - 1]) {
-                            pts.push(pts[0])
-                        }
-                        return turfPoly([pts]);
-                    });
-                    let union: Feature<Polygon|MultiPolygon, Properties>|null = turfed.pop()!;
-                    while (turfed.length > 0) {
-                        const next = turfed.pop()! as Feature<Polygon|MultiPolygon, Properties>;
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                        union = turfUnion(union, next);
-                        if (union === null) {
-                            throw new Error(`Got null while joining polygons in backFill()`);
-                        }
-                    }
-                    console.log(JSON.stringify(union));
-                    ptsStr = union.geometry.coordinates[0].map(pt => pt.join(",")).join(" ");
+                    ptsStr = unionPolys(polys!.flat()).map(pt => pt.join(",")).join(" ");
                 }
                 // otherwise, use convex hull
                 else {
-                    const allPts: [number,number][] = polys!.flat().map(p => {
-                        let pts: [number,number][];
-                        if (p.type === "circle") {
-                            pts = circle2poly(p.cx, p.cy, p.r);
-                        } else {
-                            pts = [...p.points.map(pt => [pt.x, pt.y] as [number,number])];
-                        }
-                        return pts;
-                    }).flat();
-                    const hull = getConvexHull(allPts);
-                    ptsStr = hull.map(pt => pt.join(",")).join(" ");
+                    ptsStr = convexHullPolys(polys!.flat()).map(pt => pt.join(",")).join(" ");
                 }
                 const poly = this.rootSvg.polygon(ptsStr).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
                 // `board` backfill can't just be pushed to the back but must be inside the `board` group
@@ -8599,10 +8620,7 @@ export abstract class RendererBase {
                 if (val === null || val === 0) {
                     continue;
                 }
-                let colour = val;
-                if (typeof colour === "number") {
-                    colour = this.options.colours[colour - 1];
-                }
+                const colour = this.resolveColour(val) as string;
                 let borderColour = colour;
                 if (divided) {
                     borderColour = baseColour;
@@ -8712,27 +8730,39 @@ export abstract class RendererBase {
      * @param def - the default value
      * @returns
      */
-    protected resolveColour(val: number|string|Gradient, def?: string): string|SVGGradient {
+    protected resolveColour(val: number|string|Gradient|Colourfuncs, def?: string): string|SVGGradient {
         if (this.rootSvg === undefined || this.rootSvg === null) {
             throw new Error(`Cannot resolve colour values until the root SVG is initialized.`);
         }
 
         let colour: string|SVGGradient|undefined = def;
         if (typeof val === "object") {
-            const x1 = val.x1 !== undefined ? val.x1 : 0;
-            const y1 = val.y1 !== undefined ? val.y1 : 0;
-            const x2 = val.x2 !== undefined ? val.x2 : 1;
-            const y2 = val.y2 !== undefined ? val.y2 : 0;
-            colour = this.rootSvg.defs().gradient("linear", add => {
-                for (const stop of val.stops) {
-                    add.stop({offset: stop.offset, color: this.resolveColour(stop.colour, "#000") as string, opacity: stop.opacity !== undefined ? stop.opacity : 1});
+            // check for gradient first
+            if ("stops" in val) {
+                val = val ;
+                const x1 = val.x1 !== undefined ? val.x1  : 0;
+                const y1 = val.y1 !== undefined ? val.y1  : 0;
+                const x2 = val.x2 !== undefined ? val.x2  : 1;
+                const y2 = val.y2 !== undefined ? val.y2  : 0;
+                colour = this.rootSvg.defs().gradient("linear", add => {
+                    for (const stop of (val as Gradient).stops) {
+                        add.stop({offset: stop.offset, color: this.resolveColour(stop.colour, "#000") as string, opacity: stop.opacity !== undefined ? stop.opacity : 1});
+                    }
+                });
+                colour.from(x1,y1).to(x2,y2);
+            }
+            // flatten
+            else if ("func" in val) {
+                if (val.func === "flatten") {
+                    const fg = hex2rgb(this.resolveColour(val.fg) as string);
+                    const bg = hex2rgb(this.resolveColour(val.bg) as string);
+                    colour = rgb2hex(afterOpacity(fg, val.opacity , bg));
                 }
-            });
-            colour.from(x1,y1).to(x2,y2);
+            }
         } else if (typeof val === "number") {
             colour = this.options.colours[val - 1];
         } else {
-            colour = val;
+            colour = val ;
             if (/^_context_/.test(colour)) {
                 const [,,prop] = colour.split("_");
                 if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
@@ -8740,6 +8770,10 @@ export abstract class RendererBase {
                 }
             }
         }
-        return colour;
+        if (colour === undefined) {
+            throw new Error(`Unable to resolve colour:\n${JSON.stringify(val)}\nDefault: ${def}`);
+        } else {
+            return colour;
+        }
     }
 }

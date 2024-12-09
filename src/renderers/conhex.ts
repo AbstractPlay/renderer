@@ -157,7 +157,7 @@ export class ConhexRenderer extends RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
@@ -178,7 +178,7 @@ export class ConhexRenderer extends RendererBase {
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
             let labelColour = this.options.colourContext.labels;
             if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-                labelColour = this.json.board.labelColour;
+                labelColour = this.resolveColour(this.json.board.labelColour) as string;
             }
             let labelOpacity = 1;
             if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
