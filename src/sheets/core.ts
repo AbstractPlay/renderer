@@ -1,7 +1,8 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import type { ISheet } from "./ISheet";
 import { Orientation, defineHex } from "honeycomb-grid";
-import { rgb as convert_rgb, hsl as convert_hsl, hex as convert_hex } from "color-convert";
+import { rgb as convert_rgb, hex as convert_hex } from "color-convert";
+import { lighten } from "../common/colours";
 import fnv from "fnv-plus";
 
 const sheet: ISheet = {
@@ -454,28 +455,6 @@ sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
     group.viewbox(36, 39.236, 440, 440);
     return group;
 });
-
-const unlogit = (x: number) => {
-    return Math.log(x / (1 - x));
-}
-
-const logit = (x: number) => {
-    return 1 / (1 + Math.exp(-x));
-}
-
-const lighten = (rgb: [number, number, number], ds: number, dl: number) => {
-    const hsl = convert_rgb.hsl(rgb);
-    const l = 100 * logit(unlogit(hsl[2] / 100) + dl);
-    const s = 100 * logit(unlogit(hsl[1] / 100) + ds);
-    return convert_hsl.rgb([hsl[0], s, l]);
-}
-
-// const darken = (rgb: [number, number, number], ds: number, dl: number) => {
-//     const hsl = convert_rgb.hsl(rgb);
-//     const l = 100 * logit(unlogit(hsl[2] / 100) - dl);
-//     const s = 100 * logit(unlogit(hsl[1] / 100) - ds);
-//     return convert_hsl.rgb([hsl[0], s, l]);
-// }
 
 // orb with no highlights
 sheet.glyphs.set("orb", (canvas: SVGContainer, color?:string) => {

@@ -139,7 +139,7 @@ export class IsometricRenderer extends RendererBase {
         }
         let strokeColour = this.options.colourContext.strokes;
         if ("strokeColour" in this.json.board && this.json.board.strokeColour !== undefined) {
-            strokeColour = this.json.board.strokeColour;
+            strokeColour = this.resolveColour(this.json.board.strokeColour) as string;;
         }
         let strokeOpacity = 1;
         if ("strokeOpacity" in this.json.board && this.json.board.strokeOpacity !== undefined) {

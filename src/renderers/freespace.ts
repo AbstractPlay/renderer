@@ -149,7 +149,7 @@ export class FreespaceRenderer extends RendererBase {
                         if (typeof note.stroke === "number") {
                             stroke = this.options.colours[note.stroke - 1];
                         } else {
-                            stroke = note.stroke;
+                            stroke = this.resolveColour(note.stroke) as string;
                         }
                     }
                     let strokeWidth = 1;
@@ -162,11 +162,7 @@ export class FreespaceRenderer extends RendererBase {
                     }
                     let fill = "#fff";
                     if ( ("fill" in note) && (note.fill !== undefined) ) {
-                        if (typeof note.fill === "number") {
-                            fill = this.options.colours[note.fill - 1];
-                        } else {
-                            fill = note.fill;
-                        }
+                        fill = this.resolveColour(note.fill) as string;
                     }
                     let fillOpacity = 1;
                     if ( ("fillOpacity" in note) && (note.fillOpacity !== undefined) ) {
@@ -215,11 +211,7 @@ export class FreespaceRenderer extends RendererBase {
                 if (marker.type === "label") {
                     let colour = this.options.colourContext.strokes;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "number") {
-                            colour = this.options.colours[marker.colour - 1];
-                        } else {
-                            colour = marker.colour;
-                        }
+                        colour = this.resolveColour(marker.colour) as string;
                     }
                     let fontsize = 17;
                     if ( ("size" in marker) && (marker.size !== undefined) ) {
@@ -257,11 +249,7 @@ export class FreespaceRenderer extends RendererBase {
                 } else if (marker.type === "path") {
                     let stroke = this.options.colourContext.strokes;
                     if ( ("stroke" in marker) && (marker.stroke !== undefined) ) {
-                        if (typeof marker.stroke === "number") {
-                            stroke = this.options.colours[marker.stroke - 1];
-                        } else {
-                            stroke = marker.stroke;
-                        }
+                        stroke = this.resolveColour(marker.stroke) as string;
                     }
                     let strokeWidth = 1;
                     if ( ("strokeWidth" in marker) && (marker.strokeWidth !== undefined) ) {
@@ -273,11 +261,7 @@ export class FreespaceRenderer extends RendererBase {
                     }
                     let fill = "#fff";
                     if ( ("fill" in marker) && (marker.fill !== undefined) ) {
-                        if (typeof marker.fill === "number") {
-                            fill = this.options.colours[marker.fill - 1];
-                        } else {
-                            fill = marker.fill;
-                        }
+                        fill = this.resolveColour(marker.fill) as string;
                     }
                     let fillOpacity = 1;
                     if ( ("fillOpacity" in marker) && (marker.fillOpacity !== undefined) ) {

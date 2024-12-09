@@ -30,6 +30,65 @@
                 }
             ]
         },
+        "functionFlatten": {
+            "description": "This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.",
+            "type": "object",
+            "properties": {
+                "func": {
+                    "enum": ["flatten"]
+                },
+                "fg": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
+                },
+                "bg": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
+                },
+                "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                }
+            },
+            "required": ["func", "fg", "bg", "opacity"],
+            "additionalProperties": false
+        },
+        "functionLighten": {
+            "description": "Lightens or darkens a colour by the specified amount of saturation and luminance. Positive deltas lighten, negative darken.",
+            "type": "object",
+            "properties": {
+                "func": {
+                    "enum": ["lighten"]
+                },
+                "colour": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
+                },
+                "ds": {
+                    "type": "number"
+                },
+                "dl": {
+                    "type": "number"
+                }
+            },
+            "required": ["func", "colour", "ds", "dl"],
+            "additionalProperties": false
+        },
+        "colourfuncs": {
+            "description": "Colours can also be derived using various functions.",
+            "anyOf": [
+                {"$ref": "#/$defs/functionFlatten"},
+                {"$ref": "#/$defs/functionLighten"}
+            ]
+        },
         "rowCol": {
             "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.",
             "type": "object",
@@ -168,6 +227,7 @@
                     "description": "A 3- or 6-digit hex colour value, a player position, or a gradient.",
                     "anyOf": [
                         {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/positiveInteger"},
                         {"$ref": "#/$defs/gradient"}
                     ]
@@ -176,6 +236,7 @@
                     "description": "A 3- or 6-digit hex colour value, a player position, or a gradient.",
                     "anyOf": [
                         {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/positiveInteger"},
                         {"$ref": "#/$defs/gradient"}
                     ]
@@ -238,6 +299,7 @@
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
                         {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {
                             "type": "number",
                             "enum": [0]
@@ -294,6 +356,7 @@
                 "colour": {
                     "anyOf": [
                         {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/positiveInteger"}
                     ],
                     "default": "#000"
@@ -353,6 +416,7 @@
                 "colour": {
                     "anyOf": [
                         {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/positiveInteger"}
                     ],
                     "default": "#000"
@@ -459,6 +523,7 @@
                         "fill": {
                             "anyOf": [
                                 {"$ref": "#/$defs/positiveInteger"},
+                                {"$ref": "#/$defs/colourfuncs"},
                                 {"$ref": "#/$defs/colourstrings"}
                             ],
                             "default": "#fff"
@@ -472,6 +537,7 @@
                         "stroke": {
                             "anyOf": [
                                 {"$ref": "#/$defs/positiveInteger"},
+                                {"$ref": "#/$defs/colourfuncs"},
                                 {"$ref": "#/$defs/colourstrings"}
                             ],
                             "default": "#000"
@@ -625,13 +691,17 @@
                 },
                 "background": {
                     "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
-                    "$ref": "#/$defs/colourstrings",
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
+                    ],
                     "default": "#fff"
                 },
                 "ownerMark": {
                     "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ]
                 }
@@ -661,6 +731,7 @@
                     "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ]
                 },
@@ -668,6 +739,7 @@
                     "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ]
                 }
@@ -690,7 +762,10 @@
                 },
                 "background": {
                     "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
-                    "$ref": "#/$defs/colourstrings",
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ],
                     "default": "#fff"
                 }
             },
@@ -807,7 +882,10 @@
                 },
                 "fill": {
                     "description": "Optional fill for this specific button.",
-                    "$ref": "#/$defs/colourstrings",
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ],
                     "default": "#000"
                 }
             },
@@ -851,7 +929,10 @@
                 },
                 "colour": {
                     "description": "The colour of the button border and text.",
-                    "$ref": "#/$defs/colourstrings",
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ],
                     "default": "#000"
                 }
             },
@@ -1030,6 +1111,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1066,6 +1148,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1103,6 +1186,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"},
                         {"$ref": "#/$defs/gradient"}
                     ],
@@ -1141,6 +1225,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1174,6 +1259,7 @@
                                 "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                                 "anyOf": [
                                     {"$ref": "#/$defs/positiveInteger"},
+                                    {"$ref": "#/$defs/colourfuncs"},
                                     {"$ref": "#/$defs/colourstrings"}
                                 ]
                             },
@@ -1207,10 +1293,25 @@
                     "type": "number",
                     "default": 0
                 },
+                "nudge": {
+                    "description": "By default, the halo is centred on the centre of the combined polygons, but with 'limping' boards, the centre needs to be nudged. This is how you do it.",
+                    "type": "object",
+                    "properties": {
+                        "dx": {
+                            "type": "number"
+                        },
+                        "dy": {
+                            "type": "number"
+                        }
+                    },
+                    "required": ["dx", "dy"],
+                    "additionalProperties": false
+                },
                 "fill": {
                     "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ]
                 }
@@ -1236,6 +1337,7 @@
                     "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1332,6 +1434,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1365,6 +1468,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ]
                 },
@@ -1389,6 +1493,7 @@
                     "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1424,6 +1529,7 @@
                     "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1519,6 +1625,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1581,6 +1688,7 @@
                 "fill": {
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#fff"
@@ -1594,6 +1702,7 @@
                 "stroke": {
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ],
                     "default": "#000"
@@ -1647,12 +1756,18 @@
                 },
                 "labelColour": {
                     "description": "The colour for the board labels. Defaults to the colour passed into the context (default black).",
-                    "$ref": "#/$defs/colourstrings",
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ],
                     "default": "#000"
                 },
                 "strokeColour": {
                     "description": "The colour for lines drawn to construct the board.",
-                    "$ref": "#/$defs/colourstrings",
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ],
                     "default": "#000"
                 },
                 "strokeWeight": {
@@ -1684,7 +1799,10 @@
                             "default": "full"
                         },
                         "colour": {
-                            "$ref": "#/$defs/colourstrings"
+                            "anyOf": [
+                                {"$ref": "#/$defs/colourfuncs"},
+                                {"$ref": "#/$defs/colourstrings"}
+                            ]
                         },
                         "opacity": {
                             "type": "number",
@@ -2015,7 +2133,10 @@
                             "default": "full"
                         },
                         "colour": {
-                            "$ref": "#/$defs/colourstrings"
+                            "anyOf": [
+                                {"$ref": "#/$defs/colourfuncs"},
+                                {"$ref": "#/$defs/colourstrings"}
+                            ]
                         },
                         "opacity": {
                             "type": "number",

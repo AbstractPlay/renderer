@@ -161,7 +161,7 @@ export class Stacking3DRenderer extends RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;

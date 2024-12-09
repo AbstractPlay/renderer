@@ -9,11 +9,15 @@
  * Pattern for hex colour strings
  */
 export type Colourstrings = string;
+/**
+ * Colours can also be derived using various functions.
+ */
+export type Colourfuncs = FunctionFlatten | FunctionLighten;
 export type PositiveInteger = number;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
  */
-export type Polymatrix = (PositiveInteger | Colourstrings | 0 | null)[][];
+export type Polymatrix = (PositiveInteger | Colourstrings | Colourfuncs | 0 | null)[][];
 /**
  * The types of pieces supported in an isometric legend.
  */
@@ -97,9 +101,9 @@ export type AnnotationFreespace =
   | {
       type: "path";
       path: string;
-      fill?: PositiveInteger | Colourstrings;
+      fill?: PositiveInteger | Colourfuncs | Colourstrings;
       fillOpacity?: number;
-      stroke?: PositiveInteger | Colourstrings;
+      stroke?: PositiveInteger | Colourfuncs | Colourstrings;
       strokeWidth?: number;
       strokeOpacity?: number;
       /**
@@ -221,11 +225,11 @@ export interface Glyph {
   /**
    * A 3- or 6-digit hex colour value, a player position, or a gradient.
    */
-  colour?: Colourstrings | PositiveInteger | Gradient;
+  colour?: Colourstrings | Colourfuncs | PositiveInteger | Gradient;
   /**
    * A 3- or 6-digit hex colour value, a player position, or a gradient.
    */
-  colour2?: Colourstrings | PositiveInteger | Gradient;
+  colour2?: Colourstrings | Colourfuncs | PositiveInteger | Gradient;
   /**
    * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
    */
@@ -255,6 +259,24 @@ export interface Glyph {
      */
     dy?: number;
   };
+}
+/**
+ * This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.
+ */
+export interface FunctionFlatten {
+  func: "flatten";
+  fg: PositiveInteger | Colourstrings;
+  bg: PositiveInteger | Colourstrings;
+  opacity: number;
+}
+/**
+ * Lightens or darkens a colour by the specified amount of saturation and luminance. Positive deltas lighten, negative darken.
+ */
+export interface FunctionLighten {
+  func: "lighten";
+  colour: PositiveInteger | Colourstrings;
+  ds: number;
+  dl: number;
 }
 /**
  * A gradient one can use for flood fills and the like.
@@ -289,7 +311,7 @@ export interface GradientStop {
 export interface IsoPiece {
   piece: IsometricPieces;
   height: number;
-  colour: Colourstrings | PositiveInteger;
+  colour: Colourstrings | Colourfuncs | PositiveInteger;
   /**
    * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
    */
@@ -305,13 +327,13 @@ export interface BoardBasic {
    */
   rotate?: number;
   /**
-   * Pattern for hex colour strings
+   * The colour for the board labels. Defaults to the colour passed into the context (default black).
    */
-  labelColour?: string;
+  labelColour?: Colourfuncs | Colourstrings;
   /**
-   * Pattern for hex colour strings
+   * The colour for lines drawn to construct the board.
    */
-  strokeColour?: string;
+  strokeColour?: Colourfuncs | Colourstrings;
   /**
    * The base stroke weight of lines drawn to construct the board.
    */
@@ -332,7 +354,7 @@ export interface BoardBasic {
      * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
      */
     type?: "full" | "board";
-    colour: Colourstrings;
+    colour: Colourfuncs | Colourstrings;
     opacity?: number;
   };
   /**
@@ -506,7 +528,7 @@ export interface MarkerDots {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -530,7 +552,7 @@ export interface MarkerShading {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -554,7 +576,7 @@ export interface MarkerFlood {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings | Gradient;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings | Gradient;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -578,7 +600,7 @@ export interface MarkerOutline {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour: PositiveInteger | Colourstrings;
+  colour: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -599,7 +621,7 @@ export interface MarkerHalo {
       /**
        * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
        */
-      colour: PositiveInteger | Colourstrings;
+      colour: PositiveInteger | Colourfuncs | Colourstrings;
       /**
        * 1 is fully opaque. 0 is fully transparent.
        */
@@ -610,7 +632,7 @@ export interface MarkerHalo {
       /**
        * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
        */
-      colour: PositiveInteger | Colourstrings;
+      colour: PositiveInteger | Colourfuncs | Colourstrings;
       /**
        * 1 is fully opaque. 0 is fully transparent.
        */
@@ -627,9 +649,16 @@ export interface MarkerHalo {
    */
   offset?: number;
   /**
+   * By default, the halo is centred on the centre of the combined polygons, but with 'limping' boards, the centre needs to be nudged. This is how you do it.
+   */
+  nudge?: {
+    dx: number;
+    dy: number;
+  };
+  /**
    * Fill is drawn before grid lines, segments are drawn after grid lines.
    */
-  fill?: PositiveInteger | Colourstrings;
+  fill?: PositiveInteger | Colourfuncs | Colourstrings;
 }
 export interface MarkerLine {
   /**
@@ -646,7 +675,7 @@ export interface MarkerLine {
   /**
    * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -707,7 +736,7 @@ export interface MarkerLabel {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * Font size in absolute pixels
    */
@@ -729,7 +758,7 @@ export interface MarkerEdge {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour: PositiveInteger | Colourstrings;
+  colour: PositiveInteger | Colourfuncs | Colourstrings;
   opacity?: number;
 }
 export interface MarkerFence {
@@ -742,7 +771,7 @@ export interface MarkerFence {
   /**
    * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * Expressed as a multiple of the base stroke width
    */
@@ -768,7 +797,7 @@ export interface MarkerFenceData {
   /**
    * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * Expressed as a multiple of the base stroke width
    */
@@ -860,7 +889,7 @@ export interface BoardFreespace {
      * `full` just draws a rectangle behind the entire rendered field, including any labels. `board` only works for boards created from polygons and attempts to only draw the fill behind the board itself.
      */
     type?: "full" | "board";
-    colour: Colourstrings;
+    colour: Colourfuncs | Colourstrings;
     opacity?: number;
   };
   /**
@@ -881,9 +910,9 @@ export interface BoardFreespace {
 export interface MarkerPath {
   type: "path";
   path: string;
-  fill?: PositiveInteger | Colourstrings;
+  fill?: PositiveInteger | Colourfuncs | Colourstrings;
   fillOpacity?: number;
-  stroke?: PositiveInteger | Colourstrings;
+  stroke?: PositiveInteger | Colourfuncs | Colourstrings;
   strokeWidth?: number;
   strokeOpacity?: number;
   /**
@@ -919,7 +948,7 @@ export interface MarkerFreespaceLabel {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourstrings;
+  colour?: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * Font size in absolute pixels
    */
@@ -1051,13 +1080,13 @@ export interface AreaPieces {
    */
   width?: number;
   /**
-   * Pattern for hex colour strings
+   * Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.
    */
-  background?: string | string;
+  background?: Colourstrings | Colourfuncs;
   /**
    * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
    */
-  ownerMark?: PositiveInteger | Colourstrings;
+  ownerMark?: PositiveInteger | Colourfuncs | Colourstrings;
 }
 /**
  * This is a special area currently only used for the DVGC games and incorporates a `pieces`-style area into the game board itself. It is currently only designed for two-player use with 180 degree rotation. The area is clickable, as are the pieces within. You must tell the renderer which area belongs to which player.
@@ -1075,11 +1104,11 @@ export interface AreaReserves {
   /**
    * Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.
    */
-  background: PositiveInteger | Colourstrings;
+  background: PositiveInteger | Colourfuncs | Colourstrings;
   /**
    * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
    */
-  ownerMark?: PositiveInteger | Colourstrings;
+  ownerMark?: PositiveInteger | Colourfuncs | Colourstrings;
 }
 /**
  * Used by the `polyomino` renderer to display a selected piece and provide UI for manipulating it. Current maninpulations are rotating in 90-degree increments and flipping horizontally and vertically.
@@ -1089,9 +1118,9 @@ export interface AreaPolyomino {
   label: string;
   matrix: Polymatrix;
   /**
-   * Pattern for hex colour strings
+   * Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.
    */
-  background?: string | string;
+  background?: Colourfuncs | Colourstrings;
 }
 /**
  * The 'stash' definition for the homeworlds renderer. All colours must be specified. Empty strings represent empty stashes.
@@ -1156,9 +1185,9 @@ export interface AreaButtonBar {
    */
   buffer?: number;
   /**
-   * Pattern for hex colour strings
+   * The colour of the button border and text.
    */
-  colour?: string | string;
+  colour?: Colourfuncs | Colourstrings;
 }
 export interface ButtonBarButton {
   /**
@@ -1185,9 +1214,9 @@ export interface ButtonBarButton {
     }[]
   ];
   /**
-   * Pattern for hex colour strings
+   * Optional fill for this specific button.
    */
-  fill?: string | string;
+  fill?: Colourfuncs | Colourstrings;
 }
 /**
  * Used to create a clickable vertical scroll bar used for hiding/showing layers of pieces.
@@ -1303,7 +1332,7 @@ export interface AnnotationBasic {
    */
   strokeWidth?: number;
   opacity?: number;
-  colour?: Colourstrings | PositiveInteger;
+  colour?: Colourstrings | Colourfuncs | PositiveInteger;
   arrow?: boolean;
   /**
    * Whether the move annotation should have dot anchors.
