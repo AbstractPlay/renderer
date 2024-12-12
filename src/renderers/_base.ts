@@ -273,7 +273,7 @@ export abstract class RendererBase {
      */
     constructor() {
         this.options = {
-            sheets: ["core", "dice", "looney", "piecepack", "chess", "streetcar", "nato"],
+            sheets: ["core", "dice", "looney", "piecepack", "chess", "streetcar", "nato", "decktet"],
             colourContext: {
                 background: "#fff",
                 fill: "#000",
@@ -6123,7 +6123,10 @@ export abstract class RendererBase {
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
                         strokeWeight = this.json.board.strokeWeight;
                     }
-                    let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    let dasharray: string|undefined;
+                    if (note.style !== "solid") {
+                        dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    }
                     if (note.dashed !== undefined && note.dashed !== null) {
                         dasharray = (note.dashed ).join(" ");
                     }
@@ -6239,7 +6242,10 @@ export abstract class RendererBase {
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
                         strokeWeight = this.json.board.strokeWeight;
                     }
-                    let dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    let dasharray: string|undefined;
+                    if (note.style !== "solid") {
+                        dasharray = (4 * Math.ceil(strokeWeight / (this.cellsize * 0.05))).toString();
+                    }
                     if (note.dashed !== undefined && note.dashed !== null) {
                         dasharray = (note.dashed ).join(" ");
                     }
