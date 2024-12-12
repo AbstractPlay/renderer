@@ -398,8 +398,7 @@
                     "enum": [
                         "solid",
                         "dashed"
-                    ],
-                    "default": "solid"
+                    ]
                 },
                 "strokeWidth": {
                     "description": "The width of the line, expressed as a percentage of cell size.",
