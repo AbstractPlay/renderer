@@ -57,5 +57,5 @@ function exportGlyph(sheetName: string, glyphName: string): string {
     canvas.use(placed);
 
     // return canvas SVG code
-    return canvas.svg();
+    return canvas.svg().replaceAll(" href=", " xlink:href=");
 }
