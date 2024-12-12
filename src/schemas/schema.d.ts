@@ -605,6 +605,10 @@ export interface MarkerOutline {
    * 1 is fully opaque. 0 is fully transparent.
    */
   opacity?: number;
+  /**
+   * A valid `dasharray` appropriate for the game's display.
+   */
+  dasharray?: number[];
 }
 export interface MarkerHalo {
   /**

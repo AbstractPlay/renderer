@@ -1235,6 +1235,13 @@
                     "minimum": 0,
                     "maximum": 1,
                     "default": 0.25
+                },
+                "dasharray": {
+                    "description": "A valid `dasharray` appropriate for the game's display.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
                 }
             },
             "required": ["type", "points", "colour"],

@@ -1334,6 +1334,33 @@ export abstract class RendererBase {
             }
         }
 
+        // after gridlines, look for `outline` markers and draw those
+        let outlines: MarkerOutline[] = [];
+        if ( ("markers" in this.json.board) && (this.json.board.markers !== undefined) ) {
+            outlines = (this.json.board.markers as {type: string; [k:string]: any}[]).filter(m => m.type === "outline") as MarkerOutline[];
+        }
+        for (const mark of outlines) {
+            const colour = this.resolveColour(mark.colour) as string;
+            let dasharray: string|undefined;
+            if (mark.dasharray !== undefined && mark.dasharray !== null && Array.isArray(mark.dasharray)) {
+                dasharray = mark.dasharray.join(" ");
+            }
+            const stroke: StrokeData = {
+                color: colour,
+                width: this.cellsize * 0.05,
+                dasharray,
+                linecap: "round",
+                linejoin: "round",
+            };
+            for (const cell of mark.points) {
+                const poly = polys[cell.row][cell.col];
+                gridlines.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" "))
+                         .fill("none")
+                         .stroke(stroke)
+                         .attr({ 'pointer-events': 'none' });
+            }
+        }
+
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) && (style !== "pegboard") ) {
             const rotation = this.getRotation();
             const centre = this.getBoardCentre();
