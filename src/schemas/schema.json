@@ -703,6 +703,10 @@
                         {"$ref": "#/$defs/colourfuncs"},
                         {"$ref": "#/$defs/colourstrings"}
                     ]
+                },
+                "spacing": {
+                    "description": "With some piece types, you need extra space between them. Expressed as a percentage of cell size, this will insert some padding between pieces.",
+                    "type": "number"
                 }
             },
             "required": ["type", "pieces", "label"],

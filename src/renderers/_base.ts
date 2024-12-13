@@ -8342,6 +8342,10 @@ export abstract class RendererBase {
             let placeY = boardBottom + padding;
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea];
+                let hpad = 0;
+                if (area.spacing !== undefined) {
+                    hpad = this.cellsize * area.spacing;
+                }
                 const numPieces = area.pieces.length;
                 let desiredWidth = boardWidth;
                 if (area.width !== undefined) {
@@ -8350,7 +8354,7 @@ export abstract class RendererBase {
                 const numRows = Math.ceil(numPieces / desiredWidth);
                 const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                 const cellsize = this.cellsize * 0.75;
-                const areaWidth = cellsize * desiredWidth;
+                const areaWidth = (cellsize * desiredWidth) + (hpad * (desiredWidth-1));
                 const areaHeight = (textHeight * 2) + (cellsize * numRows);
                 let markWidth = 0;
                 let markColour: string|undefined;
@@ -8374,8 +8378,8 @@ export abstract class RendererBase {
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                     }
-                    const newx = col * cellsize + cellsize / 2;
-                    const newy = (textHeight * 2) + (row * cellsize) + cellsize / 2;
+                    const newx = (col * (cellsize + hpad)) + (cellsize / 2);
+                    const newy = (textHeight * 2) + (row * cellsize) + (cellsize / 2);
                     const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1});
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
