@@ -1091,6 +1091,10 @@ export interface AreaPieces {
    * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
    */
   ownerMark?: PositiveInteger | Colourfuncs | Colourstrings;
+  /**
+   * With some piece types, you need extra space between them. Expressed as a percentage of cell size, this will insert some padding between pieces.
+   */
+  spacing?: number;
 }
 /**
  * This is a special area currently only used for the DVGC games and incorporates a `pieces`-style area into the game board itself. It is currently only designed for two-player use with 180 degree rotation. The area is clickable, as are the pieces within. You must tell the renderer which area belongs to which player.
