@@ -454,6 +454,11 @@
                     "description": "Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.",
                     "enum": ["square", "circle", "hexf", "hexp"],
                     "default": "square"
+                },
+                "occlude": {
+                    "description": "Only meaningful for enter/exit notations. By default, a background is drawn before the dotted line. This isn't desireably in rare occasions where you want markers underneath the annotation to be visible.",
+                    "type": "boolean",
+                    "default": true
                 }
             },
             "required": ["type", "targets"],

@@ -1366,6 +1366,10 @@ export interface AnnotationBasic {
    * Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.
    */
   shape?: "square" | "circle" | "hexf" | "hexp";
+  /**
+   * Only meaningful for enter/exit notations. By default, a background is drawn before the dotted line. This isn't desireably in rare occasions where you want markers underneath the annotation to be visible.
+   */
+  occlude?: boolean;
 }
 /**
  * Delta annotations for the `sowing-*` renderers
