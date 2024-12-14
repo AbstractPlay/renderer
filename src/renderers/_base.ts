@@ -8363,7 +8363,7 @@ export abstract class RendererBase {
                 const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                 const cellsize = this.cellsize * 0.75;
                 const areaWidth = (cellsize * desiredWidth) + (hpad * (desiredWidth-1));
-                const areaHeight = (textHeight * 2) + (cellsize * numRows);
+                const areaHeight = (textHeight * 2) + (cellsize * numRows) + (hpad * (numRows-1));
                 let markWidth = 0;
                 let markColour: string|undefined;
                 if ( ("ownerMark" in area) && (area.ownerMark !== undefined) ) {
@@ -8387,7 +8387,7 @@ export abstract class RendererBase {
                         throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                     }
                     const newx = (col * (cellsize + hpad)) + (cellsize / 2);
-                    const newy = (textHeight * 2) + (row * cellsize) + (cellsize / 2);
+                    const newy = (textHeight * 2) + (row * (cellsize+hpad)) + (cellsize / 2);
                     const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1});
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
