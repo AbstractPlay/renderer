@@ -6157,6 +6157,10 @@ export abstract class RendererBase {
                     if (note.dashed !== undefined && note.dashed !== null) {
                         dasharray = (note.dashed ).join(" ");
                     }
+                    let bgopacity = 1;
+                    if ( ("occlude" in note) && note.occlude === false) {
+                        bgopacity = 0;
+                    }
                     for (const node of (note.targets as ITarget[])) {
                         // outline the polygon if provided
                         if (polys !== undefined && polys[node.row][node.col] !== undefined) {
@@ -6166,7 +6170,7 @@ export abstract class RendererBase {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(poly.r * 2)
@@ -6179,7 +6183,7 @@ export abstract class RendererBase {
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -6190,7 +6194,7 @@ export abstract class RendererBase {
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -6214,7 +6218,7 @@ export abstract class RendererBase {
                                 notes.rect(this.cellsize, this.cellsize)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.rect(this.cellsize, this.cellsize)
@@ -6227,7 +6231,7 @@ export abstract class RendererBase {
                                 notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
@@ -6248,7 +6252,7 @@ export abstract class RendererBase {
                                 notes.polygon(periph)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(periph)
@@ -6276,6 +6280,10 @@ export abstract class RendererBase {
                     if (note.dashed !== undefined && note.dashed !== null) {
                         dasharray = (note.dashed ).join(" ");
                     }
+                    let bgopacity = 1;
+                    if ( ("occlude" in note) && note.occlude === false) {
+                        bgopacity = 0;
+                    }
                     for (const node of (note.targets as ITarget[])) {
                         // outline the polygon if provided
                         if (polys !== undefined) {
@@ -6285,7 +6293,7 @@ export abstract class RendererBase {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(poly.r * 2)
@@ -6298,7 +6306,7 @@ export abstract class RendererBase {
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -6309,7 +6317,7 @@ export abstract class RendererBase {
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -6333,7 +6341,7 @@ export abstract class RendererBase {
                                 notes.rect(this.cellsize, this.cellsize)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.rect(this.cellsize, this.cellsize)
@@ -6346,7 +6354,7 @@ export abstract class RendererBase {
                                 notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
@@ -6367,7 +6375,7 @@ export abstract class RendererBase {
                                 notes.polygon(periph)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round"})
+                                    .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(periph)
