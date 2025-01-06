@@ -155,4 +155,17 @@ sheet.glyphs.set("d6-6", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("d6-empty", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    group.rect(48, 48)
+        .radius(10, 10)
+        .fill("none")
+        .stroke({width: 1, color: "#000"})
+        .attr("data-context-border", true)
+        .attr("data-playerfill", true)
+        .center(25, 25);
+    group.viewbox(0, 0, 50, 50);
+    return group;
+});
+
 export { sheet as DiceSheet };
