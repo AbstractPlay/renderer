@@ -70,6 +70,20 @@ export type BoardStyles =
   | "dvgc"
   | "dvgc-checkered";
 /**
+ * The patterns known by the renderer
+ */
+export type PatternName =
+  | "microbial"
+  | "chevrons"
+  | "honeycomb"
+  | "triangles"
+  | "wavy"
+  | "slant"
+  | "dots"
+  | "starsWhite"
+  | "cross"
+  | "houndstooth";
+/**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
 export type BoardHomeworlds = {
@@ -471,10 +485,7 @@ export interface BoardBasic {
      * The width of the zone expressed as a percentage of the cell size. If zero, the zone is omitted.
      */
     width: number;
-    /**
-     * The name of one of the built-in patterns for fill.
-     */
-    pattern?: string;
+    pattern?: PatternName;
     /**
      * Choose which of the four sides you want displayed. By default, it's all four.
      */
@@ -577,6 +588,7 @@ export interface MarkerFlood {
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
   colour?: PositiveInteger | Colourfuncs | Colourstrings | Gradient;
+  pattern?: PatternName;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
