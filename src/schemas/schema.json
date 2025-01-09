@@ -17,6 +17,10 @@
             "type": "string",
             "pattern": "^1*2*3*$"
         },
+        "patternName": {
+            "description": "The patterns known by the renderer",
+            "enum": ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"]
+        },
         "colourstrings": {
             "description": "Pattern for hex colour strings",
             "anyOf": [
@@ -1200,6 +1204,9 @@
                     ],
                     "default": "#000"
                 },
+                "pattern": {
+                    "$ref": "#/$defs/patternName"
+                },
                 "opacity": {
                     "description": "1 is fully opaque. 0 is fully transparent.",
                     "type": "number",
@@ -1973,8 +1980,7 @@
                             "maximum": 0.9
                         },
                         "pattern": {
-                            "description": "The name of one of the built-in patterns for fill.",
-                            "type": "string"
+                            "$ref": "#/$defs/patternName"
                         },
                         "show": {
                             "description": "Choose which of the four sides you want displayed. By default, it's all four.",
