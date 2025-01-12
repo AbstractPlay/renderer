@@ -1378,18 +1378,18 @@ export abstract class RendererBase {
             const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0);
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
-            const maxX = grid[0][grid[0].length - 1].x;
-            const maxY = grid[grid.length - 1][0].y;
+            // const maxX = grid[0][grid[0].length - 1].x;
+            // const maxY = grid[grid.length - 1][0].y;
             const root = this.rootSvg;
             let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                 const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
                 const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                 if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                    // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                    if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                    // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                    // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
                         this.options.boardClick!(y, x, "");
-                    }
+                    // }
                 }
             });
             if (this.options.rotate === 180) {
@@ -1398,10 +1398,10 @@ export abstract class RendererBase {
                     const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                     const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                     if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                        // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                        if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                        // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                        // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
                             this.options.boardClick!(y, x, "");
-                        }
+                        // }
                     }
                 });
             }
@@ -2090,18 +2090,18 @@ export abstract class RendererBase {
                 const clickDeltaY: number = (this.json.board.clickDeltaX ?? 0);
                 const originX = grid[0][0].x;
                 const originY = grid[0][0].y;
-                const maxX = grid[0][grid[0].length - 1].x;
-                const maxY = grid[grid.length - 1][0].y;
+                // const maxX = grid[0][grid[0].length - 1].x;
+                // const maxY = grid[grid.length - 1][0].y;
                 const root = this.rootSvg;
                 let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
                     const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
                     const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
                     const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
                     if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                        // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                        if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                        // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                        // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
                             this.options.boardClick!(y, x, "");
-                        }
+                        // }
                     }
                 });
                 if (this.options.rotate === 180) {
@@ -2110,10 +2110,10 @@ export abstract class RendererBase {
                         const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                         const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                         if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                            // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                            if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
+                            // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
+                            // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
                                 this.options.boardClick!(y, x, "");
-                            }
+                            // }
                         }
                     });
                 }
