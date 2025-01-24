@@ -1,4 +1,4 @@
-import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
+import { StrokeData, Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import type { ISheet } from "./ISheet";
 import { Orientation, defineHex } from "honeycomb-grid";
 import { rgb as convert_rgb, hex as convert_hex } from "color-convert";
@@ -669,6 +669,39 @@ sheet.glyphs.set("orca", (canvas: SVGContainer, color?: string) => {
         .attr("data-playerfill", true);
     symbol.viewbox(8.775, 7.113, 82.234, 82.234);
     return symbol;
+});
+
+sheet.glyphs.set("owl", (canvas: SVGContainer) => {
+    const sym = canvas.symbol()
+    const stroke: StrokeData = {
+        color: "black",
+        miterlimit: 10,
+        width: 2,
+    }
+    sym.path("M17.74,7.24v3.83A11.48,11.48,0,0,1,6.26,22.54h0V7.24")
+        .stroke(stroke)
+        .fill("none")
+        .attr("data-context-stroke", true);
+    sym.circle(5.74 * 2).center(12, 7.24)
+        .stroke(stroke)
+        .fill("none")
+        .attr("data-context-stroke", true);
+    sym.path("M3.39,1.5h0A3.83,3.83,0,0,0,7.22,5.33h1A3.82,3.82,0,0,1,12,9.15h0")
+        .stroke(stroke)
+        .fill("none")
+        .attr("data-context-stroke", true);
+    sym.path("M20.61,1.5h0a3.83,3.83,0,0,1-3.83,3.83h-1A3.82,3.82,0,0,0,12,9.15h0")
+        .stroke(stroke)
+        .fill("none")
+        .attr("data-context-stroke", true);
+    sym.line(16.78, 23.5, 16.78, 15.67)
+        .stroke(stroke)
+        .attr("data-context-stroke", true);
+    sym.line(12.96, 20.63, 12.96, 23.5)
+        .stroke(stroke)
+        .attr("data-context-stroke", true);
+    sym.viewbox(2.2, 0.31, 19.6, 23.425);
+    return sym;
 });
 
 sheet.glyphs.set("palace", (canvas: SVGContainer) => {
