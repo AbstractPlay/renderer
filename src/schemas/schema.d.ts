@@ -316,7 +316,7 @@ export interface GradientStop {
   /**
    * Hex string or player number of the desired colour
    */
-  colour: PositiveInteger | Colourstrings;
+  colour: PositiveInteger | Colourstrings | Colourfuncs;
   opacity?: number;
 }
 /**
