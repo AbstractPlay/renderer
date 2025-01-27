@@ -162,7 +162,8 @@
                     "description": "Hex string or player number of the desired colour",
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
-                        {"$ref": "#/$defs/colourstrings"}
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
                     ]
                 },
                 "opacity": {
