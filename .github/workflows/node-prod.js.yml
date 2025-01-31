@@ -34,7 +34,7 @@ jobs:
     # prerelease --preid=ci-$GITHUB_RUN_ID
     - run: npm pack
     - name: Upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: package
         path: "*.tgz"
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - name: Upload
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
               name: package
         - uses: actions/setup-node@v3
