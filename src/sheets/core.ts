@@ -59,8 +59,8 @@ sheet.glyphs.set("arrows-orth", (canvas: SVGContainer) => {
         .attr("data-playerfill", true)
         .stroke("#000")
         .fill("#fff");
-    group.rotate(45);
-    sym.viewbox(-21.544, -21.544, 143.089, 143.089);
+    group.rotate(45, 50, 50);
+    sym.viewbox(-21.545, -21.543, 143.089, 143.086);
     return sym;
 });
 
