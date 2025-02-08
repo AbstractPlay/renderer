@@ -1048,6 +1048,28 @@
             "required": ["type", "max"],
             "additionalProperties": false
         },
+        "areaCompassRose": {
+            "description": "Used to create a clickable compass rose for facing selection.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": ["compassRose"]
+                },
+                "position": {
+                    "description": "Where you want the rose to appear relative to the board.",
+                    "enum": ["left", "right"],
+                    "default": "right"
+                },
+                "width": {
+                    "description": "The width of the rose as a multiple of cellsize. Rose will be square.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 2
+                }
+            },
+            "required": ["type"],
+            "additionalProperties": false
+        },
         "areaKey": {
             "description": "A list of pieces in the `legend` that players need identifiers for. Usually needed for games with many colours or just indicating who controls what.",
             "type": "object",
@@ -2341,6 +2363,7 @@
                     {"$ref": "#/$defs/areaVolcanoStash"},
                     {"$ref": "#/$defs/areaButtonBar"},
                     {"$ref": "#/$defs/areaScrollBar"},
+                    {"$ref": "#/$defs/areaCompassRose"},
                     {"$ref": "#/$defs/areaKey"}
                 ]
             }

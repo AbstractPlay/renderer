@@ -255,6 +255,9 @@ export class DefaultRenderer extends RendererBase {
         // scrollBar
         this.placeScroll(box);
 
+        // compassRose
+        this.placeCompass(box);
+
         if (!backfilled) {
             this.backFill(polys);
         }

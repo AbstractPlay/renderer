@@ -217,6 +217,7 @@ export interface APRenderRep {
     | AreaVolcanoStash
     | AreaButtonBar
     | AreaScrollBar
+    | AreaCompassRose
     | AreaKey
   )[];
   /**
@@ -1298,6 +1299,20 @@ export interface AreaScrollBar {
      */
     strokes?: string | string;
   };
+}
+/**
+ * Used to create a clickable compass rose for facing selection.
+ */
+export interface AreaCompassRose {
+  type: "compassRose";
+  /**
+   * Where you want the rose to appear relative to the board.
+   */
+  position?: "left" | "right";
+  /**
+   * The width of the rose as a multiple of cellsize. Rose will be square.
+   */
+  width?: number;
 }
 /**
  * A list of pieces in the `legend` that players need identifiers for. Usually needed for games with many colours or just indicating who controls what.

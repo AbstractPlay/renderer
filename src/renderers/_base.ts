@@ -5,10 +5,10 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
-import { APRenderRep, AreaButtonBar, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance, calcBearing, smallestDegreeDiff } from "../common/plotting";
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
@@ -8350,6 +8350,120 @@ export abstract class RendererBase {
 
         // set the viewbox and return
         nested.viewbox(0, 0, maxScaledWidth, (height * (4 + (json.max - min))));
+        return nested;
+    }
+
+    /**
+     * Generates the compass rose and then places it appropriately.
+     *
+     * @param grid - The grid of points; used for positioning.
+     * @param position - If given, overrides the JSON setting.
+     */
+    protected placeCompass(box: SVGBox, position?: "left"|"right"): void {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+        if ( ("areas" in this.json) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
+            const compasses = this.json.areas.filter((b) => b.type === "compassRose") as AreaCompassRose[];
+            if (compasses.length > 1) {
+                throw new Error("Only one compass rose may be defined.");
+            }
+            if (compasses.length === 1) {
+                const compass = compasses[0];
+                const compassImg = this.buildCompass(compass);
+                const width = compassImg.viewbox().w;
+                const height = compassImg.viewbox().h;
+                const y = box.y; // - this.cellsize;
+                // Position defaults to "right"
+                // If a position is passed by the renderer, it overrides everything
+                // Otherwise, the JSON prevails
+                let pos = "right";
+                if (position !== undefined) {
+                    pos = position;
+                } else if (compass.position !== undefined) {
+                    pos = compass.position;
+                }
+                let x = 0;
+                if (pos === "left") {
+                    x = box.x - width - (this.cellsize / 2);
+                } else {
+                    x = box.x2 + (this.cellsize / 2);
+                }
+                const rotation = this.getRotation();
+                const used = this.rootSvg.use(compassImg)
+                    .size(width, height)
+                    .dmove(x, y)
+                    .rotate(rotation, x + compassImg.viewbox().w / 2, y + compassImg.viewbox().h / 2);
+                if (this.options.boardClick !== undefined) {
+                    const centre = {x: x + width / 2, y: y + height / 2};
+                    const root = this.rootSvg;
+                    const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                        const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                        const bearing = calcBearing(centre.x, centre.y, point.x, point.y);
+                        const delta = smallestDegreeDiff(bearing, 0);
+                        if (delta >= -22.5 && delta <= 22.5) {
+                            this.options.boardClick!(-1, -1, "N");
+                        }
+                        else if (delta >= 22.5 && delta <= 67.5) {
+                            this.options.boardClick!(-1, -1, "NE");
+                        }
+                        else if (delta >= 67.5 && delta <= 112.5) {
+                            this.options.boardClick!(-1, -1, "E");
+                        }
+                        else if (delta >= 112.5 && delta <= 157.5) {
+                            this.options.boardClick!(-1, -1, "SE");
+                        }
+                        else if (delta >= -67.5 && delta <= -22.5) {
+                            this.options.boardClick!(-1, -1, "NW");
+                        }
+                        else if (delta >= -112.5 && delta <= -67.5) {
+                            this.options.boardClick!(-1, -1, "W");
+                        }
+                        else if (delta >= -157.5 && delta <= -112.5) {
+                            this.options.boardClick!(-1, -1, "SW");
+                        }
+                        else  {
+                            this.options.boardClick!(-1, -1, "S");
+                        }
+                    });
+                    used.click(genericCatcher);
+                }
+            }
+        }
+    }
+
+    /**
+     * Builds the compass rose from JSON.
+     *
+     * @param json - The parsed JSON representing the button bar
+     * @returns The nested SVG, which is embedded in the root `defs()`
+     */
+    protected buildCompass(json: AreaCompassRose): Svg {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+
+        const roseSymbol = this.rootSvg.defs().symbol().id("_compassSymbol");
+        roseSymbol.path("M49.956 10c-.591-.003-.916.4-1.007.872l-2.443 8.242a30.937 30.937 0 0 0-15.897 6.6c-2.538-1.378-5.075-2.763-7.615-4.133c-.47-.253-.882-.234-1.262.149c-.381.383-.273.947-.058 1.353l4.069 7.495a30.931 30.931 0 0 0-6.634 15.932c-2.774.823-5.552 1.639-8.323 2.467c-.51.153-.787.458-.786.998c.002.54.476.863.916.998l8.189 2.426a30.936 30.936 0 0 0 6.599 15.98c-1.385 2.552-2.778 5.104-4.156 7.658c-.253.47-.234.88.15 1.261c.382.38.946.274 1.352.06l7.537-4.091a30.933 30.933 0 0 0 15.922 6.622c.822 2.775 1.64 5.554 2.468 8.325c.153.51.458.787.998.786c.54-.002.863-.476.998-.916l2.426-8.189a30.89 30.89 0 0 0 16.006-6.632l7.568 4.11c.549.28.92.329 1.34-.087c.421-.416.366-.932.097-1.33l-4.12-7.593a30.962 30.962 0 0 0 6.591-15.958l8.233-2.44c.586-.19.883-.417.886-1.009c.003-.591-.4-.916-.872-1.007l-8.27-2.451a30.967 30.967 0 0 0-6.607-15.91l4.09-7.531c.279-.55.328-.92-.088-1.341a.957.957 0 0 0-.671-.305a1.15 1.15 0 0 0-.659.21l-7.546 4.097a30.883 30.883 0 0 0-15.978-6.62l-2.434-8.212c-.19-.586-.417-.883-1.009-.886zm-.001 4.176v31.04a4.783 4.783 0 0 0-2.306.619l-4.979-6.308l5.214-18.143l.7-2.441zM54.14 21.6a28.54 28.54 0 0 1 12.96 5.355l-9.797 5.318zm-8.377.025l-3.144 10.607c-3.241-1.762-6.484-3.517-9.726-5.278a28.553 28.553 0 0 1 12.87-5.329zM24.65 24.65l15.602 15.57l-.008.023c-1.987.589-3.972 1.18-5.96 1.768l-5.988-10.793l-1.223-2.205zm50.648.018l-3.343 3.344l-1.673 1.672L59.73 40.237l-.075-.022l-1.754-5.916l10.865-6.015l1.308-.722l.89-.494zm-2.278 8.188a28.554 28.554 0 0 1 5.355 12.907l-10.648-3.156zm-46.039.008l5.29 9.744c-3.554 1.05-7.104 2.108-10.657 3.16a28.538 28.538 0 0 1 5.367-12.904zm33.392 9.779l18.242 5.24l2.413.694l4.795 1.378h-31.04a4.783 4.783 0 0 0-.631-2.328zm-15.156 7.312l-.002.045c0 .798.2 1.583.581 2.284L39.5 57.241l-6.241-1.788l-11.88-3.4v-.002l-2.438-.698l-4.813-1.378zm33.184 4.184a28.538 28.538 0 0 1-5.348 12.95l-5.313-9.79zm-56.79.003l10.647 3.155c-1.775 3.265-3.542 6.532-5.316 9.797a28.549 28.549 0 0 1-5.331-12.952zm30.697.047l4.96 6.211l-1.803 6.296L52.05 78.62l-.698 2.439l-1.378 4.813l-.02-31.09c.842.002 1.716-.218 2.354-.593zm13.403 3.71l6.01 10.86l1.218 2.199l2.421 4.374l-3.374-3.375l-1.673-1.672l-10.607-10.607zm-25.475 1.832c.592 2 1.187 3.996 1.778 5.996l-10.786 5.984l-2.207 1.224l-4.405 2.445zm17.074 7.966l9.82 5.333a28.552 28.552 0 0 1-12.989 5.358zm-14.7.042c1.05 3.55 2.106 7.097 3.157 10.646a28.54 28.54 0 0 1-12.894-5.36z").fill(this.resolveColour("_context_strokes") as string);
+        roseSymbol.path("M46 8V0h1.981l4.127 5.342V0H54v8h-2.043l-4.065-5.217V8z").fill(this.resolveColour("_context_strokes") as string);
+        roseSymbol.viewbox(5, 0, 90, 90);
+
+        // initialize values
+        let width = this.cellsize * 2;
+        if (json.width !== undefined) {
+            width = this.cellsize * json.width;
+        }
+        const nested = this.rootSvg.defs().nested().id("_compass");
+        nested.use(roseSymbol).width(width).height(width);
+
+        // add background rect to capture all clicks
+        // Click handlers don't work here
+        nested.rect(width, width)
+              .stroke({color: "none", width: 0})
+              .fill({color: this.options.colourContext.background, opacity: 0});
+
+        // set the viewbox and return
+        nested.viewbox(0, 0, width, width);
         return nested;
     }
 

@@ -247,6 +247,9 @@ export class StackingOffsetRenderer extends RendererBase {
         // key
         this.placeKey(box);
 
+        // compassRose
+        this.placeCompass(box);
+
         if (!backfilled) {
             this.backFill(polys);
         }
