@@ -316,3 +316,19 @@ export const areaPolygon = (...pts: IPoint[]): number => {
     }
     return Math.abs(sum / 2);
 }
+
+// https://math.stackexchange.com/questions/3058210/how-to-shorten-a-line-but-maintain-its-angle
+// shortens a line by a percent; val must be between 0 and 1
+export const shortenLine = (x1: number, y1: number, x2: number, y2: number, val: number)
+                            : [number,number,number,number] => {
+    if (val < 0 || val > 1) {
+        throw new Error("The val parameter must be between 0 and 1.");
+    }
+    const t0 = val;
+    const t1 = 1 - val;
+    const newx1 = x1 + (t0 * (x2 - x1));
+    const newy1 = y1 + (t0 * (y2 - y1));
+    const newx2 = x1 + (t1 * (x2 - x1));
+    const newy2 = y1 + (t1 * (y2 - y1));
+    return [newx1, newy1, newx2, newy2];
+}

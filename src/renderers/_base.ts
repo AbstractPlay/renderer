@@ -8,7 +8,7 @@ import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IP
 import { APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance, calcBearing, smallestDegreeDiff } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance, calcBearing, smallestDegreeDiff, shortenLine } from "../common/plotting";
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
@@ -1029,62 +1029,269 @@ export abstract class RendererBase {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }
             }
+            let separated = false;
+            if ( ("separated" in this.json.board.buffer) && this.json.board.buffer.separated !== undefined) {
+                separated = this.json.board.buffer.separated;
+            }
             const offset = cellsize * 0.1;
-            // top
-            let h = bufferwidth;
-            let w = (grid[0][grid[0].length - 1].x + cellsize) - grid[0][0].x;
-            let x = grid[0][0].x - (cellsize / 2);
-            let y = grid[0][0].y - (cellsize / 2) - (h + offset);
-            let buffN: SVGRect | undefined;
-            if (show.includes("N")) {
-                const key = "_buffer_N";
-                buffN = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
-            // bottom
-            x = grid[grid.length - 1][0].x - (cellsize / 2);
-            y = grid[grid.length - 1][0].y + (cellsize / 2) + offset;
-            let buffS: SVGRect | undefined;
-            if (show.includes("S")) {
-                const key = "_buffer_S";
-                buffS = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
-            // left
-            w = bufferwidth;
-            h = (grid[grid.length - 1][0].y + cellsize) - grid[0][0].y;
-            x = grid[0][0].x - (cellsize / 2) - (w + offset);
-            y = grid[0][0].y - (cellsize / 2);
-            let buffW: SVGRect | undefined;
-            if (show.includes("W")) {
-                const key = "_buffer_W";
-                buffW = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
-            // right
-            x = grid[0][grid[0].length - 1].x + (cellsize / 2) + offset;
-            y = grid[0][0].y - (cellsize / 2);
-            let buffE: SVGRect | undefined;
-            if (show.includes("E")) {
-                const key = "_buffer_E";
-                buffE = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
 
-            // Fill and add click handlers to all four zones at once
-            for (const buff of [buffN, buffS, buffW, buffE]) {
-                if (buff === undefined) { continue; }
-                if (fill !== undefined) {
-                    buff.fill(fill);
-                } else {
-                    buff.fill({color: "white", opacity: 0})
+            // default, non-separated version first
+            if (!separated) {
+                // top
+                let h = bufferwidth;
+                let w = (grid[0][grid[0].length - 1].x + cellsize) - grid[0][0].x;
+                let x = grid[0][0].x - (cellsize / 2);
+                let y = grid[0][0].y - (cellsize / 2) - (h + offset);
+                let buffN: SVGRect | undefined;
+                if (show.includes("N")) {
+                    const key = "_buffer_N";
+                    buffN = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
                 }
-                if (this.options.boardClick !== undefined) {
-                    buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                // bottom
+                x = grid[grid.length - 1][0].x - (cellsize / 2);
+                y = grid[grid.length - 1][0].y + (cellsize / 2) + offset;
+                let buffS: SVGRect | undefined;
+                if (show.includes("S")) {
+                    const key = "_buffer_S";
+                    buffS = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+                // left
+                w = bufferwidth;
+                h = (grid[grid.length - 1][0].y + cellsize) - grid[0][0].y;
+                x = grid[0][0].x - (cellsize / 2) - (w + offset);
+                y = grid[0][0].y - (cellsize / 2);
+                let buffW: SVGRect | undefined;
+                if (show.includes("W")) {
+                    const key = "_buffer_W";
+                    buffW = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+                // right
+                x = grid[0][grid[0].length - 1].x + (cellsize / 2) + offset;
+                y = grid[0][0].y - (cellsize / 2);
+                let buffE: SVGRect | undefined;
+                if (show.includes("E")) {
+                    const key = "_buffer_E";
+                    buffE = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+
+                // Fill and add click handlers to all four zones at once
+                for (const buff of [buffN, buffS, buffW, buffE]) {
+                    if (buff === undefined) { continue; }
+                    if (fill !== undefined) {
+                        buff.fill(fill);
+                    } else {
+                        buff.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                    }
+                }
+            }
+            // now the separated version
+            else {
+                // N & S always include corner dots
+                // E & W will only add them if one of N or S aren't present
+                const shorten = 0.1;
+                const multiple = 1 - (shorten * 2);
+                // top
+                if (show.includes("N")) {
+                    const h = bufferwidth;
+                    const w = cellsize * multiple;
+                    for (let i = 0; i < grid[0].length; i++) {
+                        const ctr = grid[0][i];
+                        const ytop = ctr.y - (cellsize / 2) - (h + offset);
+                        const fullx1 = ctr.x - (cellsize / 2);
+                        const fullx2 = ctr.x + (cellsize / 2);
+                        const [tlx,,,] = shortenLine(fullx1, ytop, fullx2, ytop, shorten);
+                        const buff = board.rect(w, h).id(`${i},-1`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(tlx, ytop);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // always add corner dots
+                    const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,-1`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[0][0].x - (cellsize / 2) - (bufferwidth + offset), grid[0][0].y - (cellsize / 2) - (bufferwidth + offset));
+                    if (fill !== undefined) {
+                        buffLeft.fill(fill);
+                    } else {
+                        buffLeft.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                    }
+                    const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[0][grid[0].length - 1].x + (cellsize / 2) + offset, grid[0][grid[0].length - 1].y - (cellsize / 2) - (bufferwidth + offset));
+                    if (fill !== undefined) {
+                        buffRight.fill(fill);
+                    } else {
+                        buffRight.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                    }
+                }
+                // bottom
+                if (show.includes("S")) {
+                    const h = bufferwidth;
+                    const w = cellsize * multiple;
+                    for (let i = 0; i < grid[grid.length - 1].length; i++) {
+                        const ctr = grid[grid.length - 1][i];
+                        const ytop = ctr.y + (cellsize / 2) + (offset);
+                        const fullx1 = ctr.x - (cellsize / 2);
+                        const fullx2 = ctr.x + (cellsize / 2);
+                        const [tlx,,,] = shortenLine(fullx1, ytop, fullx2, ytop, shorten);
+                        const buff = board.rect(w, h).id(`${i},${grid.length}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(tlx, ytop);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // always add corner dots
+                    const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,${grid.length}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[grid.length - 1][0].x - (cellsize / 2) - (bufferwidth + offset), grid[grid.length - 1][0].y + (cellsize / 2) + offset);
+                    if (fill !== undefined) {
+                        buffLeft.fill(fill);
+                    } else {
+                        buffLeft.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                    }
+                    const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[grid.length - 1][grid[grid.length - 1].length - 1].x + (cellsize / 2) + offset, grid[grid.length - 1][grid[grid.length - 1].length - 1].y + (cellsize / 2) + offset);
+                    if (fill !== undefined) {
+                        buffRight.fill(fill);
+                    } else {
+                        buffRight.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                    }
+                }
+                // left
+                if (show.includes("W")) {
+                    const w = bufferwidth;
+                    const h = cellsize * multiple;
+                    for (let i = 0; i < grid.length; i++) {
+                        const ctr = grid[i][0];
+                        const xtop = ctr.x - (cellsize / 2) - (w + offset);
+                        const fully1 = ctr.y - (cellsize / 2);
+                        const fully2 = ctr.y + (cellsize / 2);
+                        const [,tly,,] = shortenLine(xtop, fully1, xtop, fully2, shorten);
+                        const buff = board.rect(w, h).id(`-1,${i}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(xtop, tly);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // only add corner dots if not already present
+                    if (!show.includes("S")) {
+                        const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,${grid.length}`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[grid.length - 1][0].x - (cellsize / 2) - (bufferwidth + offset), grid[grid.length - 1][0].y + (cellsize / 2) + offset);
+                        if (fill !== undefined) {
+                            buffLeft.fill(fill);
+                        } else {
+                            buffLeft.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        }
+                    }
+                    if (!show.includes("N")) {
+                        const buffRight = board.rect(bufferwidth, bufferwidth).id(`-1,-1`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[0][0].x - (cellsize / 2) - (bufferwidth + offset), grid[0][0].y - (cellsize / 2) - (bufferwidth + offset));
+                        if (fill !== undefined) {
+                            buffRight.fill(fill);
+                        } else {
+                            buffRight.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        }
+                    }
+                }
+                // right
+                if (show.includes("E")) {
+                    const w = bufferwidth;
+                    const h = cellsize * multiple;
+                    for (let i = 0; i < grid.length; i++) {
+                        const ctr = grid[i][grid[i].length - 1];
+                        const xtop = ctr.x + (cellsize / 2) + (offset);
+                        const fully1 = ctr.y - (cellsize / 2);
+                        const fully2 = ctr.y + (cellsize / 2);
+                        const [,tly,,] = shortenLine(xtop, fully1, xtop, fully2, shorten);
+                        const buff = board.rect(w, h).id(`${grid[i].length},${i}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(xtop, tly);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // only add corner dots if not already present
+                    if (!show.includes("N")) {
+                        const buffLeft = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[0][grid[0].length - 1].x + (cellsize / 2) + offset, grid[0][grid[0].length - 1].y - (cellsize / 2) - (bufferwidth + offset));
+                        if (fill !== undefined) {
+                            buffLeft.fill(fill);
+                        } else {
+                            buffLeft.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        }
+                    }
+                    if (!show.includes("S")) {
+                        const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[grid.length - 1][grid[grid.length - 1].length - 1].x + (cellsize / 2) + offset, grid[grid.length - 1][grid[grid.length - 1].length - 1].y + (cellsize / 2) + offset);
+                        if (fill !== undefined) {
+                            buffRight.fill(fill);
+                        } else {
+                            buffRight.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        }
+                    }
                 }
             }
             bufferwidth += offset;
@@ -1778,62 +1985,269 @@ export abstract class RendererBase {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }
             }
+            let separated = false;
+            if ( ("separated" in this.json.board.buffer) && this.json.board.buffer.separated !== undefined) {
+                separated = this.json.board.buffer.separated;
+            }
             const offset = cellsize * 0.2;
-            // top
-            let h = bufferwidth;
-            let w = (grid[0][grid[0].length - 1].x) - grid[0][0].x;
-            let x = grid[0][0].x;
-            let y = grid[0][0].y - (h + offset);
-            let buffN: SVGRect | undefined;
-            if (show.includes("N")) {
-                const key = "_buffer_N";
-                buffN = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
-            // bottom
-            x = grid[grid.length - 1][0].x;
-            y = grid[grid.length - 1][0].y + offset;
-            let buffS: SVGRect | undefined;
-            if (show.includes("S")) {
-                const key = "_buffer_S";
-                buffS = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
-            // left
-            w = bufferwidth;
-            h = (grid[grid.length - 1][0].y) - grid[0][0].y;
-            x = grid[0][0].x- (w + offset);
-            y = grid[0][0].y;
-            let buffW: SVGRect | undefined;
-            if (show.includes("W")) {
-                const key = "_buffer_W";
-                buffW = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
-            // right
-            x = grid[0][grid[0].length - 1].x + offset;
-            y = grid[0][0].y;
-            let buffE: SVGRect | undefined;
-            if (show.includes("E")) {
-                const key = "_buffer_E";
-                buffE = board.rect(w, h).id(key)
-                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
-                .move(x, y);
-            }
 
-            // Fill and add click handlers to all four zones at once
-            for (const buff of [buffN, buffS, buffW, buffE]) {
-                if (buff === undefined) { continue; }
-                if (fill !== undefined) {
-                    buff.fill(fill);
-                } else {
-                    buff.fill({color: "white", opacity: 0})
+            // default, non-separated version first
+            if (!separated) {
+                // top
+                let h = bufferwidth;
+                let w = (grid[0][grid[0].length - 1].x + cellsize) - grid[0][0].x;
+                let x = grid[0][0].x - (cellsize / 2);
+                let y = grid[0][0].y - (cellsize / 2) - (h + offset);
+                let buffN: SVGRect | undefined;
+                if (show.includes("N")) {
+                    const key = "_buffer_N";
+                    buffN = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
                 }
-                if (this.options.boardClick !== undefined) {
-                    buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                // bottom
+                x = grid[grid.length - 1][0].x - (cellsize / 2);
+                y = grid[grid.length - 1][0].y + (cellsize / 2) + offset;
+                let buffS: SVGRect | undefined;
+                if (show.includes("S")) {
+                    const key = "_buffer_S";
+                    buffS = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+                // left
+                w = bufferwidth;
+                h = (grid[grid.length - 1][0].y + cellsize) - grid[0][0].y;
+                x = grid[0][0].x - (cellsize / 2) - (w + offset);
+                y = grid[0][0].y - (cellsize / 2);
+                let buffW: SVGRect | undefined;
+                if (show.includes("W")) {
+                    const key = "_buffer_W";
+                    buffW = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+                // right
+                x = grid[0][grid[0].length - 1].x + (cellsize / 2) + offset;
+                y = grid[0][0].y - (cellsize / 2);
+                let buffE: SVGRect | undefined;
+                if (show.includes("E")) {
+                    const key = "_buffer_E";
+                    buffE = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+
+                // Fill and add click handlers to all four zones at once
+                for (const buff of [buffN, buffS, buffW, buffE]) {
+                    if (buff === undefined) { continue; }
+                    if (fill !== undefined) {
+                        buff.fill(fill);
+                    } else {
+                        buff.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                    }
+                }
+            }
+            // now the separated version
+            else {
+                // N & S always include corner dots
+                // E & W will only add them if one of N or S aren't present
+                const shorten = 0.1;
+                const multiple = 1 - (shorten * 2);
+                // top
+                if (show.includes("N")) {
+                    const h = bufferwidth;
+                    const w = cellsize * multiple;
+                    for (let i = 0; i < grid[0].length; i++) {
+                        const ctr = grid[0][i];
+                        const ytop = ctr.y - (cellsize / 2) - (h + offset);
+                        const fullx1 = ctr.x - (cellsize / 2);
+                        const fullx2 = ctr.x + (cellsize / 2);
+                        const [tlx,,,] = shortenLine(fullx1, ytop, fullx2, ytop, shorten);
+                        const buff = board.rect(w, h).id(`${i},-1`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(tlx, ytop);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // always add corner dots
+                    const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,-1`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[0][0].x - (cellsize / 2) - (bufferwidth + offset), grid[0][0].y - (cellsize / 2) - (bufferwidth + offset));
+                    if (fill !== undefined) {
+                        buffLeft.fill(fill);
+                    } else {
+                        buffLeft.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                    }
+                    const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[0][grid[0].length - 1].x + (cellsize / 2) + offset, grid[0][grid[0].length - 1].y - (cellsize / 2) - (bufferwidth + offset));
+                    if (fill !== undefined) {
+                        buffRight.fill(fill);
+                    } else {
+                        buffRight.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                    }
+                }
+                // bottom
+                if (show.includes("S")) {
+                    const h = bufferwidth;
+                    const w = cellsize * multiple;
+                    for (let i = 0; i < grid[grid.length - 1].length; i++) {
+                        const ctr = grid[grid.length - 1][i];
+                        const ytop = ctr.y + (cellsize / 2) + (offset);
+                        const fullx1 = ctr.x - (cellsize / 2);
+                        const fullx2 = ctr.x + (cellsize / 2);
+                        const [tlx,,,] = shortenLine(fullx1, ytop, fullx2, ytop, shorten);
+                        const buff = board.rect(w, h).id(`${i},${grid.length}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(tlx, ytop);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // always add corner dots
+                    const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,${grid.length}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[grid.length - 1][0].x - (cellsize / 2) - (bufferwidth + offset), grid[grid.length - 1][0].y + (cellsize / 2) + offset);
+                    if (fill !== undefined) {
+                        buffLeft.fill(fill);
+                    } else {
+                        buffLeft.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                    }
+                    const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(grid[grid.length - 1][grid[grid.length - 1].length - 1].x + (cellsize / 2) + offset, grid[grid.length - 1][grid[grid.length - 1].length - 1].y + (cellsize / 2) + offset);
+                    if (fill !== undefined) {
+                        buffRight.fill(fill);
+                    } else {
+                        buffRight.fill({color: "white", opacity: 0})
+                    }
+                    if (this.options.boardClick !== undefined) {
+                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                    }
+                }
+                // left
+                if (show.includes("W")) {
+                    const w = bufferwidth;
+                    const h = cellsize * multiple;
+                    for (let i = 0; i < grid.length; i++) {
+                        const ctr = grid[i][0];
+                        const xtop = ctr.x - (cellsize / 2) - (w + offset);
+                        const fully1 = ctr.y - (cellsize / 2);
+                        const fully2 = ctr.y + (cellsize / 2);
+                        const [,tly,,] = shortenLine(xtop, fully1, xtop, fully2, shorten);
+                        const buff = board.rect(w, h).id(`-1,${i}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(xtop, tly);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // only add corner dots if not already present
+                    if (!show.includes("S")) {
+                        const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,${grid.length}`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[grid.length - 1][0].x - (cellsize / 2) - (bufferwidth + offset), grid[grid.length - 1][0].y + (cellsize / 2) + offset);
+                        if (fill !== undefined) {
+                            buffLeft.fill(fill);
+                        } else {
+                            buffLeft.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        }
+                    }
+                    if (!show.includes("N")) {
+                        const buffRight = board.rect(bufferwidth, bufferwidth).id(`-1,-1`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[0][0].x - (cellsize / 2) - (bufferwidth + offset), grid[0][0].y - (cellsize / 2) - (bufferwidth + offset));
+                        if (fill !== undefined) {
+                            buffRight.fill(fill);
+                        } else {
+                            buffRight.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        }
+                    }
+                }
+                // right
+                if (show.includes("E")) {
+                    const w = bufferwidth;
+                    const h = cellsize * multiple;
+                    for (let i = 0; i < grid.length; i++) {
+                        const ctr = grid[i][grid[i].length - 1];
+                        const xtop = ctr.x + (cellsize / 2) + (offset);
+                        const fully1 = ctr.y - (cellsize / 2);
+                        const fully2 = ctr.y + (cellsize / 2);
+                        const [,tly,,] = shortenLine(xtop, fully1, xtop, fully2, shorten);
+                        const buff = board.rect(w, h).id(`${grid[i].length},${i}`)
+                            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                            .move(xtop, tly);
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
+                    }
+                    // only add corner dots if not already present
+                    if (!show.includes("N")) {
+                        const buffLeft = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[0][grid[0].length - 1].x + (cellsize / 2) + offset, grid[0][grid[0].length - 1].y - (cellsize / 2) - (bufferwidth + offset));
+                        if (fill !== undefined) {
+                            buffLeft.fill(fill);
+                        } else {
+                            buffLeft.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        }
+                    }
+                    if (!show.includes("S")) {
+                        const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
+                                .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                                .move(grid[grid.length - 1][grid[grid.length - 1].length - 1].x + (cellsize / 2) + offset, grid[grid.length - 1][grid[grid.length - 1].length - 1].y + (cellsize / 2) + offset);
+                        if (fill !== undefined) {
+                            buffRight.fill(fill);
+                        } else {
+                            buffRight.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        }
+                    }
                 }
             }
             bufferwidth += offset;
@@ -6811,15 +7225,7 @@ export abstract class RendererBase {
                     }
 
                     if ("shorten" in marker && marker.shorten !== undefined && marker.shorten > 0) {
-                        // https://math.stackexchange.com/questions/3058210/how-to-shorten-a-line-but-maintain-its-angle
-                        const t0 = marker.shorten;
-                        const t1 = 1 - (marker.shorten);
-                        const newx1 = x1 + (t0 * (x2 - x1));
-                        const newy1 = y1 + (t0 * (y2 - y1));
-                        const newx2 = x1 + (t1 * (x2 - x1));
-                        const newy2 = y1 + (t1 * (y2 - y1));
-                        x1 = newx1; y1 = newy1;
-                        x2 = newx2; y2 = newy2;
+                        [x1, y1, x2, y2] = shortenLine(x1, y1, x2, y2, marker.shorten);
                     }
 
                     const line = svgGroup.line(x1, y1, x2, y2).stroke(stroke).addClass(`aprender-marker-${x2uid(cloned)}`);

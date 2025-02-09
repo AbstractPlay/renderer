@@ -491,6 +491,10 @@ export interface BoardBasic {
      * Choose which of the four sides you want displayed. By default, it's all four.
      */
     show?: ("N" | "E" | "S" | "W")[];
+    /**
+     * If true, the buffer is broken up into individual segments next to each cell, for fine-grained selection. Changes the data passed to the click handler.
+     */
+    separated?: boolean;
   };
   /**
    * Only meaningful in the `isometric` renderer where it gives the heights of the various cells of the board. The two-dimensional array needs to map to the chosen playing field. The heights can be arbitrary, and the glyphs are generated on the fly. The glyphs in the contact sheet are for playing pieces.

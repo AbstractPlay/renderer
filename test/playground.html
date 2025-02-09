@@ -285,6 +285,11 @@
                     "description": "Adds buffer zones around edges of the board for click handling. Individual sides can be hidden, and they rotate correctly.",
                     "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8,\"buffer\":{\"width\":0.2,\"pattern\":\"slant\"}},\"legend\":{\"A1\":{\"name\":\"piece\",\"colour\":1},\"B1\":{\"name\":\"piece\",\"colour\":2},\"X12\":[{\"name\":\"piece\",\"colour\":1},{\"text\":\"12\",\"colour\":\"#000\",\"scale\":0.75}],\"Y12\":[{\"name\":\"piece\",\"colour\":2},{\"text\":\"12\",\"colour\":\"#000\",\"scale\":0.75}]},\"pieces\":\",,,Y12,,,,\\n_\\n_\\n_\\n_\\n_\\n_\\n,,,,X12,,,\"}"
                 },
+                "formatting-buffers-separated": {
+                    "name": "Formatting: Buffer zones (separated)",
+                    "description": "Sometimes you need more fine-grained information on where the click happened. This creates individual zones that return x,y coordinates.",
+                    "render": `{"board":{"style":"squares-checkered","width":8,"height":8,"buffer":{"separated":true,"width":0.2,"pattern":"slant"}},"legend":{"A1":{"name":"piece","colour":1},"B1":{"name":"piece","colour":2},"X12":[{"name":"piece","colour":1},{"text":"12","colour":"#000","scale":0.75}],"Y12":[{"name":"piece","colour":2},{"text":"12","colour":"#000","scale":0.75}]},"pieces":",,,Y12,,,,\\n_\\n_\\n_\\n_\\n_\\n_\\n,,,,X12,,,"}`
+                },
                 "markers-dots": {
                     "name": "Markers: Dots",
                     "description": "Markers become part of the board itself and are covered by pieces. This marker places dots on board.",
