@@ -1954,6 +1954,11 @@
                     "minimum": 0,
                     "default": 0
                 },
+                "tileLineMult": {
+                    "description": "Tweaks the weight of the line that separates tiles.",
+                    "type": "number",
+                    "default": 3
+                },
                 "stackMax": {
                     "description": "Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.",
                     "type": "integer",

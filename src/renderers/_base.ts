@@ -958,6 +958,7 @@ export abstract class RendererBase {
         let tilex = 0;
         let tiley = 0;
         let tileSpace = 0;
+        let tileMult = 3;
         if (this.json.board.tileWidth !== undefined) {
             tilex = this.json.board.tileWidth;
         }
@@ -966,6 +967,9 @@ export abstract class RendererBase {
         }
         if (this.json.board.tileSpacing !== undefined) {
             tileSpace = this.json.board.tileSpacing;
+        }
+        if (this.json.board.tileLineMult !== undefined) {
+            tileMult = this.json.board.tileLineMult;
         }
 
         // Get a grid of points
@@ -1533,7 +1537,7 @@ export abstract class RendererBase {
                     for (let row = 0; row < height-1; row++) {
                         if ((row+1) % tiley === 0) {
                             const y = grid[row][0].y + (cellsize / 2);
-                            gridlines.line(xLeft, y, xRight, y).stroke({width: baseStroke * 3, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                            gridlines.line(xLeft, y, xRight, y).stroke({width: baseStroke * tileMult, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                         }
                     }
                 }
@@ -1544,7 +1548,7 @@ export abstract class RendererBase {
                     for (let col = 0; col < width-1; col++) {
                         if ((col+1) % tilex === 0) {
                             const x = grid[0][col].x + (cellsize / 2);
-                            gridlines.line(x, yTop, x, yBottom).stroke({width: baseStroke * 3, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                            gridlines.line(x, yTop, x, yBottom).stroke({width: baseStroke * tileMult, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                         }
                     }
                 }
@@ -1944,6 +1948,7 @@ export abstract class RendererBase {
         let tilex = 0;
         let tiley = 0;
         let tileSpace = 0;
+        let tileMult = 3;
         if (this.json.board.tileWidth !== undefined) {
             tilex = this.json.board.tileWidth;
         }
@@ -1952,6 +1957,9 @@ export abstract class RendererBase {
         }
         if (this.json.board.tileSpacing !== undefined) {
             tileSpace = this.json.board.tileSpacing;
+        }
+        if (this.json.board.tileLineMult !== undefined) {
+            tileMult = this.json.board.tileLineMult;
         }
 
         // Get a grid of points
@@ -2359,7 +2367,7 @@ export abstract class RendererBase {
                 let thisStroke = baseStroke;
                 if (blocked === undefined) {
                     if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
-                        thisStroke = baseStroke * 3;
+                        thisStroke = baseStroke * tileMult;
                     } else if (tiley === 0 && (row === 0 || row === height - 1)) {
                         thisStroke = baseStroke * 2;
                     }
@@ -2402,7 +2410,7 @@ export abstract class RendererBase {
                 let thisStroke = baseStroke;
                 if (blocked === undefined) {
                     if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
-                        thisStroke = baseStroke * 3;
+                        thisStroke = baseStroke * tileMult;
                     } else if (tilex === 0 && (col === 0 || col === width - 1)) {
                         thisStroke = baseStroke * 2;
                     }

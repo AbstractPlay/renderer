@@ -455,6 +455,10 @@ export interface BoardBasic {
    */
   tileSpacing?: number;
   /**
+   * Tweaks the weight of the line that separates tiles.
+   */
+  tileLineMult?: number;
+  /**
    * Only valid for the `stacking-tiles` renderer. Specifies the maximum number of tiles allowed in a cell.
    */
   stackMax?: number;
