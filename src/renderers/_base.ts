@@ -5,7 +5,7 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
-import { APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, type Polymatrix } from "../schemas/schema";
+import { APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Colourstrings, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, PositiveInteger, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance, calcBearing, smallestDegreeDiff, shortenLine } from "../common/plotting";
@@ -157,6 +157,10 @@ interface IBuffer {
     width?: number;
     pattern?: string;
     show?: ("N"|"E"|"S"|"W")[];
+    colours?: {
+      side: "N" | "E" | "S" | "W";
+      colour: PositiveInteger | Colourstrings | Colourfuncs;
+    }[];
 };
 
 /**
@@ -1033,6 +1037,7 @@ export abstract class RendererBase {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }
             }
+            const colourEntries = (this.json.board.buffer as IBuffer).colours;
             let separated = false;
             if ( ("separated" in this.json.board.buffer) && this.json.board.buffer.separated !== undefined) {
                 separated = this.json.board.buffer.separated;
@@ -1089,13 +1094,22 @@ export abstract class RendererBase {
                 // Fill and add click handlers to all four zones at once
                 for (const buff of [buffN, buffS, buffW, buffE]) {
                     if (buff === undefined) { continue; }
-                    if (fill !== undefined) {
-                        buff.fill(fill);
+                    if (colourEntries !== undefined) {
+                        const dir = buff.id()[buff.id().length - 1];
+                        const found = colourEntries.find(entry => entry.side === dir);
+                        if (found === undefined) {
+                            throw new Error(`Board buffers: You didn't provide a colour entry for the side ${dir}.`);
+                        }
+                        buff.fill({color: this.resolveColour(found.colour) as string});
                     } else {
-                        buff.fill({color: "white", opacity: 0})
-                    }
-                    if (this.options.boardClick !== undefined) {
-                        buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
                     }
                 }
             }
@@ -1993,6 +2007,7 @@ export abstract class RendererBase {
                     throw new Error("Could not load the fill for the buffer zone.");
                 }
             }
+            const colourEntries = (this.json.board.buffer as IBuffer).colours;
             let separated = false;
             if ( ("separated" in this.json.board.buffer) && this.json.board.buffer.separated !== undefined) {
                 separated = this.json.board.buffer.separated;
@@ -2049,13 +2064,22 @@ export abstract class RendererBase {
                 // Fill and add click handlers to all four zones at once
                 for (const buff of [buffN, buffS, buffW, buffE]) {
                     if (buff === undefined) { continue; }
-                    if (fill !== undefined) {
-                        buff.fill(fill);
+                    if (colourEntries !== undefined) {
+                        const dir = buff.id()[buff.id().length - 1];
+                        const found = colourEntries.find(entry => entry.side === dir);
+                        if (found === undefined) {
+                            throw new Error(`Board buffers: You didn't provide a colour entry for the side ${dir}.`);
+                        }
+                        buff.fill({color: this.resolveColour(found.colour) as string});
                     } else {
-                        buff.fill({color: "white", opacity: 0})
-                    }
-                    if (this.options.boardClick !== undefined) {
-                        buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                        }
                     }
                 }
             }

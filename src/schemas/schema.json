@@ -2010,6 +2010,27 @@
                         "pattern": {
                             "$ref": "#/$defs/patternName"
                         },
+                        "colours": {
+                            "description": "A hijacking of this feature to indicate things like ownership. Activating this disables any click handling. Provide a colour for each side you're displaying.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "side": {
+                                        "enum": ["N", "E", "S", "W"]
+                                    },
+                                    "colour": {
+                                        "anyOf": [
+                                            {"$ref": "#/$defs/positiveInteger"},
+                                            {"$ref": "#/$defs/colourstrings"},
+                                            {"$ref": "#/$defs/colourfuncs"}
+                                        ]
+                                    }
+                                },
+                                "required": ["side", "colour"],
+                                "additionalProperties": false
+                            }
+                        },
                         "show": {
                             "description": "Choose which of the four sides you want displayed. By default, it's all four.",
                             "type": "array",

@@ -492,6 +492,13 @@ export interface BoardBasic {
     width: number;
     pattern?: PatternName;
     /**
+     * A hijacking of this feature to indicate things like ownership. Activating this disables any click handling. Provide a colour for each side you're displaying.
+     */
+    colours?: {
+      side: "N" | "E" | "S" | "W";
+      colour: PositiveInteger | Colourstrings | Colourfuncs;
+    }[];
+    /**
      * Choose which of the four sides you want displayed. By default, it's all four.
      */
     show?: ("N" | "E" | "S" | "W")[];
