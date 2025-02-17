@@ -9386,6 +9386,12 @@ export abstract class RendererBase {
                     const base = hex2rgb(this.resolveColour(val.colour) as string);
                     colour = rgb2hex(lighten(base, val.ds, val.dl));
                 }
+                // bestContrast
+                else if (val.func === "bestContrast") {
+                    const bg = this.resolveColour(val.bg) as string;
+                    const fg = val.fg.map(c => this.resolveColour(c) as string);
+                    return tinycolor.mostReadable(bg, fg).toHexString();
+                }
             }
         } else if (typeof val === "number") {
             colour = this.options.colours[val - 1];

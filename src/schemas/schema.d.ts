@@ -12,7 +12,7 @@ export type Colourstrings = string;
 /**
  * Colours can also be derived using various functions.
  */
-export type Colourfuncs = FunctionFlatten | FunctionLighten;
+export type Colourfuncs = FunctionFlatten | FunctionBestContrast | FunctionLighten;
 export type PositiveInteger = number;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
@@ -283,6 +283,14 @@ export interface FunctionFlatten {
   fg: PositiveInteger | Colourstrings;
   bg: PositiveInteger | Colourstrings;
   opacity: number;
+}
+/**
+ * Chooses the foreground colour with the best contrast against the given background.
+ */
+export interface FunctionBestContrast {
+  func: "bestContrast";
+  bg: PositiveInteger | Colourstrings;
+  fg: (PositiveInteger | Colourstrings)[];
 }
 /**
  * Lightens or darkens a colour by the specified amount of saturation and luminance. Positive deltas lighten, negative darken.

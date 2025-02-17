@@ -86,10 +86,37 @@
             "required": ["func", "colour", "ds", "dl"],
             "additionalProperties": false
         },
-        "colourfuncs": {
+        "functionBestContrast": {
+            "description": "Chooses the foreground colour with the best contrast against the given background.",
+            "type": "object",
+            "properties": {
+                "func": {
+                    "enum": ["bestContrast"]
+                },
+                "bg": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"}
+                    ]
+                },
+                "fg": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {"$ref": "#/$defs/positiveInteger"},
+                            {"$ref": "#/$defs/colourstrings"}
+                        ]
+                    }
+                }
+            },
+            "required": ["func", "bg", "fg"],
+            "additionalProperties": false
+        },
+       "colourfuncs": {
             "description": "Colours can also be derived using various functions.",
             "anyOf": [
                 {"$ref": "#/$defs/functionFlatten"},
+                {"$ref": "#/$defs/functionBestContrast"},
                 {"$ref": "#/$defs/functionLighten"}
             ]
         },
