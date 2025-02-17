@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, IsometricPieces, IsoPiece } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
@@ -111,6 +111,12 @@ export class IsometricRenderer extends RendererBase {
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ IsometricRenderer.rendererName }' renderer.`);
+        }
+
+        type Blocked = RowCol[];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
         }
 
         let board = this.rootSvg.findOne("#board") as SVGG;
@@ -298,6 +304,10 @@ export class IsometricRenderer extends RendererBase {
         // To make things overlap correctly, we can't sort the board into logical groups.
         // Instead, each cell has to be rendered in its entirety before moving to the next cell.
         for (const entry of transformedPoints) {
+            // skip blocked cells
+            if (blocked !== undefined && blocked.find(b => b.row === entry.row && b.col === entry.col)) {
+                continue;
+            }
             let height = 0;
             if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
                 height = heightmap[entry.row][entry.col];
