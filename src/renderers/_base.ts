@@ -1108,7 +1108,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                 }
@@ -1138,7 +1141,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // always add corner dots
@@ -1151,7 +1157,10 @@ export abstract class RendererBase {
                         buffLeft.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        buffLeft.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffLeft.id());
+                            e.stopPropagation();
+                        });
                     }
                     const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
                             .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
@@ -1162,7 +1171,10 @@ export abstract class RendererBase {
                         buffRight.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        buffRight.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffRight.id());
+                            e.stopPropagation();
+                        });
                     }
                 }
                 // bottom
@@ -1184,7 +1196,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // always add corner dots
@@ -1197,7 +1212,10 @@ export abstract class RendererBase {
                         buffLeft.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        buffLeft.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffLeft.id());
+                            e.stopPropagation();
+                        });
                     }
                     const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
                             .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
@@ -1208,7 +1226,10 @@ export abstract class RendererBase {
                         buffRight.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        buffRight.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffRight.id());
+                            e.stopPropagation();
+                        });
                     }
                 }
                 // left
@@ -1230,7 +1251,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // only add corner dots if not already present
@@ -1244,7 +1268,10 @@ export abstract class RendererBase {
                             buffLeft.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                            buffLeft.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffLeft.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     if (!show.includes("N")) {
@@ -1257,7 +1284,10 @@ export abstract class RendererBase {
                             buffRight.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                            buffRight.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffRight.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                 }
@@ -1280,7 +1310,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // only add corner dots if not already present
@@ -1294,7 +1327,10 @@ export abstract class RendererBase {
                             buffLeft.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                            buffLeft.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffLeft.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     if (!show.includes("S")) {
@@ -1307,7 +1343,10 @@ export abstract class RendererBase {
                             buffRight.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                            buffRight.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffRight.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                 }
@@ -2078,7 +2117,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id())
+                                e.stopPropagation();
+                            });
                         }
                     }
                 }
@@ -2108,7 +2150,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // always add corner dots
@@ -2121,7 +2166,10 @@ export abstract class RendererBase {
                         buffLeft.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        buffLeft.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffLeft.id());
+                            e.stopPropagation();
+                        });
                     }
                     const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
                             .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
@@ -2132,7 +2180,10 @@ export abstract class RendererBase {
                         buffRight.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        buffRight.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffRight.id());
+                            e.stopPropagation();
+                        });
                     }
                 }
                 // bottom
@@ -2154,7 +2205,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // always add corner dots
@@ -2167,7 +2221,10 @@ export abstract class RendererBase {
                         buffLeft.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                        buffLeft.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffLeft.id());
+                            e.stopPropagation();
+                        });
                     }
                     const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
                             .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
@@ -2178,7 +2235,10 @@ export abstract class RendererBase {
                         buffRight.fill({color: "white", opacity: 0})
                     }
                     if (this.options.boardClick !== undefined) {
-                        buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                        buffRight.click((e: MouseEvent) => {
+                            this.options.boardClick!(-1, -1, buffRight.id());
+                            e.stopPropagation();
+                        });
                     }
                 }
                 // left
@@ -2200,7 +2260,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // only add corner dots if not already present
@@ -2214,7 +2277,10 @@ export abstract class RendererBase {
                             buffLeft.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                            buffLeft.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffLeft.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     if (!show.includes("N")) {
@@ -2227,7 +2293,10 @@ export abstract class RendererBase {
                             buffRight.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                            buffRight.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffRight.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                 }
@@ -2250,7 +2319,10 @@ export abstract class RendererBase {
                             buff.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buff.click(() => this.options.boardClick!(-1, -1, buff.id()));
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     // only add corner dots if not already present
@@ -2264,7 +2336,10 @@ export abstract class RendererBase {
                             buffLeft.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffLeft.click(() => this.options.boardClick!(-1, -1, buffLeft.id()));
+                            buffLeft.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffLeft.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                     if (!show.includes("S")) {
@@ -2277,7 +2352,10 @@ export abstract class RendererBase {
                             buffRight.fill({color: "white", opacity: 0})
                         }
                         if (this.options.boardClick !== undefined) {
-                            buffRight.click(() => this.options.boardClick!(-1, -1, buffRight.id()));
+                            buffRight.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buffRight.id());
+                                e.stopPropagation();
+                            });
                         }
                     }
                 }
