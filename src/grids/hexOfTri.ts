@@ -22,9 +22,9 @@ export const hexOfTri = (args: IGeneratorArgs): GridPoints => {
     if (args.gridWidthMax !== undefined) {
         maxWidth = args.gridWidthMax;
     }
-    if (minWidth >= maxWidth) {
-        throw new Error("The maximum width must be greater than the minimum width.");
-    }
+    // if (minWidth >= maxWidth) {
+    //     throw new Error("The maximum width must be greater than the minimum width.");
+    // }
 
     let grid: GridPoints = [];
     // alternating symmetry
