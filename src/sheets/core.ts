@@ -4,6 +4,7 @@ import { Orientation, defineHex } from "honeycomb-grid";
 import { rgb as convert_rgb, hex as convert_hex } from "color-convert";
 import { lighten } from "../common/colours";
 import fnv from "fnv-plus";
+import { projectPoint } from "../common/plotting";
 
 const sheet: ISheet = {
     name: "core",
@@ -923,6 +924,33 @@ sheet.glyphs.set("piece-horse", (canvas: SVGContainer) => {
 
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
+});
+
+sheet.glyphs.set("piece-pentagon", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const border = 5;
+    const R = 100;
+    const pts: [number,number][] = [];
+    for (let i = 0; i < 5; i++) {
+        const deg = 72 * i;
+        const [x, y] = projectPoint(0, 0, R, deg);
+        pts.push([x,y]);
+    }
+    symbol.polygon(pts)
+        .attr("data_contest-border", true)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"});
+
+    const minX = Math.min(...pts.map(([x,]) => x));
+    const maxX = Math.max(...pts.map(([x,]) => x));
+    const minY = Math.min(...pts.map(([,y]) => y));
+    const maxY = Math.max(...pts.map(([,y]) => y));
+    const width = maxX - minX + (border * 2);
+    const height = maxY - minY + (border * 2);
+
+    symbol.viewbox(minX - border, minY - border, width, height);
+    return symbol;
 });
 
 sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
