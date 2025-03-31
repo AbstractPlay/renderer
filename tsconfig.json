@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "isolatedModules": true,
         "module": "commonjs",
         "target": "es2015",
         "esModuleInterop": true,

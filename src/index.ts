@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
-export {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings};
+export type {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings};
 
 /**
  * Defines the options the renderer accepts. It includes all the options the renderer class needs ({@link IRendererOptionsIn})
