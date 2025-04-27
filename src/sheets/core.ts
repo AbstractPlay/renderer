@@ -1429,4 +1429,29 @@ sheet.glyphs.set("x", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("yinyang", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    symbol.path("M53.2 10.8c11.7 11.7 11.7 30.7 0 42.4c-5.9 5.9-15.4 5.9-21.2 0S26.1 37.9 32 32c5.9-5.9 5.9-15.4 0-21.2s-15.4-5.9-21.2 0C22.5-.9 41.5-.9 53.2 10.8")
+        .fill("#fff")
+        .attr("data-playerfill", true);
+    symbol.path("M10.8 53.2C-.9 41.5-.9 22.5 10.8 10.8c5.9-5.9 15.4-5.9 21.2 0c5.9 5.9 5.9 15.4 0 21.2s-5.9 15.4 0 21.2s15.4 5.9 21.2 0c-11.7 11.7-30.7 11.7-42.4 0")
+        .fill("#000")
+        .attr("data-playerfill2", true);
+    symbol.circle(5.6)
+        .center(42.6, 42.6)
+        .fill("#000")
+        .attr("data-playerfill2", true);
+    symbol.circle(5.6)
+        .center(21.4, 21.4)
+        .fill("#fff")
+        .attr("data-playerfill", true);
+    symbol.circle(64)
+        .attr("data-context-border", true)
+        .fill("none")
+        .stroke({width: 5, color: "#000"})
+        .center(32, 32);
+    symbol.viewbox(-2.5, -2.5, 69, 69);
+    return symbol;
+});
+
 export { sheet as CoreSheet };
