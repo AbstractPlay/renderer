@@ -1437,11 +1437,11 @@ sheet.glyphs.set("yinyang", (canvas: SVGContainer) => {
     symbol.path("M10.8 53.2C-.9 41.5-.9 22.5 10.8 10.8c5.9-5.9 15.4-5.9 21.2 0c5.9 5.9 5.9 15.4 0 21.2s-5.9 15.4 0 21.2s15.4 5.9 21.2 0c-11.7 11.7-30.7 11.7-42.4 0")
         .fill("#000")
         .attr("data-playerfill2", true);
-    symbol.circle(5.6)
+    symbol.circle(11.2)
         .center(42.6, 42.6)
         .fill("#000")
         .attr("data-playerfill2", true);
-    symbol.circle(5.6)
+    symbol.circle(11.2)
         .center(21.4, 21.4)
         .fill("#fff")
         .attr("data-playerfill", true);
