@@ -1431,6 +1431,11 @@ sheet.glyphs.set("x", (canvas: SVGContainer) => {
 
 sheet.glyphs.set("yinyang", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
+    symbol.circle(63)
+        .attr("data-context-border", true)
+        .fill("none")
+        .stroke({width: 4, color: "#000"})
+        .center(32, 32);
     symbol.path("M53.2 10.8c11.7 11.7 11.7 30.7 0 42.4c-5.9 5.9-15.4 5.9-21.2 0S26.1 37.9 32 32c5.9-5.9 5.9-15.4 0-21.2s-15.4-5.9-21.2 0C22.5-.9 41.5-.9 53.2 10.8")
         .fill("#fff")
         .attr("data-playerfill", true);
@@ -1445,12 +1450,7 @@ sheet.glyphs.set("yinyang", (canvas: SVGContainer) => {
         .center(21.4, 21.4)
         .fill("#fff")
         .attr("data-playerfill", true);
-    symbol.circle(64)
-        .attr("data-context-border", true)
-        .fill("none")
-        .stroke({width: 5, color: "#000"})
-        .center(32, 32);
-    symbol.viewbox(-2.5, -2.5, 69, 69);
+    symbol.viewbox(-2, -2, 68, 68);
     return symbol;
 });
 
