@@ -13,7 +13,7 @@ export class Matrix {
 
     applyToElement(element: HTMLElement, use3D: boolean): Matrix;
 
-    applyToObject(obj: {[k: string]: any}): Matrix;
+    applyToObject(obj: {[k: string]: unknown}): Matrix;
 
     applyToPoint(x: number, y: number): {x: number; y: number};
 

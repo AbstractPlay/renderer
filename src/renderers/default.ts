@@ -80,11 +80,12 @@ export class DefaultRenderer extends RendererBase {
             case "hex-even-f":
                 [gridPoints, polys] = this.rectOfHex();
                 break;
-            case "triangles-stacked":
+            case "triangles-stacked": {
                 const {points: pts, polys: lazoPolys} = this.stackingTriangles();
                 gridPoints = pts;
                 polys = lazoPolys;
                 break;
+            }
             case "circular-cobweb":
                 [gridPoints, polys] = this.cobweb();
                 break;

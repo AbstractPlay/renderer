@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import "mocha";
 import { sheets } from "../../src/sheets";
 
@@ -40,7 +41,7 @@ describe("Glyph sheets", () => {
     it("should be in alphabetical order", (done) => {
         const fs = require("fs");
         const readline = require("readline");
-        const reGlyph: RegExp = /^sheet\.glyphs\.set\(\"(\S+)\"/;
+        const reGlyph: RegExp = /^sheet\.glyphs\.set\("(\S+)"/;
 
         fs
             .readdirSync("src/sheets/")
@@ -53,7 +54,7 @@ describe("Glyph sheets", () => {
                     input: fs.createReadStream(full),
                 });
 
-                const names: Array<string> = new Array();
+                const names: Array<string> = [];
                 rl.on("line", (line: string) => {
                     const m = reGlyph.exec(line);
                     if (m !== null) {

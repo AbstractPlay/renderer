@@ -1312,15 +1312,15 @@ export interface AreaScrollBar {
     /**
      * Pattern for hex colour strings
      */
-    background?: string | string;
+    background?: string;
     /**
      * Pattern for hex colour strings
      */
-    fill?: string | string;
+    fill?: string;
     /**
      * Pattern for hex colour strings
      */
-    strokes?: string | string;
+    strokes?: string;
   };
 }
 /**

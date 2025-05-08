@@ -93,8 +93,8 @@ sheet.glyphs.set("cannon-town", (canvas: SVGContainer) => {
         .stroke({width: 0})
         .fill("#000");
     // group.viewbox(77.451592, 110.856808, 9.136364, 9.136364);
-    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-    group.viewbox(77.45159912109375, 111.12551879882812, 9.136360168457031, 9.136360168457031);
+
+    group.viewbox(77.45159912109375, 111.1255187988281, 9.136360168457031, 9.136360168457031);
     return group;
 });
 
@@ -262,7 +262,7 @@ sheet.glyphs.set("dragon", (canvas: SVGContainer) => {
         .attr("data-playerfill", true)
         .attr("fill-rule", "evenodd")
         .attr("clip-rule", "evenodd");
-    // @ts-expect-error
+    // @ts-expect-error (poor SVGjs typing)
     dragon.flip("x", {x: 0, y: 0});
     group.viewbox(-475.9079999999999, 36.31599999999999, 426.3689999999998, 426.3689999999998);
     return group;

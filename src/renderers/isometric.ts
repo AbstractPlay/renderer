@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
 import { AnnotationBasic, APRenderRep, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
@@ -261,7 +261,7 @@ export class IsometricRenderer extends RendererBase {
                 } else if (effPiece === "hexf") {
                     generateHexes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, orientation: Orientation.FLAT})
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
                     throw new Error(`Unrecognized isoPiece type "${pc.piece}"`);
                 }
             }
@@ -451,9 +451,7 @@ export class IsometricRenderer extends RendererBase {
                 }
                 const cloned = {...note};
                 if ("targets" in cloned) {
-                    // This exception is fine because cloned is only used
-                    // to create a UUID.
-                    // @ts-expect-error
+                    // @ts-expect-error (only used to generate UUID)
                     delete cloned.targets;
                 }
                 if ((note.targets as ITarget[]).find(t => t.col === entry.col && t.row === entry.row) === undefined) {
@@ -580,14 +578,12 @@ export class IsometricRenderer extends RendererBase {
                 }
                 const cloned = {...note};
                 if ("targets" in cloned) {
-                    // This exception is fine because cloned is only used
-                    // to create a UUID.
-                    // @ts-expect-error
+                    // @ts-expect-error (only used to generate UUID)
                     delete cloned.targets;
                 }
 
                 if ( (note.type !== undefined) && (note.type === "move") ) {
-                    if ((note.targets as any[]).length < 2) {
+                    if (note.targets.length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");
                     }
 
@@ -646,7 +642,7 @@ export class IsometricRenderer extends RendererBase {
                         line.marker("end", markerCircle);
                     }
                 } else if ( (note.type !== undefined) && (note.type === "eject") ) {
-                    if ((note.targets as any[]).length !== 2) {
+                    if (note.targets.length !== 2) {
                         throw new Error("Eject annotations require exactly two 'targets'.");
                     }
 
@@ -773,8 +769,9 @@ export class IsometricRenderer extends RendererBase {
             }
 
             for (const marker of this.json.board.markers) {
-                const cloned = {...marker as {[k:string]: any}};
+                const cloned = {...marker};
                 if ("points" in cloned) {
+                    // @ts-expect-error (cloned is only used to generate UUID)
                     delete cloned.points;
                 }
                 if ( (!("points" in marker)) || (marker.points.find(p => p.col === entry.col && p.row === entry.row) === undefined) ) {
@@ -849,7 +846,7 @@ export class IsometricRenderer extends RendererBase {
                     if (marker.pulse !== undefined && floodEle !== undefined) {
                         floodEle
                             .animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike)
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
                             .during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
                     }
                 }

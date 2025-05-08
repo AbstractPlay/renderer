@@ -1,4 +1,5 @@
-import { Box, Svg, Use } from "@svgdotjs/svg.js";
+/* eslint-disable no-prototype-builtins */
+import { Box, StrokeData, Svg, Use } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import type { IPoint } from "../grids/_base";
 import { APRenderRep, AreaHWStash } from "../schemas/schema";
@@ -281,7 +282,7 @@ export class HomeworldsRenderer extends RendererBase {
             const colour = colours[i];
             let count = 0;
             let last;
-            // @ts-expect-error
+            // @ts-expect-error (let it be)
             for (const size of stash[colour] as string) {
                 if (size !== last) {
                     last = size;
@@ -539,14 +540,14 @@ export class HomeworldsRenderer extends RendererBase {
         nested.size(realWidth, realHeight).viewbox(realX - 2, realY - 2, realWidth + 4, realHeight + 4);
 
         // Add fill and border
-        let stroke: any = {width: 2, color: this.contrastColour};
+        let stroke: StrokeData = {width: 2, color: this.contrastColour};
         if (highlight !== undefined) {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
         if (this.options.boardClick !== undefined) {
             nested.rect(realWidth, realHeight).fill(this.contrastColour).opacity(0).dmove(realX, realY).back().click(() => this.options.boardClick!(0, 0, sys.name));
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         nested.rect(realWidth, realHeight).fill(this.backColour).stroke(stroke).dmove(realX, realY).back();
 
         // Add name

@@ -1,5 +1,5 @@
 // The following is here because json2ts isn't recognizing json.board.markers correctly
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
@@ -550,7 +550,7 @@ export abstract class RendererBase {
             // Load any requested patterns
             if (this.options.patterns) {
                 const patterns: Array<number> = new Array<number>();
-                // eslint-disable-next-line guard-for-in
+
                 for (const key in this.json.legend) {
                     const node = this.json.legend[key];
                     if (typeof(node) !== "string") {
@@ -585,7 +585,7 @@ export abstract class RendererBase {
             }
 
             // Now look for composite and coloured pieces and add those to the <defs> section for placement
-            // eslint-disable-next-line guard-for-in
+
             for (const key in this.json.legend) {
                 const glyph = this.json.legend[key];
                 let glyphs: Array<Glyph>;
@@ -705,11 +705,9 @@ export abstract class RendererBase {
                             }
                         } else if (colourVal !== undefined) {
                             const normColour = this.resolveColour(colourVal as string|number|Gradient, "#000");
-                            // This ts-ignore is because of poor SVGjs typing
-                            // @ts-ignore
+                            // @ts-expect-error (poor SVGjs typing)
                             got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(normColour); });
-                            // This ts-ignore is because of poor SVGjs typing
-                            // @ts-ignore
+                            // @ts-expect-error (poor SVGjs typing)
                             got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke(normColour); isStroke = true; });
                         }
                         haveStrokes.push(isStroke);
@@ -800,7 +798,7 @@ export abstract class RendererBase {
             // now look for and build polymatrices
             // we want them to be proportional, so load them *all* to determine max height and width
             let maxWidth = 0; let maxHeight = 0;
-            // eslint-disable-next-line guard-for-in
+
             for (const key in this.json.legend) {
                 if (Array.isArray(this.json.legend[key]) && Array.isArray((this.json.legend[key] as unknown[])[0])) {
                     const matrix = this.json.legend[key] as Polymatrix;
@@ -816,7 +814,7 @@ export abstract class RendererBase {
                 }
             }
             // now build them properly, adjusting the viewbox so they're proportional and centred
-            // eslint-disable-next-line guard-for-in
+
             for (const key in this.json.legend) {
                 if (Array.isArray(this.json.legend[key]) && Array.isArray((this.json.legend[key] as unknown[])[0])) {
                     const matrix = this.json.legend[key] as Polymatrix;
@@ -1611,7 +1609,7 @@ export abstract class RendererBase {
         // after gridlines, look for `outline` markers and draw those
         let outlines: MarkerOutline[] = [];
         if ( ("markers" in this.json.board) && (this.json.board.markers !== undefined) ) {
-            outlines = (this.json.board.markers as {type: string; [k:string]: any}[]).filter(m => m.type === "outline") as MarkerOutline[];
+            outlines = this.json.board.markers.filter(m => m.type === "outline") as MarkerOutline[];
         }
         for (const mark of outlines) {
             const colour = this.resolveColour(mark.colour) as string;
@@ -2969,7 +2967,7 @@ export abstract class RendererBase {
             offset = 1;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         const myHex = defineHex({
             offset,
             orientation,
@@ -3269,7 +3267,7 @@ export abstract class RendererBase {
         const edges = edges2corners.get(orientation)!;
         const offset: HexOffset = 1;
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         const myHex = defineHex({
             offset,
             orientation,
@@ -4973,7 +4971,7 @@ export abstract class RendererBase {
         // Draw hexes
         let hexFill: string|undefined;
         if ( ("hexFill" in boardTyped) && (boardTyped.hexFill !== undefined) && (boardTyped.hexFill !== null) && (typeof boardTyped.hexFill === "string") && (boardTyped.hexFill.length > 0) ){
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             hexFill = boardTyped.hexFill;
         }
         const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
@@ -5311,7 +5309,7 @@ export abstract class RendererBase {
         // check for cells with `outline` marker
         let outlines: MarkerOutline[] = [];
         if ( ("markers" in this.json.board) && (this.json.board.markers !== undefined) ) {
-            outlines = (this.json.board.markers as {type: string; [k:string]: any}[]).filter(m => m.type === "outline") as MarkerOutline[];
+            outlines = this.json.board.markers.filter(m => m.type === "outline") as MarkerOutline[];
         }
 
         const tiles = board.group().id("tiles");
@@ -6489,13 +6487,11 @@ export abstract class RendererBase {
                 }
                 const cloned = {...note};
                 if ("targets" in cloned) {
-                    // This exception is fine because cloned is only used
-                    // to create a UUID.
-                    // @ts-expect-error
+                    // @ts-expect-error (only used to generate UUID)
                     delete cloned.targets;
                 }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
-                    if ((note.targets as any[]).length < 2) {
+                    if (note.targets.length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");
                     }
 
@@ -6564,7 +6560,7 @@ export abstract class RendererBase {
                         line.marker("end", markerCircle);
                     }
                 } else if ( (note.type !== undefined) && (note.type === "line") ) {
-                    if ((note.targets as any[]).length < 2) {
+                    if (note.targets.length < 2) {
                         throw new Error("Line annotations require at least two 'targets'.");
                     }
 
@@ -6612,7 +6608,7 @@ export abstract class RendererBase {
                     }
                     notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
                 } else if ( (note.type !== undefined) && (note.type === "eject") ) {
-                    if ((note.targets as any[]).length !== 2) {
+                    if (note.targets.length !== 2) {
                         throw new Error("Eject annotations require exactly two 'targets'.");
                     }
 
@@ -6973,7 +6969,7 @@ export abstract class RendererBase {
                             .attr({ 'pointer-events': 'none' });
                     }
                 } else if ( (note.type !== undefined) && (note.type === "glyph")) {
-                    if ( (! ("targets" in note)) || ((note.targets as any[]).length < 1) ) {
+                    if ( (! ("targets" in note)) || (note.targets.length < 1) ) {
                         throw new Error(`At least one target must be given for glyph annotations.`);
                     }
                     const key = note.glyph as string;
@@ -7165,8 +7161,9 @@ export abstract class RendererBase {
                 if (! ((preGridLines && belowGrid === true) || (!preGridLines && (belowGrid === undefined || belowGrid === false)) || (preGridLines && marker.type === "halo") )) {
                     continue;
                 }
-                const cloned = {...marker as {[k:string]: any}};
+                const cloned = {...marker};
                 if ("points" in cloned) {
+                    // @ts-expect-error (only used to generate UUID)
                     delete cloned.points;
                 }
                 if (marker.type === "dots") {
@@ -7188,9 +7185,9 @@ export abstract class RendererBase {
                         pts.forEach((p) => {
                             const pt = grid[p[0]][p[1]];
                             // these exceptions are due to poor SVGjs typing
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
                             svgGroup.circle(this.cellsize * diameter)
-                                // @ts-ignore
+                                // @ts-expect-error (poor SVGjs typing)
                                 .fill(colour)
                                 .opacity(opacity)
                                 .stroke({width: 0})
@@ -7219,9 +7216,7 @@ export abstract class RendererBase {
                         }
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
-                    // these exceptions are due to poor SVGjs typing
-                    // @ts-ignore
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                    // @ts-expect-error (poor SVGjs typing)
                     svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
                     if (polys === undefined) {
@@ -7268,23 +7263,20 @@ export abstract class RendererBase {
                         // the following eslint and ts exceptions are due to poor SVGjs typing
                         switch (cell.type) {
                             case "circle":
-                                // @ts-ignore
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+                                // @ts-expect-error (poor SVGjs typing)
                                 floodEle = svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill(fill).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
-                                // @ts-ignore
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+                                // @ts-expect-error (poor SVGjs typing)
                                 floodEle = svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
-                                // @ts-ignore
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+                                // @ts-expect-error (poor SVGjs typing)
                                 floodEle = svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                         if (marker.pulse !== undefined && floodEle !== undefined) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
                             floodEle.animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike).during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
                         }
                     }
@@ -7362,7 +7354,7 @@ export abstract class RendererBase {
                     // full circle one
                     if (this.json.board.style.startsWith("hex-of")) {
                         if (!preGridLines) {
-                            // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
+
                             let polys: Poly[][]|undefined;
                             if (opts.polys !== undefined) {
                                 polys = opts.polys;
@@ -7395,7 +7387,7 @@ export abstract class RendererBase {
                             if ( ("offset" in marker) && (marker.offset !== undefined) ) {
                                 degStart += marker.offset;
                             }
-                            const phi = 360 / (marker.segments as any[]).length;
+                            const phi = 360 / marker.segments.length;
                             for (let i = 0; i < marker.segments.length; i++) {
                                 const segment: ISegment = marker.segments[i] as ISegment;
                                 let colour = baseColour;
@@ -7427,7 +7419,7 @@ export abstract class RendererBase {
                     }
                     // the line segment one
                     else {
-                        // eslint-disable-next-line @typescript-eslint/no-shadow, no-shadow
+
                         let polys: Poly[][]|undefined;
                         if (opts.polys !== undefined) {
                             polys = opts.polys;
@@ -7509,7 +7501,7 @@ export abstract class RendererBase {
                             if ( ("offset" in marker) && (marker.offset !== undefined) ) {
                                 degStart += marker.offset;
                             }
-                            const phi = 360 / (marker.segments as any[]).length;
+                            const phi = 360 / marker.segments.length;
                             for (let i = 0; i < marker.segments.length; i++) {
                                 const segment: ISegment = marker.segments[i] as ISegment;
                                 let colour = baseColour;
@@ -8197,7 +8189,9 @@ export abstract class RendererBase {
                                 break;
                         }
                         const newclone = {...cloned};
+                        // @ts-expect-error (only used to generate UUID)
                         delete newclone.cell;
+                        // @ts-expect-error (only used to gnerate UUID)
                         delete newclone.side;
                         svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
@@ -9439,7 +9433,6 @@ export abstract class RendererBase {
         if (typeof val === "object") {
             // check for gradient first
             if ("stops" in val) {
-                val = val ;
                 const x1 = val.x1 !== undefined ? val.x1  : 0;
                 const y1 = val.y1 !== undefined ? val.y1  : 0;
                 const x2 = val.x2 !== undefined ? val.x2  : 1;

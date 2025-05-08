@@ -1,4 +1,5 @@
-import { Svg } from "@svgdotjs/svg.js";
+/* eslint-disable no-prototype-builtins */
+import { StrokeData, Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -287,7 +288,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
             const colour = colours[i];
             let count = 0;
             let last;
-            // @ts-expect-error
+            // @ts-expect-error (let it be)
             for (const size of stash[colour] as string) {
                 if (size !== last) {
                     last = size;
@@ -410,11 +411,11 @@ export class HomeworldsOrigRenderer extends RendererBase {
                 add.circle(Math.random() + 1).center(x, y).fill("white");
             }
         });
-        let stroke: any = {width: 2, color: "#fff"};
+        let stroke: StrokeData = {width: 2, color: "#fff"};
         if (highlight !== undefined) {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         nested.rect(250, 250).fill(pattern).stroke(stroke);
         if (this.options.boardClick !== undefined) {
             nested.rect(250, 250).fill("#fff").opacity(0).click(() => this.options.boardClick!(0, 0, name));

@@ -338,13 +338,11 @@ export class Stacking3DRenderer extends RendererBase {
                 }
                 const cloned = {...note};
                 if ("targets" in cloned) {
-                    // This exception is ok.
-                    // cloned is only used for generating a UUID.
-                    // @ts-expect-error
+                    // @ts-expect-error (acceptable because cloned is only used for generating the UUID)
                     delete cloned.targets;
                 }
                 if ( (note.type !== undefined) && (note.type === "move") ) {
-                    if ((note.targets as any[]).length < 2) {
+                    if (note.targets.length < 2) {
                         throw new Error("Move annotations require at least two 'targets'.");
                     }
 
@@ -389,7 +387,7 @@ export class Stacking3DRenderer extends RendererBase {
                         line.marker("end", markerCircle);
                     }
                 } else if ( (note.type !== undefined) && (note.type === "eject") ) {
-                    if ((note.targets as any[]).length !== 2) {
+                    if ((note.targets).length !== 2) {
                         throw new Error("Eject annotations require exactly two 'targets'.");
                     }
 

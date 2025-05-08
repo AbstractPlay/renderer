@@ -10,7 +10,7 @@ Currently the only supported output format is SVG. The library has been tested a
 
 ## Usage
 
-In the browser, simply load `APRender.js` via a `<script>` tag. For a concrete example, [see the playground](https://renderer.dev.abstractplay.com).
+In the browser, simply load `APRender.js` via a `<script>` tag. For a concrete example, [see the playground](https://renderer.dev.abstractplay.com). The [Abstract Play Designer](https://designer.abstractplay.com/) is another place you can interact with the rendering engine.
 
 From within Node, simply import the variables and functions you need. Both methods give you access to the same API.
 
