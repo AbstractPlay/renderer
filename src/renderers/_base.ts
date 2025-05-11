@@ -2967,7 +2967,6 @@ export abstract class RendererBase {
             offset = 1;
         }
 
-
         const myHex = defineHex({
             offset,
             orientation,
@@ -3053,6 +3052,11 @@ export abstract class RendererBase {
             rowLabels.reverse();
         }
 
+        let labelGrid: string[][]|undefined;
+        if ("labelGrid" in this.json.board && this.json.board.labelGrid !== undefined && this.json.board.labelGrid !== null && Array.isArray(this.json.board.labelGrid)) {
+            labelGrid = this.json.board.labelGrid.map(row => [...row]);
+        }
+
         let labelColour = this.options.colourContext.labels;
         if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
             labelColour = this.resolveColour(this.json.board.labelColour) as string;
@@ -3073,13 +3077,23 @@ export abstract class RendererBase {
             const { x, y } = hex;
             const used = cells.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
             if ( ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) && (labelStyle === "internal") ) {
-                const components: string[] = [];
-                components.push(columnLabels[hex.col]);
-                components.push(rowLabels[hex.row]);
-                if (/^\d+$/.test(components[0])) {
-                    components.reverse();
+                let label: string;
+                if (labelGrid === undefined) {
+                    const components: string[] = [];
+                    components.push(columnLabels[hex.col]);
+                    components.push(rowLabels[hex.row]);
+                    if (/^\d+$/.test(components[0])) {
+                        components.reverse();
+                    }
+                    label = components.join("");
+                } else {
+                    label = "?";
+                    if (hex.row < labelGrid.length) {
+                        if (hex.col < labelGrid[hex.row].length) {
+                            label = labelGrid[hex.row][hex.col];
+                        }
+                    }
                 }
-                const label = components.join("");
 
                 let labelX = corners[5].x;
                 let labelY = corners[5].y;
@@ -3118,7 +3132,7 @@ export abstract class RendererBase {
 
         // external labels, if requested
         // Add board labels
-        if (labelStyle === "external") {
+        if (labelStyle === "external" && labelGrid === undefined) {
             let hideHalf = false;
             if (this.json.options?.includes("hide-labels-half")) {
                 hideHalf = true;

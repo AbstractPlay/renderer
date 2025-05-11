@@ -1848,7 +1848,7 @@
                     "default": 1
                 },
                 "labelOpacity": {
-                    "description": "The opacity of lines drawn to construct the board.",
+                    "description": "The opacity of lines drawn for board labels.",
                     "type": "number",
                     "minimum": 0,
                     "maximum": 1,
@@ -1938,6 +1938,16 @@
                 "alternatingSymmetry": {
                     "description": "Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.",
                     "type": "boolean"
+                },
+                "labelGrid": {
+                    "description": "The only way of applying arbitrary labels to cells. Provide the labels in a grid, just as you would the pieces: top to bottom, left to right.",
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "columnLabels": {
                     "description": "An optional array of strings to override the default column labeling.",

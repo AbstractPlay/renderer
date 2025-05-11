@@ -362,7 +362,7 @@ export interface BoardBasic {
    */
   strokeWeight?: number;
   /**
-   * The opacity of lines drawn to construct the board.
+   * The opacity of lines drawn for board labels.
    */
   labelOpacity?: number;
   /**
@@ -432,6 +432,10 @@ export interface BoardBasic {
    * Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.
    */
   alternatingSymmetry?: boolean;
+  /**
+   * The only way of applying arbitrary labels to cells. Provide the labels in a grid, just as you would the pieces: top to bottom, left to right.
+   */
+  labelGrid?: string[][];
   /**
    * An optional array of strings to override the default column labeling.
    */
