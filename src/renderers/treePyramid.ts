@@ -108,7 +108,7 @@ export class TreePyramidRenderer extends RendererBase {
                 const scalingFactor = 0.95;
                 const use = usePieceAt({svg: field, piece, cellsize: this.cellsize, x, y, scalingFactor});
                 if (this.options.boardClick !== undefined && ( (this.json.options === undefined) || (! this.json.options.includes("no-piece-click")) )) {
-                    use.click((e : Event) => {this.options.boardClick!(-1, -1, pcid); e.stopPropagation(); });
+                    use.click((e : Event) => {this.options.boardClick!(-1, -1, node.id); e.stopPropagation(); });
                 }
             }
         }
