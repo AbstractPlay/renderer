@@ -634,6 +634,68 @@
                 }
             ]
         },
+        "annotationTree": {
+            "description": "Annotations specifically for the `tree-*` renderers.",
+            "type": "object",
+            "anyOf": [
+                {
+                    "description": "For drawing enter/exit notations",
+                    "properties": {
+                        "type": {
+                            "enum": ["enter", "exit"]
+                        },
+                        "nodes": {
+                            "description": "The ids of the nodes to highlight.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "minItems": 1
+                        },
+                        "shape": {
+                            "description": "Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.",
+                            "enum": ["square", "circle", "hexf", "hexp"],
+                            "default": "square"
+                        },
+                        "style": {
+                            "enum": [
+                                "solid",
+                                "dashed"
+                            ]
+                        },
+                        "strokeWidth": {
+                            "description": "The width of the line, expressed as a percentage of cell size.",
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.03
+                        },
+                        "opacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "default": 1
+                        },
+                        "colour": {
+                            "anyOf": [
+                                {"$ref": "#/$defs/colourstrings"},
+                                {"$ref": "#/$defs/colourfuncs"},
+                                {"$ref": "#/$defs/positiveInteger"}
+                            ],
+                            "default": "#000"
+                        },
+                        "dashed": {
+                            "description": "A valid `dasharray` appropriate for the game's display.",
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "required": ["type", "nodes"],
+                    "additionalProperties": false
+                }
+            ]
+        },
         "multipiece": {
             "description": "Schema for the `multicell-square` renderer. This deforms glyphs from the legend into rectangular areas anchored from the top-left cell (the x,y coordinates closest to 0,0) and in a given width and height. Pieces can be overlapped, with an order decided by z index (higher z indices will overlap lower ones).",
             "type": "object",
@@ -1815,6 +1877,43 @@
                 }
             }
         },
+        "treeNode": {
+            "description": "The node itself.",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Each node in the tree must have a unique identifier.",
+                    "type": "string"
+                },
+                "glyph": {
+                    "description": "If provided, this is the glyph that will be placed on the board. Otherwise it is assumed that the id is the glyph reference (e.g., Decktet cards).",
+                    "type": "string"
+                },
+                "parents": {
+                    "description": "A list of this node's parents",
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "minItems": 1
+                        }
+                    ]
+                }
+            },
+            "required": ["id", "parents"],
+            "additionalProperties": false
+        },
+        "piecesTree": {
+            "description": "The required schema for the `tree-*` renderers. A simple array of nodes, each with an ID, an optional glyph reference (if not the same as the ID), and a list of the node's parents.",
+            "type": "array",
+            "items": {"$ref": "#/$defs/treeNode"},
+            "minItems": 1
+        },
         "boardBasic": {
             "description": "One of the preset boards.",
             "type": "object",
@@ -2310,7 +2409,8 @@
                 "conhex",
                 "multicell-square",
                 "polyomino",
-                "isometric"
+                "isometric",
+                "tree-pyramid"
             ],
             "default": "default"
         },
@@ -2398,6 +2498,7 @@
                     }
                 },
                 {"$ref": "#/$defs/piecesHomeworlds"},
+                {"$ref": "#/$defs/piecesTree"},
                 {
                     "type": "array",
                     "items": {
@@ -2444,7 +2545,8 @@
                     {"$ref": "#/$defs/annotationBasic"},
                     {"$ref": "#/$defs/annotationSowing"},
                     {"$ref": "#/$defs/annotationHomeworlds"},
-                    {"$ref": "#/$defs/annotationFreespace"}
+                    {"$ref": "#/$defs/annotationFreespace"},
+                    {"$ref": "#/$defs/annotationTree"}
                 ]
             }
         }

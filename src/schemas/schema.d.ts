@@ -105,6 +105,12 @@ export type BoardHomeworlds = {
  */
 export type PiecesHomeworlds = string[][];
 /**
+ * The required schema for the `tree-*` renderers. A simple array of nodes, each with an ID, an optional glyph reference (if not the same as the ID), and a list of the node's parents.
+ *
+ * @minItems 1
+ */
+export type PiecesTree = [TreeNode, ...TreeNode[]];
+/**
  * Pattern for the global stash definitions for the `homeworlds` renderer.
  */
 export type Stashstrings = string;
@@ -150,6 +156,33 @@ export type AnnotationFreespace =
         }[]
       ];
     };
+/**
+ * Annotations specifically for the `tree-*` renderers.
+ */
+export type AnnotationTree = {
+  type: "enter" | "exit";
+  /**
+   * The ids of the nodes to highlight.
+   *
+   * @minItems 1
+   */
+  nodes: [string, ...string[]];
+  /**
+   * Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.
+   */
+  shape?: "square" | "circle" | "hexf" | "hexp";
+  style?: "solid" | "dashed";
+  /**
+   * The width of the line, expressed as a percentage of cell size.
+   */
+  strokeWidth?: number;
+  opacity?: number;
+  colour?: Colourstrings | Colourfuncs | PositiveInteger;
+  /**
+   * A valid `dasharray` appropriate for the game's display.
+   */
+  dashed?: number[];
+};
 
 /**
  * Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.
@@ -173,7 +206,8 @@ export interface APRenderRep {
     | "conhex"
     | "multicell-square"
     | "polyomino"
-    | "isometric";
+    | "isometric"
+    | "tree-pyramid";
   /**
    * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
@@ -204,7 +238,15 @@ export interface APRenderRep {
   /**
    * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).
    */
-  pieces: null | string | [string[][], ...string[][][]] | PiecesHomeworlds | Freepiece[] | Multipiece[] | Polypiece[];
+  pieces:
+    | null
+    | string
+    | [string[][], ...string[][][]]
+    | PiecesHomeworlds
+    | PiecesTree
+    | Freepiece[]
+    | Multipiece[]
+    | Polypiece[];
   /**
    * Areas are renderer-specific elements that are used and rendered in various ways.
    */
@@ -223,7 +265,7 @@ export interface APRenderRep {
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
-  annotations?: (AnnotationBasic | AnnotationSowing | AnnotationHomeworlds | AnnotationFreespace)[];
+  annotations?: (AnnotationBasic | AnnotationSowing | AnnotationHomeworlds | AnnotationFreespace | AnnotationTree)[];
 }
 /**
  * An individual glyph with options, used in the `legend` property.
@@ -1023,6 +1065,23 @@ export interface MarkerFreespaceGlyph {
       y: number;
     }[]
   ];
+}
+/**
+ * The node itself.
+ */
+export interface TreeNode {
+  /**
+   * Each node in the tree must have a unique identifier.
+   */
+  id: string;
+  /**
+   * If provided, this is the glyph that will be placed on the board. Otherwise it is assumed that the id is the glyph reference (e.g., Decktet cards).
+   */
+  glyph?: string;
+  /**
+   * A list of this node's parents
+   */
+  parents: null | [string, ...string[]];
 }
 /**
  * Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.

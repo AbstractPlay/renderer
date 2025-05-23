@@ -5,7 +5,7 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
-import { APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Colourstrings, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, PositiveInteger, type Polymatrix } from "../schemas/schema";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Colourstrings, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, PositiveInteger, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance, calcBearing, smallestDegreeDiff, shortenLine } from "../common/plotting";
@@ -6495,7 +6495,7 @@ export abstract class RendererBase {
             const rIncrement = this.cellsize / 2;
             let radius = rIncrement;
             let direction = 1;
-            for (const note of this.json.annotations) {
+            for (const note of this.json.annotations as (AnnotationBasic|AnnotationSowing)[]) {
                 if ( (! ("type" in note)) || (note.type === undefined) ) {
                     throw new Error("Invalid annotation format found.");
                 }
@@ -9233,14 +9233,14 @@ export abstract class RendererBase {
     }
 
     protected getRotation(): number {
-        if (!this.json || !this.json.board) {
+        if (!this.json) {
             throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
         }
         let rotation = 0;
         if (this.options.rotate !== undefined) {
             rotation += this.options.rotate;
         }
-        if (("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
+        if (this.json.board !== undefined && this.json.board !== null &&("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
             rotation += this.json.board.rotate;
         }
         rotation = rotation % 360;

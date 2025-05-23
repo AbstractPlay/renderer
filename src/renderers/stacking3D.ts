@@ -1,5 +1,5 @@
 import { GridPoints } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rectOfRects } from "../grids";
 import { Svg, StrokeData, G as SVGG } from "@svgdotjs/svg.js";
@@ -332,7 +332,7 @@ export class Stacking3DRenderer extends RendererBase {
             const rIncrement = this.cellsize / 2;
             let radius = rIncrement;
             let direction = 1;
-            for (const note of this.json.annotations) {
+            for (const note of this.json.annotations as AnnotationBasic[]) {
                 if ( (! ("type" in note)) || (note.type === undefined) ) {
                     throw new Error("Invalid annotation format found.");
                 }
