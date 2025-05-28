@@ -4,3 +4,14 @@ build/
 coverage/
 temp/
 .vscode
+.serverless
+
+# bin folder, except for example.ts
+bin/
+!bin/contact.ts
+!bin/export.ts
+
+# scratch files in the root
+scratch.*
+debug.json
+*.tgz
