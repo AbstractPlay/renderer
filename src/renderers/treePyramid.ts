@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { IPoint } from "../grids/_base";
-import { AnnotationTree, APRenderRep, PiecesTree, TreeNode } from "../schemas/schema";
+import { AnnotationTree, APRenderRep, BoardBasic, PiecesTree, TreeNode } from "../schemas/schema";
 import { x2uid } from "../common/glyph2uid";
 import { IRendererOptionsIn, RendererBase} from "./_base";
 import { projectPoint, usePieceAt } from "../common/plotting";
@@ -12,6 +12,7 @@ import { projectPoint, usePieceAt } from "../common/plotting";
 export class TreePyramidRenderer extends RendererBase {
 
     public static readonly rendererName: string = "tree-pyramid";
+    public padding = this.cellsize * 0.1;
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
@@ -23,7 +24,9 @@ export class TreePyramidRenderer extends RendererBase {
 
         // Delegate to style-specific renderer
         if (this.json.board !== null) {
-            throw new Error("For this renderer, the board must be null.");
+            if (!("style" in this.json.board) || (this.json.board as BoardBasic).style !== "other") {
+                throw new Error("For this renderer, the board must be null or set to the `other` style.");
+            }
         }
 
         // Load all the pieces in the legend (have to do this first so the glyphs are available for marking the board)
@@ -56,9 +59,11 @@ export class TreePyramidRenderer extends RendererBase {
         const bgcolour = this.options.colourContext.background;
         const bgopacity = 1;
         const borderBuffer = 5;
-        const padding = 5;
-        const width = (pieces[0].length * this.cellsize) + ((pieces[0].length - 1) * padding) + (borderBuffer * 2);
-        const height = (pieces.length * this.cellsize) + ((pieces.length - 1) * padding) + (borderBuffer * 2);
+        if (this.json.board !== null && this.json.board !== undefined && ("tileSpacing" in this.json.board) && this.json.board.tileSpacing !== undefined) {
+            this.padding = this.json.board.tileSpacing * this.cellsize;
+        }
+        const width = (pieces[0].length * this.cellsize) + ((pieces[0].length - 1) * this.padding) + (borderBuffer * 2);
+        const height = (pieces.length * this.cellsize) + ((pieces.length - 1) * this.padding) + (borderBuffer * 2);
         const field = this.rootSvg.nested().id("board").viewbox(ox - borderBuffer, oy - borderBuffer, width + (borderBuffer*2), height + (borderBuffer*2)).move(ox, oy);
         field.rect(width, height).id("aprender-backfill").move(ox, oy).fill({color: bgcolour, opacity: bgopacity}).back();
         // background isn't clickable
@@ -83,7 +88,7 @@ export class TreePyramidRenderer extends RendererBase {
                 // handle root nodes first
                 if (node.parents === null) {
                     const col = node2xy.size;
-                    x = xStart + (col * (this.cellsize + padding));
+                    x = xStart + (col * (this.cellsize + this.padding));
                     y = yStart;
                 }
                 // then children
@@ -93,7 +98,7 @@ export class TreePyramidRenderer extends RendererBase {
                         throw new Error(`Could not find x,y coordinates for a parent of node ${node.id}`);
                     }
                     x = parents.reduce((acc, curr) => acc + curr!.x, 0) / parents.length;
-                    y = parents[0]!.y + this.cellsize + padding;
+                    y = parents[0]!.y + this.cellsize + this.padding;
                 }
                 node2xy.set(node.id, {x, y});
 
@@ -117,7 +122,7 @@ export class TreePyramidRenderer extends RendererBase {
 
         // annotations
         if (this.options.showAnnotations) {
-            this.annotateField(field, node2xy);
+            this.annotateField(field, node2xy, pieces);
         }
 
         // // if there's a board backfill, it needs to be done before rotation
@@ -160,7 +165,7 @@ export class TreePyramidRenderer extends RendererBase {
         // }
     }
 
-    protected annotateField(field: Svg, node2xy: Map<string, IPoint>) {
+    protected annotateField(field: Svg, node2xy: Map<string, IPoint>, pieces: TreeNode[][]) {
         if (this.json === undefined) {
             throw new Error("Object in an invalid state!");
         }
@@ -171,12 +176,13 @@ export class TreePyramidRenderer extends RendererBase {
             for (const note of this.json.annotations as AnnotationTree[]) {
                 if ( (! ("type" in note)) || (note.type === undefined) ) {
                     throw new Error("Invalid annotation format found.");
-                }                const cloned = {...note};
+                }
+                const cloned = {...note};
                 if ("targets" in cloned) {
                     // @ts-expect-error (only used to generate UUID)
                     delete cloned.id;
                 }
-                if ( (note.type !== undefined) && (note.type === "enter" || note.type === "exit") ) {
+                if (note.type === "enter" || note.type === "exit") {
                     let colour = this.options.colourContext.annotations;
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = this.resolveColour(note.colour) as string;
@@ -255,6 +261,38 @@ export class TreePyramidRenderer extends RendererBase {
                                 .attr({ 'pointer-events': 'none' });
                         }
                     }
+                } else if (note.type === "rule") {
+                    let colour = this.options.colourContext.annotations;
+                    if ( ("colour" in note) && (note.colour !== undefined) ) {
+                        colour = this.resolveColour(note.colour) as string;
+                    }
+                    let strokeWeight = this.cellsize * 0.05;
+                    if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
+                        strokeWeight = this.json.board.strokeWeight;
+                    }
+                    let dasharray: string|undefined;
+                    if (note.dashed !== undefined && note.dashed !== null) {
+                        dasharray = (note.dashed).join(" ");
+                    }
+                    let opacity = 1;
+                    if ( ("opacity" in note) && note.opacity !== undefined) {
+                        opacity = note.opacity;
+                    }
+                    let row = 0;
+                    if (("row" in note) && note.row !== undefined) {
+                        row = note.row;
+                    }
+                    const lroot = pieces[0][0];
+                    const lx = node2xy.get(lroot.id)!.x - (this.cellsize / 2) - (this.padding / 2);
+                    const rroot = pieces[0][pieces[0].length - 1];
+                    const rx = node2xy.get(rroot.id)!.x + (this.cellsize / 2) + (this.padding / 2);
+                    const node = pieces[row][0];
+                    const y = node2xy.get(node.id)!.y + (this.cellsize / 2) + (this.padding / 2);
+                    notes.line(lx, y, rx, y)
+                        .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                        .fill("none")
+                        .stroke({color: colour, width: strokeWeight, linecap: "round", linejoin: "round", opacity, dasharray: dasharray !== undefined ? dasharray : undefined})
+                        .attr({ 'pointer-events': 'none' });
                 }
             }
         }

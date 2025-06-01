@@ -137,6 +137,7 @@
             "additionalProperties": false
         },
         "boardStyles": {
+            "description": "Describes the board to be drawn. The `other` style is used for special renderers like `tree-*` where we want optional access to some properties, but otherwise no board is being drawn.",
             "enum": [
                 "squares",
                 "squares-checkered",
@@ -172,7 +173,8 @@
                 "pyramid-hex",
                 "heightmap-squares",
                 "dvgc",
-                "dvgc-checkered"
+                "dvgc-checkered",
+                "other"
             ]
         },
         "gradientStop": {
@@ -692,6 +694,48 @@
                         }
                     },
                     "required": ["type", "nodes"],
+                    "additionalProperties": false
+                },
+                {
+                    "description": "For drawing enter/exit notations",
+                    "properties": {
+                        "type": {
+                            "enum": ["rule"]
+                        },
+                        "row": {
+                            "description": "The zero-based row after which to place the rule (`0` is the first row). There must be at least one node on this row to draw the rule.",
+                            "type": "integer",
+                            "default": 0
+                        },
+                        "strokeWidth": {
+                            "description": "The width of the line, expressed as a percentage of cell size.",
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.05
+                        },
+                        "opacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "default": 1
+                        },
+                        "colour": {
+                            "anyOf": [
+                                {"$ref": "#/$defs/colourstrings"},
+                                {"$ref": "#/$defs/colourfuncs"},
+                                {"$ref": "#/$defs/positiveInteger"}
+                            ],
+                            "default": "#000"
+                        },
+                        "dashed": {
+                            "description": "A valid `dasharray` appropriate for the game's display.",
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "required": ["type"],
                     "additionalProperties": false
                 }
             ]

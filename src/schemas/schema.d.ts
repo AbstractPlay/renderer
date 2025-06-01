@@ -33,6 +33,9 @@ export type IsometricPieces =
   | "lintelNS"
   | "lintelEW"
   | "spaceCube";
+/**
+ * Describes the board to be drawn. The `other` style is used for special renderers like `tree-*` where we want optional access to some properties, but otherwise no board is being drawn.
+ */
 export type BoardStyles =
   | "squares"
   | "squares-checkered"
@@ -68,7 +71,8 @@ export type BoardStyles =
   | "pyramid-hex"
   | "heightmap-squares"
   | "dvgc"
-  | "dvgc-checkered";
+  | "dvgc-checkered"
+  | "other";
 /**
  * The patterns known by the renderer
  */
@@ -159,30 +163,48 @@ export type AnnotationFreespace =
 /**
  * Annotations specifically for the `tree-*` renderers.
  */
-export type AnnotationTree = {
-  type: "enter" | "exit";
-  /**
-   * The ids of the nodes to highlight.
-   *
-   * @minItems 1
-   */
-  nodes: [string, ...string[]];
-  /**
-   * Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.
-   */
-  shape?: "square" | "circle" | "hexf" | "hexp";
-  style?: "solid" | "dashed";
-  /**
-   * The width of the line, expressed as a percentage of cell size.
-   */
-  strokeWidth?: number;
-  opacity?: number;
-  colour?: Colourstrings | Colourfuncs | PositiveInteger;
-  /**
-   * A valid `dasharray` appropriate for the game's display.
-   */
-  dashed?: number[];
-};
+export type AnnotationTree =
+  | {
+      type: "enter" | "exit";
+      /**
+       * The ids of the nodes to highlight.
+       *
+       * @minItems 1
+       */
+      nodes: [string, ...string[]];
+      /**
+       * Only meaningful for the `enter` and `exit` notations. Determines the shape of the dotted line.
+       */
+      shape?: "square" | "circle" | "hexf" | "hexp";
+      style?: "solid" | "dashed";
+      /**
+       * The width of the line, expressed as a percentage of cell size.
+       */
+      strokeWidth?: number;
+      opacity?: number;
+      colour?: Colourstrings | Colourfuncs | PositiveInteger;
+      /**
+       * A valid `dasharray` appropriate for the game's display.
+       */
+      dashed?: number[];
+    }
+  | {
+      type: "rule";
+      /**
+       * The zero-based row after which to place the rule (`0` is the first row). There must be at least one node on this row to draw the rule.
+       */
+      row?: number;
+      /**
+       * The width of the line, expressed as a percentage of cell size.
+       */
+      strokeWidth?: number;
+      opacity?: number;
+      colour?: Colourstrings | Colourfuncs | PositiveInteger;
+      /**
+       * A valid `dasharray` appropriate for the game's display.
+       */
+      dashed?: number[];
+    };
 
 /**
  * Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.
