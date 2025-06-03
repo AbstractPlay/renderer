@@ -9004,7 +9004,7 @@ export abstract class RendererBase {
      *
      * @param gridPoints -
      */
-    protected piecesArea(box: SVGBox, opts?: {padding?: number}) {
+    protected piecesArea(box: SVGBox, opts?: {padding?: number, canvas?: Svg}): number|undefined {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
         }
@@ -9012,12 +9012,13 @@ export abstract class RendererBase {
         if (opts !== undefined && opts.padding !== undefined) {
             padding = opts.padding;
         }
+        let placeY: number|undefined;
         if ( (this.json !== undefined) && (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
             const areas = this.json.areas.filter((x) => x.type === "pieces") as AreaPieces[];
             const boardBottom = box.y2; // + this.cellsize;
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.floor(box.width / this.cellsize);
-            let placeY = boardBottom + padding;
+            placeY = boardBottom + padding;
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea];
                 let hpad = 0;
@@ -9044,7 +9045,11 @@ export abstract class RendererBase {
                         markColour = this.resolveColour(area.ownerMark) as string;
                     }
                 }
-                const nested = this.rootSvg.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
+                let root = this.rootSvg;
+                if (opts !== undefined && opts.canvas !== undefined) {
+                    root = opts.canvas;
+                }
+                const nested = root.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
                 if ("background" in area) {
                     nested.rect(areaWidth,areaHeight).fill(area.background as string);
                 }
@@ -9089,12 +9094,16 @@ export abstract class RendererBase {
                     .attr("dominant-baseline", "hanging")
                     .move(0, 0);
 
+                console.log(`nested vbox before moving: ${JSON.stringify(nested.viewbox())}`);
                 // Now place the whole group below the board
                 // const placed = this.rootSvg.use(nested);
                 nested.move(box.x, placeY);
+                console.log(`nested vbox after moving: ${JSON.stringify(nested.viewbox())}`);
+                console.log(`nested height: ${JSON.stringify(nested.bbox())}`)
                 placeY += nested.bbox().height + (this.cellsize * 0.5);
             }
         }
+        return placeY;
     }
 
     /**

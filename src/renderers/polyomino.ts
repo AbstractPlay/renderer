@@ -129,7 +129,7 @@ export class PolyominoRenderer extends RendererBase {
         }
     }
 
-    protected piecesArea(box: SVGBox) {
+    protected piecesArea(box: SVGBox): number|undefined {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
         }
@@ -269,6 +269,7 @@ export class PolyominoRenderer extends RendererBase {
                 }
             }
         }
+        return undefined;
     }
 
     /**

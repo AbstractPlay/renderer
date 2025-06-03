@@ -697,7 +697,7 @@
                     "additionalProperties": false
                 },
                 {
-                    "description": "For drawing enter/exit notations",
+                    "description": "For drawing a horizontal line below a given row.",
                     "properties": {
                         "type": {
                             "enum": ["rule"]

@@ -118,7 +118,7 @@ export class TreePyramidRenderer extends RendererBase {
             }
         }
 
-        draw.viewbox(field.viewbox());
+        // draw.viewbox(field.viewbox());
 
         // annotations
         if (this.options.showAnnotations) {
@@ -144,9 +144,10 @@ export class TreePyramidRenderer extends RendererBase {
         // }
 
         // const box = this.rotateBoard();
+        const box = field.viewbox();
 
-        // // `pieces` area, if present
-        // this.piecesArea(box);
+        // `pieces` area, if present
+        const newY = this.piecesArea(box, {canvas: field})!;
 
         // // button bar
         // this.placeButtonBar(box);
@@ -163,6 +164,13 @@ export class TreePyramidRenderer extends RendererBase {
         // if (!backfilled) {
         //     this.backFill(polys);
         // }
+
+        // eslint-disable-next-line prefer-const
+        let {x, y, w, h} = field.viewbox();
+        const dy = Math.abs((y + h) - newY);
+        h += dy;
+        field.viewbox(x, y, w, h);
+        // draw.viewbox(x, y, w, h);
     }
 
     protected annotateField(field: Svg, node2xy: Map<string, IPoint>, pieces: TreeNode[][]) {
