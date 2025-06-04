@@ -1104,10 +1104,6 @@ export interface TreeNode {
    * A list of this node's parents
    */
   parents: null | [string, ...string[]];
-  /**
-   * The owner of this node, if owned.
-   */
-  owner?: number;
 }
 /**
  * Schema for the `freespace` renderer. This maps glyphs from the legend directly onto the playing field at given x,y coordinates, oriented in a specific direction. Pieces that fall outside of the visible field (defined by the board's `width`, `height`, and `origin` will not be visible. Any transformations applied in the legend (like rotation) are applied *before* any rotation caused by orientations given here.

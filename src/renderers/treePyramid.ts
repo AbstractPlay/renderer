@@ -39,15 +39,24 @@ export class TreePyramidRenderer extends RendererBase {
             if (!Array.isArray(this.json.pieces) || typeof this.json.pieces[0] !== "object" || !("id" in this.json.pieces[0]) || !("parents" in this.json.pieces[0])) {
                 throw new Error("Malformed `pieces` property. Must adhere to the `piecesTree` schema.");
             }
+            this.json.pieces = this.json.pieces as PiecesTree;
+
+            // check that there are no duplicate ids
+            const allIds = new Set<string>();
+            this.json.pieces.forEach(n => allIds.add(n.id));
+            if (allIds.size !== this.json.pieces.length) {
+                throw new Error(`Malformed \`pieces\` property. Duplicate node IDs were found.`);
+            }
+
             // find root nodes first
-            const roots = (this.json.pieces as PiecesTree).filter(n => n.parents === null);
+            const roots = this.json.pieces.filter(n => n.parents === null);
             pieces.push([...roots]);
             while (pieces.flat().length < this.json.pieces.length) {
                 const currIds = new Set<string>(pieces[pieces.length - 1].map(n => n.id));
-                const children = (this.json.pieces as PiecesTree).filter(n => n.parents?.some(p => currIds.has(p)));
+                const children = this.json.pieces.filter(n => n.parents?.some(p => currIds.has(p)));
                 // if none were found, then an error has happened somewhere
                 if (children.length === 0) {
-                    throw new Error("An error occurred while processing tree nodes.");
+                    throw new Error("An error occurred while building the ordered version of the node tree. We encountered a row with no children before all the given nodes were processed.");
                 }
                 pieces.push([...children]);
             }
@@ -170,7 +179,7 @@ export class TreePyramidRenderer extends RendererBase {
         const dy = Math.abs((y + h) - newY);
         h += dy;
         field.viewbox(x, y, w, h);
-        // draw.viewbox(x, y, w, h);
+        draw.viewbox(x, y, w, h);
     }
 
     protected annotateField(field: Svg, node2xy: Map<string, IPoint>, pieces: TreeNode[][]) {
