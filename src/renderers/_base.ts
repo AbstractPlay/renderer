@@ -9094,12 +9094,9 @@ export abstract class RendererBase {
                     .attr("dominant-baseline", "hanging")
                     .move(0, 0);
 
-                console.log(`nested vbox before moving: ${JSON.stringify(nested.viewbox())}`);
                 // Now place the whole group below the board
                 // const placed = this.rootSvg.use(nested);
                 nested.move(box.x, placeY);
-                console.log(`nested vbox after moving: ${JSON.stringify(nested.viewbox())}`);
-                console.log(`nested height: ${JSON.stringify(nested.bbox())}`)
                 placeY += nested.bbox().height + (this.cellsize * 0.5);
             }
         }
