@@ -1947,10 +1947,6 @@
                             "minItems": 1
                         }
                     ]
-                },
-                "owner": {
-                    "description": "The owner of this node, if owned.",
-                    "$ref": "#/$defs/positiveInteger"
                 }
             },
             "required": ["id", "parents"],
