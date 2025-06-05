@@ -176,9 +176,11 @@ export class TreePyramidRenderer extends RendererBase {
 
         // eslint-disable-next-line prefer-const
         let {x, y, w, h} = field.viewbox();
-        const dy = Math.abs((y + h) - newY);
-        h += dy;
-        field.viewbox(x, y, w, h);
+        if (newY !== undefined) {
+            const dy = Math.abs((y + h) - newY);
+            h += dy;
+            field.viewbox(x, y, w, h);
+        }
         draw.viewbox(x, y, w, h);
     }
 
