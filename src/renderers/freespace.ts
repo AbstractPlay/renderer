@@ -105,8 +105,11 @@ export class FreespaceRenderer extends RendererBase {
             this.annotateField(field);
         }
 
-        // // `pieces` area, if present
-        // this.piecesArea(gridPoints);
+        // const box = this.rotateBoard();
+        const box = field.viewbox();
+
+        // `pieces` area, if present
+        const newY = this.piecesArea(box, {canvas: field})!;
 
         // // button bar
         // this.placeButtonBar(gridPoints);
@@ -129,6 +132,12 @@ export class FreespaceRenderer extends RendererBase {
         } else {
             w += xadjust;
         }
+        if (newY !== undefined) {
+            const dy = Math.abs((y + h) - newY);
+            h += dy;
+            // field.viewbox(x, y, w, h);
+        }
+        field.viewbox(x, y, w, h);
         draw.viewbox(x, y, w, h);
     }
 
