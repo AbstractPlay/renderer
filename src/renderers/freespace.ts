@@ -109,7 +109,7 @@ export class FreespaceRenderer extends RendererBase {
         const box = field.viewbox();
 
         // `pieces` area, if present
-        const newY = this.piecesArea(box, {canvas: field})!;
+        const {newY, width: areaWidth} = this.piecesArea(box, {canvas: field})!;
 
         // // button bar
         // this.placeButtonBar(gridPoints);
@@ -136,6 +136,11 @@ export class FreespaceRenderer extends RendererBase {
             const dy = Math.abs((y + h) - newY);
             h += dy;
             // field.viewbox(x, y, w, h);
+        }
+        if (areaWidth !== undefined) {
+            if (w < areaWidth) {
+                w = areaWidth;
+            }
         }
         field.viewbox(x, y, w, h);
         draw.viewbox(x, y, w, h);

@@ -156,7 +156,7 @@ export class TreePyramidRenderer extends RendererBase {
         const box = field.viewbox();
 
         // `pieces` area, if present
-        const newY = this.piecesArea(box, {canvas: field})!;
+        const {newY} = this.piecesArea(box, {canvas: field})!;
 
         // // button bar
         // this.placeButtonBar(box);
