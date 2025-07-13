@@ -339,9 +339,9 @@ export abstract class RendererBase {
             this.options.colourBlind = false;
         }
         if (this.options.colourBlind) {
-            this.options.colours = ["#9F0162", "#8400CD", "#A40122", "#009F81", "#008DF9", "#E20134", "#FF5AAF", "#00C2F9", "#FF6E3A", "#00FCCF", "#FFB2FD", "#FFC33B"];
+            this.options.colours = ["#9f0162", "#8400cd", "#a40122", "#009f81", "#008df9", "#e20134", "#ff5aaf", "#00c2f9", "#ff6e3a", "#00fccf", "#ffb2fd", "#ffc33b"];
         } else {
-            this.options.colours = ["#e41a1c", "#377eb8", "#4daf4a", "#ffff33", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999"];
+            this.options.colours = ["#e31a1c", "#1f78b4", "#33a02c", "#ffff99", "#6a3d9a", "#ff7f00", "#b15928", "#fb9a99", "#a6cee3", "#b2df8a", "#fdbf6f", "#cab2d6"];
         }
 
         // Validate sheet list
