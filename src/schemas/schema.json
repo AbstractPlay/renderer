@@ -44,13 +44,15 @@
                 "fg": {
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
-                        {"$ref": "#/$defs/colourstrings"}
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
                     ]
                 },
                 "bg": {
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
-                        {"$ref": "#/$defs/colourstrings"}
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
                     ]
                 },
                 "opacity": {
@@ -73,7 +75,8 @@
                 "colour": {
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
-                        {"$ref": "#/$defs/colourstrings"}
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
                     ]
                 },
                 "ds": {
@@ -96,7 +99,8 @@
                 "bg": {
                     "anyOf": [
                         {"$ref": "#/$defs/positiveInteger"},
-                        {"$ref": "#/$defs/colourstrings"}
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
                     ]
                 },
                 "fg": {
@@ -104,7 +108,8 @@
                     "items": {
                         "anyOf": [
                             {"$ref": "#/$defs/positiveInteger"},
-                            {"$ref": "#/$defs/colourstrings"}
+                            {"$ref": "#/$defs/colourstrings"},
+                            {"$ref": "#/$defs/colourfuncs"}
                         ]
                     }
                 }

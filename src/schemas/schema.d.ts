@@ -344,8 +344,8 @@ export interface Glyph {
  */
 export interface FunctionFlatten {
   func: "flatten";
-  fg: PositiveInteger | Colourstrings;
-  bg: PositiveInteger | Colourstrings;
+  fg: PositiveInteger | Colourstrings | Colourfuncs;
+  bg: PositiveInteger | Colourstrings | Colourfuncs;
   opacity: number;
 }
 /**
@@ -353,15 +353,15 @@ export interface FunctionFlatten {
  */
 export interface FunctionBestContrast {
   func: "bestContrast";
-  bg: PositiveInteger | Colourstrings;
-  fg: (PositiveInteger | Colourstrings)[];
+  bg: PositiveInteger | Colourstrings | Colourfuncs;
+  fg: (PositiveInteger | Colourstrings | Colourfuncs)[];
 }
 /**
  * Lightens or darkens a colour by the specified amount of saturation and luminance. Positive deltas lighten, negative darken.
  */
 export interface FunctionLighten {
   func: "lighten";
-  colour: PositiveInteger | Colourstrings;
+  colour: PositiveInteger | Colourstrings | Colourfuncs;
   ds: number;
   dl: number;
 }
