@@ -20,11 +20,12 @@ const sheet: ISheet = {
 
 sheet.glyphs.set("arrowhead", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
+    const border = 15;
     sym.path("M76.208,296.042l415.78,272.132c8.286,6.646,12.062,3.941,8.431-6.04L329.355,302.084 c-3.629-9.981-3.596-26.156,0.076-36.123l170.91-256.26c3.672-9.966-0.101-12.702-8.43-6.11L76.284,272.07 C67.958,278.661,67.921,289.395,76.208,296.042z")
         .rotate(90, 0, 0)
         .fill("black")
         .attr("data-playerfill", true)
-        .stroke("none");
+        .stroke({width: border, color: "#000"});
     sym.viewbox(-572.816, 68.016, 573.817, 867.568);
     return sym;
 });
