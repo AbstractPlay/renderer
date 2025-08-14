@@ -1,6 +1,8 @@
 // import { Nested } from "@svgdotjs/svg.js";
 // import { SVG } from "@svgdotjs/svg.js";
 
+import { Graph } from "../common/pentagons";
+
 /**
  * A simple x,y coordinate container.
  *
@@ -109,6 +111,10 @@ export interface IGeneratorArgs {
      * Only used by the conicalHex generator to determine whether you want the narrow or wide variant.
      */
     readonly conicalNarrow?: boolean;
+    /**
+     * Only used by the pentagonal generator. Give it the generated graph.
+     */
+    readonly pentagonalGraph?: Graph;
 }
 
 /**

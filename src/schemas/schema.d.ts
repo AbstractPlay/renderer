@@ -57,6 +57,8 @@ export type BoardStyles =
   | "snubsquare"
   | "snubsquare-cells"
   | "onyx"
+  | "pentagonal"
+  | "pentagonal-bluestone"
   | "circular-wheel"
   | "circular-cobweb"
   | "circular-moon"

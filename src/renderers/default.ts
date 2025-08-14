@@ -62,6 +62,10 @@ export class DefaultRenderer extends RendererBase {
             case "snubsquare-cells":
                 [gridPoints, polys] = this.snubSquareCells();
                 break;
+            case "pentagonal":
+            case "pentagonal-bluestone":
+                gridPoints = this.pentagonal();
+                break;
             case "hex-of-hex":
                 [gridPoints, polys] = this.hexOfHex();
                 break;

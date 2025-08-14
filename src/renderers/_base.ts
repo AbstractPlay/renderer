@@ -3,7 +3,7 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, pentagonal } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Colourstrings, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, PositiveInteger, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
@@ -12,10 +12,11 @@ import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidO
 import { calcStarPoints } from "../common/starPoints";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
-import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph } from "../graphs";
+import { Graph, SquareOrthGraph, SquareGraph, SquareFanoronaGraph, Pentagonal, type PentagonalNodeData } from "../graphs";
 import { IWheelArgs, wheel, wheelLabels, wheelPolys } from "../grids/wheel";
 import { convexHullPolys, unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
+import { pentagonalBoard } from "../common/pentagons";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -2677,6 +2678,195 @@ export abstract class RendererBase {
                     .stroke({width: 0})
                     .center(0,0);
             }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates square boards where the points are placed on the intersections of lines.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected pentagonal(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        let boardsize: number|undefined;
+        if ( (this.json.board === null) || ( (! ("width" in this.json.board)) && (! ("height" in this.json.board)) ) || ( (this.json.board.width === undefined) && (this.json.board.height === undefined) ) ) {
+            throw new Error("Either the `width` or `height` property must be set for this board type.");
+        }
+        if ( ("width" in this.json.board) && this.json.board.width !== undefined ) {
+            boardsize = this.json.board.width;
+        } else if ( ("height" in this.json.board) && this.json.board.height !== undefined ) {
+            boardsize = this.json.board.height;
+        } else {
+            throw new Error("Either the `width` or `height` property must be set for this board type.");
+        }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
+        const style = this.json.board.style;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        const g = pentagonalBoard(boardsize);
+        const grid = pentagonal({pentagonalGraph: g});
+        const graph = new Pentagonal(g);
+        const board = this.rootSvg.group().id("board");
+
+        // Adjust base graph for Bluestone games
+        if (style === "pentagonal-bluestone") {
+            // delete any verts/edges relating to the tips
+            const toDel = new Set<number>();
+            const layer = g.layers[g.layers.length - 1];
+            for (const side of layer) {
+                toDel.add(side[0].id);
+                toDel.add(side[side.length - 1].id);
+            }
+            for (const vid of toDel) {
+                const found = graph.graph.findNode((key, attr) => (attr as PentagonalNodeData).id === vid);
+                if (found === undefined) {
+                    throw new Error(`Could not find a tip point to delete.`);
+                }
+                graph.graph.dropNode(found);
+            }
+
+            // delete all edges between outer nodes
+            for (const entry of graph.graph.edgeEntries()) {
+                if ((entry.sourceAttributes as PentagonalNodeData).isOuter && (entry.targetAttributes as PentagonalNodeData).isOuter) {
+                    graph.graph.dropEdge(entry.edge);
+                }
+            }
+        }
+
+        const gridlines = board.group().id("gridlines");
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+
+        // Add board labels (skipping for now)
+        // let labelColour = this.options.colourContext.labels;
+        // if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+        //     labelColour = this.resolveColour(this.json.board.labelColour) as string;
+        // }
+        // let labelOpacity = 1;
+        // if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+        //     labelOpacity = this.json.board.labelOpacity;
+        // }
+        // if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+        //     let hideHalf = false;
+        //     if (this.json.options?.includes("hide-labels-half")) {
+        //         hideHalf = true;
+        //     }
+        //     const labels = board.group().id("labels");
+        //     let customLabels: string[]|undefined;
+        //     if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+        //         customLabels = this.json.board.columnLabels;
+        //     }
+        //     let columnLabels = this.getLabels(customLabels, width);
+        //     if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+        //         columnLabels.reverse();
+        //     }
+
+        //     let rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+        //     if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+        //         rowLabels.reverse();
+        //     }
+
+        //     if (this.json.options?.includes("swap-labels")) {
+        //         const scratch = [...columnLabels];
+        //         columnLabels = [...rowLabels];
+        //         columnLabels.reverse();
+        //         rowLabels = [...scratch];
+        //         rowLabels.reverse();
+        //     }
+
+        //     // Columns (letters)
+        //     for (let col = 0; col < width; col++) {
+        //         const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
+        //         const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
+        //         if (! hideHalf) {
+        //             labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+        //         }
+        //         labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+        //     }
+
+        //     // Rows (numbers)
+        //     for (let row = 0; row < height; row++) {
+        //         const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
+        //         const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
+        //         labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+        //         if (! hideHalf) {
+        //             labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+        //         }
+        //     }
+        // }
+
+        // Draw grid lines
+        // use graphs to determine connections and then draw each connection
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+        if (blocked !== undefined) {
+            for (const entry of blocked) {
+                graph.dropNode([entry.col, entry.row]);
+            }
+        }
+
+        for (const entry of graph.graph.edgeEntries()) {
+            const x1 = (entry.sourceAttributes as PentagonalNodeData).x;
+            const y1 = (entry.sourceAttributes as PentagonalNodeData).y;
+            const x2 = (entry.targetAttributes as PentagonalNodeData).x;
+            const y2 = (entry.targetAttributes as PentagonalNodeData).y;
+            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+        }
+
+        if (this.options.boardClick !== undefined) {
+            const rotation = this.getRotation();
+            const centre = this.getBoardCentre();
+            const root = this.rootSvg;
+            const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const clicked = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                // simply find the point that's closest to the click
+                const closest = {
+                    dist: Infinity,
+                    row: null as (null|number),
+                    col: null as (null|number),
+                };
+                for (let row = 0; row < grid.length; row++) {
+                    for (let col = 0; col < grid[row].length; col++) {
+                        const pt = grid[row][col];
+                        const dist = ptDistance(pt.x, pt.y, clicked.x, clicked.y);
+                        if (dist < closest.dist) {
+                            closest.dist = dist;
+                            closest.row = row;
+                            closest.col = col;
+                        }
+                    }
+                }
+                if (closest.dist !== Infinity && closest.row !== null && closest.col !== null) {
+                    this.options.boardClick!(closest.row, closest.col, "");
+                }
+            });
+            this.rootSvg.click(genericCatcher);
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid});

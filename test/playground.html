@@ -155,6 +155,11 @@
                     "description": "A version of a snubsquare board where you place pieces on the spaces instead of the vertices. The height and width you provide relate to the number of regular vertices. Because at many sizes the number of spaces varies from row to row, the labelling mirrors the `hex-of-*` model.",
                     "render": `{"board":{"style":"snubsquare-cells","width":8,"height":8,"markers":[{"type":"flood","colour":2,"points":[{"row":2,"col":3},{"row":2,"col":2},{"row":2,"col":4}]},{"type":"edge","edge":"N","colour":1},{"type":"edge","edge":"S","colour":1},{"type":"edge","edge":"E","colour":2},{"type":"edge","edge":"W","colour":2}]},"legend":{"A":{"name":"piece","colour":1,"scale":0.5},"B":{"name":"piece","colour":2,"scale":0.5}},"pieces":"ABA"}`
                 },
+                "board-pentagonal": {
+                    "name": "Boards: Pentagonal (Bluestone)",
+                    "description": "A slightly modified pentagonal board for the game Bluestone. But the raw pentagonal board is also available.",
+                    "render": `{"renderer":"default","board":{"style":"pentagonal-bluestone","width":6},"legend":{"A":{"name":"piece","colour":"#000"},"B":{"name":"piece","colour":"#fff"},"C":{"name":"piece-borderless","colour":2}},"pieces":"A\\nB\\n\\n\\n\\n\\n-CCCCC-CCCCC-CCCCC-CCCCC-CCCCC"}`
+                },
                 "board-hextri": {
                     "name": "Boards: Hex of triangles",
                     "description": "A hexagon of triangles, with pieces placed on the intersections.",
