@@ -77,6 +77,64 @@ sheet.glyphs.set("arrows-orth", (canvas: SVGContainer) => {
     return sym;
 });
 
+sheet.glyphs.set("brick", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+
+    group.rect(44, 44)
+        .move(3, 3)
+        .radius(8)
+        .stroke({ color: "black", width: 2 })
+        .fill("#8E1D1D");
+
+    group.viewbox(0, 0, 50, 50);
+    return group;
+});
+
+sheet.glyphs.set("bricks", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const defs = canvas.defs();
+    const pattern = defs.pattern(11, 10, function(add) {
+        // Background
+        add.rect(11, 10).fill("white");
+
+        // Bricks
+        add.rect(10, 4)
+            .move(0.5, 0.5)
+            .radius(1.1)
+            .fill("#8E1D1D");
+
+        add.rect(10, 4)
+            .move(-5, 5.5)
+            .radius(1.1)
+            .fill("#8E1D1D");
+
+        add.rect(10, 4)
+            .move(6, 5.5)
+            .radius(1.1)
+            .fill("#8E1D1D");
+    })
+    .id("brickPattern")
+    .attr({ patternUnits: "userSpaceOnUse" });
+    const mask = defs.mask().id("mainMask");
+    mask.rect(42, 42)
+        .move(4, 4)
+        .radius(7)
+        .fill("white");
+    
+    group.rect(50, 50)
+        .fill(pattern)
+        .attr({ mask: "url(#mainMask)" });
+
+    group.rect(44, 44)
+        .move(3, 3)
+        .radius(8)
+        .stroke({ color: "black", width: 4 })
+        .fill("none");
+
+    group.viewbox(0, 0, 50, 50);
+    return group;
+});
+
 sheet.glyphs.set("cannon-piece", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.path("m 78.838853,129.34362 q 0.206705,0.20671 -0.124023,0.20671 -1.157549,1.03352 -2.893871,1.6123 l -0.578775,-0.95085 q 1.694982,-0.45475 2.893871,-1.48827 z m 4.175442,-6.49054 q 0.08268,0.20671 -0.289387,0.0827 -2.315097,0.24805 -4.960922,0.45475 l 0.04134,1.24024 h 5.70506 v 0.78547 H 81.56736 v 1.98437 h 2.604483 v 0.90951 h -9.260387 v -0.90951 h 2.149733 l -0.206705,-5.0436 0.950843,0.28939 q 2.521802,-0.33073 4.506171,-0.7028 z m -2.273756,4.54751 v -1.98437 h -2.893871 l 0.08268,1.98437 z m 0.248046,1.32292 q 1.157549,0.95084 3.100576,1.44693 l -0.454751,0.95084 q -1.860345,-0.45475 -3.26594,-1.69498 z")
