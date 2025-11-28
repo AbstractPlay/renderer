@@ -61,6 +61,49 @@ export interface IRenderOptions extends IRendererOptionsIn {
      *
      */
     svgid?: string;
+    /**
+     * A string that will be prepended to all ids to prevent collisions.
+     * Gets added to the final rendered SVG via search/replace.
+     * Only works with static rendering.
+     */
+    prefix?: string;
+}
+
+export const addPrefix = (svg: string, opts = {} as IRenderOptions): string => {
+    if (opts.prefix !== undefined) {
+        const prefix = opts.prefix;
+        // Regex to find all id="something"
+        const idRegex = /id="([^"]+)"/g;
+
+        // Collect all IDs
+        const ids: string[] = [];
+        let match: RegExpExecArray | null;
+        while ((match = idRegex.exec(svg)) !== null) {
+            ids.push(match[1]);
+        }
+
+        // For each ID, replace both the definition and references
+        ids.forEach((id) => {
+            const newId = `${prefix}${id}`;
+
+            // Replace the id definition
+            const idDefRegex = new RegExp(`id="${id}"`, "g");
+            svg = svg.replace(idDefRegex, `id="${newId}"`);
+
+            // Replace references: url(#id), href="#id", xlink:href="#id"
+            const refPatterns = [
+            new RegExp(`url\\(#${id}\\)`, "g"),
+            new RegExp(`href="#${id}"`, "g"),
+            new RegExp(`xlink:href="#${id}"`, "g"),
+            new RegExp(`"#${id}"`, "g"), // handles cases like begin="0s;id.end"
+            ];
+
+            refPatterns.forEach((regex) => {
+            svg = svg.replace(regex, (match) => match.replace(`#${id}`, `#${newId}`));
+            });
+        });
+    }
+    return svg;
 }
 
 /**
@@ -93,7 +136,7 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
     node.setAttribute("id", uid);
     opts.divelem = node;
     const canvas = render(json, opts);
-    return canvas.svg();
+    return addPrefix(canvas.svg(), opts);
 }
 
 /**
@@ -121,7 +164,7 @@ export const renderglyph = (glyphid: string, colour: number | string, opts = {} 
     node.setAttribute("id", uid);
     opts.divelem = node;
     const canvas = render(obj, opts);
-    return canvas.svg();
+    return addPrefix(canvas.svg(), opts);
 }
 
 /**
