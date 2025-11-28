@@ -69,6 +69,7 @@
         "svgdom": "^0.1.14",
         "ts-loader": "^9.4.2",
         "ts-node": "^10.9.1",
+        "tsx": "^4.20.6",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.32.0",
         "webpack": "^5.81.0",

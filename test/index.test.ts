@@ -1,7 +1,7 @@
 import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
-import schema from "../src/schemas/schema.json";
+import schema from "../src/schemas/schema.json" with { type: "json" };
 
 describe("Schema validator", () => {
     it("should validate with minimal example", () => {
