@@ -70,6 +70,10 @@ export interface IRenderOptions extends IRendererOptionsIn {
 }
 
 export const addPrefix = (svg: string, opts = {} as IRenderOptions): string => {
+    const escapeRegex = (str: string): string => {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
     if (opts.prefix !== undefined) {
         const prefix = opts.prefix;
         // Regex to find all id="something"
@@ -85,21 +89,22 @@ export const addPrefix = (svg: string, opts = {} as IRenderOptions): string => {
         // For each ID, replace both the definition and references
         ids.forEach((id) => {
             const newId = `${prefix}${id}`;
+            const escapedId = escapeRegex(id);
 
             // Replace the id definition
-            const idDefRegex = new RegExp(`id="${id}"`, "g");
+            const idDefRegex = new RegExp(`id="${escapedId}"`, "g");
             svg = svg.replace(idDefRegex, `id="${newId}"`);
 
             // Replace references: url(#id), href="#id", xlink:href="#id"
             const refPatterns = [
-            new RegExp(`url\\(#${id}\\)`, "g"),
-            new RegExp(`href="#${id}"`, "g"),
-            new RegExp(`xlink:href="#${id}"`, "g"),
-            new RegExp(`"#${id}"`, "g"), // handles cases like begin="0s;id.end"
+            new RegExp(`url\\(#${escapedId}\\)`, "g"),
+            new RegExp(`href="#${escapedId}"`, "g"),
+            new RegExp(`xlink:href="#${escapedId}"`, "g"),
+            new RegExp(`"#${escapedId}"`, "g"), // handles cases like begin="0s;id.end"
             ];
 
             refPatterns.forEach((regex) => {
-            svg = svg.replace(regex, (match) => match.replace(`#${id}`, `#${newId}`));
+                svg = svg.replace(regex, (match) => match.replace(`#${id}`, `#${newId}`));
             });
         });
     }
