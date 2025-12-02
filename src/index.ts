@@ -136,9 +136,7 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
     node.setAttribute("id", uid);
     opts.divelem = node;
     const canvas = render(json, opts);
-    const svgText = addPrefix(canvas.svg(), opts);
-    document.removeChild(node);
-    return svgText;
+    return addPrefix(canvas.svg(), opts);
 }
 
 /**
