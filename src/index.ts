@@ -166,7 +166,9 @@ export const renderglyph = (glyphid: string, colour: number | string, opts = {} 
     node.setAttribute("id", uid);
     opts.divelem = node;
     const canvas = render(obj, opts);
-    return addPrefix(canvas.svg(), opts);
+    const svgText = addPrefix(canvas.svg(), opts);
+    document.removeChild(node);
+    return svgText;
 }
 
 /**
