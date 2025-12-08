@@ -16,9 +16,6 @@ import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings } from
 import schema from "./schemas/schema.json";
 import { v4 as uuidv4 } from 'uuid';
 
-const ajv = new Ajv();
-const validate = ajv.compile(schema);
-
 export type {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings};
 
 /**
@@ -182,6 +179,8 @@ export const renderglyph = (glyphid: string, colour: number | string, opts = {} 
  */
 export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     // Validate the JSON
+    const ajv = new Ajv();
+    const validate = ajv.compile(schema);
     if (! validate(json)) {
         throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as AJVError[])}`);
     }
