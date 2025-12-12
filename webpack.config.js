@@ -1,9 +1,9 @@
 const path = require('path');
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   entry: './src/index.ts',
-  devtool: 'eval-source-map',
+  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -17,7 +17,7 @@ module.exports = {
     extensions: [ '.tsx', '.ts', '.js' ]
   },
   output: {
-    filename: 'APRender.js',
+    filename: 'APRender.min.js',
     path: path.resolve(__dirname, 'dist'),
     library: 'APRender',
     libraryTarget: 'var'
