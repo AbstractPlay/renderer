@@ -7394,20 +7394,20 @@ export abstract class RendererBase {
                     const pts: [number, number][] = [];
                     for (const point of marker.points as ITarget[]) {
                         pts.push([point.row, point.col]);
-                        pts.forEach((p) => {
-                            const pt = grid[p[0]][p[1]];
-                            // these exceptions are due to poor SVGjs typing
-
-                            svgGroup.circle(this.cellsize * diameter)
-                                // @ts-expect-error (poor SVGjs typing)
-                                .fill(colour)
-                                .opacity(opacity)
-                                .stroke({width: 0})
-                                .center(pt.x, pt.y)
-                                .attr({ 'pointer-events': 'none' })
-                                .addClass(`aprender-marker-${x2uid(cloned)}`);
-                        });
                     }
+                    pts.forEach((p) => {
+                        const pt = grid[p[0]][p[1]];
+                        // these exceptions are due to poor SVGjs typing
+
+                        svgGroup.circle(this.cellsize * diameter)
+                            // @ts-expect-error (poor SVGjs typing)
+                            .fill(colour)
+                            .opacity(opacity)
+                            .stroke({width: 0})
+                            .center(pt.x, pt.y)
+                            .attr({ 'pointer-events': 'none' })
+                            .addClass(`aprender-marker-${x2uid(cloned)}`);
+                    });
                 } else if (marker.type === "shading") {
                     let colour: string|SVGGradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
