@@ -9,7 +9,7 @@
     "main": "build/index.js",
     "types": "build/index.d.ts",
     "scripts": {
-        "build": "npm run build-ts && npm run lint",
+        "build": "npm run build-ts && npm run lint && npm pack",
         "build-ts": "npm run json2ts && tsc && shx cp ./src/schemas/schema.d.ts ./build/schemas",
         "test": "mocha -r ts-node/register test/**/*.test.ts",
         "lint": "npx eslint .",
