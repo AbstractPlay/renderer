@@ -311,6 +311,16 @@
                     "enum": ["vertical", "fluid"],
                     "default": "fluid"
                 },
+                "flipx": {
+                    "description": "Flips the glyph across the x axis",
+                    "type": "boolean",
+                    "default": false
+                },
+                "flipy": {
+                    "description": "Flips the glyph across the y axis",
+                    "type": "boolean",
+                    "default": false
+                },
                 "nudge" : {
                     "description": "The number of units to nudge the glyph from centre.",
                     "type": "object",

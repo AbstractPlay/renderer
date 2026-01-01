@@ -328,6 +328,14 @@ export interface Glyph {
    */
   orientation?: "vertical" | "fluid";
   /**
+   * Flips the glyph across the x axis
+   */
+  flipx?: boolean;
+  /**
+   * Flips the glyph across the y axis
+   */
+  flipy?: boolean;
+  /**
    * The number of units to nudge the glyph from centre.
    */
   nudge?: {

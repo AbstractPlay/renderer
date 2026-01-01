@@ -778,6 +778,15 @@ export abstract class RendererBase {
                         size = factor * cellsize;
                     }
 
+                    // flip if requested
+                    // (svg.js seems to be doing it opposite of what I expect)
+                    if (g.flipx !== undefined && g.flipx) {
+                        use.flip("y");
+                    }
+                    if (g.flipy !== undefined && g.flipy) {
+                        use.flip("x");
+                    }
+
                     // Shift if requested
                     if (g.nudge !== undefined) {
                         let dx = 0;
