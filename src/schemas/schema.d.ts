@@ -950,6 +950,7 @@ export interface MarkerGlyph {
  */
 export interface BoardEntropy {
   style: "entropy";
+  size?: 5 | 6 | 7;
   /**
    * Describes the left-hand or top board
    */

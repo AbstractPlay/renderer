@@ -30,6 +30,10 @@ export class EntropyRenderer extends RendererBase {
             throw new Error(`This 'board' schema cannot be handled by the '${ EntropyRenderer.rendererName }' renderer.`);
         }
 
+        let size = 7;
+        if ("size" in this.json.board) {
+            size = this.json.board.size as number;
+        }
         let label1 = "Player 1: Order";
         let label2 = "Player 2: Order";
         let occlude1 = false;
@@ -65,9 +69,9 @@ export class EntropyRenderer extends RendererBase {
             baseOpacity = this.json.board.strokeOpacity;
         }
 
-        const width = 7;
-        const height = 7;
-        const boardOffset = cellsize * 8;
+        const width = size;
+        const height = size;
+        const boardOffset = cellsize * (size+1);
         // Get a grid of points
         const grid1 = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize});
         let startx = boardOffset;
@@ -89,10 +93,11 @@ export class EntropyRenderer extends RendererBase {
                 boardlabel = label2;
             }
             let titlePoint: IPoint = {x: 0, y: 0};
+            const half = Math.floor(size / 2);
             if (this.json.board.orientation === "vertical") {
-                titlePoint = {x: grid[0][0].x - (cellsize * 1.5), y: grid[3][0].y};
+                titlePoint = {x: grid[0][0].x - (cellsize * 1.5), y: grid[half][0].y};
             } else {
-                titlePoint = {x: grid[0][3].x, y: grid[0][0].y - (cellsize * 1.5)};
+                titlePoint = {x: grid[0][half].x, y: grid[0][0].y - (cellsize * 1.5)};
             }
 
             const board = this.rootSvg.group().id(boardid);

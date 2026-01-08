@@ -2325,6 +2325,10 @@
                 "style": {
                     "enum": ["entropy"]
                 },
+                "size": {
+                    "enum": [5, 6, 7],
+                    "default": 7
+                },
                 "boardOne": {
                     "description": "Describes the left-hand or top board",
                     "type": "object",
