@@ -10,6 +10,7 @@ import { cairo } from "./cairo";
 import { pentagonal } from "./pentagonal";
 import { conicalHex, genPolys as genConicalHexPolys } from "./conicalHex";
 import { pyramidHex, genPolys as genPyramidHexPolys } from "./pyramidHex";
+export { mancalaRound, type IMancalaRoundArgs } from "./mancalaRound";
 
 import { GridPoints, IPoint, Poly, IPolyCircle, IPolyPath, IPolyPolygon, type SnubStart, type PentagonOrientation } from "./_base";
 import { deg2rad } from "../common/plotting";

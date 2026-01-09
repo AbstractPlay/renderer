@@ -235,6 +235,11 @@
                     "description": "You can also view sowing boards with numerals. This is a standard Mancala board, showing end pits.",
                     "render": "{\"renderer\":\"sowing-numerals\",\"board\":{\"style\":\"sowing\",\"width\":6,\"height\":2,\"markers\":[{\"type\":\"edge\",\"edge\":\"N\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"S\",\"colour\":1}]},\"pieces\":\"5,5,4,,5,5\\n5,,4,4,4,5\\n1,1\"}"
                 },
+                "boards-sowing-round": {
+                    "name": "Boards: Sowing (Round)",
+                    "description": "A round sowing board.",
+                    "render": `{"renderer":"stacking-offset","board":{"style":"sowing-round","width":8},"pieces":null}`
+                },
                 "boards-conhex-dots": {
                     "name": "Boards: ConHex (Dots)",
                     "description": "A usual game of ConHex where you interact with the dots and the cells get filled in incidentally. This board only works with the `conhex` renderer. Dots are labelled and indexed as a normal grid. Cells are filled by the `flood` marker and are indexed like a circle, with the first row being the outermost ring, starting from the top-left corner and proceeding clockwise.",

@@ -111,6 +111,9 @@ export class StackingOffsetRenderer extends RendererBase {
                 this.cellsize = 15;
                 [gridPoints, polys] = this.moon();
                 break;
+            case "sowing-round":
+                gridPoints = this.sowingRound();
+                break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);
         }

@@ -3,7 +3,7 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, Use as SVGUse, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, pentagonal } from "../grids";
+import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, pentagonal, mancalaRound } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Colourstrings, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, PositiveInteger, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
@@ -5635,6 +5635,139 @@ export abstract class RendererBase {
         }
 
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
+
+        return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator is for the round sowing board. Points are the centre of each pit.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected sowingRound(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (this.json.board.width === undefined) ) {
+            throw new Error("The `width` property is required for this board type.");
+        }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
+
+        const width: number = this.json.board.width;
+        // height is always 1 more for board labels
+        let height = 2;
+        if ("height" in this.json.board && this.json.board.height !== undefined) {
+            height = this.json.board.height + 1;
+        }
+        const cellsize = this.cellsize * 1.25;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        const grid = mancalaRound({gridHeight: height, gridWidth: width, cellWidth: cellsize, cellHeight: cellsize * 1.5});
+        const board = this.rootSvg.group().id("board");
+
+        const gridlines = board.group().id("gridlines");
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+
+        // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const labels = board.group().id("labels");
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels;
+            }
+            const columnLabels = this.getLabels(customLabels, width);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+
+            // Columns (letters)
+            for (let col = 0; col < width; col++) {
+                const pointTop = {x: grid[grid.length - 1][col].x, y: grid[grid.length - 1][col].y};
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+            }
+        }
+
+        // Now the tiles
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        const tilePit = this.rootSvg.defs().symbol().id("pit-symbol").viewbox(0, 0, cellsize, cellsize);
+        tilePit.circle(cellsize * 0.85)
+            .center(cellsize / 2, cellsize / 2)
+            .fill({color: this.options.colourContext.background, opacity: 0})
+            .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity})
+            .attr("data-outlined", true)
+
+        // check for cells with `outline` marker
+        let outlines: MarkerOutline[] = [];
+        if ( ("markers" in this.json.board) && (this.json.board.markers !== undefined) ) {
+            outlines = this.json.board.markers.filter(m => m.type === "outline") as MarkerOutline[];
+        }
+
+        const tiles = board.group().id("tiles");
+        // Place them (subtract 1 from height to account for labels)
+        for (let row = 0; row < height - 1; row++) {
+            for (let col = 0; col < width; col++) {
+                const outlined = outlines.find(o => o.points.find(p => p.col === col && p.row === row) !== undefined);
+
+                // skip blocked cells
+                if ( (blocked !== undefined) && (blocked.find(o => o.row === row && o.col === col) !== undefined) ) {
+                    continue;
+                }
+                let tile = tilePit;
+                if (outlined !== undefined) {
+                    const outWidth = baseStroke;
+                    let outColor = baseColour;
+                    let outOpacity = baseOpacity;
+                    if (outlined.colour !== undefined) {
+                        outColor = this.resolveColour(outlined.colour) as string;
+                    }
+                    if (outlined.opacity !== undefined) {
+                        outOpacity = outlined.opacity;
+                    }
+                    tile = tile.clone().id(`tile-outlined-${outColor}`);
+                    tile.find("[data-outlined=true]").each(function(this: SVGElement) { this.stroke({width: outWidth, color: outColor, opacity: outOpacity}); });
+                    this.rootSvg.defs().add(tile);
+                }
+
+                const {x, y} = grid[row][col];
+                const used = tiles.use(tile).size(cellsize, cellsize).center(x, y);
+                if (this.options.boardClick !== undefined) {
+                    used.click(() => this.options.boardClick!(row, col, ""));
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
     }

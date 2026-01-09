@@ -63,6 +63,7 @@ export type BoardStyles =
   | "circular-cobweb"
   | "circular-moon"
   | "sowing"
+  | "sowing-round"
   | "conhex-dots"
   | "conhex-cells"
   | "cairo-collinear"
