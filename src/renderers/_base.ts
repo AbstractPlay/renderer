@@ -9352,6 +9352,7 @@ export abstract class RendererBase {
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.floor(box.width / this.cellsize);
             placeY = boardBottom + padding;
+            const rotation = this.getRotation();
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea];
                 let hpad = 0;
@@ -9402,7 +9403,7 @@ export abstract class RendererBase {
                     }
                     const newx = (col * (cellsize + hpad)) + (cellsize / 2);
                     const newy = (textHeight * 2) + (row * (cellsize+hpad)) + (cellsize / 2);
-                    const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1});
+                    const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1}).rotate(rotation);
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                     }
