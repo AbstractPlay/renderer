@@ -137,11 +137,14 @@ const formatAJVErrors = (errors: AJVError[]): string => {
  */
 export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): string => {
     const node = document.createElement("div");
+    document.body.appendChild(node); // temporarily attach
     const uid = uuidv4();
     node.setAttribute("id", uid);
     opts.divelem = node;
     const canvas = render(json, opts);
-    return addPrefix(canvas.svg(), opts);
+    const svgString = addPrefix(canvas.svg(), opts);
+    document.body.removeChild(node); // clean up
+    return svgString;
 }
 
 /**
