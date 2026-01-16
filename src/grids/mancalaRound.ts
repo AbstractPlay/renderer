@@ -77,6 +77,6 @@ export const mancalaRound = (args: IMancalaRoundArgs): GridPoints => {
         grid.push(vertices);
     }
 
-    console.log(grid);
+    // console.log(grid);
     return grid;
 }
