@@ -9403,7 +9403,10 @@ export abstract class RendererBase {
                     }
                     const newx = (col * (cellsize + hpad)) + (cellsize / 2);
                     const newy = (textHeight * 2) + (row * (cellsize+hpad)) + (cellsize / 2);
-                    const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1}).rotate(rotation);
+                    const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1});
+                    if (rotation !== 0) {
+                        rotate(use, rotation, newx, newy);
+                    }
                     if (this.options.boardClick !== undefined) {
                         use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
                     }
