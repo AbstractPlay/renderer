@@ -7932,12 +7932,11 @@ export abstract class RendererBase {
                     }
                     font += marker.font ?? '';
                     const text = svgGroup.text((add) => {
-                            add.tspan(marker.label ).attr('style', font);
+                            add.tspan(marker.label ).attr('style', font).attr("dy", "0.55em");
                         })
                         .addClass(`aprender-marker-${x2uid(cloned)}`)
                         .font({ fill: colour, anchor: "middle"})
-                        .attr("alignment-baseline", "hanging")
-                        .attr("dominant-baseline", "hanging");
+                        .attr("dominant-baseline", "middle");
                     text.path(`M${x1},${y1} L${x2},${y2}`)
                         .attr("startOffset", "50%");
                 } else if (marker.type === "edge") {
