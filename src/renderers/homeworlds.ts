@@ -563,8 +563,8 @@ export class HomeworldsRenderer extends RendererBase {
                 fill: this.contrastColour,
                 size: fontsize,
             })
-            .attr("alignment-baseline", "hanging")
-            .attr("dominant-baseline", "hanging")
+            .attr("dy", "0.55em")
+            .attr("dominant-baseline", "middle")
             .move(realX + 5, realY + 2);
 
         return nested;

@@ -235,10 +235,10 @@ export class FreespaceRenderer extends RendererBase {
                     const [{x: x1, y: y1}, {x: x2, y: y2}] = marker.points
 
                     const text = field.text(marker.label)
+                        .attr("dy", "0.55em")
                         .addClass(`aprender-marker-${x2uid(marker)}`)
                         .font({size: fontsize, fill: colour, anchor: "middle"})
-                        .attr("alignment-baseline", "hanging")
-                        .attr("dominant-baseline", "hanging")
+                        .attr("dominant-baseline", "middle")
                     text.path(`M${x1},${y1} L${x2},${y2}`)
                         .attr("startOffset", "50%");
                 } else if (marker.type === "glyph") {

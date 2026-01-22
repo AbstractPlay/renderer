@@ -190,10 +190,9 @@ export class PolyominoRenderer extends RendererBase {
                     const txtWidth = tmptxt.bbox().w;
                     tmptxt.remove();
                     nested.width(Math.max(areaWidth, txtWidth));
-                    const txt = nested.text(area.label).addClass(`aprender-area-label`);
+                    const txt = nested.text(area.label).addClass(`aprender-area-label`).attr("dy", "0.55em");
                     txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
-                        .attr("alignment-baseline", "hanging")
-                        .attr("dominant-baseline", "hanging")
+                        .attr("dominant-baseline", "middle")
                         .move(0, 0);
 
                     // Now place the whole group below the board
@@ -256,10 +255,9 @@ export class PolyominoRenderer extends RendererBase {
                     const txtWidth = tmptxt.bbox().w;
                     tmptxt.remove();
                     nested.width(Math.max(areaWidth, txtWidth));
-                    const txt = nested.text(area.label).addClass(`aprender-area-label`);
+                    const txt = nested.text(area.label).addClass(`aprender-area-label`).attr("dy", "0.55em");
                     txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
-                        .attr("alignment-baseline", "hanging")
-                        .attr("dominant-baseline", "hanging")
+                        .attr("dominant-baseline", "middle")
                         .move(0, 0);
 
                     // Now place the whole group below the board

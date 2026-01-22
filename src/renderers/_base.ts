@@ -9432,8 +9432,8 @@ export abstract class RendererBase {
                 nested.viewbox(vbx, vby, realWidth, vbh);
                 const txt = nested.text(area.label).addClass(`aprender-area-label`);
                 txt.font({size: textHeight, anchor: "start", fill: labelColour})
-                    .attr("alignment-baseline", "hanging")
-                    .attr("dominant-baseline", "hanging")
+                    .attr("dy", "0.55em")
+                    .attr("dominant-baseline", "middle")
                     .move(0, 0);
 
                 // Now place the whole group below the board

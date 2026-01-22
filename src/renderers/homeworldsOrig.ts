@@ -470,8 +470,8 @@ export class HomeworldsOrigRenderer extends RendererBase {
                 fill: "#fff",
                 size: fontsize,
             })
-            .attr("alignment-baseline", "hanging")
-            .attr("dominant-baseline", "hanging")
+            .attr("dy", "0.55em")
+            .attr("dominant-baseline", "middle")
             .move(5, 5);
 
         return nested;

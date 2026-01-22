@@ -229,10 +229,9 @@ export class StackingExpandingRenderer extends RendererBase {
                     }
 
                     // Add area label
-                    const txt = this.rootSvg.text(area.label);
+                    const txt = this.rootSvg.text(area.label).attr("dy", "0.55em");
                     txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
-                        .attr("alignment-baseline", "hanging")
-                        .attr("dominant-baseline", "hanging")
+                        .attr("dominant-baseline", "middle")
                         .move(gridPoints[0][0].x - this.cellsize, placeY);
 
                     const areaHeight = textHeight + cellsize + maxHeight * offset;
