@@ -8934,6 +8934,7 @@ export abstract class RendererBase {
         const nested = this.rootSvg.defs().nested().id("_key");
 
         // build symbols of each label
+        const rotation = this.getRotation();
         const labels: SVGSymbol[] = [];
         let maxWidth = 0;
         let maxHeight = 0;
@@ -8967,7 +8968,10 @@ export abstract class RendererBase {
                 id = `_key_${k.value}`;
             }
             const g = nested.nested().id(id);
-            usePieceAt({svg: g, piece, cellsize: height, x: height / 2, y: height / 2, scalingFactor: 1});
+            const used = usePieceAt({svg: g, piece, cellsize: height, x: height / 2, y: height / 2, scalingFactor: 1});
+            if (rotation !== 0) {
+                rotate(used, rotation, height / 2, height / 2);
+            }
             // Have to manually calculate the width so Firefox will render it properly.
             const factor = height / symlabel.viewbox().h;
             const usedLabel = g.use(symlabel).size(symlabel.viewbox().w * factor, height).dx(height * 1.1);
