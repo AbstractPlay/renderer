@@ -5,7 +5,7 @@ import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-gr
 import type { Hex } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, hexOfTri, hexSlanted, rectOfRects, snubsquare, cobweb, cairo, conicalHex, genConicalHexPolys, pyramidHex, genPyramidHexPolys, pentagonal, mancalaRound } from "../grids";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, IPolyCircle, SnubStart, IPolyPath } from "../grids/_base";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Colourstrings, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, PositiveInteger, type Polymatrix } from "../schemas/schema";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, Colourstrings, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, MarkerOutline, PositiveInteger, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { ICobwebArgs, cobwebLabels, cobwebPolys } from "../grids/cobweb";
 import { projectPoint, scale, rotate, usePieceAt, matrixRectRotN90, calcPyramidOffset, calcLazoOffset, centroid, projectPointEllipse, rotatePoint, ptDistance, calcBearing, smallestDegreeDiff, shortenLine } from "../common/plotting";
@@ -710,6 +710,36 @@ export abstract class RendererBase {
                             got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(normColour); });
                             // @ts-expect-error (poor SVGjs typing)
                             got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke(normColour); isStroke = true; });
+                        }
+                        // if colour is fully undefined, try to deduce the highest contrast colour
+                        else {
+                            // Only applies to text glyphs for now
+                            if ("text" in g && g.text !== undefined) {
+                                // go through all the glyphs before this to find the darkest colour
+                                let darkest = contextBackground;
+                                for (let i = 0; i < idx; i++) {
+                                    const prev = glyphs[i];
+                                    if ("colour" in prev && prev.colour !== undefined) {
+                                        const curr = this.resolveColour(prev.colour) as string;
+                                        const cDarkest = tinycolor(darkest);
+                                        const cCurr = tinycolor(curr);
+                                        if (cCurr.getBrightness() < cDarkest.getBrightness()) {
+                                            darkest = curr;
+                                        }
+                                    }
+                                }
+                                // now use the bestContrast function to choose a colour
+                                const func: FunctionBestContrast = {
+                                    func: "bestContrast",
+                                    bg: darkest,
+                                    fg: [contextBackground, contextFill, contextStroke],
+                                };
+                                const normColour = this.resolveColour(func, "#000");
+                                // @ts-expect-error (poor SVGjs typing)
+                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(normColour); });
+                                // @ts-expect-error (poor SVGjs typing)
+                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke(normColour); isStroke = true; });
+                            }
                         }
                         haveStrokes.push(isStroke);
                     }

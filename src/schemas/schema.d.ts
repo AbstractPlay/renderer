@@ -329,11 +329,11 @@ export interface Glyph {
    */
   orientation?: "vertical" | "fluid";
   /**
-   * Flips the glyph across the x axis
+   * Flips x coordinates
    */
   flipx?: boolean;
   /**
-   * Flips the glyph across the y axis
+   * Flips the y coordinates
    */
   flipy?: boolean;
   /**
