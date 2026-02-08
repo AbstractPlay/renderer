@@ -1401,9 +1401,9 @@ sheet.glyphs.set("wedge", (canvas: SVGContainer) => {
 });
 
 // Half hex wedge - top half of wedge
-sheet.glyphs.set("wedge-top-half", (canvas: SVGContainer) => {
+sheet.glyphs.set("wedge-bottom-half", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
-    symbol.polygon("50,50 93.3,50 93.3,75")
+    symbol.polygon("50,50 93.3,25 93.3,50")
         .attr("data-playerfill", true)
         .fill("#fff")
         .stroke({ width: 0 });
@@ -1412,9 +1412,9 @@ sheet.glyphs.set("wedge-top-half", (canvas: SVGContainer) => {
 });
 
 // Half hex wedge - top half of wedge
-sheet.glyphs.set("wedge-bottom-half", (canvas: SVGContainer) => {
+sheet.glyphs.set("wedge-top-half", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
-    symbol.polygon("50,50 93.3,25 93.3,50")
+    symbol.polygon("50,50 93.3,50 93.3,75")
         .attr("data-playerfill", true)
         .fill("#fff")
         .stroke({ width: 0 });
