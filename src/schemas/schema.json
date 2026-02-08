@@ -313,12 +313,12 @@
                     "default": "fluid"
                 },
                 "flipx": {
-                    "description": "Flips the glyph across the x axis",
+                    "description": "Flips x coordinates",
                     "type": "boolean",
                     "default": false
                 },
                 "flipy": {
-                    "description": "Flips the glyph across the y axis",
+                    "description": "Flips the y coordinates",
                     "type": "boolean",
                     "default": false
                 },

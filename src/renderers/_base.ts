@@ -779,12 +779,11 @@ export abstract class RendererBase {
                     }
 
                     // flip if requested
-                    // (svg.js seems to be doing it opposite of what I expect)
                     if (g.flipx !== undefined && g.flipx) {
-                        use.flip("y");
+                        use.flip("x");
                     }
                     if (g.flipy !== undefined && g.flipy) {
-                        use.flip("x");
+                        use.flip("y");
                     }
 
                     // Shift if requested
