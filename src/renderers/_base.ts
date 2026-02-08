@@ -7308,18 +7308,90 @@ export abstract class RendererBase {
                     if ( ("size" in note) && (note.size !== undefined) ) {
                         diameter = note.size;
                     }
+                    // Get shape type (default to filled circle for backwards compatibility)
+                    let dotShape: string = "circle";
+                    if ( ("dotShape" in note) && (note.dotShape !== undefined) ) {
+                        dotShape = note.dotShape;
+                    }
+                    let rotation = 0;
+                    if ( ("rotation" in note) && (note.rotation !== undefined) ) {
+                        rotation = note.rotation;
+                    }
+
                     for (const node of (note.targets as ITarget[])) {
                         const pt = this.getStackedPoint(grid, node.col, node.row);
                         if (pt === undefined) {
                             throw new Error(`Annotation - Dots: Could not find coordinates for row ${node.row}, column ${node.col}.`);
                         }
-                        notes.circle(this.cellsize * diameter)
-                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
-                            .fill(colour)
-                            .opacity(opacity)
-                            .stroke({width: 0})
-                            .center(pt.x, pt.y)
-                            .attr({ 'pointer-events': 'none' });
+
+                        if (dotShape === "circle") {
+                            // Default filled circle
+                            notes.circle(this.cellsize * diameter)
+                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                .fill(colour)
+                                .opacity(opacity)
+                                .stroke({width: 0})
+                                .center(pt.x, pt.y)
+                                .attr({ 'pointer-events': 'none' });
+                        } else if (dotShape === "ring") {
+                            // Unfilled circle (ring) for dive indication
+                            const strokeWidth = this.cellsize * diameter * 0.3;
+                            notes.circle(this.cellsize * diameter * 0.8)
+                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                .fill("none")
+                                .opacity(opacity)
+                                .stroke({color: colour, width: strokeWidth})
+                                .center(pt.x, pt.y)
+                                .attr({ 'pointer-events': 'none' });
+                        } else if (dotShape === "ring-large") {
+                            // Larger unfilled circle for power dive indication
+                            const largeDiameter = diameter * 1.1;
+                            const strokeWidth = this.cellsize * largeDiameter * 0.3;
+                            notes.circle(this.cellsize * largeDiameter)
+                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                .fill("none")
+                                .opacity(opacity)
+                                .stroke({color: colour, width: strokeWidth})
+                                .center(pt.x, pt.y)
+                                .attr({ 'pointer-events': 'none' });
+                        } else if (dotShape === "chevron") {
+                            // Chevron shape pointing up at 0°, rotated by rotation degrees
+                            const size = this.cellsize * diameter;
+                            const halfSize = size / 2;
+                            // Draw a "V" shape pointing up (chevron)
+                            const chevronPath = `M ${-halfSize * 0.7} ${halfSize * 0.3} L 0 ${-halfSize * 0.5} L ${halfSize * 0.7} ${halfSize * 0.3}`;
+                            notes.path(chevronPath)
+                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                .fill("none")
+                                .opacity(opacity)
+                                .stroke({color: colour, width: this.cellsize * 0.04, linecap: "round", linejoin: "round"})
+                                .center(pt.x, pt.y)
+                                .transform({rotate: rotation, originX: pt.x, originY: pt.y})
+                                .attr({ 'pointer-events': 'none' });
+                        } else if (dotShape === "explosion") {
+                            // Simple starburst/explosion shape
+                            const size = this.cellsize * diameter * 1.2;
+                            const outerRadius = size / 2;
+                            const innerRadius = outerRadius * 0.4;
+                            const numPoints = 8;
+                            let pathData = "";
+                            for (let i = 0; i < numPoints * 2; i++) {
+                                const angle = (i * Math.PI) / numPoints - Math.PI / 2;
+                                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                                const x = Math.cos(angle) * radius;
+                                const y = Math.sin(angle) * radius;
+                                pathData += (i === 0 ? "M " : " L ") + x + " " + y;
+                            }
+                            pathData += " Z";
+                            notes.path(pathData)
+                                .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                                .fill(colour)
+                                .opacity(opacity)
+                                .stroke({width: 0})
+                                .center(pt.x, pt.y)
+                                .transform({rotate: rotation, originX: pt.x, originY: pt.y})
+                                .attr({ 'pointer-events': 'none' });
+                        }
                     }
                 } else if ( (note.type !== undefined) && (note.type === "glyph")) {
                     if ( (! ("targets" in note)) || (note.targets.length < 1) ) {

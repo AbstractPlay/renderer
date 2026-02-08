@@ -511,6 +511,16 @@
                     "description": "Only meaningful for enter/exit notations. By default, a background is drawn before the dotted line. This isn't desireably in rare occasions where you want markers underneath the annotation to be visible.",
                     "type": "boolean",
                     "default": true
+                },
+                "dotShape": {
+                    "description": "Only meaningful for `dots` annotations. Determines the visual shape of the marker. Default is a filled circle.",
+                    "enum": ["circle", "ring", "ring-large", "chevron", "explosion"],
+                    "default": "circle"
+                },
+                "rotation": {
+                    "description": "Rotation angle in degrees for directional shapes like chevron. 0 points up/north.",
+                    "type": "number",
+                    "default": 0
                 }
             },
             "required": ["type", "targets"],
