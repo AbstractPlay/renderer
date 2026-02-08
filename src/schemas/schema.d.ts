@@ -1517,6 +1517,14 @@ export interface AnnotationBasic {
    * Only meaningful for enter/exit notations. By default, a background is drawn before the dotted line. This isn't desireably in rare occasions where you want markers underneath the annotation to be visible.
    */
   occlude?: boolean;
+  /**
+   * Only meaningful for `dots` annotations. Determines the visual shape of the marker. Default is a filled circle.
+   */
+  dotShape?: "circle" | "ring" | "ring-large" | "chevron" | "explosion";
+  /**
+   * Rotation angle in degrees for directional shapes like chevron. 0 points up/north.
+   */
+  rotation?: number;
 }
 /**
  * Delta annotations for the `sowing-*` renderers

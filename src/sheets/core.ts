@@ -204,6 +204,52 @@ sheet.glyphs.set("circle", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("cloud", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const cloud = group.group();
+
+    // Single-path, rounded cloud silhouette.
+    cloud.path(`
+        M 150 290
+        C 115 290 90 268 90 240
+        C 90 214 110 194 138 194
+        C 148 164 176 142 210 142
+        C 246 142 276 165 284 198
+        C 292 195 301 194 310 194
+        C 343 194 370 220 370 252
+        C 370 282 345 306 314 306
+        L 158 306
+        C 154 306 152 304 150 301
+        C 149 298 150 294 150 290
+        Z
+    `)
+        .stroke({ width: 4, color: "#000" })
+        .fill("#f7f7f7")
+        .attr("data-playerfill", true);
+
+    // A couple of subtle interior puffs to give it character.
+    cloud.path(`
+        M 155 260
+        C 165 246 184 238 205 238
+        C 227 238 246 247 255 262
+    `)
+        .stroke({ width: 4, color: "#000" })
+        .fill("none")
+        .opacity(0.35);
+
+    cloud.path(`
+        M 235 270
+        C 246 259 262 252 280 252
+        C 297 252 312 258 322 269
+    `)
+        .stroke({ width: 4, color: "#000" })
+        .fill("none")
+        .opacity(0.35);
+
+    group.viewbox(0, 0, 460, 460);
+    return group;
+});
+
 sheet.glyphs.set("cross-diag", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(-10, -10, 110, 110)
@@ -1100,11 +1146,11 @@ sheet.glyphs.set("plane", (canvas: SVGContainer) => {
     plane.circle(16)
         .center(200, 410)
         .stroke({width: 2, color: "#000"})
-        .fill("#ed1c24");
+        .fill("#fff");
     plane.circle(16)
         .center(300, 410)
         .stroke({width: 2, color: "#000"})
-        .fill("#ed1c24");
+        .fill("#fff");
     plane.circle(48)
         .center(363, 157)
         .stroke({width: 2, color: "#000"})
@@ -1331,6 +1377,39 @@ sheet.glyphs.set("vline", (canvas: SVGContainer) => {
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
+});
+
+// Hex wedge - equilateral triangle with one vertex at the center
+sheet.glyphs.set("wedge", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    symbol.polygon("50,50 93.3,25 93.3,75")
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({ width: 0 });
+    symbol.viewbox(0, 0, 100, 100);
+    return symbol;
+});
+
+// Half hex wedge - top half of wedge
+sheet.glyphs.set("wedge-top-half", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    symbol.polygon("50,50 93.3,50 93.3,75")
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({ width: 0 });
+    symbol.viewbox(0, 0, 100, 100);
+    return symbol;
+});
+
+// Half hex wedge - top half of wedge
+sheet.glyphs.set("wedge-bottom-half", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    symbol.polygon("50,50 93.3,25 93.3,50")
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({ width: 0 });
+    symbol.viewbox(0, 0, 100, 100);
+    return symbol;
 });
 
 sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
