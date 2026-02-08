@@ -732,7 +732,8 @@ export abstract class RendererBase {
                                 const func: FunctionBestContrast = {
                                     func: "bestContrast",
                                     bg: darkest,
-                                    fg: [contextBackground, contextFill, contextStroke],
+                                    // fg: [contextBackground, contextFill, contextStroke],
+                                    fg: ["#000", "#fff"],
                                 };
                                 const normColour = this.resolveColour(func, "#000");
                                 // @ts-expect-error (poor SVGjs typing)
