@@ -120,7 +120,7 @@ sheet.glyphs.set("bricks", (canvas: SVGContainer) => {
         .move(4, 4)
         .radius(7)
         .fill("white");
-    
+
     group.rect(50, 50)
         .fill(pattern)
         .attr({ mask: "url(#mainMask)" });
@@ -996,10 +996,12 @@ sheet.glyphs.set("piece-chariot", (canvas: SVGContainer) => {
     group.circle(sheet.cellsize * 0.7)
         .fill("none")
         .stroke({width: border * 2, color: "#000"})
+        .attr("data-playerstroke2", true)
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle (border * 2)
         .fill("none")
         .stroke({width: border / 4, color: "#000"})
+        .attr("data-playerstroke2", true)
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
 
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
@@ -1017,6 +1019,7 @@ sheet.glyphs.set("piece-cog", (canvas: SVGContainer) => {
     group.circle(5)
         .center(16, 16)
         .attr("data-context-background", true)
+        .attr("data-playerfill2", true)
         .fill("#000")
         .stroke("none")
     group.viewbox(2, 1, 29, 29);
@@ -1035,6 +1038,7 @@ sheet.glyphs.set("piece-horse", (canvas: SVGContainer) => {
     group.circle(sheet.cellsize * 0.7)
         .fill("none")
         .stroke({width: border * 2, color: "#000", dasharray: "10"})
+        .attr("data-playerstroke2", true)
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
 
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
@@ -1129,6 +1133,7 @@ sheet.glyphs.set("piece-triangle-dot", (canvas: SVGContainer) => {
         .fill("#fff");
     group.circle(base / 3)
         .attr("data-context-fill", true)
+        .attr("data-playerfill2", true)
         .fill("#000")
         .center(cx, cy);
     group.viewbox(0, 0, cellsize, cellsize);
