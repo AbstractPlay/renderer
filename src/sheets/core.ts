@@ -1397,10 +1397,11 @@ sheet.glyphs.set("vline", (canvas: SVGContainer) => {
 // Hex wedge - equilateral triangle with one vertex at the center
 sheet.glyphs.set("wedge", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
-    symbol.polygon("50,50 93.3,25 93.3,75")
+    symbol.polygon("50,50 93.30127,25 93.30127,75")
         .attr("data-playerfill", true)
+        .attr("data-playerstroke", true)
         .fill("#fff")
-        .stroke({ width: 0 });
+        .stroke({ width: 1, linejoin: "round" });
     symbol.viewbox(0, 0, 100, 100);
     return symbol;
 });
@@ -1408,10 +1409,11 @@ sheet.glyphs.set("wedge", (canvas: SVGContainer) => {
 // Half hex wedge - top half of wedge
 sheet.glyphs.set("wedge-bottom-half", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
-    symbol.polygon("50,50 93.3,25 93.3,50")
+    symbol.polygon("50,50 93.30127,25 93.30127,50")
         .attr("data-playerfill", true)
+        .attr("data-playerstroke", true)
         .fill("#fff")
-        .stroke({ width: 0 });
+        .stroke({ width: 1, linejoin: "round" });
     symbol.viewbox(0, 0, 100, 100);
     return symbol;
 });
@@ -1419,10 +1421,11 @@ sheet.glyphs.set("wedge-bottom-half", (canvas: SVGContainer) => {
 // Half hex wedge - top half of wedge
 sheet.glyphs.set("wedge-top-half", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
-    symbol.polygon("50,50 93.3,50 93.3,75")
+    symbol.polygon("50,50 93.30127,50 93.30127,75")
         .attr("data-playerfill", true)
+        .attr("data-playerstroke", true)
         .fill("#fff")
-        .stroke({ width: 0 });
+        .stroke({ width: 1, linejoin: "round" });
     symbol.viewbox(0, 0, 100, 100);
     return symbol;
 });
