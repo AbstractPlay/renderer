@@ -4013,19 +4013,21 @@ export abstract class RendererBase {
                             }
                         }
                         // two above if outer point and possible
-                        if ( (col === 0 || col === grid[row].length - 1) && (row > 1)) {
-                            // skip if blocked
-                            const found = blocked?.find(b => b.row === row - 2 && b.col === col);
-                            if (found === undefined) {
-                                const prev = grid[row - 2][col];
-                                const x1 = curr.x;
-                                const y1 = curr.y;
-                                const x2 = prev.x;
-                                const y2 = prev.y;
-                                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        // but ignore if `no-borders` is set
+                        if ((this.json.options === undefined || !this.json.options.includes("no-border"))) {
+                            if ( (col === 0 || col === grid[row].length - 1) && (row > 1)) {
+                                // skip if blocked
+                                const found = blocked?.find(b => b.row === row - 2 && b.col === col);
+                                if (found === undefined) {
+                                    const prev = grid[row - 2][col];
+                                    const x1 = curr.x;
+                                    const y1 = curr.y;
+                                    const x2 = prev.x;
+                                    const y2 = prev.y;
+                                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                                }
                             }
                         }
-
                     }
                     // narrow rows connect directly above and one to the right
                     else {
