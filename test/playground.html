@@ -165,6 +165,11 @@
                     "description": "A hexagon of triangles, with pieces placed on the intersections.",
                     "render": "{\"renderer\":\"stacking-offset\",\"board\":{\"style\":\"hex-of-tri\",\"minWidth\":4,\"maxWidth\":7},\"legend\":{\"A\":{\"name\":\"piece\",\"colour\":1},\"B\":{\"name\":\"piece\",\"colour\":2}},\"pieces\":\"-,-,-,-\\nB,-,-,-,-\\nB,A,-,-,-,-\\nA,A,-,-,-,-,-\\nA,-,B,-,-,-\\nBAB,BA,A,-,-\\nB,AB,-,-\"}"
                 },
+                "board-hextrif": {
+                    "name": "Boards: Hex of triangles (Faces)",
+                    "description": "A hexagon of triangles, with pieces placed on the spaces.",
+                    "render": `{"board":{"style":"hex-of-tri-f","minWidth":5,"maxWidth":9},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":"AB"}`
+                },
                 "board-hexhex": {
                     "name": "Boards: Hex of hexes",
                     "description": "A hexagon of hexes, with pieces placed in the centres.",
@@ -199,6 +204,11 @@
                     "name": "Boards: Slanted Hex",
                     "description": "A rectangular grid of hexes, slanted to the left.",
                     "render": `{"board":{"style":"hex-slanted","width":8,"height":8},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":null}`,
+                },
+                "board-rectTri": {
+                    "name": "Boards: Rectangle of Triangles",
+                    "description": "A rectangular board derived from `hex-of-tri`. The `no-border` option will omit the left and right edge vertical lines.",
+                    "render": `{"board":{"style":"rect-of-tri","width":7,"height":9},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":"A\\nB"}`
                 },
                 "board-conicalHex": {
                     "name": "Boards: Conical Hex",
