@@ -797,6 +797,10 @@ export abstract class RendererBase {
                         if ( (style === "hex-of-hex") || (style === "hex-slanted") ) {
                             factor *= 0.85;
                         }
+                        // and *-tri-f pieces need to be shrunk a lot
+                        else if (style.endsWith("-tri-f")) {
+                            factor *= 0.5;
+                        }
                         // but pieces on vertex boards need to be grown a little so they touch
                         else if (style.startsWith("vertex")) {
                             factor *= 1.16;
@@ -3465,6 +3469,616 @@ export abstract class RendererBase {
     }
 
     /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a rectangular field of triangles (similar to hex-of-tri) where the points are placed on the intersections of lines.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected rectOfTri(): GridPoints {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("width" in this.json.board)) || (! ("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+            throw new Error("Both the `width` and `height` properties are required for this board type.");
+        }
+        if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
+            throw new Error("This function requires that a board style be defined.");
+        }
+        const width: number = this.json.board.width;
+        const height: number = this.json.board.height;
+        const cellsize = this.cellsize;
+        let start: "W"|"N" = "W";
+        if (("triStart" in this.json.board) && (this.json.board.triStart !== undefined)) {
+            start = this.json.board.triStart;
+        }
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        // start with appropriate hexOfTri
+        // add one to height if narrow start (initial grid must start wide)
+        let effHeight = height + (start === "N" ? 1 : 0);
+        // add another if effHeight is even (need the last row to be wide too to strip properly)
+        if (effHeight % 2 === 0) {
+            effHeight++;
+        }
+        let grid = hexOfTri({gridWidthMin: width, gridWidthMax: width + (Math.floor(effHeight / 2)), cellSize: cellsize});
+        // now strip the unnecessary side points
+        // assuming top and bottom are always wide
+        const midrow = Math.floor(effHeight / 2);
+        for (let row = 0; row < effHeight; row++) {
+            const dist = Math.abs(midrow - row);
+            const toDel = Math.ceil((midrow - dist) / 2);
+            for (let i = 0; i < toDel; i++) {
+                grid[row].pop();
+                grid[row].shift();
+            }
+        }
+        // if narrow start, pop the first row
+        if (start === "N") {
+            grid.shift();
+        }
+        // truncate grid to requested height
+        grid = grid.slice(0, height);
+
+        const board = this.rootSvg.group().id("board");
+
+        // have to define tiles early for clickable markers to work
+        const tiles = board.group().id("tiles");
+        const gridlines = board.group().id("gridlines");
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid});
+
+        // create buffer zone first if requested
+        // going to skip separated buffers for this board style
+        let bufferwidth = 0;
+        let show: CompassDirection[] = ["N", "E", "S", "W"];
+        if ( ("buffer" in this.json.board) && (this.json.board.buffer !== undefined) && ("width" in this.json.board.buffer) && (this.json.board.buffer.width !== undefined) && (this.json.board.buffer.width > 0) ) {
+            bufferwidth = cellsize * (this.json.board.buffer as IBuffer).width!;
+            if ( ("show" in this.json.board.buffer) && (this.json.board.buffer.show !== undefined) && (Array.isArray(this.json.board.buffer.show)) && ((this.json.board.buffer.show as string[]).length > 0) ) {
+                show = [...(this.json.board.buffer as IBuffer).show!];
+            }
+            let pattern: string | undefined;
+            if ( ("pattern" in this.json.board.buffer) && (this.json.board.buffer.pattern !== undefined) && (this.json.board.buffer.pattern.length > 0) ) {
+                pattern = (this.json.board.buffer as IBuffer).pattern;
+            }
+            if (pattern !== undefined) {
+                this.loadPattern(pattern);
+            }
+            let fill: SVGElement | undefined;
+            if (pattern !== undefined) {
+                fill = this.rootSvg.findOne(`#${pattern}`) as SVGElement;
+                if (fill === undefined) {
+                    throw new Error("Could not load the fill for the buffer zone.");
+                }
+            }
+            const colourEntries = (this.json.board.buffer as IBuffer).colours;
+            let separated = false;
+            if ( ("separated" in this.json.board.buffer) && this.json.board.buffer.separated !== undefined) {
+                separated = this.json.board.buffer.separated;
+            }
+            const offset = cellsize * 0.2;
+
+            // default, non-separated version first
+            if (!separated) {
+                const wideRow = start === "W" ? 0 : 1;
+                // top
+                let h = bufferwidth;
+                let w = (grid[0][grid[0].length - 1].x + cellsize) - grid[0][0].x;
+                let x = grid[0][0].x - (cellsize / 2);
+                let y = grid[0][0].y - (cellsize / 2) - (h + offset);
+                let buffN: SVGRect | undefined;
+                if (show.includes("N")) {
+                    const key = "_buffer_N";
+                    buffN = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+                // bottom
+                x = grid[grid.length - 1][0].x - (cellsize / 2);
+                y = grid[grid.length - 1][0].y + (cellsize / 2) + offset;
+                let buffS: SVGRect | undefined;
+                if (show.includes("S")) {
+                    const key = "_buffer_S";
+                    buffS = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+                // left
+                w = bufferwidth;
+                h = (grid[grid.length - 1][0].y + cellsize) - grid[0][0].y;
+                x = grid[wideRow][0].x - (cellsize / 2) - (w + offset);
+                y = grid[0][0].y - (cellsize / 2);
+                let buffW: SVGRect | undefined;
+                if (show.includes("W")) {
+                    const key = "_buffer_W";
+                    buffW = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+                // right
+                x = grid[wideRow][grid[wideRow].length - 1].x + (cellsize / 2) + offset;
+                y = grid[0][0].y - (cellsize / 2);
+                let buffE: SVGRect | undefined;
+                if (show.includes("E")) {
+                    const key = "_buffer_E";
+                    buffE = board.rect(w, h).id(key)
+                    .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+                    .move(x, y);
+                }
+
+                // Fill and add click handlers to all four zones at once
+                for (const buff of [buffN, buffS, buffW, buffE]) {
+                    if (buff === undefined) { continue; }
+                    if (colourEntries !== undefined) {
+                        const dir = buff.id()[buff.id().length - 1];
+                        const found = colourEntries.find(entry => entry.side === dir);
+                        if (found === undefined) {
+                            throw new Error(`Board buffers: You didn't provide a colour entry for the side ${dir}.`);
+                        }
+                        buff.fill({color: this.resolveColour(found.colour) as string});
+                    } else {
+                        if (fill !== undefined) {
+                            buff.fill(fill);
+                        } else {
+                            buff.fill({color: "white", opacity: 0})
+                        }
+                        if (this.options.boardClick !== undefined) {
+                            buff.click((e: MouseEvent) => {
+                                this.options.boardClick!(-1, -1, buff.id())
+                                e.stopPropagation();
+                            });
+                        }
+                    }
+                }
+            }
+            // now the separated version
+            else {
+            //     // N & S always include corner dots
+            //     // E & W will only add them if one of N or S aren't present
+            //     const shorten = 0.1;
+            //     const multiple = 1 - (shorten * 2);
+            //     // top
+            //     if (show.includes("N")) {
+            //         const h = bufferwidth;
+            //         const w = cellsize * multiple;
+            //         for (let i = 0; i < grid[0].length; i++) {
+            //             const ctr = grid[0][i];
+            //             const ytop = ctr.y - (cellsize / 2) - (h + offset);
+            //             const fullx1 = ctr.x - (cellsize / 2);
+            //             const fullx2 = ctr.x + (cellsize / 2);
+            //             const [tlx,,,] = shortenLine(fullx1, ytop, fullx2, ytop, shorten);
+            //             const buff = board.rect(w, h).id(`${i},-1`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(tlx, ytop);
+            //             if (fill !== undefined) {
+            //                 buff.fill(fill);
+            //             } else {
+            //                 buff.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buff.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buff.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //         // always add corner dots
+            //         const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,-1`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(grid[0][0].x - (cellsize / 2) - (bufferwidth + offset), grid[0][0].y - (cellsize / 2) - (bufferwidth + offset));
+            //         if (fill !== undefined) {
+            //             buffLeft.fill(fill);
+            //         } else {
+            //             buffLeft.fill({color: "white", opacity: 0})
+            //         }
+            //         if (this.options.boardClick !== undefined) {
+            //             buffLeft.click((e: MouseEvent) => {
+            //                 this.options.boardClick!(-1, -1, buffLeft.id());
+            //                 e.stopPropagation();
+            //             });
+            //         }
+            //         const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(grid[0][grid[0].length - 1].x + (cellsize / 2) + offset, grid[0][grid[0].length - 1].y - (cellsize / 2) - (bufferwidth + offset));
+            //         if (fill !== undefined) {
+            //             buffRight.fill(fill);
+            //         } else {
+            //             buffRight.fill({color: "white", opacity: 0})
+            //         }
+            //         if (this.options.boardClick !== undefined) {
+            //             buffRight.click((e: MouseEvent) => {
+            //                 this.options.boardClick!(-1, -1, buffRight.id());
+            //                 e.stopPropagation();
+            //             });
+            //         }
+            //     }
+            //     // bottom
+            //     if (show.includes("S")) {
+            //         const h = bufferwidth;
+            //         const w = cellsize * multiple;
+            //         for (let i = 0; i < grid[grid.length - 1].length; i++) {
+            //             const ctr = grid[grid.length - 1][i];
+            //             const ytop = ctr.y + (cellsize / 2) + (offset);
+            //             const fullx1 = ctr.x - (cellsize / 2);
+            //             const fullx2 = ctr.x + (cellsize / 2);
+            //             const [tlx,,,] = shortenLine(fullx1, ytop, fullx2, ytop, shorten);
+            //             const buff = board.rect(w, h).id(`${i},${grid.length}`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(tlx, ytop);
+            //             if (fill !== undefined) {
+            //                 buff.fill(fill);
+            //             } else {
+            //                 buff.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buff.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buff.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //         // always add corner dots
+            //         const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,${grid.length}`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(grid[grid.length - 1][0].x - (cellsize / 2) - (bufferwidth + offset), grid[grid.length - 1][0].y + (cellsize / 2) + offset);
+            //         if (fill !== undefined) {
+            //             buffLeft.fill(fill);
+            //         } else {
+            //             buffLeft.fill({color: "white", opacity: 0})
+            //         }
+            //         if (this.options.boardClick !== undefined) {
+            //             buffLeft.click((e: MouseEvent) => {
+            //                 this.options.boardClick!(-1, -1, buffLeft.id());
+            //                 e.stopPropagation();
+            //             });
+            //         }
+            //         const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(grid[grid.length - 1][grid[grid.length - 1].length - 1].x + (cellsize / 2) + offset, grid[grid.length - 1][grid[grid.length - 1].length - 1].y + (cellsize / 2) + offset);
+            //         if (fill !== undefined) {
+            //             buffRight.fill(fill);
+            //         } else {
+            //             buffRight.fill({color: "white", opacity: 0})
+            //         }
+            //         if (this.options.boardClick !== undefined) {
+            //             buffRight.click((e: MouseEvent) => {
+            //                 this.options.boardClick!(-1, -1, buffRight.id());
+            //                 e.stopPropagation();
+            //             });
+            //         }
+            //     }
+            //     // left
+            //     if (show.includes("W")) {
+            //         const w = bufferwidth;
+            //         const h = cellsize * multiple;
+            //         for (let i = 0; i < grid.length; i++) {
+            //             const ctr = grid[i][0];
+            //             const xtop = ctr.x - (cellsize / 2) - (w + offset);
+            //             const fully1 = ctr.y - (cellsize / 2);
+            //             const fully2 = ctr.y + (cellsize / 2);
+            //             const [,tly,,] = shortenLine(xtop, fully1, xtop, fully2, shorten);
+            //             const buff = board.rect(w, h).id(`-1,${i}`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(xtop, tly);
+            //             if (fill !== undefined) {
+            //                 buff.fill(fill);
+            //             } else {
+            //                 buff.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buff.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buff.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //         // only add corner dots if not already present
+            //         if (!show.includes("S")) {
+            //             const buffLeft = board.rect(bufferwidth, bufferwidth).id(`-1,${grid.length}`)
+            //                     .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                     .move(grid[grid.length - 1][0].x - (cellsize / 2) - (bufferwidth + offset), grid[grid.length - 1][0].y + (cellsize / 2) + offset);
+            //             if (fill !== undefined) {
+            //                 buffLeft.fill(fill);
+            //             } else {
+            //                 buffLeft.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buffLeft.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buffLeft.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //         if (!show.includes("N")) {
+            //             const buffRight = board.rect(bufferwidth, bufferwidth).id(`-1,-1`)
+            //                     .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                     .move(grid[0][0].x - (cellsize / 2) - (bufferwidth + offset), grid[0][0].y - (cellsize / 2) - (bufferwidth + offset));
+            //             if (fill !== undefined) {
+            //                 buffRight.fill(fill);
+            //             } else {
+            //                 buffRight.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buffRight.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buffRight.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //     }
+            //     // right
+            //     if (show.includes("E")) {
+            //         const w = bufferwidth;
+            //         const h = cellsize * multiple;
+            //         for (let i = 0; i < grid.length; i++) {
+            //             const ctr = grid[i][grid[i].length - 1];
+            //             const xtop = ctr.x + (cellsize / 2) + (offset);
+            //             const fully1 = ctr.y - (cellsize / 2);
+            //             const fully2 = ctr.y + (cellsize / 2);
+            //             const [,tly,,] = shortenLine(xtop, fully1, xtop, fully2, shorten);
+            //             const buff = board.rect(w, h).id(`${grid[i].length},${i}`)
+            //                 .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                 .move(xtop, tly);
+            //             if (fill !== undefined) {
+            //                 buff.fill(fill);
+            //             } else {
+            //                 buff.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buff.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buff.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //         // only add corner dots if not already present
+            //         if (!show.includes("N")) {
+            //             const buffLeft = board.rect(bufferwidth, bufferwidth).id(`${grid[0].length},-1`)
+            //                     .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                     .move(grid[0][grid[0].length - 1].x + (cellsize / 2) + offset, grid[0][grid[0].length - 1].y - (cellsize / 2) - (bufferwidth + offset));
+            //             if (fill !== undefined) {
+            //                 buffLeft.fill(fill);
+            //             } else {
+            //                 buffLeft.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buffLeft.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buffLeft.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //         if (!show.includes("S")) {
+            //             const buffRight = board.rect(bufferwidth, bufferwidth).id(`${grid[grid.length - 1].length},${grid.length}`)
+            //                     .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
+            //                     .move(grid[grid.length - 1][grid[grid.length - 1].length - 1].x + (cellsize / 2) + offset, grid[grid.length - 1][grid[grid.length - 1].length - 1].y + (cellsize / 2) + offset);
+            //             if (fill !== undefined) {
+            //                 buffRight.fill(fill);
+            //             } else {
+            //                 buffRight.fill({color: "white", opacity: 0})
+            //             }
+            //             if (this.options.boardClick !== undefined) {
+            //                 buffRight.click((e: MouseEvent) => {
+            //                     this.options.boardClick!(-1, -1, buffRight.id());
+            //                     e.stopPropagation();
+            //                 });
+            //             }
+            //         }
+            //     }
+            }
+            bufferwidth += offset;
+        }
+
+        // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            let hideHalf = false;
+            if (this.json.options?.includes("hide-labels-half")) {
+                hideHalf = true;
+            }
+            const labels = board.group().id("labels");
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels;
+            }
+            // account for the midpoint letters
+            const realWidth = width + (width - 1);
+            let columnLabels = this.getLabels(customLabels, realWidth);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+
+            let rowLabels = this.getRowLabels(this.json.board.rowLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                rowLabels.reverse();
+            }
+
+            if (this.json.options?.includes("swap-labels")) {
+                const scratch = [...columnLabels];
+                columnLabels = [...rowLabels];
+                columnLabels.reverse();
+                rowLabels = [...scratch];
+                rowLabels.reverse();
+            }
+
+            // Columns (letters)
+            const minx = Math.min(...grid.flat().map(pt => pt.x));
+            const miny = Math.min(...grid.flat().map(pt => pt.y));
+            const maxx = Math.max(...grid.flat().map(pt => pt.x));
+            const maxy = Math.max(...grid.flat().map(pt => pt.y));
+            for (let col = 0; col < realWidth; col++) {
+                const wideRow = start === "W" ? 0 : 1;
+                const narrowRow = start === "W" ? 1 : 0;
+                const xcol = Math.floor(col / 2);
+                const xrow = (col % 2 === 0) ? wideRow : narrowRow;
+                const pointTop = {x: grid[xrow][xcol].x, y: miny - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
+                const pointBottom = {x: grid[xrow][xcol].x, y: maxy + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
+                if (! hideHalf) {
+                    labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                }
+                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+            }
+
+            // Rows (numbers)
+            for (let row = 0; row < height; row++) {
+                const pointL = {x: minx - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
+                const pointR = {x: maxx + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][0].y};
+                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                if (! hideHalf) {
+                    labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+                }
+            }
+        }
+
+        // Draw grid lines
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null) && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        // Draw grid lines
+        for (let row = 0; row < grid.length; row++) {
+            const isWide = (start === "W") ? (row % 2 === 0) : (row % 2 === 1);
+            const currRow = grid[row];
+            for (let col = 0; col < grid[row].length; col++) {
+                const curr = currRow[col];
+                const isBlocked = blocked?.find(b => b.row === row && b.col === col);
+                if (isBlocked !== undefined) {
+                    continue;
+                }
+                // always connect to cell to the left
+                if (col > 0) {
+                    // skip if blocked
+                    const found = blocked?.find(b => b.row === row && b.col === col - 1);
+                    if (found === undefined) {
+                        const prev = currRow[col - 1];
+                        const x1 = curr.x;
+                        const y1 = curr.y;
+                        const x2 = prev.x;
+                        const y2 = prev.y;
+                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    }
+                }
+
+                // connections are built upward, so only continue with rows after the first
+                if (row > 0) {
+                    // wide rows connect directly above and one to the left if possible
+                    // wide rows also connect to the outer point two rows up, if possible
+                    if (isWide) {
+                        // directly above possible for every point except the last
+                        if (col < width - 1) {
+                            // skip if blocked
+                            const found = blocked?.find(b => b.row === row - 1 && b.col === col);
+                            if (found === undefined) {
+                                const prev = grid[row - 1][col];
+                                const x1 = curr.x;
+                                const y1 = curr.y;
+                                const x2 = prev.x;
+                                const y2 = prev.y;
+                                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                            }
+                        }
+                        // above and to the left good for all but the first
+                        if (col > 0) {
+                            // skip if blocked
+                            const found = blocked?.find(b => b.row === row - 1 && b.col === col - 1);
+                            if (found === undefined) {
+                                const prev = grid[row - 1][col - 1];
+                                const x1 = curr.x;
+                                const y1 = curr.y;
+                                const x2 = prev.x;
+                                const y2 = prev.y;
+                                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                            }
+                        }
+                        // two above if outer point and possible
+                        if ( (col === 0 || col === grid[row].length - 1) && (row > 1)) {
+                            // skip if blocked
+                            const found = blocked?.find(b => b.row === row - 2 && b.col === col);
+                            if (found === undefined) {
+                                const prev = grid[row - 2][col];
+                                const x1 = curr.x;
+                                const y1 = curr.y;
+                                const x2 = prev.x;
+                                const y2 = prev.y;
+                                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                            }
+                        }
+
+                    }
+                    // narrow rows connect directly above and one to the right
+                    else {
+                        // directly above always possible
+                        // skip if blocked
+                        let found = blocked?.find(b => b.row === row - 1 && b.col === col);
+                        if (found === undefined) {
+                            const prev = grid[row - 1][col];
+                            const x1 = curr.x;
+                            const y1 = curr.y;
+                            const x2 = prev.x;
+                            const y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        }
+                        // above and to the right always possible
+                        // skip if blocked
+                        found = blocked?.find(b => b.row === row - 1 && b.col === col + 1);
+                        if (found === undefined) {
+                            const prev = grid[row - 1][col + 1];
+                            const x1 = curr.x;
+                            const y1 = curr.y;
+                            const x2 = prev.x;
+                            const y2 = prev.y;
+                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        }
+                    }
+                }
+            }
+        }
+
+        if (this.options.boardClick !== undefined) {
+            // moving to click catchers across the board to make arbitrary rotation easier
+            // const tiles = board.group().id("tiles");
+            const tile = this.rootSvg.defs().rect(this.cellsize, this.cellsize).fill(this.options.colourContext.background).opacity(0).id("_clickCatcher");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const found = blocked?.find(b => b.row === row && b.col === col);
+                    if (found !== undefined) {
+                        continue;
+                    }
+                    const {x, y} = grid[row][col];
+                    const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                    t.click(() => this.options.boardClick!(row, col, ""));
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
+
+        return grid;
+    }
+
+    /**
      * This is a specialized subset of the rectOfHex function, specifically:
      * `hex-even-p` configuration with external, swapped labels and reversed numbers
      * multiplied by three, in different colours. It was simpler than trying to generalize.
@@ -4791,6 +5405,204 @@ export abstract class RendererBase {
         this.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
         return grid;
+    }
+
+    /**
+     * This draws the board and then returns a map of row/column coordinates to x/y coordinates.
+     * This generator creates a hexagonal-shaped field of triangles where the pieces are placed on the spaces.
+     *
+     * @returns A map of row/column locations to x,y coordinates
+     */
+    protected hexOfTriF(): [GridPoints, Poly[][]] {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Object in an invalid state!");
+        }
+
+        // Check required properties
+        if ( (this.json.board === null) || (! ("minWidth" in this.json.board)) || (! ("maxWidth" in this.json.board)) || (this.json.board.minWidth === undefined) || (this.json.board.maxWidth === undefined) ) {
+            throw new Error("Both the `minWidth` and `maxWidth` properties are required for this board type.");
+        }
+        const minWidth: number = this.json.board.minWidth;
+        const maxWidth: number = this.json.board.maxWidth;
+        const cellsize = this.cellsize;
+        let height = ((maxWidth - minWidth) * 2) + 1;
+        let half: "top"|"bottom"|undefined;
+        let alternating = false;
+        if ( ("half" in this.json.board) && (this.json.board.half !== undefined) && (this.json.board.half !== null) ) {
+            half = this.json.board.half;
+            height = maxWidth - minWidth + 1;
+        } else if ( ("alternatingSymmetry" in this.json.board) && (this.json.board.alternatingSymmetry) ) {
+            alternating = true;
+            const numTop = maxWidth - minWidth + 1
+            const numBottom = maxWidth - numTop;
+            height = numTop + numBottom;
+        }
+        // height is reduced by 1 for the -f version
+        height--;
+
+        let baseStroke = 1;
+        let baseColour = this.options.colourContext.strokes;
+        let baseOpacity = 1;
+        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
+            baseStroke = this.json.board.strokeWeight;
+        }
+        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
+        }
+        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        // Get a grid of points
+        const gridBase = hexOfTri({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
+        // now build the polys and derive the real grid from this
+        const polys: Poly[][] = [];
+        const grid: GridPoints = [];
+        let midrow = maxWidth - minWidth;
+        if (half === "bottom") {
+            midrow = 0;
+        }
+        for (let row = 0; row < gridBase.length - 1; row++) {
+            const pts: IPoint[] = [];
+            const polyrow: Poly[] = [];
+            for (let col = 0; col < gridBase[row].length; col++) {
+                // above the midrow, start upright and alternate
+                if (row < midrow) {
+                    // every point has an upright
+                    const pt1 = gridBase[row][col];
+                    const pt2 = gridBase[row+1][col+1];
+                    const pt3 = gridBase[row+1][col];
+                    polyrow.push({
+                        type: "poly",
+                        points: [pt1, pt2, pt3],
+                    });
+                    pts.push(centroid([pt1, pt2, pt3])!);
+                    // every point except the last has a downward
+                    if (col < gridBase[row].length - 1) {
+                        const pt1 = gridBase[row][col];
+                        const pt2 = gridBase[row][col+1];
+                        const pt3 = gridBase[row+1][col + 1];
+                        polyrow.push({
+                            type: "poly",
+                            points: [pt1, pt2, pt3],
+                        });
+                        pts.push(centroid([pt1, pt2, pt3])!);
+                    }
+                }
+                // starting at the midrow, start downward and alternate
+                else {
+                    // every point but the first and last has an upright
+                    if (col > 0 && col < gridBase[row].length - 1) {
+                        const pt1 = gridBase[row][col];
+                        const pt2 = gridBase[row+1][col];
+                        const pt3 = gridBase[row+1][col-1];
+                        console.log({row, col, pts: [pt1, pt2, pt3]});
+                        polyrow.push({
+                            type: "poly",
+                            points: [pt1, pt2, pt3],
+                        });
+                        pts.push(centroid([pt1, pt2, pt3])!);
+                    }
+                    // every point has a downward except the last
+                    if (col < gridBase[row].length - 1) {
+                        const pt1 = gridBase[row][col];
+                        const pt2 = gridBase[row][col+1];
+                        const pt3 = gridBase[row+1][col];
+                        polyrow.push({
+                            type: "poly",
+                            points: [pt1, pt2, pt3],
+                        });
+                        pts.push(centroid([pt1, pt2, pt3])!);
+                    }
+                }
+            }
+            grid.push(pts);
+            polys.push(polyrow);
+        }
+
+        const board = this.rootSvg.group().id("board");
+        const gridlines = board.group().id("gridlines");
+
+        this.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
+
+        // Add board labels
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+        if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
+            const labels = board.group().id("labels");
+
+            // Rows (numbers)
+            let customLabels: string[]|undefined;
+            if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                customLabels = this.json.board.columnLabels;
+            }
+            const columnLabels = this.getLabels(customLabels, height);
+            if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-letters")) ) {
+                columnLabels.reverse();
+            }
+
+            for (let row = 0; row < gridBase.length - 1; row++) {
+                let leftNum = "1";
+                let rightNum = grid[row].length.toString();
+                if ( (this.json.options !== undefined) && (this.json.options.includes("reverse-numbers")) ) {
+                    const scratch = leftNum;
+                    leftNum = rightNum;
+                    rightNum = scratch;
+                }
+
+                const pointL = {x: gridBase[row][0].x - cellsize, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
+                const pointR = {x: gridBase[row][gridBase[row].length - 1].x + cellsize, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
+                labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+                labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+            }
+        }
+
+        // load blocked nodes
+        type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+        let blocked: Blocked|undefined;
+        if ( (this.json.board.blocked !== undefined) && (this.json.board.blocked !== null)  && (Array.isArray(this.json.board.blocked)) && (this.json.board.blocked.length > 0) ){
+            blocked = [...(this.json.board.blocked as Blocked)];
+        }
+
+        // Draw grid lines
+        const strokeAttrs: StrokeData = {color: baseColour, width: baseStroke, opacity: baseOpacity, linecap: "round", linejoin: "round"};
+
+        for (let y = 0; y < polys.length; y++) {
+            const slice = polys[y];
+            for (let x = 0; x < slice.length; x++) {
+                // skip if blocked
+                const found = blocked?.find(b => b.col === x && b.row === y);
+                if (found !== undefined) {
+                    continue;
+                }
+                const cell = slice[x];
+                let ele: SVGElement;
+                switch (cell.type) {
+                    case "circle":
+                        ele = gridlines.circle(cell.r * 2).fill({color: "white", opacity: 0}).stroke(strokeAttrs).center(cell.cx, cell.cy);
+                        break;
+                    case "poly":
+                        ele = gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                        break;
+                    case "path":
+                        ele = gridlines.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                        break;
+                }
+                if (this.options.boardClick !== undefined) {
+                    ele.click(() => this.options.boardClick!(y, x, ""));
+                }
+            }
+        }
+
+        this.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
+
+        return [grid, polys];
     }
 
     /**

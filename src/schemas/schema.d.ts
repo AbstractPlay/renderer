@@ -53,7 +53,9 @@ export type BoardStyles =
   | "hex-even-f"
   | "hex-of-hex"
   | "hex-of-tri"
+  | "hex-of-tri-f"
   | "hex-of-cir"
+  | "rect-of-tri"
   | "snubsquare"
   | "snubsquare-cells"
   | "onyx"
@@ -569,6 +571,10 @@ export interface BoardBasic {
    * For the `squares-diamonds` board, the board edge can start with diamonds or squares (actually octagons). By default, the edges start with squares, but you can also start them with diamonds.
    */
   sdStart?: "S" | "D";
+  /**
+   * For the `rect-of-tri*` styles. Determines whether the top row is wide or narrow. Default is wide.
+   */
+  triStart?: "W" | "N";
   /**
    * Adds a visible area around the outside of the board intended to be used with a click handler for bearing off pieces or other such interactions. Only applied to the `squares*`, `vertex*` and `go` boards. Uses the `strokeWeight/Colour/Opacity` options for the border, and can include an optional fill. The opacity and colour will also be applied to the fill.
    */

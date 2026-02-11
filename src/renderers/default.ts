@@ -72,9 +72,18 @@ export class DefaultRenderer extends RendererBase {
             case "hex-of-tri":
                 gridPoints = this.hexOfTri();
                 break;
+            case "hex-of-tri-f":
+                [gridPoints, polys] = this.hexOfTriF();
+                break;
             case "hex-of-cir":
                 [gridPoints, polys] = this.hexOfCir();
                 break;
+            case "rect-of-tri":
+                gridPoints = this.rectOfTri();
+                break;
+            // case "rect-of-tri-f":
+            //     [gridPoints, polys] = this.rectOfTriF();
+            //     break;
             case "hex-slanted":
                 [gridPoints, polys] = this.hexSlanted();
                 break;
