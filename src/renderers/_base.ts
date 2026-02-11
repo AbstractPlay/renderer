@@ -5498,7 +5498,6 @@ export abstract class RendererBase {
                         const pt1 = gridBase[row][col];
                         const pt2 = gridBase[row+1][col];
                         const pt3 = gridBase[row+1][col-1];
-                        console.log({row, col, pts: [pt1, pt2, pt3]});
                         polyrow.push({
                             type: "poly",
                             points: [pt1, pt2, pt3],
