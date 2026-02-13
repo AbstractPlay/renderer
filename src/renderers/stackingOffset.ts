@@ -3,6 +3,7 @@ import { GridPoints, IPoint, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { centroid, projectPoint, rotatePoint, usePieceAt } from "../common/plotting";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowingRound, squares, squaresDiamonds, vertex, wheel } from "../boards";
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
@@ -43,85 +44,85 @@ export class StackingOffsetRenderer extends RendererBase {
             case "squares-checkered":
             case "squares-beveled":
             case "squares":
-                [gridPoints, polys] = this.squares();
+                [gridPoints, polys] = squares(this);
                 break;
             case "squares-diamonds":
-                [gridPoints, polys] = this.squaresDiamonds();
+                [gridPoints, polys] = squaresDiamonds(this);
                 break;
             case "vertex":
             case "vertex-cross":
             case "vertex-fanorona":
-                gridPoints = this.vertex();
+                gridPoints = vertex(this);
                 break;
             case "snubsquare":
-                gridPoints = this.snubSquare();
+                gridPoints = snubSquare(this);
                 break;
             case "onyx":
-                gridPoints = this.onyx();
+                gridPoints = onyx(this);
                 break;
             case "snubsquare-cells":
-                [gridPoints, polys] = this.snubSquareCells();
+                [gridPoints, polys] = snubSquareCells(this);
                 break;
             case "pentagonal":
             case "pentagonal-bluestone":
-                gridPoints = this.pentagonal();
+                gridPoints = pentagonal(this);
                 break;
             case "hex-of-hex":
-                [gridPoints, polys] = this.hexOfHex();
+                [gridPoints, polys] = hexOfHex(this);
                 break;
             case "hex-of-tri":
-                gridPoints = this.hexOfTri();
+                gridPoints = hexOfTri(this);
                 break;
             case "hex-of-tri-f":
-                [gridPoints, polys] = this.hexOfTriF();
+                [gridPoints, polys] = hexOfTriF(this);
                 break;
             case "hex-of-cir":
-                [gridPoints, polys] = this.hexOfCir();
+                [gridPoints, polys] = hexOfCir(this);
                 break;
             case "rect-of-tri":
-                gridPoints = this.rectOfTri();
+                gridPoints = rectOfTri(this);
                 break;
             // case "rect-of-tri-f":
             //     [gridPoints, polys] = this.rectOfTriF();
             //     break;
             case "hex-slanted":
-                [gridPoints, polys] = this.hexSlanted();
+                [gridPoints, polys] = hexSlanted(this);
                 break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":
             case "hex-even-f":
-                [gridPoints, polys] = this.rectOfHex();
+                [gridPoints, polys] = rectOfHex(this);
                 break;
             case "circular-cobweb":
-                [gridPoints, polys] = this.cobweb();
+                [gridPoints, polys] = cobweb(this);
                 break;
             case "circular-wheel":
-                [gridPoints, polys] = this.wheel();
+                [gridPoints, polys] = wheel(this);
                 break;
             case "conhex-cells":
-                [gridPoints, polys] = this.conhex();
+                [gridPoints, polys] = conhex(this);
                 break;
             case "cairo-collinear":
-                [gridPoints, polys] = this.cairoCollinear();
+                [gridPoints, polys] = cairoCollinear(this);
                 break;
             case "cairo-catalan":
-                [gridPoints, polys] = this.cairoCatalan();
+                [gridPoints, polys] = cairoCatalan(this);
                 break;
             // Adding support for conical-hex* and pyramid-hex purely for the designer
             case "conical-hex":
             case "conical-hex-narrow":
-                [gridPoints, polys] = this.conicalHex();
+                [gridPoints, polys] = conicalHex(this);
                 break;
             case "pyramid-hex":
-                [gridPoints, polys] = this.pyramidHex();
+                [gridPoints, polys] = pyramidHex(this);
                 break;
             case "circular-moon":
                 this.cellsize = 15;
-                [gridPoints, polys] = this.moon();
+                [gridPoints, polys] = moon(this);
                 break;
             case "sowing-round":
-                gridPoints = this.sowingRound();
+                gridPoints = sowingRound(this);
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingOffsetRenderer.rendererName }' renderer.`);

@@ -3,6 +3,7 @@ import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep, AreaStackingExpanded } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
+import { hexOfCir, hexOfHex, hexOfTri, snubSquare, squares, vertex } from "../boards";
 
 interface ILocalStash {
     [k: string]: unknown;
@@ -79,23 +80,23 @@ export class StackingExpandingRenderer extends RendererBase {
             switch (this.json.board.style) {
                 case "squares-checkered":
                 case "squares":
-                    [gridPoints, polys] = this.squares();
+                    [gridPoints, polys] = squares(this);
                     break;
                 case "vertex":
                 case "vertex-cross":
-                    gridPoints = this.vertex();
+                    gridPoints = vertex(this);
                     break;
                 case "snubsquare":
-                    gridPoints = this.snubSquare();
+                    gridPoints = snubSquare(this);
                     break;
                 case "hex-of-hex":
-                    [gridPoints, polys] = this.hexOfHex();
+                    [gridPoints, polys] = hexOfHex(this);
                     break;
                 case "hex-of-tri":
-                    gridPoints = this.hexOfTri();
+                    gridPoints = hexOfTri(this);
                     break;
                 case "hex-of-cir":
-                    [gridPoints, polys] = this.hexOfCir();
+                    [gridPoints, polys] = hexOfCir(this);
                     break;
                 default:
                     throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingExpandingRenderer.rendererName }' renderer.`);

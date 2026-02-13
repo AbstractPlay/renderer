@@ -3,6 +3,7 @@ import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
 import { APRenderRep, type Multipiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
+import { squares } from "../boards";
 
 /**
  * This renderer deforms pieces to fit into rectangular areas that can span
@@ -40,7 +41,7 @@ export class MulticellSquareRenderer extends RendererBase {
             case "squares-beveled":
             case "squares-checkered":
             case "squares":
-                [origPoints, polys] = this.squares();
+                [origPoints, polys] = squares(this);
                 gridPoints = rectOfRects({gridHeight: (this.json.board.height as number) + 1, gridWidth: (this.json.board.width as number) + 1, cellSize: this.cellsize});
                 gridPoints = gridPoints.map((row) => row.map((cell) => ({x: cell.x - (this.cellsize / 2), y: cell.y - (this.cellsize / 2)} as IPoint)));
                 break;

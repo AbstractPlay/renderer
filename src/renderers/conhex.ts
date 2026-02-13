@@ -4,6 +4,7 @@ import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
 import { IPoint, rectOfRects, IPolyCircle } from "../grids";
+import { getConhexCells } from "../boards";
 
 /**
  * Generates the pattern of 0s and 1s that denote whether
@@ -171,7 +172,7 @@ export class ConhexRenderer extends RendererBase {
 
         const board = this.rootSvg.group().id("board");
         const gridlines = board.group().id("gridlines");
-        const cells = this.getConhexCells(boardsize, cellsize);
+        const cells = getConhexCells(boardsize, cellsize);
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys: cells});
 
         // Add board labels

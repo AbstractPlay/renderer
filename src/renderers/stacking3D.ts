@@ -322,7 +322,7 @@ export class Stacking3DRenderer extends RendererBase {
      *
      * @param grid - A map of row/column locations to x,y coordinates
      */
-    protected annotateBoard(grid: GridPoints) {
+    public annotateBoard(grid: GridPoints) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }

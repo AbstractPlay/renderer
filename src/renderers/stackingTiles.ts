@@ -2,6 +2,7 @@ import { Svg, G as SVGG } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
+import { squares } from "../boards";
 
 /**
  * The `stacking-tiles` renderer is used to show a side view of a stack of pieces. Currently only used in Focus.
@@ -52,7 +53,7 @@ export class StackingTilesRenderer extends RendererBase {
         switch (this.json.board.style) {
             case "squares-checkered":
             case "squares":
-                [gridPoints, polys] = this.squares();
+                [gridPoints, polys] = squares(this);
                 break;
             // case "hex_of_hex":
             //     gridPoints = this.hexOfHex(json, draw, opts);

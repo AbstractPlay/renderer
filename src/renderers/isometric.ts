@@ -10,6 +10,7 @@ import { generateCylinders } from "./isometric/cylinders";
 import { generateHexes } from "./isometric/hexes";
 import { x2uid } from "../common/glyph2uid";
 import { Orientation } from "honeycomb-grid";
+import { hexOfCir, hexOfHex, squares } from "../boards";
 
 type PointEntry = {
     col: number;
@@ -99,14 +100,14 @@ export class IsometricRenderer extends RendererBase {
         let basePcScale = 1;
         switch (this.json.board.style) {
             case "squares":
-                [gridPoints, polys] = this.squares({noSvg: true});
+                [gridPoints, polys] = squares(this, {noSvg: true});
                 break;
             case "hex-of-hex":
-                [gridPoints, polys] = this.hexOfHex({noSvg: true});
+                [gridPoints, polys] = hexOfHex(this, {noSvg: true});
                 basePcScale = 0.85;
                 break;
             case "hex-of-cir":
-                [gridPoints, polys] = this.hexOfCir({noSvg: true});
+                [gridPoints, polys] = hexOfCir(this, {noSvg: true});
                 basePcScale = 0.85;
                 break;
             default:

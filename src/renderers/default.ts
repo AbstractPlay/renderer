@@ -3,6 +3,7 @@ import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase} from "./_base";
 import { usePieceAt } from "../common/plotting";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
 
 /**
  * This is the default renderer used for most games.
@@ -40,97 +41,97 @@ export class DefaultRenderer extends RendererBase {
             case "squares-checkered":
             case "squares":
             case "pegboard":
-                [gridPoints, polys] = this.squares();
+                [gridPoints, polys] = squares(this);
                 break;
             case "squares-diamonds":
-                [gridPoints, polys] = this.squaresDiamonds();
+                [gridPoints, polys] = squaresDiamonds(this);
                 break;
             case "squares-stacked":
-                gridPoints = this.squaresStacked();
+                gridPoints = squaresStacked(this);
                 break;
             case "vertex":
             case "vertex-cross":
             case "vertex-fanorona":
-                gridPoints = this.vertex();
+                gridPoints = vertex(this);
                 break;
             case "snubsquare":
-                gridPoints = this.snubSquare();
+                gridPoints = snubSquare(this);
                 break;
             case "onyx":
-                gridPoints = this.onyx();
+                gridPoints = onyx(this);
                 break;
             case "snubsquare-cells":
-                [gridPoints, polys] = this.snubSquareCells();
+                [gridPoints, polys] = snubSquareCells(this);
                 break;
             case "pentagonal":
             case "pentagonal-bluestone":
-                gridPoints = this.pentagonal();
+                gridPoints = pentagonal(this);
                 break;
             case "hex-of-hex":
-                [gridPoints, polys] = this.hexOfHex();
+                [gridPoints, polys] = hexOfHex(this);
                 break;
             case "hex-of-tri":
-                gridPoints = this.hexOfTri();
+                gridPoints = hexOfTri(this);
                 break;
             case "hex-of-tri-f":
-                [gridPoints, polys] = this.hexOfTriF();
+                [gridPoints, polys] = hexOfTriF(this);
                 break;
             case "hex-of-cir":
-                [gridPoints, polys] = this.hexOfCir();
+                [gridPoints, polys] = hexOfCir(this);
                 break;
             case "rect-of-tri":
-                gridPoints = this.rectOfTri();
+                gridPoints = rectOfTri(this);
                 break;
             // case "rect-of-tri-f":
-            //     [gridPoints, polys] = this.rectOfTriF();
+            //     [gridPoints, polys] = rectOfTriF();
             //     break;
             case "hex-slanted":
-                [gridPoints, polys] = this.hexSlanted();
+                [gridPoints, polys] = hexSlanted(this);
                 break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":
             case "hex-even-f":
-                [gridPoints, polys] = this.rectOfHex();
+                [gridPoints, polys] = rectOfHex(this);
                 break;
             case "triangles-stacked": {
-                const {points: pts, polys: lazoPolys} = this.stackingTriangles();
+                const {points: pts, polys: lazoPolys} = stackingTriangles(this);
                 gridPoints = pts;
                 polys = lazoPolys;
                 break;
             }
             case "circular-cobweb":
-                [gridPoints, polys] = this.cobweb();
+                [gridPoints, polys] = cobweb(this);
                 break;
             case "circular-wheel":
-                [gridPoints, polys] = this.wheel();
+                [gridPoints, polys] = wheel(this);
                 break;
             case "sowing":
-                gridPoints = this.sowing();
+                gridPoints = sowing(this);
                 break;
             case "conhex-cells":
-                [gridPoints, polys] = this.conhex();
+                [gridPoints, polys] = conhex(this);
                 break;
             case "cairo-collinear":
-                [gridPoints, polys] = this.cairoCollinear();
+                [gridPoints, polys] = cairoCollinear(this);
                 break;
             case "cairo-catalan":
-                [gridPoints, polys] = this.cairoCatalan();
+                [gridPoints, polys] = cairoCatalan(this);
                 break;
             case "conical-hex":
             case "conical-hex-narrow":
-                [gridPoints, polys] = this.conicalHex();
+                [gridPoints, polys] = conicalHex(this);
                 break;
             case "pyramid-hex":
-                [gridPoints, polys] = this.pyramidHex();
+                [gridPoints, polys] = pyramidHex(this);
                 break;
             case "dvgc":
             case "dvgc-checkered":
-                [gridPoints, polys] = this.dvgc();
+                [gridPoints, polys] = dvgc(this);
                 break;
             case "circular-moon":
                 this.cellsize = 15;
-                [gridPoints, polys] = this.moon();
+                [gridPoints, polys] = moon(this);
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);

@@ -3,6 +3,7 @@ import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt, scale, rotate } from "../common/plotting";
+import { sowing } from "../boards";
 
 /**
  * This is the default renderer used for most games.
@@ -35,7 +36,7 @@ export class SowingNumeralsRenderer extends RendererBase {
         }
         switch (this.json.board.style) {
             case "sowing":
-                gridPoints = this.sowing();
+                gridPoints = sowing(this);
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by this renderer.`);
