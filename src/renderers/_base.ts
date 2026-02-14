@@ -649,17 +649,15 @@ export abstract class RendererBase {
                         else {
                             // Only applies to text glyphs for now
                             if ("text" in g && g.text !== undefined) {
-                                // go through all the glyphs before this to find the darkest colour
+                                // find the first coloured glyph before the text element
+                                // and contrast against it
                                 let darkest = contextBackground;
-                                for (let i = 0; i < idx; i++) {
+                                for (let i = idx-1; i >= 0; i--) {
                                     const prev = glyphs[i];
                                     if ("colour" in prev && prev.colour !== undefined) {
                                         const curr = this.resolveColour(prev.colour) as string;
-                                        const cDarkest = tinycolor(darkest);
-                                        const cCurr = tinycolor(curr);
-                                        if (cCurr.getBrightness() < cDarkest.getBrightness()) {
-                                            darkest = curr;
-                                        }
+                                        darkest = curr;
+                                        break;
                                     }
                                 }
                                 // now use the bestContrast function to choose a colour
