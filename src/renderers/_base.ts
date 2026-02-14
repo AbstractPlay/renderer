@@ -3625,6 +3625,7 @@ export abstract class RendererBase {
                 return true;
             }
 
+            const style = (this.json.board as BoardBasic).style;
             const bgcolour = this.resolveColour(backFillObj.colour) as string;
             let bgopacity = 1;
             if ( backFillObj.opacity !== undefined ) {
@@ -3635,8 +3636,9 @@ export abstract class RendererBase {
                 bgtype = backFillObj.type;
             }
 
-            if (bgtype === "board" && polys === undefined) {
-                throw new Error(`We can only do a "board" backfill if the board was built with polygons.`);
+            if ((bgtype === "board" && polys === undefined) || (style === "hex-of-cir") ) {
+                bgtype = "full";
+                // throw new Error(`We can only do a "board" backfill if the board was built with polygons.`);
             }
 
             // if we're pre-rotation but we want to do a full fill, then try again later
@@ -3652,9 +3654,9 @@ export abstract class RendererBase {
                 if (board === null) {
                     throw new Error(`Can't do a board fill if there's no board.`);
                 }
-                // if hexagonal board, we need to use turf
+                // if has concave elements board, we need to use turf
                 let ptsStr: string;
-                if ((this.json.board as BoardBasic).style.startsWith("hex")) {
+                if (style.startsWith("hex") || style.startsWith("cairo") || ["triangles-stacked", "squares-diamonds", "snubsquare-cells"].includes(style)) {
                     ptsStr = unionPolys(polys!.flat()).map(pt => pt.join(",")).join(" ");
                 }
                 // otherwise, use convex hull
