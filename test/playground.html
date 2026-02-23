@@ -26,6 +26,10 @@
                 } else if (radio === "patterns") {
                     options.patterns = true;
                 }
+                if (document.getElementById("chkColoursGlobal").checked) {
+                    options.colours = ["#e31a1c","#1f78b4","#33a02c","#ffff99","#6a3d9a","#ff7f00","#b15928","#fb9a99","#a6cee3","#b2df8a","#fdbf6f","#cab2d6"]
+                    options.coloursGlobal = false;
+                }
                 let rotation = 0;
                 const freestyle = parseInt(document.getElementById("rotFree").value, 10);
                 if (freestyle === 0) {
@@ -51,6 +55,9 @@
                     labels: labels.value,
                     annotations: notes.value,
                 };
+                if (document.getElementById("chkContextGlobal").checked) {
+                    options.contextGlobal = false;
+                }
                 var div = document.getElementById("drawing");
                 div.style.backgroundColor = bg.value;
 
@@ -596,6 +603,10 @@
                     <input type="radio" id="fillPatterns" name="playerfill" value="patterns">
                     <label for="fillPatterns">Black-and-white patterns (10 max)</label>
                 </div>
+                <div>
+                    <input type="checkbox" id="chkColoursGlobal">
+                    <label for="chkColoursGlobal">Game-specific customization</label>
+                </div>
                 <hr>
                 <div>
                     <label for="ccBackground">Background</label>
@@ -616,6 +627,9 @@
                 <div>
                     <button id="btnLight" type="button">Light Mode</button>
                     <button id="btnDark" type="button">Dark Mode</button>
+                    &emsp;
+                    <input type="checkbox" id="chkContextGlobal">
+                    <label for="chkContextGlobal">Game-specific customization</label>
                 </div>
                 <hr>
                 <div>

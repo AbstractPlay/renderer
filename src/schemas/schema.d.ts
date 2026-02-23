@@ -12,7 +12,7 @@ export type Colourstrings = string;
 /**
  * Colours can also be derived using various functions.
  */
-export type Colourfuncs = FunctionFlatten | FunctionBestContrast | FunctionLighten;
+export type Colourfuncs = FunctionFlatten | FunctionBestContrast | FunctionLighten | FunctionCustom;
 export type PositiveInteger = number;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
@@ -385,6 +385,18 @@ export interface FunctionLighten {
   colour: PositiveInteger | Colourstrings | Colourfuncs;
   ds: number;
   dl: number;
+}
+/**
+ * Supports game developers choosing nonstandard default colours while still allowing players to customize. Ties a default value to a player number or context value, and the function chooses which to use based on whether the user passed in custom values.
+ */
+export interface FunctionCustom {
+  func: "custom";
+  default: PositiveInteger | Colourstrings | Colourfuncs;
+  palette: PositiveInteger | Colourstrings | Colourfuncs;
+  /**
+   * Only needed if the `palette` value is a function and so the function can't tell what test to use.
+   */
+  paletteType?: "player" | "context";
 }
 /**
  * A gradient one can use for flood fills and the like.

@@ -46,11 +46,23 @@ export interface IRendererOptionsIn {
      */
     colourContext?: {[k: string]: string};
     /**
+     * I want to know whether the custom context being passed is a global preference or
+     * a game-specific one. The idea being that the colourFunc `custom` should prefer
+     * the developer defaults over global customizations, but defer to game-specific ones.
+     */
+    contextGlobal: boolean;
+    /**
      * A list of hexadecimal colour strings to be used as player colours. Be sure to provide enough for the number of players defined.
      * Defaults to a set of nine colours, defined in the constructor.
      *
      */
     colours?: string[];
+    /**
+     * I want to know whether the custom colours being passed are a global preference or
+     * a game-specific one. The idea being that the colourFunc `custom` should prefer
+     * the developer defaults over global customizations, but defer to game-specific ones.
+     */
+    coloursGlobal: boolean;
     /**
      * Signals whether you want black and white patterns used instead of colours.
      *
@@ -113,7 +125,9 @@ export interface IRendererOptionsIn {
 export interface IRendererOptionsOut {
     sheets: string[];
     colourContext: IColourContext;
+    contextGlobal: boolean;
     colours: string[];
+    coloursGlobal: boolean;
     patterns: boolean;
     patternList: string[];
     colourBlind: boolean;
@@ -221,8 +235,10 @@ export abstract class RendererBase {
                 annotations: "#000",
                 labels: "#000",
             },
+            contextGlobal: true,
             colourBlind: false,
             colours: [],
+            coloursGlobal: true,
             patterns: false,
             patternList: ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"],
             showAnnotations: true,
@@ -315,6 +331,7 @@ export abstract class RendererBase {
                     this.options.colourContext[label] = color.toHexString();
                 }
             }
+            this.options.contextGlobal = opts.contextGlobal ?? true;
         }
 
         // Validate colour list if given
@@ -328,6 +345,7 @@ export abstract class RendererBase {
                 normalized.push(color.toHexString());
             }
             this.options.colours = [...normalized];
+            this.options.coloursGlobal = opts.coloursGlobal ?? true;
         }
 
         // Check for annotation screening
@@ -3940,7 +3958,49 @@ export abstract class RendererBase {
                 else if (val.func === "bestContrast") {
                     const bg = this.resolveColour(val.bg) as string;
                     const fg = val.fg.map(c => this.resolveColour(c) as string);
-                    return tinycolor.mostReadable(bg, fg).toHexString();
+                    colour = tinycolor.mostReadable(bg, fg).toHexString();
+                }
+                else if (val.func === "custom") {
+                    // if `palette` is a number
+                    if (typeof val.palette === "number") {
+                        // only choose if passed colours are game-specific customizations
+                        if (!this.options.coloursGlobal) {
+                            colour = this.resolveColour(val.palette) as string;
+                        } else {
+                            colour = this.resolveColour(val.default) as string;
+                        }
+                    }
+                    // if `palette` is a context
+                    else if (typeof val.palette === "string" && val.palette.startsWith("_context_")) {
+                        // only choose if passed context is game-specific customization
+                        if (!this.options.contextGlobal) {
+                            colour = this.resolveColour(val.palette) as string;
+                        } else {
+                            colour = this.resolveColour(val.default) as string;
+                        }
+                    }
+                    // otherwise, rely on `paletteType`
+                    else if ("paletteType" in val && val.paletteType !== undefined) {
+                        if (val.paletteType === "context") {
+                            // only choose if passed context is game-specific customization
+                            if (!this.options.contextGlobal) {
+                                colour = this.resolveColour(val.palette) as string;
+                            } else {
+                                colour = this.resolveColour(val.default) as string;
+                            }
+                        } else {
+                            // only choose if passed colours are game-specific customizations
+                            if (!this.options.coloursGlobal) {
+                                colour = this.resolveColour(val.palette) as string;
+                            } else {
+                                colour = this.resolveColour(val.default) as string;
+                            }
+                        }
+                    }
+                    // otherwise throw
+                    else {
+                        throw new Error(`Could not resolve the custom function. If "palette" is neither a number nor a context, then "paletteType" is required.`);
+                    }
                 }
             }
         } else if (typeof val === "number") {

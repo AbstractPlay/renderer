@@ -117,12 +117,42 @@
             "required": ["func", "bg", "fg"],
             "additionalProperties": false
         },
+        "functionCustom": {
+            "description": "Supports game developers choosing nonstandard default colours while still allowing players to customize. Ties a default value to a player number or context value, and the function chooses which to use based on whether the user passed in custom values.",
+            "type": "object",
+            "properties": {
+                "func": {
+                    "enum": ["custom"]
+                },
+                "default": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
+                    ]
+                },
+                "palette": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/positiveInteger"},
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"}
+                    ]
+                },
+                "paletteType": {
+                    "description": "Only needed if the `palette` value is a function and so the function can't tell what test to use.",
+                    "enum": ["player", "context"]
+                }
+            },
+            "required": ["func", "default", "palette"],
+            "additionalProperties": false
+        },
        "colourfuncs": {
             "description": "Colours can also be derived using various functions.",
             "anyOf": [
                 {"$ref": "#/$defs/functionFlatten"},
                 {"$ref": "#/$defs/functionBestContrast"},
-                {"$ref": "#/$defs/functionLighten"}
+                {"$ref": "#/$defs/functionLighten"},
+                {"$ref": "#/$defs/functionCustom"}
             ]
         },
         "rowCol": {
