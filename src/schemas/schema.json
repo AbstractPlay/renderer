@@ -340,6 +340,14 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "fontFamily": {
+                    "description": "Optional CSS font-family for text glyphs.",
+                    "type": "string"
+                },
+                "fontWeight": {
+                    "description": "Optional CSS font-weight for text glyphs (e.g. 'bold', '700').",
+                    "type": ["string", "number"]
                 }
             },
             "additionalProperties": false

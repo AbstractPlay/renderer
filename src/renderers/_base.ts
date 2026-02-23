@@ -521,6 +521,8 @@ export abstract class RendererBase {
 
             // Now look for composite and coloured pieces and add those to the <defs> section for placement
 
+            const fontStyleRules: string[] = [];
+
             for (const key in this.json.legend) {
                 const glyph = this.json.legend[key];
                 let glyphs: Array<Glyph>;
@@ -563,17 +565,20 @@ export abstract class RendererBase {
                     } else if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;
-                        const text = group.text(g.text).font({
+                        const fontOpts: Record<string, unknown> = {
                             anchor: "start",
                             fill: this.options.colourContext.strokes,
                             size: fontsize,
-                        });
+                        };
+                        if (g.fontFamily !== undefined) {
+                            fontOpts.family = g.fontFamily;
+                        }
+                        if (g.fontWeight !== undefined) {
+                            fontOpts.weight = g.fontWeight;
+                        }
+                        const text = group.text(g.text).font(fontOpts);
                         text.attr("data-playerfill", true);
-                        const temptext = this.rootSvg.text(g.text).font({
-                            anchor: "start",
-                            fill: this.options.colourContext.strokes,
-                            size: fontsize,
-                        });
+                        const temptext = this.rootSvg.text(g.text).font(fontOpts);
                         const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
                         // group.viewbox(temptext.bbox().x, temptext.bbox().y - 0.9, temptext.bbox().width, temptext.bbox().height);
                         group.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
@@ -585,7 +590,20 @@ export abstract class RendererBase {
                     }
 
                     // tag glyph symbol for styling
-                    got.id(glyph2uid(g, key, idx));
+                    const glyphId = glyph2uid(g, key, idx);
+                    got.id(glyphId);
+
+                    // Collect CSS rules for text glyphs with custom font properties
+                    if ("text" in g && (g.fontFamily !== undefined || g.fontWeight !== undefined)) {
+                        const props: string[] = [];
+                        if (g.fontFamily !== undefined) {
+                            props.push(`font-family: ${g.fontFamily} !important`);
+                        }
+                        if (g.fontWeight !== undefined) {
+                            props.push(`font-weight: ${g.fontWeight} !important`);
+                        }
+                        fontStyleRules.push(`#${glyphId} text { ${props.join("; ")}; }`);
+                    }
 
                     // look for context strokes and fills
                     const contextStroke = this.options.colourContext.strokes;
@@ -769,6 +787,7 @@ export abstract class RendererBase {
                 // Increase size so that rotations won't get cropped
                 size *= Math.sqrt(2);
                 nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
+
             }
 
             // now look for and build polymatrices
@@ -808,6 +827,10 @@ export abstract class RendererBase {
                     const nested = this.rootSvg.defs().nested().id(key).viewbox(deltax, deltay, maxWidth, maxHeight);
                     this.buildPoly(nested, matrix, {divided: true});
                 }
+            }
+
+            if (fontStyleRules.length > 0) {
+                this.rootSvg.defs().element("style").words(fontStyleRules.join("\n"));
             }
         }
     }

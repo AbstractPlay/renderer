@@ -351,6 +351,14 @@ export interface Glyph {
      */
     dy?: number;
   };
+  /**
+   * Optional CSS font-family for text glyphs.
+   */
+  fontFamily?: string;
+  /**
+   * Optional CSS font-weight for text glyphs (e.g. 'bold', '700').
+   */
+  fontWeight?: string | number;
 }
 /**
  * This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.
