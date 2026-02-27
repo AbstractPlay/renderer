@@ -44,7 +44,7 @@ export class PolyominoRenderer extends RendererBase {
 
         let gridPoints: GridPoints;
         // let origPoints: GridPoints;
-        let polys: Poly[][]|undefined;
+        let boardFill: Poly|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ PolyominoRenderer.rendererName }' renderer.`);
         }
@@ -53,7 +53,7 @@ export class PolyominoRenderer extends RendererBase {
             case "squares-checkered":
             case "squares":
                 // origPoints = this.squares();
-                [, polys] = squares(this);
+                ({ boardFill } = squares(this));
                 gridPoints = rectOfRects({gridHeight: (this.json.board.height as number) + 1, gridWidth: (this.json.board.width as number) + 1, cellSize: this.cellsize});
                 gridPoints = gridPoints.map((row) => row.map((cell) => ({x: cell.x - (this.cellsize / 2), y: cell.y - (this.cellsize / 2)} as IPoint)));
                 break;
@@ -112,7 +112,7 @@ export class PolyominoRenderer extends RendererBase {
         }
 
         // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
+        const backfilled = this.backFill(boardFill, true);
 
         const box = this.rotateBoard({ignoreRotation: true});
 
@@ -126,7 +126,7 @@ export class PolyominoRenderer extends RendererBase {
         this.placeKey(box);
 
         if (!backfilled) {
-            this.backFill(polys);
+            this.backFill(boardFill);
         }
     }
 
@@ -293,4 +293,3 @@ export class PolyominoRenderer extends RendererBase {
         usePieceAt({svg: this.rootSvg, piece, cellsize: this.cellsize, x: this.cellsize / 2, y: this.cellsize / 2, scalingFactor: 0.9});
     }
 }
-

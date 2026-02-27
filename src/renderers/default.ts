@@ -33,6 +33,7 @@ export class DefaultRenderer extends RendererBase {
         let gridPoints: GridPoints;
         let pcGrid: GridPoints|undefined;
         let polys: Poly[][]|undefined;
+        let boardFill: Poly|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ DefaultRenderer.rendererName }' renderer.`);
         }
@@ -41,97 +42,95 @@ export class DefaultRenderer extends RendererBase {
             case "squares-checkered":
             case "squares":
             case "pegboard":
-                [gridPoints, polys] = squares(this);
+                ({ grid: gridPoints, polys, boardFill } = squares(this));
                 break;
             case "squares-diamonds":
-                [gridPoints, polys] = squaresDiamonds(this);
+                ({ grid: gridPoints, polys, boardFill } = squaresDiamonds(this));
                 break;
             case "squares-stacked":
-                gridPoints = squaresStacked(this);
+                ({ grid: gridPoints, boardFill } = squaresStacked(this));
                 break;
             case "vertex":
             case "vertex-cross":
             case "vertex-fanorona":
-                gridPoints = vertex(this);
+                ({ grid: gridPoints, boardFill } = vertex(this));
                 break;
             case "snubsquare":
-                gridPoints = snubSquare(this);
+                ({ grid: gridPoints, boardFill } = snubSquare(this));
                 break;
             case "onyx":
-                gridPoints = onyx(this);
+                ({ grid: gridPoints, boardFill } = onyx(this));
                 break;
             case "snubsquare-cells":
-                [gridPoints, polys] = snubSquareCells(this);
+                ({ grid: gridPoints, polys, boardFill } = snubSquareCells(this));
                 break;
             case "pentagonal":
             case "pentagonal-bluestone":
-                gridPoints = pentagonal(this);
+                ({ grid: gridPoints, boardFill } = pentagonal(this));
                 break;
             case "hex-of-hex":
-                [gridPoints, polys] = hexOfHex(this);
+                ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));
                 break;
             case "hex-of-tri":
-                gridPoints = hexOfTri(this);
+                ({ grid: gridPoints, boardFill } = hexOfTri(this));
                 break;
             case "hex-of-tri-f":
-                [gridPoints, polys] = hexOfTriF(this);
+                ({ grid: gridPoints, polys, boardFill } = hexOfTriF(this));
                 break;
             case "hex-of-cir":
-                [gridPoints, polys] = hexOfCir(this);
+                ({ grid: gridPoints, polys, boardFill } = hexOfCir(this));
                 break;
             case "rect-of-tri":
-                gridPoints = rectOfTri(this);
+                ({ grid: gridPoints, boardFill } = rectOfTri(this));
                 break;
             // case "rect-of-tri-f":
             //     [gridPoints, polys] = rectOfTriF();
             //     break;
             case "hex-slanted":
-                [gridPoints, polys] = hexSlanted(this);
+                ({ grid: gridPoints, polys, boardFill } = hexSlanted(this));
                 break;
             case "hex-odd-p":
             case "hex-even-p":
             case "hex-odd-f":
             case "hex-even-f":
-                [gridPoints, polys] = rectOfHex(this);
+                ({ grid: gridPoints, polys, boardFill } = rectOfHex(this));
                 break;
             case "triangles-stacked": {
-                const {points: pts, polys: lazoPolys} = stackingTriangles(this);
-                gridPoints = pts;
-                polys = lazoPolys;
+                ({ grid: gridPoints, polys, boardFill } = stackingTriangles(this));
                 break;
             }
             case "circular-cobweb":
-                [gridPoints, polys] = cobweb(this);
+                ({ grid: gridPoints, polys, boardFill } = cobweb(this));
                 break;
             case "circular-wheel":
-                [gridPoints, polys] = wheel(this);
+                ({ grid: gridPoints, polys, boardFill } = wheel(this));
                 break;
             case "sowing":
-                gridPoints = sowing(this);
+                ({ grid: gridPoints, boardFill } = sowing(this));
                 break;
             case "conhex-cells":
-                [gridPoints, polys] = conhex(this);
+                ({ grid: gridPoints, polys, boardFill } = conhex(this));
                 break;
             case "cairo-collinear":
-                [gridPoints, polys] = cairoCollinear(this);
+                ({ grid: gridPoints, polys, boardFill } = cairoCollinear(this));
                 break;
             case "cairo-catalan":
-                [gridPoints, polys] = cairoCatalan(this);
+                ({ grid: gridPoints, polys, boardFill } = cairoCatalan(this));
                 break;
             case "conical-hex":
             case "conical-hex-narrow":
-                [gridPoints, polys] = conicalHex(this);
+                ({ grid: gridPoints, polys, boardFill } = conicalHex(this));
                 break;
             case "pyramid-hex":
-                [gridPoints, polys] = pyramidHex(this);
+                ({ grid: gridPoints, polys, boardFill } = pyramidHex(this));
                 break;
             case "dvgc":
             case "dvgc-checkered":
-                [gridPoints, polys] = dvgc(this);
+                ({ grid: gridPoints, polys, boardFill } = dvgc(this));
                 break;
             case "circular-moon":
                 this.cellsize = 15;
-                [gridPoints, polys] = moon(this);
+                ({ grid: gridPoints, polys, boardFill } = moon(this));
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
@@ -239,7 +238,7 @@ export class DefaultRenderer extends RendererBase {
         }
 
         // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
+        const backfilled = this.backFill(boardFill, true);
 
         // if there are reserves areas, those also need to be placed before rotation
         if (this.json.board.style.startsWith("dvgc")) {
@@ -274,7 +273,7 @@ export class DefaultRenderer extends RendererBase {
         this.placeCompass(box);
 
         if (!backfilled) {
-            this.backFill(polys);
+            this.backFill(boardFill);
         }
     }
 
@@ -300,4 +299,3 @@ export class DefaultRenderer extends RendererBase {
         usePieceAt({svg: this.rootSvg, piece, cellsize: this.cellsize, x: this.cellsize / 2, y: this.cellsize / 2, scalingFactor: 0.9});
     }
 }
-

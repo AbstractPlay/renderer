@@ -1,3 +1,5 @@
+import { RendererBase } from "../renderers/_base";
+import { GridPoints, Poly } from "../grids";
 import { Colourfuncs, Colourstrings, PositiveInteger } from "../schemas/schema";
 import { Orientation } from "honeycomb-grid";
 
@@ -30,6 +32,12 @@ export { vertex } from "./vertex";
 export { wheel } from "./wheel";
 
 export type CompassDirection = "N"|"NE"|"E"|"SE"|"S"|"SW"|"W"|"NW";
+
+export type BoardReturn = {
+    grid: GridPoints;
+    polys?: Poly[][];
+    boardFill?: Poly;
+};
 
 /**
  * An internal interface used when rendering board buffers.
@@ -87,3 +95,20 @@ export const pts2id = (a: [number,number], b: [number,number]): string => {
     return [x,y].sort(sortPoints).map(p => p.join(",")).join(" ");
 }
 
+// helpers for getting settings consistently across the boards
+export const getCellFill = (ctx: RendererBase, defColour: string|undefined = undefined, defOpacity = 0): [string|undefined, number] => {
+    if (ctx.json === undefined || ctx.json.board === null) {
+        throw new Error(`Context object in an invalid state.`);
+    }
+    let hexFill = defColour;
+    let hexOpacity = defOpacity;
+    if (ctx.options.colourContext.board !== undefined) {
+        hexFill = ctx.options.colourContext.board;
+        hexOpacity = 1;
+    }
+    if ( ("backFill" in ctx.json.board) && (ctx.json.board.backFill !== undefined) && (ctx.json.board.backFill !== null) && (ctx.json.board.backFill.type === "board") ){
+        hexFill = ctx.resolveColour(ctx.json.board.backFill.colour) as string;
+        hexOpacity = ctx.json.board.backFill.opacity ?? 1;
+    }
+    return [hexFill, hexOpacity];
+}

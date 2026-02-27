@@ -1,8 +1,9 @@
+import { BoardReturn, getCellFill } from ".";
 import { centroid } from "../common/plotting";
-import { GridPoints, IPolyPolygon, Poly, rectOfRects } from "../grids";
+import { GridPoints, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
-export const squaresDiamonds = (ctx: RendererBase): [GridPoints, Poly[][]] => {
+export const squaresDiamonds = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -138,6 +139,25 @@ export const squaresDiamonds = (ctx: RendererBase): [GridPoints, Poly[][]] => {
     // have to define tiles early for clickable markers to work
     // const tiles = board.group().id("tiles");
     const gridlines = board.group().id("gridlines");
+
+    // boardFill before first markers
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null) && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
+        blocked = [...(ctx.json.board.blocked as Blocked)];
+    }
+    const [cellFill, cellOpacity] = getCellFill(ctx, "white");
+    for (let row = 0; row < polys.length; row++) {
+        for (let col = 0; col < polys[row].length; col++) {
+            const isBlocked = blocked?.find(entry => entry.row === row && entry.col === col) !== undefined;
+            if (isBlocked) { continue; }
+            const poly = polys[row][col];
+            gridlines.polygon(poly.points.map(({ x, y }) => `${x},${y}`).join(" "))
+                     .stroke("none")
+                     .fill({color: cellFill, opacity: cellOpacity});
+        }
+    }
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid: gridPoints, polys});
 
     // Add board labels
@@ -199,11 +219,6 @@ export const squaresDiamonds = (ctx: RendererBase): [GridPoints, Poly[][]] => {
     }
 
     // Draw grid lines
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null) && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
-        blocked = [...(ctx.json.board.blocked as Blocked)];
-    }
     for (let row = 0; row < polys.length; row++) {
         for (let col = 0; col < polys[row].length; col++) {
             const isBlocked = blocked?.find(entry => entry.row === row && entry.col === col) !== undefined;
@@ -220,5 +235,5 @@ export const squaresDiamonds = (ctx: RendererBase): [GridPoints, Poly[][]] => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid: gridPoints, polys});
 
-    return [gridPoints, polys];
+    return {grid: gridPoints, polys};
 }

@@ -1,8 +1,9 @@
-import { GridPoints } from "../grids";
+import { IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { hexOfTri as hexOfTriGrid } from "../grids";
+import { BoardReturn } from ".";
 
-export const hexOfTri = (ctx: RendererBase): GridPoints => {
+export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -181,5 +182,70 @@ export const hexOfTri = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    return grid;
+    // build backFill
+    const numTop = 0;
+    const numBottom = grid.length - 1;
+    const widest = Math.max(...grid.map(row => row.length));
+    const numWidest = grid.findIndex(row => row.length === widest);
+    let boardFill: IPolyPolygon;
+    // if numWidest is not the top or the bottom, then we have a full hex
+    if (numWidest !== numTop && numWidest !== numBottom) {
+        const dist = cellsize / 2;
+        const xDist = dist / Math.sqrt(3);
+        boardFill = {
+            type: "poly",
+            points: [
+                {x: grid[numTop][0].x - xDist, y: grid[numTop][0].y - dist},
+                {x: grid[numTop][grid[numTop].length - 1].x + xDist, y: grid[numTop][grid[numTop].length - 1].y - dist},
+                {x: grid[numWidest][grid[numWidest].length - 1].x + (2 * xDist), y: grid[numWidest][grid[numWidest].length - 1].y},
+                {x: grid[numBottom][grid[numBottom].length - 1].x + xDist, y: grid[numBottom][grid[numBottom].length - 1].y + dist},
+                {x: grid[numBottom][0].x - xDist, y: grid[numBottom][0].y + dist},
+                {x: grid[numWidest][0].x - (2 * xDist), y: grid[numWidest][0].y},
+            ],
+        };
+    }
+    // otherwise we just have a four-point poly
+    else {
+        const dist = cellsize / 2;
+        const xDist = dist / Math.sqrt(3);
+        const ptWideL = {
+            x: grid[numWidest][0].x - (2 * xDist),
+            y: grid[numWidest][0].y + dist * (half === "top" ? 1 : -1),
+        };
+        const ptWideR = {
+            x: grid[numWidest][grid[numWidest].length - 1].x + (2 * xDist),
+            y: grid[numWidest][grid[numWidest].length - 1].y + dist * (half === "top" ? 1 : -1),
+        };
+        let ptOtherL: IPoint; let ptOtherR: IPoint;
+        if (half === "top") {
+            ptOtherL = {
+                x: grid[numTop][0].x - xDist,
+                y: grid[numTop][0].y - dist
+            };
+            ptOtherR = {
+                x: grid[numTop][grid[numTop].length - 1].x + xDist,
+                y: grid[numTop][grid[numTop].length - 1].y - dist
+            };
+        } else {
+            ptOtherL = {
+                x: grid[numBottom][0].x - xDist,
+                y: grid[numBottom][0].y + dist
+            };
+            ptOtherR = {
+                x: grid[numBottom][grid[numBottom].length - 1].x + xDist,
+                y: grid[numBottom][grid[numBottom].length - 1].y + dist
+            };
+        }
+        boardFill = {
+            type: "poly",
+            points: [
+                ptWideL,
+                ptOtherL,
+                ptOtherR,
+                ptWideR,
+            ],
+        };
+    }
+
+    return {grid, boardFill};
 }

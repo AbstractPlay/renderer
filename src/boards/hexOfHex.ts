@@ -1,7 +1,8 @@
-import { GridPoints, IPoint, IPolyPolygon, hexOfHex as hexOfHexGrid } from "../grids";
+import { BoardReturn, getCellFill } from ".";
+import { IPoint, IPolyPolygon, hexOfHex as hexOfHexGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
-export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints, IPolyPolygon[][]] => {
+export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -65,11 +66,35 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoint
     }
 
     if (opts !== undefined && opts.noSvg === true) {
-        return [grid, polys];
+        return {grid, polys};
     }
 
     const board = ctx.rootSvg.group().id("board");
     const gridlines = board.group().id("hexes");
+
+    // boardFill before first markers
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
+        blocked = [...(ctx.json.board.blocked as Blocked)];
+    }
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const hexFilled = ctx.rootSvg.defs().symbol().id("hex-symbol-filled").viewbox(-3.3493649053890344, 0, 50, 50);
+    hexFilled.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+        .fill({color: hexFill, opacity: hexOpacity}).id("hex-symbol-poly-filled")
+        .stroke("none");
+    for (let iRow = 0; iRow < grid.length; iRow++) {
+        const row = grid[iRow];
+        for (let iCol = 0; iCol < row.length; iCol++) {
+            const p = row[iCol];
+            if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
+                continue;
+            }
+            gridlines.use(hexFilled).size(cellsize, cellsize).center(p.x, p.y);
+        }
+    }
+
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
     // Add board labels
@@ -127,13 +152,7 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoint
         0 half
     */
 
-    // Draw the actual hexes
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
-        blocked = [...(ctx.json.board.blocked as Blocked)];
-    }
-
+    // Draw the gridlines
     const hex = ctx.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
     hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
         .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
@@ -154,5 +173,5 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoint
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

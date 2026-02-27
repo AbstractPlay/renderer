@@ -1,9 +1,10 @@
 import { Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import { cairo, GridPoints, IPoint, IPolyPolygon } from "../grids";
+import { cairo, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { BoardBasic } from "../schemas/schema";
+import { BoardReturn, getCellFill } from ".";
 
-export const cairoCollinear = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -51,52 +52,48 @@ export const cairoCollinear = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]
     */
 
     // build polys
+    // build `filled` versions for board fill
     const half = cellsize / 2;
     const quarter = cellsize / 4;
     const widest = half + quarter;
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
 
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( ("blocked" in boardTyped) && (boardTyped.blocked !== undefined) && (boardTyped.blocked !== null)  && (Array.isArray(boardTyped.blocked)) && (boardTyped.blocked.length > 0) ){
-        blocked = [...(boardTyped.blocked as Blocked)];
-    }
-
-    let hexFill: string|undefined;
-    if ( ("hexFill" in boardTyped) && (boardTyped.hexFill !== undefined) && (boardTyped.hexFill !== null) && (typeof boardTyped.hexFill === "string") && (boardTyped.hexFill.length > 0) ){
-        hexFill = boardTyped.hexFill;
-    }
     const pentN = ctx.rootSvg.defs().symbol().id("pentagon-symbol-N").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
     const ptsN: IPoint[] = [{x: 0, y: 0 - half}, {x: widest, y: 0 - quarter}, {x: half, y: half}, {x: 0 - half, y: half}, {x: 0 - widest, y: 0 - quarter}];
-    const symbolPolyN = pentN.polygon(ptsN.map(pt => `${pt.x},${pt.y}`).join(" "))
-                        .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-N")
-                        .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-    if (hexFill !== undefined) {
-        symbolPolyN.fill({color: hexFill, opacity: 1});
-    }
+    pentN.polygon(ptsN.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-N")
+         .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+    const pentNfilled = ctx.rootSvg.defs().symbol().id("pentagon-symbol-N-filled").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
+    pentNfilled.polygon(ptsN.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: hexFill, opacity: hexOpacity}).id("pentagon-symbol-poly-N-filled")
+         .stroke("none");
     const pentS = ctx.rootSvg.defs().symbol().id("pentagon-symbol-S").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
     const ptsS: IPoint[] = [{x: 0, y: half}, {x: 0 - widest, y: quarter}, {x: 0 - half, y: 0 - half}, {x: half, y: 0 - half}, {x: widest, y: quarter}];
-    const symbolPolyS = pentS.polygon(ptsS.map(pt => `${pt.x},${pt.y}`).join(" "))
-                        .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-S")
-                        .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-    if (hexFill !== undefined) {
-        symbolPolyS.fill({color: hexFill, opacity: 1});
-    }
+    pentS.polygon(ptsS.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-S")
+         .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+    const pentSfilled = ctx.rootSvg.defs().symbol().id("pentagon-symbol-S-filled").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
+    pentSfilled.polygon(ptsS.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: hexFill, opacity: hexOpacity}).id("pentagon-symbol-poly-S-filled")
+         .stroke("none");
     const pentE = ctx.rootSvg.defs().symbol().id("pentagon-symbol-E").viewbox(0 - half - 1, 0 - widest - 1, cellsize + 2, (cellsize * 1.5) + 2);
     const ptsE: IPoint[] = [{x: half, y: 0}, {x: quarter, y: widest}, {x: 0 - half, y: half}, {x: 0 - half, y: 0 - half}, {x: quarter, y: 0 - widest}];
-    const symbolPolyE = pentE.polygon(ptsE.map(pt => `${pt.x},${pt.y}`).join(" "))
-                        .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-E")
-                        .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-    if (hexFill !== undefined) {
-        symbolPolyE.fill({color: hexFill, opacity: 1});
-    }
+    pentE.polygon(ptsE.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-E")
+         .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+    const pentEfilled = ctx.rootSvg.defs().symbol().id("pentagon-symbol-E-filled").viewbox(0 - half - 1, 0 - widest - 1, cellsize + 2, (cellsize * 1.5) + 2);
+    pentEfilled.polygon(ptsE.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: hexFill, opacity: hexOpacity}).id("pentagon-symbol-poly-E-filled")
+         .stroke("none");
     const pentW = ctx.rootSvg.defs().symbol().id("pentagon-symbol-W").viewbox(0 - half - 1, 0 - widest - 1, cellsize + 2, (cellsize * 1.5) + 2);
     const ptsW: IPoint[] = [{x: 0 - half, y: 0}, {x: 0 - quarter, y: 0 - widest}, {x: half, y: 0 - half}, {x: half, y: half}, {x: 0 - quarter, y: widest}];
-    const symbolPolyW = pentW.polygon(ptsW.map(pt => `${pt.x},${pt.y}`).join(" "))
-                        .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-W")
-                        .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-    if (hexFill !== undefined) {
-        symbolPolyW.fill({color: hexFill, opacity: 1});
-    }
+    pentW.polygon(ptsW.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-W")
+         .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
+    const pentWfilled = ctx.rootSvg.defs().symbol().id("pentagon-symbol-W-filled").viewbox(0 - half - 1, 0 - widest - 1, cellsize + 2, (cellsize * 1.5) + 2);
+    pentWfilled.polygon(ptsW.map(pt => `${pt.x},${pt.y}`).join(" "))
+         .fill({color: hexFill, opacity: hexOpacity}).id("pentagon-symbol-poly-W-filled")
+         .stroke("none");
 
     const polys: IPolyPolygon[][] = [];
     let orientation = startOrientation;
@@ -162,10 +159,77 @@ export const cairoCollinear = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]
         polys.push(rowPolys);
     }
 
+    // do boardFill before the first markers are placed
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( ("blocked" in boardTyped) && (boardTyped.blocked !== undefined) && (boardTyped.blocked !== null)  && (Array.isArray(boardTyped.blocked)) && (boardTyped.blocked.length > 0) ){
+        blocked = [...(boardTyped.blocked as Blocked)];
+    }
+    orientation = startOrientation;
+    for (let iRow = 0; iRow < height; iRow++) {
+        const row = grid[iRow];
+        if (iRow % 2 === 0) {
+            orientation = startOrientation;
+        } else if (startOrientation === "H") {
+            orientation = "V";
+        } else {
+            orientation = "H";
+        }
+        for (let iCol = 0; iCol < width; iCol++) {
+            const pairs: {pt: IPoint, w: number, h: number, col: number, sym: SVGSymbol, verts: IPoint[]}[] = [];
+            if (orientation === "H") {
+                pairs.push({
+                    pt: row[iCol * 2],
+                    col: iCol * 2,
+                    w: cellsize + 2,
+                    h: (cellsize * 1.5) + 2,
+                    sym: pentWfilled,
+                    verts: ptsW,
+                });
+                pairs.push({
+                    pt: row[(iCol * 2) + 1],
+                    col: (iCol * 2) + 1,
+                    w: cellsize + 2,
+                    h: (cellsize * 1.5) + 2,
+                    sym: pentEfilled,
+                    verts: ptsE,
+                });
+            } else {
+                pairs.push({
+                    pt: row[iCol * 2],
+                    col: iCol * 2,
+                    w: (cellsize * 1.5) + 2,
+                    h: cellsize + 2,
+                    sym: pentNfilled,
+                    verts: ptsN,
+                });
+                pairs.push({
+                    pt: row[(iCol * 2) + 1],
+                    col: (iCol * 2) + 1,
+                    w: (cellsize * 1.5) + 2,
+                    h: cellsize + 2,
+                    sym: pentSfilled,
+                    verts: ptsS,
+                });
+            }
+            for (const {pt, col, w, h, sym} of pairs) {
+                if (blocked !== undefined && blocked.find(p => p.col === col && p.row === iRow) !== undefined) {
+                    continue;
+                }
+                gridlines.use(sym).size(w, h).center(pt.x, pt.y);
+            }
+            if (orientation === "H") {
+                orientation = "V";
+            } else {
+                orientation = "H";
+            }
+        }
+    }
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
     // now actually draw pentagons
-        orientation = startOrientation;
+    orientation = startOrientation;
     for (let iRow = 0; iRow < height; iRow++) {
         const row = grid[iRow];
         if (iRow % 2 === 0) {
@@ -289,5 +353,5 @@ export const cairoCollinear = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

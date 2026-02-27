@@ -2,14 +2,14 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardBasic, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, type Polymatrix } from "../schemas/schema";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine } from "../common/plotting";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
-import { convexHullPolys, unionPolys } from "../common/polys";
+import { unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
-import { CompassDirection, edges2corners } from "../boards";
+import { CompassDirection, edges2corners, getCellFill } from "../boards";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -24,8 +24,9 @@ export interface IColourContext {
     labels: string;
     annotations: string;
     fill: string;
+    board?: string;
 }
-// "background"|"strokes"|"labels"|"annotations"|"fill"
+// "background"|"strokes"|"labels"|"annotations"|"fill"|"board"
 
 /**
  * Defines the options recognized by the rendering engine.
@@ -234,6 +235,7 @@ export abstract class RendererBase {
                 borders: "#000",
                 annotations: "#000",
                 labels: "#000",
+                board: "#fff",
             },
             contextGlobal: true,
             colourBlind: false,
@@ -322,13 +324,15 @@ export abstract class RendererBase {
 
         // Validate colour context
         if (opts.colourContext !== undefined && opts.colourContext !== null) {
-            for (const label of ["strokes", "labels", "annotations", "fill", "background", "borders"] as const) {
+            for (const label of ["strokes", "labels", "annotations", "fill", "background", "borders", "board"] as const) {
                 if ( (label in opts.colourContext) && (opts.colourContext[label] !== undefined) ) {
                     const color = tinycolor(opts.colourContext[label]);
                     if (! color.isValid()) {
                         throw new Error(`The context colour for '${label}' is malformed: ${ opts.colourContext[label] }`);
                     }
                     this.options.colourContext[label] = color.toHexString();
+                } else if (label === "board" && opts.colourContext[label] === undefined) {
+                    this.options.colourContext.board = undefined;
                 }
             }
             this.options.contextGlobal = opts.contextGlobal ?? true;
@@ -628,11 +632,15 @@ export abstract class RendererBase {
                     const contextFill = this.options.colourContext.fill;
                     const contextBorder = this.options.colourContext.borders;
                     const contextBackground = this.options.colourContext.background;
+                    const contextBoard = this.options.colourContext.board;
                     got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
                     got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
                     got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
                     got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
                     got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
+                    if (contextBoard !== undefined) {
+                        got.find("[data-context-board=true]").each(function(this: SVGElement) { this.fill(contextBoard); });
+                    }
 
                     let sheetCellSize = got.viewbox().height;
                     if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
@@ -3642,10 +3650,10 @@ export abstract class RendererBase {
         }
     }
 
-    protected backFill(polys?: Poly[][], preRotation = false): boolean {
+    protected backFill(boardFill?: Poly, preRotation = false): boolean {
         type BackFill = {
             type?: "full"|"board";
-            colour: string;
+            colour: string|number|Colourfuncs;
             opacity?: number;
         };
 
@@ -3660,13 +3668,26 @@ export abstract class RendererBase {
             if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
                 backFillObj = this.json.board.backFill as BackFill;
             }
+            const [fillColour, fillOpacity] = getCellFill(this, undefined);
 
-            // if there is no backFill object, then don't try again
-            if (backFillObj === undefined) {
+            // if there is no backFill object and no requested board colour, then don't try again
+            if (backFillObj === undefined && fillColour === undefined) {
                 return true;
             }
+            // but if there's no backFill object but there's a fillColour,
+            // populate a basic backFillObj
+            else if (backFillObj === undefined && fillColour !== undefined) {
+                backFillObj = {
+                    type: "board",
+                    colour: fillColour,
+                    opacity: fillOpacity,
+                };
+            }
+            // and if the object is still undefined, then error
+            else if (backFillObj === undefined) {
+                throw new Error("Could not determine the backFill options.");
+            }
 
-            const style = (this.json.board as BoardBasic).style;
             const bgcolour = this.resolveColour(backFillObj.colour) as string;
             let bgopacity = 1;
             if ( backFillObj.opacity !== undefined ) {
@@ -3677,11 +3698,6 @@ export abstract class RendererBase {
                 bgtype = backFillObj.type;
             }
 
-            if ((bgtype === "board" && polys === undefined) || (style === "hex-of-cir") ) {
-                bgtype = "full";
-                // throw new Error(`We can only do a "board" backfill if the board was built with polygons.`);
-            }
-
             // if we're pre-rotation but we want to do a full fill, then try again later
             if (preRotation && bgtype === "full") {
                 return false;
@@ -3689,24 +3705,30 @@ export abstract class RendererBase {
 
             if (bgtype === "full") {
                 const bbox = this.rootSvg.bbox();
-                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
+                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill-full").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
             } else {
                 const board = this.rootSvg.findOne("#board") as SVGG|null;
                 if (board === null) {
                     throw new Error(`Can't do a board fill if there's no board.`);
                 }
-                // if has concave elements board, we need to use turf
-                let ptsStr: string;
-                if (style.startsWith("hex") || style.startsWith("cairo") || ["triangles-stacked", "squares-diamonds", "snubsquare-cells"].includes(style)) {
-                    ptsStr = unionPolys(polys!.flat()).map(pt => pt.join(",")).join(" ");
+                // ignore if boardFill is undefined
+                if (boardFill !== undefined) {
+                    // if has concave elements board, we need to use turf
+                    if (boardFill.type === "circle") {
+                        const poly = this.rootSvg.circle(boardFill.r * 2).id("aprender-backfill-board").center(boardFill.cx, boardFill.cy).fill({color: bgcolour, opacity: bgopacity});
+                        // `board` backfill can't just be pushed to the back but must be inside the `board` group
+                        board.add(poly, 0);
+
+                    }
+                    else if (boardFill.type === "poly") {
+                        const poly = this.rootSvg.polygon(boardFill.points.map((p) => `${p.x},${p.y}`).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
+                        // `board` backfill can't just be pushed to the back but must be inside the `board` group
+                        board.add(poly, 0);
+                    }
+                    else {
+                        throw new Error(`boardFill can only be a circle or a polygon.`);
+                    }
                 }
-                // otherwise, use convex hull
-                else {
-                    ptsStr = convexHullPolys(polys!.flat()).map(pt => pt.join(",")).join(" ");
-                }
-                const poly = this.rootSvg.polygon(ptsStr).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
-                // `board` backfill can't just be pushed to the back but must be inside the `board` group
-                board.add(poly, 0);
             }
             return true;
         }

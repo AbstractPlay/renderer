@@ -33,7 +33,7 @@ export class MulticellSquareRenderer extends RendererBase {
 
         let gridPoints: GridPoints;
         let origPoints: GridPoints;
-        let polys: Poly[][]|undefined;
+        let boardFill: Poly|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ MulticellSquareRenderer.rendererName }' renderer.`);
         }
@@ -41,7 +41,7 @@ export class MulticellSquareRenderer extends RendererBase {
             case "squares-beveled":
             case "squares-checkered":
             case "squares":
-                [origPoints, polys] = squares(this);
+                ({ grid: origPoints, boardFill } = squares(this));
                 gridPoints = rectOfRects({gridHeight: (this.json.board.height as number) + 1, gridWidth: (this.json.board.width as number) + 1, cellSize: this.cellsize});
                 gridPoints = gridPoints.map((row) => row.map((cell) => ({x: cell.x - (this.cellsize / 2), y: cell.y - (this.cellsize / 2)} as IPoint)));
                 break;
@@ -100,7 +100,7 @@ export class MulticellSquareRenderer extends RendererBase {
         }
 
         // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
+        const backfilled = this.backFill(boardFill, true);
 
         const box = this.rotateBoard();
 
@@ -114,7 +114,7 @@ export class MulticellSquareRenderer extends RendererBase {
         this.placeKey(box);
 
         if (!backfilled) {
-            this.backFill(polys);
+            this.backFill(boardFill);
         }
     }
 
@@ -140,4 +140,3 @@ export class MulticellSquareRenderer extends RendererBase {
         usePieceAt({svg: this.rootSvg, piece, cellsize: this.cellsize, x: this.cellsize / 2, y: this.cellsize / 2, scalingFactor: 0.9});
     }
 }
-

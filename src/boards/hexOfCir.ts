@@ -1,7 +1,8 @@
-import { GridPoints, IPolyCircle, hexOfCir as hexOfCirGrid } from "../grids";
+import { BoardReturn, getCellFill } from ".";
+import { IPolyCircle, hexOfCir as hexOfCirGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
-export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints, IPolyCircle[][]] => {
+export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -55,7 +56,21 @@ export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoint
     }
 
     if (opts !== undefined && opts.noSvg === true) {
-        return [grid, polys];
+        return {grid, polys};
+    }
+
+    // boardFill before first markers
+    const [hexFill, hexOpacity] = getCellFill(ctx);
+    const circleFilled = ctx.rootSvg.defs().symbol().id("circle-symbol-filled").viewbox(0, 0, cellsize, cellsize);
+    circleFilled.circle(cellsize)
+        .fill({color: hexFill, opacity: hexOpacity})
+        .stroke("none");
+    for (let iRow = 0; iRow < grid.length; iRow++) {
+        const row = grid[iRow];
+        for (let iCol = 0; iCol < row.length; iCol++) {
+            const p = row[iCol];
+            gridlines.use(circleFilled).size(cellsize, cellsize).center(p.x, p.y);
+        }
     }
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
@@ -101,7 +116,7 @@ export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoint
     // Draw circles
     const circle = ctx.rootSvg.defs().symbol().id("circle-symbol").viewbox(0, 0, cellsize, cellsize);
     circle.circle(cellsize)
-        .fill({color: "black", opacity: 0})
+        .fill({color: "white", opacity: 0})
         .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke});
     for (let iRow = 0; iRow < grid.length; iRow++) {
         const row = grid[iRow];
@@ -116,5 +131,5 @@ export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoint
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

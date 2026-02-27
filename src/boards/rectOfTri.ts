@@ -1,9 +1,9 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
-import { CompassDirection, IBuffer } from ".";
-import { GridPoints, hexOfTri } from "../grids";
+import { BoardReturn, CompassDirection, IBuffer } from ".";
+import { hexOfTri, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
-export const rectOfTri = (ctx: RendererBase): GridPoints => {
+export const rectOfTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -606,5 +606,22 @@ export const rectOfTri = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    return grid;
+    // derive boardFill
+    const xs = grid.flat().map(pt => pt.x);
+    const ys = grid.flat().map(pt => pt.y);
+    const minx = Math.min(...xs);
+    const miny = Math.min(...ys);
+    const maxx = Math.max(...xs);
+    const maxy = Math.max(...ys);
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: [
+            {x: minx - (cellsize / 2), y: miny - (cellsize / 2)},
+            {x: maxx + (cellsize / 2), y: miny - (cellsize / 2)},
+            {x: maxx + (cellsize / 2), y: maxy + (cellsize / 2)},
+            {x: minx - (cellsize / 2), y: maxy + (cellsize / 2)},
+        ]
+    };
+
+    return {grid, boardFill};
 }

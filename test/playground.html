@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8"/>
         <title>Abstract Play: Renderer Playground</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
         <script src="./../APRender.min.js"></script>
         <style>
             svg * text {
@@ -47,6 +48,7 @@
                 var borders = document.getElementById("ccBorders");
                 var labels = document.getElementById("ccLabels");
                 var notes = document.getElementById("ccNotes");
+                var board = document.getElementById("ccBoard");
                 options.colourContext = {
                     background: bg.value,
                     fill: fill.value,
@@ -54,7 +56,11 @@
                     borders: borders.value,
                     labels: labels.value,
                     annotations: notes.value,
+                    board: board.value.length > 0 ? board.value : undefined,
                 };
+                if (board.value.trim().length > 0) {
+                    options.colourContext.board = board.value;
+                }
                 if (document.getElementById("chkContextGlobal").checked) {
                     options.contextGlobal = false;
                 }
@@ -551,12 +557,14 @@
                     var borders = document.getElementById("ccBorders");
                     var labels = document.getElementById("ccLabels");
                     var notes = document.getElementById("ccNotes");
+                    var board = document.getElementById("ccBoard");
                     bg.value = "#fff";
                     fill.value = "#000";
                     strokes.value = "#000";
                     borders.value = "#000";
                     labels.value = "#000";
                     notes.value = "#000";
+                    board.value = "";
                 });
                 // listen for dark mode click
                 var darkbtn = document.getElementById("btnDark");
@@ -567,97 +575,123 @@
                     var borders = document.getElementById("ccBorders");
                     var labels = document.getElementById("ccLabels");
                     var notes = document.getElementById("ccNotes");
+                    var board = document.getElementById("ccBoard");
                     bg.value = "#222";
                     fill.value = "#e6f2f2";
                     strokes.value = "#6d6d6d";
                     borders.value = "#000";
                     labels.value = "#009fbf";
                     notes.value = "#99cccc";
+                    board.value = "";
                 });
             });
         </script>
     </head>
     <body>
-        <section>
-            <h1>Abstract Play: Renderer Playground</h1>
-            <p>This is a public place for people to interact and experiment with the Abstract Play rendering engine. Use the drop-down menu to select from a list of samples, and then tweak them to your heart's content. <a href="https://github.com/AbstractPlay/renderer">See the GitHub page for documentation and a list of available glyphs.</a> It should work correctly in Chrome, Firefox, Opera, and Edge. If you encounter issues, please let us know on the GitHub page.</p>
-            <p>Updated to version 1.0.0-beta.</p>
-        </section>
-        <section>
-            <h1>JSON Input</h1>
-            <form>
-                <label for="samples">Sample renders</label>
-                <select name="samples" id="samples">
-                    <option value="_empty"></option>
-                </select>
-                <div id="sampledesc"></div>
-                <hr>
-                <textarea id="jsonIn" style="width: 100%; height: 10em"></textarea>
-                <div>
-                    <input type="radio" id="fillStandard" name="playerfill" value="standard" checked>
-                    <label for="fillStandard">Standard colours (12 colours)</label>
+        <section class="section">
+            <div class="container">
+                <h1 class="title">Abstract Play: Renderer Playground</h1>
+                <div class="content">
+                    <p>This is a public place for people to interact and experiment with the Abstract Play rendering engine. Use the drop-down menu to select from a list of samples, and then tweak them to your heart's content. <a href="https://github.com/AbstractPlay/renderer">See the GitHub page for documentation and a list of available glyphs.</a> It should work correctly in Chrome, Firefox, Opera, and Edge. If you encounter issues, please let us know on the GitHub page.</p>
+                    <p>Updated to version 1.0.0-beta.</p>
+                </div>
 
-                    <input type="radio" id="fillBlind" name="playerfill" value="blind">
-                    <label for="fillBlind">Colour-blind-friendly colours (12 colours)</label>
-
-                    <input type="radio" id="fillPatterns" name="playerfill" value="patterns">
-                    <label for="fillPatterns">Black-and-white patterns (10 max)</label>
+                <div class="columns">
+                    <div class="column is-one-third">
+                        <h2 class="title is-4">JSON Input</h2>
+                        <form>
+                            <div class="field">
+                                <label class="label" for="samples">Sample renders</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="samples" id="samples">
+                                            <option value="_empty"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="content" id="sampledesc"></div>
+                            <hr>
+                            <div class="field">
+                                <div class="control">
+                                    <textarea id="jsonIn" class="textarea" style="height: 10em"></textarea>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <label class="radio">
+                                        <input type="radio" id="fillStandard" name="playerfill" value="standard" checked>
+                                        Standard colours (12 colours)
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" id="fillBlind" name="playerfill" value="blind">
+                                        Colour-blind-friendly colours (12 colours)
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" id="fillPatterns" name="playerfill" value="patterns">
+                                        Black-and-white patterns (10 max)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <label class="checkbox" for="chkColoursGlobal">
+                                        <input type="checkbox" id="chkColoursGlobal">
+                                        Game-specific customization
+                                    </label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="field">
+                                <label class="label">Colour Context</label>
+                                <div class="field is-grouped is-grouped-multiline">
+                                    <div class="control"><label class="label is-small" for="ccBackground">Background</label><input class="input is-small" type="text" id="ccBackground" value="#fff"></div>
+                                    <div class="control"><label class="label is-small" for="ccFill">Fill</label><input class="input is-small" type="text" id="ccFill" value="#000"></div>
+                                    <div class="control"><label class="label is-small" for="ccLabels">Labels</label><input class="input is-small" type="text" id="ccLabels" value="#000"></div>
+                                    <div class="control"><label class="label is-small" for="ccStrokes">Strokes</label><input class="input is-small" type="text" id="ccStrokes" value="#000"></div>
+                                    <div class="control"><label class="label is-small" for="ccBorders">Borders</label><input class="input is-small" type="text" id="ccBorders" value="#000"></div>
+                                    <div class="control"><label class="label is-small" for="ccNotes">Annotations</label><input class="input is-small" type="text" id="ccNotes" value="#000"></div>
+                                    <div class="control"><label class="label is-small" for="ccBoard">Board</label><input class="input is-small" type="text" id="ccBoard" value=""></div>
+                                </div>
+                            </div>
+                            <div class="field is-grouped">
+                                <div class="control"><button id="btnLight" class="button is-small" type="button">Light Mode</button></div>
+                                <div class="control"><button id="btnDark" class="button is-small" type="button">Dark Mode</button></div>
+                                <div class="control"><label class="checkbox" for="chkContextGlobal"><input type="checkbox" id="chkContextGlobal"> Game-specific customization</label></div>
+                            </div>
+                            <hr>
+                            <div class="field">
+                                <label class="label">Rotation</label>
+                                <div class="control">
+                                    <label class="radio"><input type="radio" name="rotation" value="0" checked>0</label>
+                                    <label class="radio"><input type="radio" name="rotation" value="45">45</label>
+                                    <label class="radio"><input type="radio" name="rotation" value="90">90</label>
+                                    <label class="radio"><input type="radio" name="rotation" value="135">135</label>
+                                    <label class="radio"><input type="radio" name="rotation" value="180">180</label>
+                                    <label class="radio"><input type="radio" name="rotation" value="225">225</label>
+                                    <label class="radio"><input type="radio" name="rotation" value="270">270</label>
+                                    <label class="radio"><input type="radio" name="rotation" value="315">315</label>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="rotFree">Freestyle rotation</label>
+                                <div class="control">
+                                    <input class="input" type="number" name="rotFree" id="rotFree" value="0">
+                                </div>
+                            </div>
+                            <div class="field is-grouped">
+                                <div class="control"><button id="submit" name="submit" type="button" class="button is-primary">Generate SVG</button></div>
+                                <div class="control"><input type="reset" value="Reset Form" class="button is-light"></div>
+                                <div class="control"><button id="toggle" name="toggle" type="button" class="button">Prettify JSON</button></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="column">
+                        <h2 class="title is-4">SVG Output</h2>
+                        <div id="drawing" class="box" style="min-height: 50em; overflow: auto; padding: 0.5em"></div>
+                    </div>
                 </div>
-                <div>
-                    <input type="checkbox" id="chkColoursGlobal">
-                    <label for="chkColoursGlobal">Game-specific customization</label>
-                </div>
-                <hr>
-                <div>
-                    <label for="ccBackground">Background</label>
-                    <input type="text" id="ccBackground" value="#fff">
-                    <label for="ccFill">Fill</label>
-                    <input type="text" id="ccFill" value="#000">
-                    <label for="ccLabels">Labels</label>
-                    <input type="text" id="ccLabels" value="#000">
-                </div>
-                <div>
-                    <label for="ccStrokes">Strokes</label>
-                    <input type="text" id="ccStrokes" value="#000">
-                    <label for="ccStrokes">Borders</label>
-                    <input type="text" id="ccBorders" value="#000">
-                    <label for="ccNotes">Annotations</label>
-                    <input type="text" id="ccNotes" value="#000">
-                </div>
-                <div>
-                    <button id="btnLight" type="button">Light Mode</button>
-                    <button id="btnDark" type="button">Dark Mode</button>
-                    &emsp;
-                    <input type="checkbox" id="chkContextGlobal">
-                    <label for="chkContextGlobal">Game-specific customization</label>
-                </div>
-                <hr>
-                <div>
-                    <fieldset>
-                        <legend>Rotation</legend>
-                        <input type="radio" name="rotation" value="0" checked>0&emsp;
-                        <input type="radio" name="rotation" value="45">45&emsp;
-                        <input type="radio" name="rotation" value="90">90&emsp;
-                        <input type="radio" name="rotation" value="135">135&emsp;
-                        <input type="radio" name="rotation" value="180">180&emsp;
-                        <input type="radio" name="rotation" value="225">225&emsp;
-                        <input type="radio" name="rotation" value="270">270&emsp;
-                        <input type="radio" name="rotation" value="315">315&emsp;
-                    </fieldset>
-                </div>
-                <div>
-                    <label for="rotFree">Freestyle rotation</label>
-                    <input type="number" name="rotFree" id="rotFree" value="0">
-                </div>
-                <button id="submit" name="submit" type="button">Generate SVG</button>&emsp;
-                <input type="reset" value="Reset Form">&emsp;
-                <button id="toggle" name="toggle" type="button">Prettify JSON</button>
-            </form>
-        </section>
-        <hr>
-        <section>
-            <h1>SVG Output</h1>
-            <div id="drawing" style="width: 100%; height: 50em; border: 1px solid black; padding: 0.5em"></div>
+            </div>
         </section>
     </body>
 </html>

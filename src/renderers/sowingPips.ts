@@ -1,5 +1,5 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints } from "../grids/_base";
+import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rotate, usePieceAt } from "../common/plotting";
@@ -31,12 +31,13 @@ export class SowingPipsRenderer extends RendererBase {
         this.loadLegend();
 
         let gridPoints: GridPoints;
+        let boardFill: Poly|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ SowingPipsRenderer.rendererName }' renderer.`);
         }
         switch (this.json.board.style) {
             case "sowing":
-                gridPoints = sowing(this);
+                ({ grid: gridPoints, boardFill } = sowing(this));
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by this renderer.`);
@@ -180,7 +181,7 @@ export class SowingPipsRenderer extends RendererBase {
         }
 
         // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(undefined, true);
+        const backfilled = this.backFill(boardFill, true);
 
         const box = this.rotateBoard();
 
@@ -194,7 +195,7 @@ export class SowingPipsRenderer extends RendererBase {
         this.placeKey(box);
 
         if (!backfilled){
-            this.backFill();
+            this.backFill(boardFill);
         }
     }
 
@@ -220,4 +221,3 @@ export class SowingPipsRenderer extends RendererBase {
         usePieceAt({svg: this.rootSvg, piece, cellsize: this.cellsize, x: this.cellsize / 2, y: this.cellsize / 2, scalingFactor: 0.9});
     }
 }
-

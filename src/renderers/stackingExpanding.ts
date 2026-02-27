@@ -74,29 +74,30 @@ export class StackingExpandingRenderer extends RendererBase {
             // Delegate to style-specific renderer
             let gridPoints: GridPoints;
             let polys: Poly[][]|undefined;
+            let boardFill: Poly|undefined;
             if (! ("style" in this.json.board)) {
                 throw new Error(`This 'board' schema cannot be handled by the '${ StackingExpandingRenderer.rendererName }' renderer.`);
             }
             switch (this.json.board.style) {
                 case "squares-checkered":
                 case "squares":
-                    [gridPoints, polys] = squares(this);
+                    ({ grid: gridPoints, polys, boardFill } = squares(this));
                     break;
                 case "vertex":
                 case "vertex-cross":
-                    gridPoints = vertex(this);
+                    ({ grid: gridPoints, boardFill } = vertex(this));
                     break;
                 case "snubsquare":
-                    gridPoints = snubSquare(this);
+                    ({ grid: gridPoints, boardFill } = snubSquare(this));
                     break;
                 case "hex-of-hex":
-                    [gridPoints, polys] = hexOfHex(this);
+                    ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));
                     break;
                 case "hex-of-tri":
-                    gridPoints = hexOfTri(this);
+                    ({ grid: gridPoints, boardFill } = hexOfTri(this));
                     break;
                 case "hex-of-cir":
-                    [gridPoints, polys] = hexOfCir(this);
+                    ({ grid: gridPoints, polys, boardFill } = hexOfCir(this));
                     break;
                 default:
                     throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ StackingExpandingRenderer.rendererName }' renderer.`);
@@ -240,6 +241,9 @@ export class StackingExpandingRenderer extends RendererBase {
                 }
             }
 
+            // if there's a board backfill, it needs to be done before rotation
+            const backfilled = this.backFill(boardFill, true);
+
             const box = this.rotateBoard({ignoreRotation: true});
 
             // button bar (override a left-hand placement)
@@ -247,6 +251,10 @@ export class StackingExpandingRenderer extends RendererBase {
 
             // key (override a left-hand placement)
             this.placeKey(box, "right");
+
+            if (!backfilled) {
+                this.backFill(boardFill);
+            }
         }
     }
 }

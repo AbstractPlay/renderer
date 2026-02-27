@@ -1,8 +1,10 @@
 import { centroid } from "../common/plotting";
-import { edges2corners, pts2id } from ".";
+import { BoardReturn, edges2corners, pts2id } from ".";
 import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { defineHex, Grid, HexOffset, Orientation, rectangle } from "honeycomb-grid";
+
+// Skipping backFill for this board style for now. It's not even being used at the moment.
 
 /**
  * This is a specialized subset of the rectOfHex function, specifically:
@@ -12,7 +14,7 @@ import { defineHex, Grid, HexOffset, Orientation, rectangle } from "honeycomb-gr
  *
  * @returns A map of row/column locations to x,y coordinate
  */
-export const stackingTriangles = (ctx: RendererBase): {points: GridPoints, polys: Poly[][]} => {
+export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -247,5 +249,5 @@ export const stackingTriangles = (ctx: RendererBase): {points: GridPoints, polys
 
     ctx.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
-    return {points: gridPoints, polys};
+    return {grid: gridPoints, polys};
 }

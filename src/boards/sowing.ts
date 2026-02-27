@@ -1,9 +1,10 @@
 import { Element as SVGElement } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, rectOfRects } from "../grids";
+import { IPoint, rectOfRects } from "../grids";
 import { MarkerOutline } from "../schemas/schema";
 import { RendererBase } from "../renderers/_base";
+import { BoardReturn, getCellFill } from ".";
 
-export const sowing = (ctx: RendererBase): GridPoints => {
+export const sowing = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -254,9 +255,10 @@ export const sowing = (ctx: RendererBase): GridPoints => {
 
     // Draw exterior grid lines
     // Draw square around entire board
+    const [cellFill, cellOpacity] = getCellFill(ctx, ctx.options.colourContext.background);
     gridlines.rect(width * cellsize, height * cellsize)
         .move(0 - (cellsize / 2), 0 - (cellsize / 2))
-        .fill({color: ctx.options.colourContext.background, opacity: 0})
+        .fill({color: cellFill, opacity: cellOpacity})
         .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
     // if even number of rows, draw line between the halves
     if (height % 2 === 0) {
@@ -270,5 +272,5 @@ export const sowing = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
 
-    return grid;
+    return {grid};
 }

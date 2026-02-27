@@ -1,9 +1,9 @@
 import { Element as SVGElement, StrokeData } from "@svgdotjs/svg.js";
-import { GridPoints, Poly } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { ICobwebArgs, cobweb as cobwebGrid, cobwebLabels, cobwebPolys } from "../grids/cobweb";
+import { BoardReturn, getCellFill } from ".";
 
-export const cobweb = (ctx: RendererBase): [GridPoints, Poly[][]] => {
+export const cobweb = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -44,6 +44,26 @@ export const cobweb = (ctx: RendererBase): [GridPoints, Poly[][]] => {
     const polys = cobwebPolys(args);
     const board = ctx.rootSvg.group().id("board");
     const gridlines = board.group().id("gridlines");
+
+    // apply boardFill before the first markers
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    for (let y = 0; y < polys.length; y++) {
+        const slice = polys[y];
+        for (let x = 0; x < slice.length; x++) {
+            const cell = slice[x];
+            switch (cell.type) {
+                case "circle":
+                    gridlines.circle(cell.r * 2).fill({color: hexFill, opacity: hexOpacity}).stroke("none").center(cell.cx, cell.cy);
+                    break;
+                case "poly":
+                    gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+                    break;
+                case "path":
+                    gridlines.path(cell.path).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+                    break;
+            }
+        }
+    }
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
@@ -96,5 +116,5 @@ export const cobweb = (ctx: RendererBase): [GridPoints, Poly[][]] => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

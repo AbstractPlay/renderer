@@ -1,8 +1,9 @@
+import { BoardReturn, getCellFill } from ".";
 import { centroid } from "../common/plotting";
 import { GridPoints, IPoint, IPolyPolygon, snubsquare } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
-export const cairoCatalan = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const cairoCatalan = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -92,6 +93,28 @@ export const cairoCatalan = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] 
     const board = ctx.rootSvg.group().id("board");
     const gridlines = board.group().id("pentagons");
 
+    // do boardFill before markers
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( ("blocked" in ctx.json.board) && (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
+        blocked = [...(ctx.json.board.blocked as Blocked)];
+    }
+
+    const [hexFill, hexOpacity] = getCellFill(ctx);
+    for (let iRow = 0; iRow < height; iRow++) {
+        for (let iCol = 0; iCol < width; iCol++) {
+            if (blocked !== undefined) {
+                if (blocked.find(p => p.row === iRow && p.col === iCol) !== undefined) {
+                    continue;
+                }
+            }
+            gridlines
+                .polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+                .fill({color: hexFill, opacity: hexOpacity}).addClass("aprender-backfill-board")
+                .stroke("none");
+        }
+    }
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
     // Add board labels
@@ -151,17 +174,6 @@ export const cairoCatalan = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] 
         }
     }
 
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( ("blocked" in ctx.json.board) && (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
-        blocked = [...(ctx.json.board.blocked as Blocked)];
-    }
-
-    let hexFill: string|undefined;
-    if ( ("hexFill" in ctx.json.board) && (ctx.json.board.hexFill !== undefined) && (ctx.json.board.hexFill !== null) && (typeof ctx.json.board.hexFill === "string") && (ctx.json.board.hexFill.length > 0) ){
-        hexFill = ctx.json.board.hexFill;
-    }
-
     for (let iRow = 0; iRow < height; iRow++) {
         for (let iCol = 0; iCol < width; iCol++) {
             if (blocked !== undefined) {
@@ -172,9 +184,6 @@ export const cairoCatalan = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] 
             const c = gridlines.polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
                                 .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-OO")
                                 .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});;
-            if (hexFill !== undefined) {
-                c.fill({color: hexFill, opacity: 1});
-            }
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }
@@ -183,5 +192,5 @@ export const cairoCatalan = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] 
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

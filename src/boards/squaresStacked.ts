@@ -1,8 +1,9 @@
-import { GridPoints, IPoint, rectOfRects } from "../grids";
+import { IPoint, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { rotatePoint } from "../common/plotting";
+import { BoardReturn } from ".";
 
-export const squaresStacked = (ctx: RendererBase): GridPoints => {
+export const squaresStacked = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -223,5 +224,16 @@ export const squaresStacked = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
 
-    return grid;
+    // derive boardFill
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: [
+            {x: grid[0][0].x - (cellsize / 2), y: grid[0][0].y - (cellsize / 2)},
+            {x: grid[0][width - 1].x + (cellsize / 2), y: grid[0][width - 1].y - (cellsize / 2)},
+            {x: grid[height - 1][width - 1].x + (cellsize / 2), y: grid[height - 1][width - 1].y + (cellsize / 2)},
+            {x: grid[height - 1][0].x - (cellsize / 2), y: grid[height - 1][0].y + (cellsize / 2)},
+        ],
+    };
+
+    return {grid, boardFill};
 }

@@ -1,12 +1,12 @@
 import { Element as SVGElement, Rect as SVGRect, StrokeData, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, IPolyPolygon, Poly, rectOfRects } from "../grids";
+import { IPoint, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { rotatePoint, shortenLine } from "../common/plotting";
 import tinycolor from "tinycolor2";
 import { MarkerOutline } from "../schemas/schema";
-import { CompassDirection, IBuffer } from ".";
+import { BoardReturn, CompassDirection, getCellFill, IBuffer } from ".";
 
-export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints, Poly[][]] => {
+export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -83,7 +83,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints
         polys.push(rowPolys);
     }
     if (opts !== undefined && opts.noSvg === true) {
-        return [grid, polys];
+        return {grid, polys};
     }
 
     const board = ctx.rootSvg.group().id("board");
@@ -96,6 +96,33 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints
     // define "tiles" earlier so clickable gridlines are viable
     const tiles = board.group().id("tiles");
     const gridlines = board.group().id("gridlines");
+
+    // boardFill needs to come before first markers
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
+        blocked = [...(ctx.json.board.blocked as Blocked)];
+    }
+    const [cellFill, cellOpacity] = getCellFill(ctx, ctx.options.colourContext.background);
+    const tileFilled = ctx.rootSvg.defs().symbol().id("tile-filled").viewbox(0, 0, cellsize, cellsize);
+    tileFilled.rect(cellsize, cellsize)
+        .move(0, 0)
+        .fill({color: cellFill ?? ctx.options.colourContext.background})
+        .opacity(cellOpacity)
+        .stroke("none");
+    for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+            let idx = -1;
+            if (blocked !== undefined) {
+                idx = blocked.findIndex(o => o.row === row && o.col === col)
+            }
+            const {x, y} = grid[row][col];
+            if (idx === -1) {
+                tiles.use(tileFilled).size(cellsize, cellsize).center(x, y);
+            }
+        }
+    }
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys});
 
     // create buffer zone first if requested
@@ -495,15 +522,9 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints
     }
 
     // Now the tiles
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
-        blocked = [...(ctx.json.board.blocked as Blocked)];
-    }
-
     if (style === "squares-checkered") {
         // Load glyphs for light and dark squares
-        const cBg = tinycolor(ctx.options.colourContext.background);
+        const cBg = tinycolor(cellFill ?? ctx.options.colourContext.background);
         const cFill = tinycolor(ctx.options.colourContext.fill);
         // If the background colour is lighter than the fill colour, then light tiles are fully transparent, and dark tiles are 75% transparent.
         let tileDark: SVGSymbol;
@@ -512,7 +533,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints
             tileLight = ctx.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
             tileLight.rect(cellsize, cellsize)
                 .move(0, 0)
-                .fill({color: ctx.options.colourContext.background})
+                .fill({color: cellFill ?? ctx.options.colourContext.background})
                 .opacity(0)
                 .stroke({width: 0});
             tileDark = ctx.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
@@ -532,7 +553,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints
             tileDark = ctx.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
             tileDark.rect(cellsize, cellsize)
                 .move(0, 0)
-                .fill(ctx.options.colourContext.background)
+                .fill(cellFill ?? ctx.options.colourContext.background)
                 .opacity(0)
                 .stroke({width: 0});
         }
@@ -812,5 +833,22 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): [GridPoints
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded, polys});
 
-    return [grid, polys];
+    // // derive boardFill
+    // const xs = grid.flat().map(pt => pt.x);
+    // const ys = grid.flat().map(pt => pt.y);
+    // const minx = Math.min(...xs);
+    // const miny = Math.min(...ys);
+    // const maxx = Math.max(...xs);
+    // const maxy = Math.max(...ys);
+    // const boardFill: IPolyPolygon = {
+    //     type: "poly",
+    //     points: [
+    //         {x: minx - (cellsize / 2), y: miny - (cellsize / 2)},
+    //         {x: maxx + (cellsize / 2), y: miny - (cellsize / 2)},
+    //         {x: maxx + (cellsize / 2), y: maxy + (cellsize / 2)},
+    //         {x: minx - (cellsize / 2), y: maxy + (cellsize / 2)},
+    //     ]
+    // };
+
+    return {grid, polys};
 }

@@ -1,10 +1,10 @@
 import { centroid } from "../common/plotting";
-import { edges2corners, pts2id } from ".";
+import { BoardReturn, edges2corners, getCellFill, pts2id } from ".";
 import { GridPoints, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 
-export const rectOfHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const rectOfHex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -79,8 +79,13 @@ export const rectOfHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => 
         polys.push(rowPolys);
     }
 
-    ctx.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
-
+    // boardFill before first markers
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null) && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
+        blocked = [...(ctx.json.board.blocked as Blocked)];
+    }
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
     const corners = grid.getHex({col: 0, row: 0})!.corners;
     const vbx = Math.min(...corners.map(pt => pt.x));
     const vby = Math.min(...corners.map(pt => pt.y));
@@ -90,17 +95,30 @@ export const rectOfHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => 
     //     .polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
     //     .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
     const hexSymbol = ctx.rootSvg.defs().symbol().id("hex-symbol").viewbox(vbx, vby, vbWidth, vbHeight);
-    const symbolPoly = hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
-                        .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
+    const symbolPoly =
+        hexSymbol.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+                 .fill({color: "white", opacity: 0}).id("hex-symbol-poly");
     if (! clickEdges) {
         symbolPoly.stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round" });
     }
-
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null) && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
-        blocked = [...(ctx.json.board.blocked as Blocked)];
+    const hexSymbolFilled = ctx.rootSvg.defs().symbol().id("hex-symbol-filled").viewbox(vbx, vby, vbWidth, vbHeight);
+    const filledSymbolPoly =
+        hexSymbolFilled.polygon(corners.map(({ x, y }) => `${x},${y}`).join(" "))
+                       .fill({color: hexFill, opacity: hexOpacity}).id("hex-symbol-poly-filled");
+    // boardFill polys
+    for (const hex of grid) {
+        // don't draw "blocked" hexes
+        if (blocked !== undefined) {
+            const found = blocked.find(e => e.row === hex.row && e.col === hex.col);
+            if (found !== undefined) {
+                continue;
+            }
+        }
+        const { x, y } = hex;
+        board.use(filledSymbolPoly).size(cellsize, cellsize).translate(x, y);
     }
+
+    ctx.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
     const cells = board.group().id("cells");
     const labels = board.group().id("labels");
@@ -148,6 +166,7 @@ export const rectOfHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => 
         labelOpacity = ctx.json.board.labelOpacity;
     }
     const rotation = ctx.getRotation();
+    // gridlines and labels
     for (const hex of grid) {
         // don't draw "blocked" hexes
         if (blocked !== undefined) {
@@ -314,5 +333,5 @@ export const rectOfHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => 
 
     ctx.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
-    return [gridPoints, polys];
+    return {grid: gridPoints, polys};
 }

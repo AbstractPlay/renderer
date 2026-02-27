@@ -1,8 +1,9 @@
-import { GridPoints, snubsquare, SnubStart } from "../grids";
+import { IPolyPolygon, snubsquare, SnubStart } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { rotatePoint } from "../common/plotting";
+import { BoardReturn } from ".";
 
-export const snubSquare = (ctx: RendererBase): GridPoints => {
+export const snubSquare = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -194,5 +195,22 @@ export const snubSquare = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    return grid;
+    // derive boardFill
+    const xs = grid.flat().map(pt => pt.x);
+    const ys = grid.flat().map(pt => pt.y);
+    const minx = Math.min(...xs);
+    const miny = Math.min(...ys);
+    const maxx = Math.max(...xs);
+    const maxy = Math.max(...ys);
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: [
+            {x: minx - (cellsize / 2), y: miny - (cellsize / 2)},
+            {x: maxx + (cellsize / 2), y: miny - (cellsize / 2)},
+            {x: maxx + (cellsize / 2), y: maxy + (cellsize / 2)},
+            {x: minx - (cellsize / 2), y: maxy + (cellsize / 2)},
+        ]
+    };
+
+    return {grid, boardFill};
 }

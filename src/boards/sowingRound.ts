@@ -1,9 +1,10 @@
 import { Element as SVGElement } from "@svgdotjs/svg.js";
-import { GridPoints, mancalaRound } from "../grids";
+import { IPolyCircle, mancalaRound } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { MarkerOutline } from "../schemas/schema";
+import { BoardReturn } from ".";
 
-export const sowingRound = (ctx: RendererBase): GridPoints => {
+export const sowingRound = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -127,5 +128,18 @@ export const sowingRound = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    return grid;
+    // Calculate encompassing circle
+    const baseRadius = cellsize / (2 * Math.sin(Math.PI / width));
+    // The pits are on all but the outermost layer of points.
+    const pitPointsRadius = baseRadius + (height - 2) * (cellsize * 1.5);
+    // Add half a pit's width. The pits themselves are 85% of `cellsize`.
+    const encompassingRadius = pitPointsRadius + (cellsize / 2);
+    const boardFill: IPolyCircle = {
+        type: "circle",
+        cx: 0,
+        cy: 0,
+        r: encompassingRadius,
+    };
+
+    return {grid, boardFill};
 }

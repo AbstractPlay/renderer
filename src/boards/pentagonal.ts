@@ -1,10 +1,11 @@
-import { GridPoints, pentagonal as pentagonalGrid } from "../grids";
+import { IPolyPolygon, pentagonal as pentagonalGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
-import { ptDistance, rotatePoint } from "../common/plotting";
+import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
 import { pentagonalBoard } from "../common/pentagons";
 import { Pentagonal, PentagonalNodeData } from "../graphs";
+import { BoardReturn } from ".";
 
-export const pentagonal = (ctx: RendererBase): GridPoints => {
+export const pentagonal = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -184,5 +185,18 @@ export const pentagonal = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    return grid;
+    // build boardfill
+    const centre = grid[0][0];
+    const outer = [...grid[grid.length - 1]];
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: outer.map(p => {
+            const bearing = calcBearing(centre.x, centre.y, p.x, p.y);
+            const dist = ptDistance(centre.x, centre.y, p.x, p.y) + (ctx.cellsize / 2);
+            const [nx, ny] = projectPoint(centre.x, centre.y, dist, bearing);
+            return {x: nx, y: ny};
+        })
+    };
+
+    return {grid, boardFill};
 }

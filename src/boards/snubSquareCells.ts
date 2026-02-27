@@ -1,9 +1,10 @@
 import { BoardBasic } from "../schemas/schema";
 import { centroid } from "../common/plotting";
-import { GridPoints, IPolyPolygon, snubsquare, SnubStart } from "../grids";
+import { IPolyPolygon, snubsquare, SnubStart } from "../grids";
 import { RendererBase } from "../renderers/_base";
+import { BoardReturn, getCellFill } from ".";
 
-export const snubSquareCells = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -156,6 +157,24 @@ export const snubSquareCells = (ctx: RendererBase): [GridPoints, IPolyPolygon[][
     const board = ctx.rootSvg.group().id("board");
     const gridlines = board.group().id("gridlines");
 
+    // boardFill before first markers
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    ctx.json.board = ctx.json.board as BoardBasic;
+    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
+        blocked = [...(ctx.json.board.blocked as Blocked)];
+    }
+    const [cellFill, cellOpacity] = getCellFill(ctx, "white");
+    for (let row = 0; row < polys.length; row++) {
+        for (let col = 0; col < polys[row].length; col++) {
+            const isBlocked = blocked?.find(e => e.row === row && e.col === col) !== undefined;
+            if (!isBlocked) {
+                const poly = polys[row][col];
+                gridlines.polygon([...poly.points, poly.points[0]].map(pt => `${pt.x},${pt.y}`).join(" ")).stroke("none").fill({color: cellFill, opacity: cellOpacity});
+            }
+        }
+    }
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys, gridExpanded: gridOrig});
 
     // Add board labels
@@ -185,12 +204,6 @@ export const snubSquareCells = (ctx: RendererBase): [GridPoints, IPolyPolygon[][
     }
 
     // Draw grid lines
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    ctx.json.board = ctx.json.board as BoardBasic;
-    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
-        blocked = [...(ctx.json.board.blocked as Blocked)];
-    }
     for (let row = 0; row < polys.length; row++) {
         for (let col = 0; col < polys[row].length; col++) {
             const isBlocked = blocked?.find(e => e.row === row && e.col === col) !== undefined;
@@ -206,5 +219,5 @@ export const snubSquareCells = (ctx: RendererBase): [GridPoints, IPolyPolygon[][
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys, gridExpanded: gridOrig});
 
-    return [grid, polys];
+    return {grid, polys};
 }

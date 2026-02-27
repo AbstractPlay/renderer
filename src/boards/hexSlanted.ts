@@ -1,8 +1,9 @@
 import { BoardBasic } from "../schemas/schema";
-import { GridPoints, IPoint, IPolyPolygon, hexSlanted as hexSlantedGrid} from "../grids";
+import { IPoint, IPolyPolygon, hexSlanted as hexSlantedGrid} from "../grids";
 import { RendererBase } from "../renderers/_base";
+import { BoardReturn, getCellFill } from ".";
 
-export const hexSlanted = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const hexSlanted = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -40,6 +41,7 @@ export const hexSlanted = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] =>
     const triHeight = (triWidth * Math.sqrt(3)) / 2;
 
     const hex = ctx.rootSvg.defs().symbol().id("hex-symbol").viewbox(-3.3493649053890344, 0, 50, 50);
+    const hexFilled = ctx.rootSvg.defs().symbol().id("hex-symbol-filled").viewbox(-3.3493649053890344, 0, 50, 50);
     const pts: IPoint[] = [{x:triHeight,y:0}, {x:triHeight * 2,y:halfhex}, {x:triHeight * 2,y:halfhex + triWidth}, {x:triHeight,y:triWidth * 2}, {x:0,y:halfhex + triWidth}, {x:0,y:halfhex}];
 
     const polys: IPolyPolygon[][] = [];
@@ -53,6 +55,33 @@ export const hexSlanted = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] =>
             });
         }
         polys.push(rowPolys);
+    }
+
+    // boardFill before first markers
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( (boardTyped.blocked !== undefined) && (boardTyped.blocked !== null) && (Array.isArray(boardTyped.blocked)) && (boardTyped.blocked.length > 0) ){
+        blocked = [...(boardTyped.blocked as Blocked)];
+    }
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    hexFilled.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+       .fill({color: hexFill, opacity: hexOpacity}).id("hex-symbol-poly-filled")
+       .stroke("none");
+
+    for (let iRow = 0; iRow < grid.length; iRow++) {
+        const row = grid[iRow];
+        for (let iCol = 0; iCol < row.length; iCol++) {
+            const p = row[iCol];
+
+            // don't draw "blocked" hexes
+            if (blocked !== undefined) {
+                const found = blocked.find(e => e.row === iRow && e.col === iCol);
+                if (found !== undefined) {
+                    continue;
+                }
+            }
+            gridlines.use(hexFilled).size(cellsize, cellsize).center(p.x, p.y);
+        }
     }
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
@@ -128,25 +157,10 @@ export const hexSlanted = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] =>
         0 half
     */
 
-    // Draw hexes
-    let hexFill: string|undefined;
-    if ( ("hexFill" in boardTyped) && (boardTyped.hexFill !== undefined) && (boardTyped.hexFill !== null) && (typeof boardTyped.hexFill === "string") && (boardTyped.hexFill.length > 0) ){
-
-        hexFill = boardTyped.hexFill;
-    }
-    const symbolPoly = hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
-                        .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
-                        .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
-    if (hexFill !== undefined) {
-        symbolPoly.fill({color: hexFill, opacity: 1});
-    }
-
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( (boardTyped.blocked !== undefined) && (boardTyped.blocked !== null) && (Array.isArray(boardTyped.blocked)) && (boardTyped.blocked.length > 0) ){
-        blocked = [...(boardTyped.blocked as Blocked)];
-    }
-
+    // Draw hexes (gridlines)
+    hex.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
+       .fill({color: "white", opacity: 0}).id("hex-symbol-poly")
+       .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
     for (let iRow = 0; iRow < grid.length; iRow++) {
         const row = grid[iRow];
         for (let iCol = 0; iCol < row.length; iCol++) {
@@ -159,7 +173,7 @@ export const hexSlanted = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] =>
                     continue;
                 }
             }
-            const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+            const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }
@@ -168,5 +182,5 @@ export const hexSlanted = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] =>
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

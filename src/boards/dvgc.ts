@@ -3,8 +3,9 @@ import { GridPoints, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import tinycolor from "tinycolor2";
 import { centroid } from "../common/plotting";
+import { BoardReturn } from ".";
 
-export const dvgc = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const dvgc = (ctx: RendererBase): BoardReturn => {
     if ( ctx.json === undefined || ctx.json === null || ctx.rootSvg === undefined ) {
         throw new Error("Object in an invalid state!");
     }
@@ -374,5 +375,21 @@ export const dvgc = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    const xs = polys.flat().map(p => p.points.map(pt => pt.x)).flat();
+    const ys = polys.flat().map(p => p.points.map(pt => pt.y)).flat();
+    const minx = Math.min(...xs);
+    const miny = Math.min(...ys);
+    const maxx = Math.max(...xs);
+    const maxy = Math.max(...ys);
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: [
+            {x: minx, y: miny},
+            {x: maxx, y: miny},
+            {x: maxx, y: maxy},
+            {x: minx, y: maxy},
+        ]
+    };
+
+    return {grid, polys, boardFill};
 }

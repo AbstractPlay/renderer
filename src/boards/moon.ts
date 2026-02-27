@@ -2,12 +2,13 @@ import { StrokeData } from "@svgdotjs/svg.js";
 import { GridPoints, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { centroid } from "../common/plotting";
+import { BoardReturn, getCellFill } from ".";
 
 /**
  * This generator creates a moon squad board, which is a standard hexhex5 with the centre cell
  * split into three pentagonal cells, and edges hand adjusted to look more thematic.
  */
-export const moon = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const moon = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -37,6 +38,16 @@ export const moon = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
     const board = ctx.rootSvg.group().id("board");
     const gridlines = board.group().id("gridlines");
 
+    // boardFill before first markers
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    for (let y = 0; y < polys.length; y++) {
+        const row = polys[y];
+        for (let x = 0; x < row.length; x++) {
+            const cell = row[x];
+            gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+        }
+    }
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
     // Add board labels
@@ -56,5 +67,5 @@ export const moon = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

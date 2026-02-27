@@ -1,12 +1,12 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
-import { GridPoints, rectOfRects } from "../grids";
+import { IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
-import { CompassDirection, IBuffer } from ".";
+import { BoardReturn, CompassDirection, IBuffer } from ".";
 import { rotatePoint, shortenLine } from "../common/plotting";
 import { Graph, SquareFanoronaGraph, SquareGraph, SquareOrthGraph } from "../graphs";
 import { calcStarPoints } from "../common/starPoints";
 
-export const vertex = (ctx: RendererBase): GridPoints => {
+export const vertex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -722,5 +722,22 @@ export const vertex = (ctx: RendererBase): GridPoints => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    return grid;
+    // derive boardFill
+    const xs = grid.flat().map(pt => pt.x);
+    const ys = grid.flat().map(pt => pt.y);
+    const minx = Math.min(...xs);
+    const miny = Math.min(...ys);
+    const maxx = Math.max(...xs);
+    const maxy = Math.max(...ys);
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: [
+            {x: minx - (cellsize / 2), y: miny - (cellsize / 2)},
+            {x: maxx + (cellsize / 2), y: miny - (cellsize / 2)},
+            {x: maxx + (cellsize / 2), y: maxy + (cellsize / 2)},
+            {x: minx - (cellsize / 2), y: maxy + (cellsize / 2)},
+        ]
+    };
+
+    return {grid, boardFill};
 }

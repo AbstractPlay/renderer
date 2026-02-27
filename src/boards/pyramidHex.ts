@@ -1,7 +1,8 @@
-import { genPyramidHexPolys, GridPoints, IPolyPolygon, pyramidHex as pyramidHexGrid } from "../grids";
+import { BoardReturn, getCellFill } from ".";
+import { genPyramidHexPolys, pyramidHex as pyramidHexGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
-export const pyramidHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+export const pyramidHex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) || (ctx.json.board === null) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -36,16 +37,26 @@ export const pyramidHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] =>
     const board = ctx.rootSvg.group().id("board");
     const gridlines = board.group().id("hexes");
 
-    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
-
-    // No board labels
-
-    // Draw hexes
+    // boardFill before first markers
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
     for (let iRow = 0; iRow < grid.length; iRow++) {
         const row = polys[iRow];
         for (let iCol = 0; iCol < row.length; iCol++) {
             const p = row[iCol];
-            const c = gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
+            gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+        }
+    }
+
+    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
+
+    // No board labels
+
+    // Draw hexes (gridlines)
+    for (let iRow = 0; iRow < grid.length; iRow++) {
+        const row = polys[iRow];
+        for (let iCol = 0; iCol < row.length; iCol++) {
+            const p = row[iCol];
+            const c = gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({color: "white", opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }
@@ -54,5 +65,5 @@ export const pyramidHex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] =>
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

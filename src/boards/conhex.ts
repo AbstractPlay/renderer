@@ -1,8 +1,11 @@
+import { BoardReturn, getCellFill } from ".";
 import { matrixRectRotN90 } from "../common/plotting";
 import { GridPoints, IPoint, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
-export const conhex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
+// This function is only called for the conhex-cells style
+// For conhex-dots, the renderer itself does the layout work
+export const conhex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.json.board === null) || ( (! ("width" in ctx.json.board)) && (! ("height" in ctx.json.board)) ) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -72,16 +75,29 @@ export const conhex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
     const gridlines = board.group().id("gridlines");
     const cells = getConhexCells(boardsize, cellsize);
 
-    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys: cells});
-
-    // no board labels
-
-    // Now the tiles
+    // draw any boardFill before the first markers
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
     let blocked: Blocked|undefined;
     if ( ("blocked" in ctx.json.board) && (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
+
+    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    for (let row = 0; row < cells.length; row++) {
+        for (let col = 0; col < cells[row].length; col++) {
+            if (blocked !== undefined && blocked.find(obj => obj.col === col && obj.row === row) !== undefined) {
+                continue;
+            }
+            const poly = cells[row][col];
+            board.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke("none").fill({color: hexFill, opacity: hexOpacity});
+        }
+    }
+
+    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys: cells});
+
+    // no board labels
+
+    // Now the tiles
 
     // place cells and give them a base, empty fill
     for (let row = 0; row < cells.length; row++) {
@@ -99,7 +115,7 @@ export const conhex = (ctx: RendererBase): [GridPoints, IPolyPolygon[][]] => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded, polys: cells});
 
-    return [grid, cells];
+    return {grid, polys: cells};
 }
 
 export const getConhexCells = (boardsize: number, cellsize: number): IPolyPolygon[][] => {

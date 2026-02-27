@@ -29,8 +29,8 @@ export class StackingTilesRenderer extends RendererBase {
 
         // BOARD
         // Delegate to style-specific renderer
-        let gridPoints: GridPoints;
-        let polys: Poly[][]|undefined;
+        let grid: GridPoints|undefined;
+        let boardFill: Poly|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ StackingTilesRenderer.rendererName }' renderer.`);
         }
@@ -53,7 +53,7 @@ export class StackingTilesRenderer extends RendererBase {
         switch (this.json.board.style) {
             case "squares-checkered":
             case "squares":
-                [gridPoints, polys] = squares(this);
+                ({grid, boardFill} = squares(this));
                 break;
             // case "hex_of_hex":
             //     gridPoints = this.hexOfHex(json, draw, opts);
@@ -106,7 +106,7 @@ export class StackingTilesRenderer extends RendererBase {
                                 parts = parts.slice(parts.length - maxStack);
                                 parts[0] = "0";
                             }
-                            const point = gridPoints[row][col];
+                            const point = grid[row][col];
                             for (let i = 0; i < parts.length; i++) {
                                 const idx = parseInt(parts[i], 10);
                                 if ( (idx === undefined) && (isNaN(idx)) ) {
@@ -141,11 +141,11 @@ export class StackingTilesRenderer extends RendererBase {
 
         // annotations
         if (this.options.showAnnotations) {
-            this.annotateBoard(gridPoints);
+            this.annotateBoard(grid);
         }
 
         // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
+        const backfilled = this.backFill(boardFill, true);
 
         const box = this.rotateBoard();
 
@@ -156,7 +156,7 @@ export class StackingTilesRenderer extends RendererBase {
         this.placeKey(box);
 
         if (!backfilled) {
-            this.backFill(polys);
+            this.backFill(boardFill);
         }
     }
 }

@@ -3,8 +3,9 @@ import { GridPoints, IPoint, Poly } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { centroid } from "../common/plotting";
 import { hexOfTri as hexOfTriGrid } from "../grids";
+import { BoardReturn, getCellFill } from ".";
 
-export const hexOfTriF = (ctx: RendererBase): [GridPoints, Poly[][]] => {
+export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -113,6 +114,37 @@ export const hexOfTriF = (ctx: RendererBase): [GridPoints, Poly[][]] => {
     const board = ctx.rootSvg.group().id("board");
     const gridlines = board.group().id("gridlines");
 
+    // boardFill before first markers
+    // load blocked nodes
+    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
+    let blocked: Blocked|undefined;
+    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
+        blocked = [...(ctx.json.board.blocked as Blocked)];
+    }
+    const [cellFill, cellOpacity] = getCellFill(ctx, "white");
+    for (let y = 0; y < polys.length; y++) {
+        const slice = polys[y];
+        for (let x = 0; x < slice.length; x++) {
+            // skip if blocked
+            const found = blocked?.find(b => b.col === x && b.row === y);
+            if (found !== undefined) {
+                continue;
+            }
+            const cell = slice[x];
+            switch (cell.type) {
+                case "circle":
+                    gridlines.circle(cell.r * 2).fill({color: cellFill, opacity: cellOpacity}).stroke("none").center(cell.cx, cell.cy);
+                    break;
+                case "poly":
+                    gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: cellFill, opacity: cellOpacity}).stroke("none");
+                    break;
+                case "path":
+                    gridlines.path(cell.path).fill({color: cellFill, opacity: cellOpacity}).stroke("none");
+                    break;
+            }
+        }
+    }
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
     // Add board labels
@@ -153,13 +185,6 @@ export const hexOfTriF = (ctx: RendererBase): [GridPoints, Poly[][]] => {
         }
     }
 
-    // load blocked nodes
-    type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
-    let blocked: Blocked|undefined;
-    if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
-        blocked = [...(ctx.json.board.blocked as Blocked)];
-    }
-
     // Draw grid lines
     const strokeAttrs: StrokeData = {color: baseColour, width: baseStroke, opacity: baseOpacity, linecap: "round", linejoin: "round"};
 
@@ -192,5 +217,5 @@ export const hexOfTriF = (ctx: RendererBase): [GridPoints, Poly[][]] => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }

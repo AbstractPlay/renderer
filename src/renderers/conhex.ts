@@ -4,7 +4,7 @@ import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
 import { IPoint, rectOfRects, IPolyCircle } from "../grids";
-import { getConhexCells } from "../boards";
+import { getCellFill, getConhexCells } from "../boards";
 
 /**
  * Generates the pattern of 0s and 1s that denote whether
@@ -213,11 +213,13 @@ export class ConhexRenderer extends RendererBase {
             }
         }
 
+        const [cellFill, cellOpacity] = getCellFill(this, this.options.colourContext.background);
+
         // place cells and give them a base, empty fill
         for (let row = 0; row < cells.length; row++) {
             for (let col = 0; col < cells[row].length; col++) {
                 const poly = cells[row][col];
-                const p = board.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity}).fill({color: "white", opacity: 0});
+                const p = board.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity}).fill({color: cellFill, opacity: cellOpacity});
                 if (this.options.boardClick !== undefined) {
                     p.click(() => this.options.boardClick!(row, col, "cell"))
                 }
@@ -268,7 +270,7 @@ export class ConhexRenderer extends RendererBase {
                 const poly = dots[row][col];
                 if (poly === null) { continue; }
                 if (poly !== null) {
-                    let fill = this.options.colourContext.background;
+                    let fill = cellFill;
                     if (row < pieces.length) {
                         if (col < pieces[row].length) {
                             const num = parseInt(pieces[row][col][0], 10);

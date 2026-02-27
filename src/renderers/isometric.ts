@@ -89,6 +89,7 @@ export class IsometricRenderer extends RendererBase {
         // Delegate to style-specific renderer
         let gridPoints: GridPoints;
         let polys: Poly[][]|undefined;
+        let boardFill: Poly|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ IsometricRenderer.rendererName }' renderer.`);
         }
@@ -100,18 +101,21 @@ export class IsometricRenderer extends RendererBase {
         let basePcScale = 1;
         switch (this.json.board.style) {
             case "squares":
-                [gridPoints, polys] = squares(this, {noSvg: true});
+                ({ grid: gridPoints, polys, boardFill } = squares(this, {noSvg: true}));
                 break;
             case "hex-of-hex":
-                [gridPoints, polys] = hexOfHex(this, {noSvg: true});
+                ({ grid: gridPoints, polys, boardFill } = hexOfHex(this, {noSvg: true}));
                 basePcScale = 0.85;
                 break;
             case "hex-of-cir":
-                [gridPoints, polys] = hexOfCir(this, {noSvg: true});
+                ({ grid: gridPoints, polys, boardFill } = hexOfCir(this, {noSvg: true}));
                 basePcScale = 0.85;
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not supported by the '${ IsometricRenderer.rendererName }' renderer.`);
+        }
+        if (polys === undefined) {
+            throw new Error("Polys should be defined by this point.");
         }
 
         type Blocked = RowCol[];
@@ -421,7 +425,7 @@ export class IsometricRenderer extends RendererBase {
         }
 
         // if there's a board backfill, it needs to be done before rotation
-        const backfilled = this.backFill(polys, true);
+        const backfilled = this.backFill(boardFill, true);
 
         // const box = this.rotateBoard();
         const box = board.rbox(this.rootSvg);
@@ -436,7 +440,7 @@ export class IsometricRenderer extends RendererBase {
         this.placeKey(box, undefined, {padding: 0});
 
         if (!backfilled) {
-            this.backFill(polys);
+            this.backFill(boardFill);
         }
     }
 

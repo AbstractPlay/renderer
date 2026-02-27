@@ -1,10 +1,13 @@
 import { StrokeData } from "@svgdotjs/svg.js";
-import { GridPoints, IPolyPath, IPolyPolygon, Poly } from "../grids";
+import { IPolyPath, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { ptDistance, rotatePoint } from "../common/plotting";
 import { IWheelArgs, wheelLabels, wheelPolys, wheel as wheelGrid } from "../grids/wheel";
+import { BoardReturn } from ".";
 
-export const wheel = (ctx: RendererBase): [GridPoints, Poly[][]] => {
+// skipping backFill for this style right now; it's not even in use
+
+export const wheel = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
         throw new Error("Object in an invalid state!");
     }
@@ -114,5 +117,5 @@ export const wheel = (ctx: RendererBase): [GridPoints, Poly[][]] => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
-    return [grid, polys];
+    return {grid, polys};
 }
