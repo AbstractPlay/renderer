@@ -13,7 +13,7 @@ import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 export { sheets } from "./sheets";
 import { IRendererOptionsIn } from "./renderers/_base";
-import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings } from "./schemas/schema";
+import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings, Colourfuncs } from "./schemas/schema";
 import schema from "./schemas/schema.json";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -157,7 +157,7 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
  * @returns A string containing a valid `<svg>` tag
  * @beta
  */
-export const renderglyph = (glyphid: string, colour: number | string, opts = {} as IRenderOptions): string => {
+export const renderglyph = (glyphid: string, colour: number | string | Colourfuncs, opts = {} as IRenderOptions): string => {
     const obj: APRenderRep = {
         board: null,
         legend: {
