@@ -2,7 +2,7 @@ import { Element as SVGElement } from "@svgdotjs/svg.js";
 import { IPoint, rectOfRects } from "../grids";
 import { MarkerOutline } from "../schemas/schema";
 import { RendererBase } from "../renderers/_base";
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 
 export const sowing = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -255,7 +255,7 @@ export const sowing = (ctx: RendererBase): BoardReturn => {
 
     // Draw exterior grid lines
     // Draw square around entire board
-    const [cellFill, cellOpacity] = getCellFill(ctx, ctx.options.colourContext.background);
+    const [cellFill, cellOpacity] = getBoardFill(ctx, ctx.options.colourContext.background);
     gridlines.rect(width * cellsize, height * cellsize)
         .move(0 - (cellsize / 2), 0 - (cellsize / 2))
         .fill({color: cellFill, opacity: cellOpacity})

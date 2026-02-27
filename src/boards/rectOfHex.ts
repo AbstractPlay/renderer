@@ -1,5 +1,5 @@
 import { centroid } from "../common/plotting";
-import { BoardReturn, edges2corners, getCellFill, pts2id } from ".";
+import { BoardReturn, edges2corners, getBoardFill, pts2id } from ".";
 import { GridPoints, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
@@ -85,7 +85,7 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null) && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     const corners = grid.getHex({col: 0, row: 0})!.corners;
     const vbx = Math.min(...corners.map(pt => pt.x));
     const vby = Math.min(...corners.map(pt => pt.y));

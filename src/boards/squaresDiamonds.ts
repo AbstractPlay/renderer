@@ -1,4 +1,4 @@
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 import { centroid } from "../common/plotting";
 import { GridPoints, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
@@ -146,7 +146,7 @@ export const squaresDiamonds = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null) && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
-    const [cellFill, cellOpacity] = getCellFill(ctx, "white");
+    const [cellFill, cellOpacity] = getBoardFill(ctx, "white");
     for (let row = 0; row < polys.length; row++) {
         for (let col = 0; col < polys[row].length; col++) {
             const isBlocked = blocked?.find(entry => entry.row === row && entry.col === col) !== undefined;

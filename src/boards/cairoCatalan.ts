@@ -1,4 +1,4 @@
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 import { centroid } from "../common/plotting";
 import { GridPoints, IPoint, IPolyPolygon, snubsquare } from "../grids";
 import { RendererBase } from "../renderers/_base";
@@ -100,7 +100,7 @@ export const cairoCatalan = (ctx: RendererBase): BoardReturn => {
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
 
-    const [hexFill, hexOpacity] = getCellFill(ctx);
+    const [hexFill, hexOpacity] = getBoardFill(ctx);
     for (let iRow = 0; iRow < height; iRow++) {
         for (let iCol = 0; iCol < width; iCol++) {
             if (blocked !== undefined) {

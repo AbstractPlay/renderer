@@ -2,7 +2,7 @@ import { StrokeData } from "@svgdotjs/svg.js";
 import { GridPoints, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { centroid } from "../common/plotting";
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 
 /**
  * This generator creates a moon squad board, which is a standard hexhex5 with the centre cell
@@ -39,7 +39,7 @@ export const moon = (ctx: RendererBase): BoardReturn => {
     const gridlines = board.group().id("gridlines");
 
     // boardFill before first markers
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     for (let y = 0; y < polys.length; y++) {
         const row = polys[y];
         for (let x = 0; x < row.length; x++) {

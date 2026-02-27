@@ -1,4 +1,4 @@
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 import { IPoint, IPolyPolygon, hexOfHex as hexOfHexGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
@@ -78,7 +78,7 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
     if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     const hexFilled = ctx.rootSvg.defs().symbol().id("hex-symbol-filled").viewbox(-3.3493649053890344, 0, 50, 50);
     hexFilled.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
         .fill({color: hexFill, opacity: hexOpacity}).id("hex-symbol-poly-filled")

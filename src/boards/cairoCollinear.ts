@@ -2,7 +2,7 @@ import { Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import { cairo, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { BoardBasic } from "../schemas/schema";
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 
 export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -56,7 +56,7 @@ export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
     const half = cellsize / 2;
     const quarter = cellsize / 4;
     const widest = half + quarter;
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
 
     const pentN = ctx.rootSvg.defs().symbol().id("pentagon-symbol-N").viewbox(0 - widest - 1, 0 - half - 1, (cellsize * 1.5) + 2, cellsize + 2);
     const ptsN: IPoint[] = [{x: 0, y: 0 - half}, {x: widest, y: 0 - quarter}, {x: half, y: half}, {x: 0 - half, y: half}, {x: 0 - widest, y: 0 - quarter}];

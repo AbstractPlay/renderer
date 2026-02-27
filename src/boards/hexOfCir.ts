@@ -1,4 +1,4 @@
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 import { IPolyCircle, hexOfCir as hexOfCirGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
@@ -60,7 +60,7 @@ export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
     }
 
     // boardFill before first markers
-    const [hexFill, hexOpacity] = getCellFill(ctx);
+    const [hexFill, hexOpacity] = getBoardFill(ctx);
     const circleFilled = ctx.rootSvg.defs().symbol().id("circle-symbol-filled").viewbox(0, 0, cellsize, cellsize);
     circleFilled.circle(cellsize)
         .fill({color: hexFill, opacity: hexOpacity})

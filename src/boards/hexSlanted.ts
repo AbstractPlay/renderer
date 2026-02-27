@@ -1,7 +1,7 @@
 import { BoardBasic } from "../schemas/schema";
 import { IPoint, IPolyPolygon, hexSlanted as hexSlantedGrid} from "../grids";
 import { RendererBase } from "../renderers/_base";
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 
 export const hexSlanted = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -63,7 +63,7 @@ export const hexSlanted = (ctx: RendererBase): BoardReturn => {
     if ( (boardTyped.blocked !== undefined) && (boardTyped.blocked !== null) && (Array.isArray(boardTyped.blocked)) && (boardTyped.blocked.length > 0) ){
         blocked = [...(boardTyped.blocked as Blocked)];
     }
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     hexFilled.polygon(pts.map(pt => `${pt.x},${pt.y}`).join(" "))
        .fill({color: hexFill, opacity: hexOpacity}).id("hex-symbol-poly-filled")
        .stroke("none");

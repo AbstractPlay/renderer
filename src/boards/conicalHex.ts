@@ -1,4 +1,4 @@
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 import { conicalHex as conicalHexGrid, genConicalHexPolys } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
@@ -50,7 +50,7 @@ export const conicalHex = (ctx: RendererBase): BoardReturn => {
     const gridlines = board.group().id("hexes");
 
     // boardFill has to happen before the first markers
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     for (let iRow = 0; iRow < grid.length; iRow++) {
         const row = polys[iRow];
         for (let iCol = 0; iCol < row.length; iCol++) {

@@ -1,7 +1,7 @@
 import { Element as SVGElement, StrokeData } from "@svgdotjs/svg.js";
 import { RendererBase } from "../renderers/_base";
 import { ICobwebArgs, cobweb as cobwebGrid, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 
 export const cobweb = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -46,7 +46,7 @@ export const cobweb = (ctx: RendererBase): BoardReturn => {
     const gridlines = board.group().id("gridlines");
 
     // apply boardFill before the first markers
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     for (let y = 0; y < polys.length; y++) {
         const slice = polys[y];
         for (let x = 0; x < slice.length; x++) {

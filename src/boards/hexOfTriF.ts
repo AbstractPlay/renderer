@@ -3,7 +3,7 @@ import { GridPoints, IPoint, Poly } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { centroid } from "../common/plotting";
 import { hexOfTri as hexOfTriGrid } from "../grids";
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 
 export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -121,7 +121,7 @@ export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
-    const [cellFill, cellOpacity] = getCellFill(ctx, "white");
+    const [cellFill, cellOpacity] = getBoardFill(ctx, "white");
     for (let y = 0; y < polys.length; y++) {
         const slice = polys[y];
         for (let x = 0; x < slice.length; x++) {

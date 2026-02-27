@@ -96,7 +96,7 @@ export const pts2id = (a: [number,number], b: [number,number]): string => {
 }
 
 // helpers for getting settings consistently across the boards
-export const getCellFill = (ctx: RendererBase, defColour: string|undefined = undefined, defOpacity = 0): [string|undefined, number] => {
+export const getBoardFill = (ctx: RendererBase, defColour: string|undefined = undefined, defOpacity = 0): [string|undefined, number] => {
     if (ctx.json === undefined || ctx.json.board === null) {
         throw new Error(`Context object in an invalid state.`);
     }

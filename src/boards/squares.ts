@@ -4,7 +4,7 @@ import { RendererBase } from "../renderers/_base";
 import { rotatePoint, shortenLine } from "../common/plotting";
 import tinycolor from "tinycolor2";
 import { MarkerOutline } from "../schemas/schema";
-import { BoardReturn, CompassDirection, getCellFill, IBuffer } from ".";
+import { BoardReturn, CompassDirection, getBoardFill, IBuffer } from ".";
 
 export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -103,7 +103,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
     if ( (ctx.json.board.blocked !== undefined) && (ctx.json.board.blocked !== null)  && (Array.isArray(ctx.json.board.blocked)) && (ctx.json.board.blocked.length > 0) ){
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
-    const [cellFill, cellOpacity] = getCellFill(ctx, ctx.options.colourContext.background);
+    const [cellFill, cellOpacity] = getBoardFill(ctx, ctx.options.colourContext.background);
     const tileFilled = ctx.rootSvg.defs().symbol().id("tile-filled").viewbox(0, 0, cellsize, cellsize);
     tileFilled.rect(cellsize, cellsize)
         .move(0, 0)

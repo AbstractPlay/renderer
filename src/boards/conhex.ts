@@ -1,4 +1,4 @@
-import { BoardReturn, getCellFill } from ".";
+import { BoardReturn, getBoardFill } from ".";
 import { matrixRectRotN90 } from "../common/plotting";
 import { GridPoints, IPoint, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
@@ -82,7 +82,7 @@ export const conhex = (ctx: RendererBase): BoardReturn => {
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
 
-    const [hexFill, hexOpacity] = getCellFill(ctx, "white");
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     for (let row = 0; row < cells.length; row++) {
         for (let col = 0; col < cells[row].length; col++) {
             if (blocked !== undefined && blocked.find(obj => obj.col === col && obj.row === row) !== undefined) {

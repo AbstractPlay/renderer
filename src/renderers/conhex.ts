@@ -4,7 +4,7 @@ import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
 import { IPoint, rectOfRects, IPolyCircle } from "../grids";
-import { getCellFill, getConhexCells } from "../boards";
+import { getBoardFill, getConhexCells } from "../boards";
 
 /**
  * Generates the pattern of 0s and 1s that denote whether
@@ -213,7 +213,7 @@ export class ConhexRenderer extends RendererBase {
             }
         }
 
-        const [cellFill, cellOpacity] = getCellFill(this, this.options.colourContext.background);
+        const [cellFill, cellOpacity] = getBoardFill(this, this.options.colourContext.background);
 
         // place cells and give them a base, empty fill
         for (let row = 0; row < cells.length; row++) {

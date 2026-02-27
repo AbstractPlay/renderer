@@ -9,7 +9,7 @@ import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
-import { CompassDirection, edges2corners, getCellFill } from "../boards";
+import { CompassDirection, edges2corners, getBoardFill } from "../boards";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -3668,7 +3668,7 @@ export abstract class RendererBase {
             if ( ("backFill" in this.json.board) && (this.json.board.backFill !== undefined) && (this.json.board.backFill !== null) ) {
                 backFillObj = this.json.board.backFill as BackFill;
             }
-            const [fillColour, fillOpacity] = getCellFill(this, undefined);
+            const [fillColour, fillOpacity] = getBoardFill(this, undefined);
 
             // if there is no backFill object and no requested board colour, then don't try again
             if (backFillObj === undefined && fillColour === undefined) {
