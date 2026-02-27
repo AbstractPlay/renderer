@@ -11,6 +11,7 @@
 import { NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
+export { sheets } from "./sheets";
 import { IRendererOptionsIn } from "./renderers/_base";
 import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings } from "./schemas/schema";
 import schema from "./schemas/schema.json";
