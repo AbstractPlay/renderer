@@ -106,7 +106,9 @@ export const getBoardFill = (ctx: RendererBase, defColour: string|undefined = un
         hexFill = ctx.options.colourContext.board;
         hexOpacity = 1;
     }
-    if ( ("backFill" in ctx.json.board) && (ctx.json.board.backFill !== undefined) && (ctx.json.board.backFill !== null) && (ctx.json.board.backFill.type === "board") ){
+    // Because of how board fills are now implemented, a fill of type `full`
+    // automatically implies `board` as well.
+    if ( ("backFill" in ctx.json.board) && (ctx.json.board.backFill !== undefined) && (ctx.json.board.backFill !== null) ){
         hexFill = ctx.resolveColour(ctx.json.board.backFill.colour) as string;
         hexOpacity = ctx.json.board.backFill.opacity ?? 1;
     }

@@ -1742,7 +1742,6 @@ export abstract class RendererBase {
                     } else {
                         fill = {color: colour as string, opacity} as FillData;
                     }
-                    console.log({colour, opacity, fill});
                     for (const point of marker.points as ITarget[]) {
                         let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
                         const cell = polys[point.row][point.col];
@@ -3528,8 +3527,8 @@ export abstract class RendererBase {
                 } else {
                     finalWidth = Math.max(finalWidth, fullWidth);
                 }
-                if ("background" in area) {
-                    nested.rect(areaWidth,areaHeight).fill(area.background as string);
+                if ("background" in area && area.background !== undefined) {
+                    nested.rect(areaWidth,areaHeight).fill(this.resolveColour(area.background) as string);
                 }
                 for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
                     const p = area.pieces[iPiece];
@@ -3657,6 +3656,8 @@ export abstract class RendererBase {
     }
 
     protected backFill(boardFill?: Poly, preRotation = false): boolean {
+        // Because of how board fills are now implemented, a fill of type `full`
+        // automatically implies `board` as well.
         type BackFill = {
             type?: "full"|"board";
             colour: string|number|Colourfuncs;
@@ -3719,7 +3720,6 @@ export abstract class RendererBase {
                 }
                 // ignore if boardFill is undefined
                 if (boardFill !== undefined) {
-                    // if has concave elements board, we need to use turf
                     if (boardFill.type === "circle") {
                         const poly = this.rootSvg.circle(boardFill.r * 2).id("aprender-backfill-board").center(boardFill.cx, boardFill.cy).fill({color: bgcolour, opacity: bgopacity});
                         // `board` backfill can't just be pushed to the back but must be inside the `board` group
