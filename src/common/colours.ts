@@ -24,7 +24,8 @@ export const hex2rgb = (hex: string): RGB => {
 }
 
 const unlogit = (x: number) => {
-    return Math.log(x / (1 - x));
+    const val = Math.max(0.001, Math.min(0.999, x));
+    return Math.log(val / (1 - val));
 }
 
 const logit = (x: number) => {
@@ -35,5 +36,6 @@ export const lighten = (rgb: [number, number, number], ds: number, dl: number): 
     const hsl = convert_rgb.hsl(rgb);
     const l = 100 * logit(unlogit(hsl[2] / 100) + dl);
     const s = 100 * logit(unlogit(hsl[1] / 100) + ds);
+    console.log(JSON.stringify({hsl, l, s}))
     return convert_hsl.rgb([hsl[0], s, l]);
 }
