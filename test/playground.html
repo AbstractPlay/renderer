@@ -64,8 +64,25 @@
                 if (document.getElementById("chkContextGlobal").checked) {
                     options.contextGlobal = false;
                 }
+
+                var settingsIn = document.getElementById("settingsIn");
+                if (settingsIn && settingsIn.value.trim().length > 0) {
+                    var settings = JSON.parse(settingsIn.value);
+                    if (settings.colourContext !== undefined) {
+                        options.colourContext = settings.colourContext;
+                        options.contextGlobal = false;
+                    }
+                    if (settings.palette !== undefined && settings.palette.length > 0) {
+                        options.colours = settings.palette;
+                        options.coloursGlobal = false;
+                    }
+                    if (settings.glyphmap !== undefined) {
+                        options.glyphmap = settings.glyphmap;
+                    }
+                }
+
                 var div = document.getElementById("drawing");
-                div.style.backgroundColor = bg.value;
+                div.style.backgroundColor = (options.colourContext && options.colourContext.background) ? options.colourContext.background : bg.value;
 
                 var data = JSON.parse(document.getElementById("jsonIn").value);
                 var canvas = APRender.render(data, options);
@@ -677,6 +694,12 @@
                                 <label class="label" for="rotFree">Freestyle rotation</label>
                                 <div class="control">
                                     <input class="input" type="number" name="rotFree" id="rotFree" value="0">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="settingsIn">Settings (JSON)</label>
+                                <div class="control">
+                                    <textarea id="settingsIn" class="textarea" style="height: 10em"></textarea>
                                 </div>
                             </div>
                             <div class="field is-grouped">
