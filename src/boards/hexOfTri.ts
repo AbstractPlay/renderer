@@ -188,9 +188,9 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     const widest = Math.max(...grid.map(row => row.length));
     const numWidest = grid.findIndex(row => row.length === widest);
     let boardFill: IPolyPolygon;
+    const dist = cellsize / 1.5;
     // if numWidest is not the top or the bottom, then we have a full hex
     if (numWidest !== numTop && numWidest !== numBottom) {
-        const dist = cellsize / 2;
         const xDist = dist / Math.sqrt(3);
         boardFill = {
             type: "poly",
@@ -206,7 +206,6 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     }
     // otherwise we just have a four-point poly
     else {
-        const dist = cellsize / 2;
         const xDist = dist / Math.sqrt(3);
         const ptWideL = {
             x: grid[numWidest][0].x - (2 * xDist),

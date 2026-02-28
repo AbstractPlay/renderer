@@ -192,7 +192,7 @@ export const pentagonal = (ctx: RendererBase): BoardReturn => {
         type: "poly",
         points: outer.map(p => {
             const bearing = calcBearing(centre.x, centre.y, p.x, p.y);
-            const dist = ptDistance(centre.x, centre.y, p.x, p.y) + (ctx.cellsize / 2);
+            const dist = ptDistance(centre.x, centre.y, p.x, p.y) + (ctx.cellsize / 1.5);
             const [nx, ny] = projectPoint(centre.x, centre.y, dist, bearing);
             return {x: nx, y: ny};
         })

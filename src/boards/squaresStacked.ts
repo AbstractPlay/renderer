@@ -225,13 +225,14 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
 
     // derive boardFill
+    const delta = cellsize / 1.5;
     const boardFill: IPolyPolygon = {
         type: "poly",
         points: [
-            {x: grid[0][0].x - (cellsize / 2), y: grid[0][0].y - (cellsize / 2)},
-            {x: grid[0][width - 1].x + (cellsize / 2), y: grid[0][width - 1].y - (cellsize / 2)},
-            {x: grid[height - 1][width - 1].x + (cellsize / 2), y: grid[height - 1][width - 1].y + (cellsize / 2)},
-            {x: grid[height - 1][0].x - (cellsize / 2), y: grid[height - 1][0].y + (cellsize / 2)},
+            {x: grid[0][0].x - (delta), y: grid[0][0].y - (delta)},
+            {x: grid[0][width - 1].x + (delta), y: grid[0][width - 1].y - (delta)},
+            {x: grid[height - 1][width - 1].x + (delta), y: grid[height - 1][width - 1].y + (delta)},
+            {x: grid[height - 1][0].x - (delta), y: grid[height - 1][0].y + (delta)},
         ],
     };
 

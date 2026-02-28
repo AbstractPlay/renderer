@@ -164,7 +164,7 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
             if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
                 continue;
             }
-            const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y); // .move(p.x - (cellsize / 2), p.y - (cellsize / 2)); // .center(p.x, p.y);
+            const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }

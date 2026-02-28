@@ -723,6 +723,7 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
     // derive boardFill
+    const delta = cellsize / 1.5;
     const xs = grid.flat().map(pt => pt.x);
     const ys = grid.flat().map(pt => pt.y);
     const minx = Math.min(...xs);
@@ -732,10 +733,10 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
     const boardFill: IPolyPolygon = {
         type: "poly",
         points: [
-            {x: minx - (cellsize / 2), y: miny - (cellsize / 2)},
-            {x: maxx + (cellsize / 2), y: miny - (cellsize / 2)},
-            {x: maxx + (cellsize / 2), y: maxy + (cellsize / 2)},
-            {x: minx - (cellsize / 2), y: maxy + (cellsize / 2)},
+            {x: minx - (delta), y: miny - (delta)},
+            {x: maxx + (delta), y: miny - (delta)},
+            {x: maxx + (delta), y: maxy + (delta)},
+            {x: minx - (delta), y: maxy + (delta)},
         ]
     };
 
