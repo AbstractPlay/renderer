@@ -1708,7 +1708,7 @@ export abstract class RendererBase {
                     let isGradient = false;
                     let colour: string|SVGGradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
-                        if (typeof marker.colour === "object") {
+                        if (typeof marker.colour === "object" && ("stops" in marker.colour)) {
                             isGradient = true;
                         }
                         colour = this.resolveColour(marker.colour);
@@ -1728,15 +1728,14 @@ export abstract class RendererBase {
                     if (isGradient) {
                         fill = colour as SVGGradient;
                     } else if (pattern !== undefined) {
-                        if (pattern !== undefined) {
-                            fill = this.rootSvg.findOne(`#${pattern}`) as SVGElement;
-                            if (fill === undefined) {
-                                throw new Error("Could not load the requested pattern.");
-                            }
+                        fill = this.rootSvg.findOne(`#${pattern}`) as SVGElement;
+                        if (fill === undefined) {
+                            throw new Error("Could not load the requested pattern.");
                         }
                     } else {
-                        fill = {color: colour as string, opacity};
+                        fill = {color: colour as string, opacity} as FillData;
                     }
+                    console.log({colour, opacity, fill});
                     for (const point of marker.points as ITarget[]) {
                         let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
                         const cell = polys[point.row][point.col];
