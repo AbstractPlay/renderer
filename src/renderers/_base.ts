@@ -1706,16 +1706,23 @@ export abstract class RendererBase {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
                     }
                     let isGradient = false;
+                    let isFlatten = false;
                     let colour: string|SVGGradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "object" && ("stops" in marker.colour)) {
                             isGradient = true;
+                        } else if (typeof marker.colour === "object" && ("func" in marker.colour) && marker.colour.func === "flatten") {
+                            isFlatten = true;
                         }
                         colour = this.resolveColour(marker.colour);
                     }
                     let opacity = 0.25;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
                         opacity = marker.opacity;
+                    }
+                    // don't do automatic opacity of function is flatten
+                    else if (isFlatten) {
+                        opacity = 1;
                     }
                     let pattern: string | undefined;
                     if ( ("pattern" in marker) && (marker.pattern !== undefined) && (marker.pattern.length > 0) ) {
