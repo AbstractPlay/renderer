@@ -4031,8 +4031,10 @@ export abstract class RendererBase {
             colour = val ;
             if (/^_context_/.test(colour)) {
                 const [,,prop] = colour.split("_");
-                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"] !== undefined) {
-                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"];
+                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"|"board"] !== undefined) {
+                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"|"board"];
+                } else if (prop === "board" && this.options.colourContext.board === undefined) {
+                    colour = this.options.colourContext.background;
                 }
             }
         }
