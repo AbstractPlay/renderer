@@ -10,6 +10,16 @@
                 cursor: default;
                 user-select: none;
             }
+            .sticky-buttons {
+                position: -webkit-sticky;
+                position: sticky;
+                bottom: 0;
+                background-color: white;
+                padding: 1rem;
+                z-index: 10;
+                border-radius: 6px 6px 0 0;
+                box-shadow: 0 -0.5em 1em -0.125em rgb(10 10 10 / 10%), 0 0 0 1px rgb(10 10 10 / 2%);
+            }
         </style>
         <script type="text/javascript">
             function handleClick(row, col, piece) {
@@ -702,7 +712,7 @@
                                     <textarea id="settingsIn" class="textarea" style="height: 10em"></textarea>
                                 </div>
                             </div>
-                            <div class="field is-grouped">
+                            <div class="field is-grouped sticky-buttons">
                                 <div class="control"><button id="submit" name="submit" type="button" class="button is-primary">Generate SVG</button></div>
                                 <div class="control"><input type="reset" value="Reset Form" class="button is-light"></div>
                                 <div class="control"><button id="toggle" name="toggle" type="button" class="button">Prettify JSON</button></div>
