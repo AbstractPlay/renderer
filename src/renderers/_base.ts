@@ -57,7 +57,7 @@ export interface IRendererOptionsIn {
      * Defaults to a set of nine colours, defined in the constructor.
      *
      */
-    colours?: string[];
+    colours?: (string|null)[];
     /**
      * I want to know whether the custom colours being passed are a global preference or
      * a game-specific one. The idea being that the colourFunc `custom` should prefer
@@ -129,6 +129,7 @@ export interface IRendererOptionsOut {
     contextGlobal: boolean;
     colours: string[];
     coloursGlobal: boolean;
+    useDefaults: number[];
     patterns: boolean;
     patternList: string[];
     colourBlind: boolean;
@@ -139,6 +140,9 @@ export interface IRendererOptionsOut {
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
 }
+
+export const paletteDefault = ["#e31a1c", "#1f78b4", "#33a02c", "#ffff99", "#6a3d9a", "#ff7f00", "#b15928", "#fb9a99", "#a6cee3", "#b2df8a", "#fdbf6f", "#cab2d6"];
+export const paletteBlind = ["#9f0162", "#8400cd", "#a40122", "#009f81", "#008df9", "#e20134", "#ff5aaf", "#00c2f9", "#ff6e3a", "#00fccf", "#ffb2fd", "#ffc33b"];
 
 export interface IMarkBoardOptions {
     svgGroup: SVGG;
@@ -241,6 +245,7 @@ export abstract class RendererBase {
             colourBlind: false,
             colours: [],
             coloursGlobal: true,
+            useDefaults: [],
             patterns: false,
             patternList: ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"],
             showAnnotations: true,
@@ -292,9 +297,9 @@ export abstract class RendererBase {
             this.options.colourBlind = false;
         }
         if (this.options.colourBlind) {
-            this.options.colours = ["#9f0162", "#8400cd", "#a40122", "#009f81", "#008df9", "#e20134", "#ff5aaf", "#00c2f9", "#ff6e3a", "#00fccf", "#ffb2fd", "#ffc33b"];
+            this.options.colours = [...paletteBlind];
         } else {
-            this.options.colours = ["#e31a1c", "#1f78b4", "#33a02c", "#ffff99", "#6a3d9a", "#ff7f00", "#b15928", "#fb9a99", "#a6cee3", "#b2df8a", "#fdbf6f", "#cab2d6"];
+            this.options.colours = [...paletteDefault];
         }
 
         // Validate sheet list
@@ -339,14 +344,21 @@ export abstract class RendererBase {
         }
 
         // Validate colour list if given
+        this.options.useDefaults = [];
         if ( (opts.colours !== undefined) && (opts.colours.length > 0) ) {
             const normalized: string[] = [];
-            for (const c of opts.colours) {
-                const color = tinycolor(c);
-                if (! color.isValid()) {
-                    throw new Error(`One of the colours you requested is malformed: ${ c }`);
+            for (let i = 0; i < opts.colours.length; i++) {
+                const c = opts.colours[i];
+                if (c === null) {
+                    this.options.useDefaults.push(i+1);
+                    normalized.push(paletteDefault[i]);
+                } else {
+                    const color = tinycolor(c);
+                    if (! color.isValid()) {
+                        throw new Error(`One of the colours you requested is malformed: ${ c }`);
+                    }
+                    normalized.push(color.toHexString());
                 }
-                normalized.push(color.toHexString());
             }
             this.options.colours = [...normalized];
             this.options.coloursGlobal = opts.coloursGlobal ?? true;
@@ -3992,36 +4004,36 @@ export abstract class RendererBase {
                     // if `palette` is a number
                     if (typeof val.palette === "number") {
                         // only choose if passed colours are game-specific customizations
-                        if (!this.options.coloursGlobal) {
-                            colour = this.resolveColour(val.palette) as string;
-                        } else {
+                        if (this.options.coloursGlobal || this.options.useDefaults.includes(val.palette)) {
                             colour = this.resolveColour(val.default) as string;
+                        } else {
+                            colour = this.resolveColour(val.palette) as string;
                         }
                     }
                     // if `palette` is a context
                     else if (typeof val.palette === "string" && val.palette.startsWith("_context_")) {
                         // only choose if passed context is game-specific customization
-                        if (!this.options.contextGlobal) {
-                            colour = this.resolveColour(val.palette) as string;
-                        } else {
+                        if (this.options.contextGlobal) {
                             colour = this.resolveColour(val.default) as string;
+                        } else {
+                            colour = this.resolveColour(val.palette) as string;
                         }
                     }
                     // otherwise, rely on `paletteType`
                     else if ("paletteType" in val && val.paletteType !== undefined) {
                         if (val.paletteType === "context") {
                             // only choose if passed context is game-specific customization
-                            if (!this.options.contextGlobal) {
-                                colour = this.resolveColour(val.palette) as string;
-                            } else {
+                            if (this.options.contextGlobal) {
                                 colour = this.resolveColour(val.default) as string;
+                            } else {
+                                colour = this.resolveColour(val.palette) as string;
                             }
                         } else {
                             // only choose if passed colours are game-specific customizations
-                            if (!this.options.coloursGlobal) {
-                                colour = this.resolveColour(val.palette) as string;
-                            } else {
+                            if (this.options.coloursGlobal) {
                                 colour = this.resolveColour(val.default) as string;
+                            } else {
+                                colour = this.resolveColour(val.palette) as string;
                             }
                         }
                     }
