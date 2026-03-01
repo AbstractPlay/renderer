@@ -2,6 +2,7 @@ import { IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { hexOfTri as hexOfTriGrid } from "../grids";
 import { BoardReturn } from ".";
+import { offsetPolygon } from "../common/plotting";
 
 export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -188,61 +189,53 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     const widest = Math.max(...grid.map(row => row.length));
     const numWidest = grid.findIndex(row => row.length === widest);
     let boardFill: IPolyPolygon;
-    const dist = cellsize / 1.5;
     // if numWidest is not the top or the bottom, then we have a full hex
     if (numWidest !== numTop && numWidest !== numBottom) {
-        const xDist = dist / Math.sqrt(3);
         boardFill = {
             type: "poly",
-            points: [
-                {x: grid[numTop][0].x - xDist, y: grid[numTop][0].y - dist},
-                {x: grid[numTop][grid[numTop].length - 1].x + xDist, y: grid[numTop][grid[numTop].length - 1].y - dist},
-                {x: grid[numWidest][grid[numWidest].length - 1].x + (2 * xDist), y: grid[numWidest][grid[numWidest].length - 1].y},
-                {x: grid[numBottom][grid[numBottom].length - 1].x + xDist, y: grid[numBottom][grid[numBottom].length - 1].y + dist},
-                {x: grid[numBottom][0].x - xDist, y: grid[numBottom][0].y + dist},
-                {x: grid[numWidest][0].x - (2 * xDist), y: grid[numWidest][0].y},
-            ],
+            points: offsetPolygon([
+                {x: grid[numTop][0].x, y: grid[numTop][0].y},
+                {x: grid[numTop][grid[numTop].length - 1].x, y: grid[numTop][grid[numTop].length - 1].y},
+                {x: grid[numWidest][grid[numWidest].length - 1].x, y: grid[numWidest][grid[numWidest].length - 1].y},
+                {x: grid[numBottom][grid[numBottom].length - 1].x, y: grid[numBottom][grid[numBottom].length - 1].y},
+                {x: grid[numBottom][0].x, y: grid[numBottom][0].y},
+                {x: grid[numWidest][0].x, y: grid[numWidest][0].y},
+            ], cellsize / 1.5),
         };
     }
     // otherwise we just have a four-point poly
     else {
-        const xDist = dist / Math.sqrt(3);
         const ptWideL = {
-            x: grid[numWidest][0].x - (2 * xDist),
-            y: grid[numWidest][0].y + dist * (half === "top" ? 1 : -1),
+            x: grid[numWidest][0].x,
+            y: grid[numWidest][0].y,
         };
         const ptWideR = {
-            x: grid[numWidest][grid[numWidest].length - 1].x + (2 * xDist),
-            y: grid[numWidest][grid[numWidest].length - 1].y + dist * (half === "top" ? 1 : -1),
+            x: grid[numWidest][grid[numWidest].length - 1].x,
+            y: grid[numWidest][grid[numWidest].length - 1].y,
         };
         let ptOtherL: IPoint; let ptOtherR: IPoint;
         if (half === "top") {
             ptOtherL = {
-                x: grid[numTop][0].x - xDist,
-                y: grid[numTop][0].y - dist
+                x: grid[numTop][0].x,
+                y: grid[numTop][0].y
             };
             ptOtherR = {
-                x: grid[numTop][grid[numTop].length - 1].x + xDist,
-                y: grid[numTop][grid[numTop].length - 1].y - dist
+                x: grid[numTop][grid[numTop].length - 1].x,
+                y: grid[numTop][grid[numTop].length - 1].y
             };
         } else {
             ptOtherL = {
-                x: grid[numBottom][0].x - xDist,
-                y: grid[numBottom][0].y + dist
+                x: grid[numBottom][0].x,
+                y: grid[numBottom][0].y
             };
             ptOtherR = {
-                x: grid[numBottom][grid[numBottom].length - 1].x + xDist,
-                y: grid[numBottom][grid[numBottom].length - 1].y + dist
+                x: grid[numBottom][grid[numBottom].length - 1].x,
+                y: grid[numBottom][grid[numBottom].length - 1].y
             };
         }
         boardFill = {
             type: "poly",
-            points: [
-                ptWideL,
-                ptOtherL,
-                ptOtherR,
-                ptWideR,
-            ],
+            points: offsetPolygon([ptWideL, ptOtherL, ptOtherR, ptWideR], cellsize / 1.5),
         };
     }
 

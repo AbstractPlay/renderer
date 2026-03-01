@@ -333,3 +333,97 @@ export const shortenLine = (x1: number, y1: number, x2: number, y2: number, val:
     const newy2 = y1 + (t1 * (y2 - y1));
     return [newx1, newy1, newx2, newy2];
 }
+
+/**
+ * Takes a closed polygon and generates a polygon of the exact same dimensions and angles
+ * but larger or smaller by a fixed amount.
+ *
+ * @param points - The vertices of the polygon
+ * @param distance - The amount to offset the polygon. Positive expands, negative contracts.
+ * @returns The new set of vertices
+ */
+export const offsetPolygon = (points: IPoint[], distance: number): IPoint[] => {
+    // Determine winding order (CW is positive area in SVG y-down coords)
+    let area = 0;
+    for (let i = 0; i < points.length; i++) {
+        const j = (i + 1) % points.length;
+        area += points[i].x * points[j].y;
+        area -= points[j].x * points[i].y;
+    }
+    const isCW = area > 0;
+
+    const newPoints: IPoint[] = [];
+    for (let i = 0; i < points.length; i++) {
+        const prev = points[(i - 1 + points.length) % points.length];
+        const curr = points[i];
+        const next = points[(i + 1) % points.length];
+
+        const v1 = { x: curr.x - prev.x, y: curr.y - prev.y };
+        const len1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+        let n1 = { x: -v1.y / len1, y: v1.x / len1 };
+
+        const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+        const len2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+        let n2 = { x: -v2.y / len2, y: v2.x / len2 };
+
+        // If CW, normals pointing "right" are pointing inside. Invert to point outside.
+        if (isCW) {
+            n1 = { x: -n1.x, y: -n1.y };
+            n2 = { x: -n2.x, y: -n2.y };
+        }
+
+        const p1 = { x: prev.x + n1.x * distance, y: prev.y + n1.y * distance };
+        const C1 = n1.x * p1.x + n1.y * p1.y;
+
+        const p2 = { x: curr.x + n2.x * distance, y: curr.y + n2.y * distance };
+        const C2 = n2.x * p2.x + n2.y * p2.y;
+
+        const det = n1.x * n2.y - n2.x * n1.y;
+
+        if (Math.abs(det) < 1e-6) {
+            newPoints.push({ x: curr.x + n1.x * distance, y: curr.y + n1.y * distance });
+        } else {
+            const x = (n2.y * C1 - n1.y * C2) / det;
+            const y = (n1.x * C2 - n2.x * C1) / det;
+            newPoints.push({ x, y });
+        }
+    }
+    return newPoints;
+}
+
+export const roundPolygon = (points: IPoint[], radius: number): string => {
+    let d = "";
+    for (let i = 0; i < points.length; i++) {
+        const curr = points[i];
+        const prev = points[(i - 1 + points.length) % points.length];
+        const next = points[(i + 1) % points.length];
+
+        const v1 = { x: curr.x - prev.x, y: curr.y - prev.y };
+        const len1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+        const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+        const len2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+
+        if (len1 < 0.001 || len2 < 0.001) {
+            if (i === 0) {
+                d += `M ${curr.x},${curr.y}`;
+            } else {
+                d += ` L ${curr.x},${curr.y}`;
+            }
+            continue;
+        }
+
+        const r = Math.min(radius, len1 / 2, len2 / 2);
+
+        const p1 = { x: curr.x - (v1.x / len1) * r, y: curr.y - (v1.y / len1) * r };
+        const p2 = { x: curr.x + (v2.x / len2) * r, y: curr.y + (v2.y / len2) * r };
+
+        if (i === 0) {
+            d += `M ${p1.x},${p1.y}`;
+        } else {
+            d += ` L ${p1.x},${p1.y}`;
+        }
+        d += ` Q ${curr.x},${curr.y} ${p2.x},${p2.y}`;
+    }
+    d += " Z";
+    return d;
+}

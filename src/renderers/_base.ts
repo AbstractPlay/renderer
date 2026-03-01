@@ -4,7 +4,7 @@ import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
-import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine } from "../common/plotting";
+import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys";
@@ -3739,7 +3739,8 @@ export abstract class RendererBase {
 
                     }
                     else if (boardFill.type === "poly") {
-                        const poly = this.rootSvg.polygon(boardFill.points.map((p) => `${p.x},${p.y}`).join(" ")).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity});
+                        const path = roundPolygon(boardFill.points, 15);
+                        const poly = this.rootSvg.path(path).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity}).stroke("none");
                         // `board` backfill can't just be pushed to the back but must be inside the `board` group
                         board.add(poly, 0);
                     }
