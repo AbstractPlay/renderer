@@ -100,7 +100,7 @@ export interface IRendererOptionsIn {
      * This is a way of a user swapping out one glyph for another at render time.
      *
      */
-    glyphmap?: [string,string][];
+    glyphmap?: ([string,string]|[string,string,number])[];
     /**
      * A callback attached to boards and pieces that is called whenever the user clicks on them.
      *
@@ -136,7 +136,7 @@ export interface IRendererOptionsOut {
     rotate: number;
     columnLabels: string;
     showAnnotations: boolean;
-    glyphmap: [string,string][];
+    glyphmap: [string,string,number][];
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
 }
@@ -393,7 +393,10 @@ export abstract class RendererBase {
 
         // move any glyphmap option over
         if (opts.glyphmap !== undefined) {
-            this.options.glyphmap = opts.glyphmap;
+            this.options.glyphmap = [];
+            for (const [from, to, scale] of opts.glyphmap) {
+                this.options.glyphmap.push([from, to, scale ?? 1]);
+            }
         }
 
         if (opts.boardClick !== undefined) {
@@ -580,6 +583,7 @@ export abstract class RendererBase {
                 let size = 0;
                 // Layer the glyphs, manipulating as you go
                 for (const [idx, g] of glyphs.entries()) {
+                    let baseScale = 1;
                     let got: SVGSymbol;
                     if ( ("name" in g) && (g.name !== undefined) ) {
                         let player: number|undefined;
@@ -596,6 +600,13 @@ export abstract class RendererBase {
                         //         nested.attr(a, got.attr(a));
                         //     }
                         // }
+                        // check for substituted glyph scaling
+                        if (this.options.glyphmap.length > 0) {
+                            const i = this.options.glyphmap.findIndex(t => t[0] === g.name);
+                            if (i >= 0) {
+                                baseScale = this.options.glyphmap[i][2];
+                            }
+                        }
                     } else if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
                         const group = nested.symbol();
                         const fontsize = 17;
@@ -775,9 +786,9 @@ export abstract class RendererBase {
                     }
 
                     // Scale it appropriately
-                    let factor = 1;
+                    let factor = baseScale;
                     if (g.scale !== undefined) {
-                        factor = g.scale;
+                        factor *= g.scale;
                     }
                     if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) ) {
                         const style = this.json.board.style;
@@ -794,6 +805,7 @@ export abstract class RendererBase {
                             factor *= 1.16;
                         }
                     }
+
                     if (factor !== 1) {
                         scale(use, factor, 0, 0);
                     }
