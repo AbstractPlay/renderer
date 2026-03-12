@@ -1,4 +1,4 @@
-import * as SVGJS from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
@@ -145,7 +145,7 @@ export const paletteDefault = ["#e31a1c", "#1f78b4", "#33a02c", "#ffff99", "#6a3
 export const paletteBlind = ["#9f0162", "#8400cd", "#a40122", "#009f81", "#008df9", "#e20134", "#ff5aaf", "#00c2f9", "#ff6e3a", "#00fccf", "#ffb2fd", "#ffc33b"];
 
 export interface IMarkBoardOptions {
-    svgGroup: SVGJS.G;
+    svgGroup: SVGG;
     preGridLines: boolean;
     grid: GridPoints;
     gridExpanded?: GridPoints;
@@ -223,7 +223,7 @@ export abstract class RendererBase {
      */
     public options: IRendererOptionsOut
     public json?: APRenderRep;
-    public rootSvg?: SVGJS.Svg;
+    public rootSvg?: Svg;
 
     /**
      * Creates an instance of RendererBase. A name must be provided. Also sets the default options.
@@ -262,7 +262,7 @@ export abstract class RendererBase {
      * @param draw - The canvas upon which to render the image
      * @param opts - The renderer options
      */
-    public abstract render(json: APRenderRep, draw: SVGJS.Svg, opts: IRendererOptionsIn): void;
+    public abstract render(json: APRenderRep, draw: Svg, opts: IRendererOptionsIn): void;
 
     /**
      * Run on all JSON received before it is processed.
@@ -413,8 +413,8 @@ export abstract class RendererBase {
      * @param name - The unique name of the pattern
      * @param canvas - The container into which to add the pattern
      */
-    public loadPattern(name: string, opts: {canvas?: SVGJS.Svg, fg?: string, bg?: string} = {}): void {
-        let canvas: SVGJS.Svg|undefined = this.rootSvg;
+    public loadPattern(name: string, opts: {canvas?: Svg, fg?: string, bg?: string} = {}): void {
+        let canvas: Svg|undefined = this.rootSvg;
         if (opts.canvas !== undefined) {
             canvas = opts.canvas;
         }
@@ -477,7 +477,7 @@ export abstract class RendererBase {
      * @param canvas - The canvas into which to load the glyph
      * @returns The {@link SVGSymbol} that was loaded
      */
-    protected loadGlyph(glyph: string, player: (number | undefined), canvas?: SVGJS.Svg): SVGJS.Symbol {
+    protected loadGlyph(glyph: string, player: (number | undefined), canvas?: Svg): SVGSymbol {
         if (canvas === undefined) {
             if (this.rootSvg === undefined) {
                 throw new Error("Object in an invalid state!");
@@ -497,9 +497,9 @@ export abstract class RendererBase {
                 const func = sheet.glyphs.get(glyph);
                 if (func !== undefined) {
                     if (func.length === 1) {
-                        return (func as (svg: SVGJS.Svg) => SVGJS.Symbol)(canvas.defs() as SVGJS.Svg);
+                        return (func as (svg: Svg) => SVGSymbol)(canvas.defs() as Svg);
                     } else {
-                        return (func as (svg: SVGJS.Svg, color: string) => SVGJS.Symbol)(canvas.defs() as SVGJS.Svg, player ? this.options.colours[player - 1] : "");
+                        return (func as (svg: Svg, color: string) => SVGSymbol)(canvas.defs() as Svg, player ? this.options.colours[player - 1] : "");
                     }
                 }
             } else {
@@ -584,7 +584,7 @@ export abstract class RendererBase {
                 // Layer the glyphs, manipulating as you go
                 for (const [idx, g] of glyphs.entries()) {
                     let baseScale = 1;
-                    let got: SVGJS.Symbol;
+                    let got: SVGSymbol;
                     if ( ("name" in g) && (g.name !== undefined) ) {
                         let player: number|undefined;
                         if (g.colour !== undefined && typeof g.colour === "number") {
@@ -656,13 +656,13 @@ export abstract class RendererBase {
                     const contextBorder = this.options.colourContext.borders;
                     const contextBackground = this.options.colourContext.background;
                     const contextBoard = this.options.colourContext.board;
-                    got.find("[data-context-fill=true]").each(function(this: SVGJS.Element) { this.fill(contextFill); });
-                    got.find("[data-context-background=true]").each(function(this: SVGJS.Element) { this.fill(contextBackground); });
-                    got.find("[data-context-stroke=true]").each(function(this: SVGJS.Element) { this.stroke(contextStroke); });
-                    got.find("[data-context-border=true]").each(function(this: SVGJS.Element) { this.stroke(contextBorder); });
-                    got.find("[data-context-border-fill=true]").each(function(this: SVGJS.Element) { this.fill(contextBorder); });
+                    got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
+                    got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
+                    got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
+                    got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
+                    got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
                     if (contextBoard !== undefined) {
-                        got.find("[data-context-board=true]").each(function(this: SVGJS.Element) { this.fill(contextBoard); });
+                        got.find("[data-context-board=true]").each(function(this: SVGElement) { this.fill(contextBoard); });
                     }
 
                     let sheetCellSize = got.viewbox().height;
@@ -696,27 +696,27 @@ export abstract class RendererBase {
                                     throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
                                 }
                                 const useSize = sheetCellSize;
-                                let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGJS.Element;
+                                let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGElement;
                                 if (fill === null) {
-                                    fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGJS.Element;
+                                    fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGElement;
                                     fill = fill.clone().id(this.options.patternList[player - 1] + "-" + useSize.toString()).scale(useSize / 150);
                                     this.rootSvg.defs().add(fill);
                                 }
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.fill(fill); });
+                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(fill); });
                             } else {
                                 if (player > this.options.colours.length) {
                                     throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
                                 }
                                 const fill = this.options.colours[player - 1];
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.fill({color: fill, opacity}); });
-                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.stroke({color: fill, opacity}); isStroke = true; });
+                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: fill, opacity}); });
+                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: fill, opacity}); isStroke = true; });
                             }
                         } else if (colourVal !== undefined) {
                             const normColour = this.resolveColour(colourVal as string|number|Gradient, "#000");
                             // @ts-expect-error (poor SVGjs typing)
-                            got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.fill({color: normColour, opacity}); });
+                            got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
                             // @ts-expect-error (poor SVGjs typing)
-                            got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.stroke({color: normColour, opacity}); isStroke = true; });
+                            got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
                         }
                         // if colour is fully undefined, try to deduce the highest contrast colour
                         else {
@@ -742,14 +742,14 @@ export abstract class RendererBase {
                                 };
                                 const normColour = this.resolveColour(func, "#000");
                                 // @ts-expect-error (poor SVGjs typing)
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.fill({color: normColour, opacity}); });
+                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
                                 // @ts-expect-error (poor SVGjs typing)
-                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.stroke({color: normColour, opacity}); isStroke = true; });
+                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
                             }
                             // for everything else, just apply opacity
                             else {
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.fill({opacity}); });
-                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGJS.Element) { this.stroke({opacity}); isStroke = true; });
+                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
+                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); isStroke = true; });
                             }
                         }
                         haveStrokes.push(isStroke);
@@ -901,12 +901,12 @@ export abstract class RendererBase {
         type Shape = "square"|"circle"|"hexf"|"hexp";
 
         if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
-            const board = this.rootSvg.findOne("#board") as SVGJS.G|null;
-            let notes: SVGJS.G;
+            const board = this.rootSvg.findOne("#board") as SVGG|null;
+            let notes: SVGG;
             if (board !== null) {
                 notes = board.group().id("annotations");
             } else {
-                notes = this.rootSvg.group().id("annotations") as SVGJS.G;
+                notes = this.rootSvg.group().id("annotations");
             }
             const rIncrement = this.cellsize / 2;
             let radius = rIncrement;
@@ -967,7 +967,7 @@ export abstract class RendererBase {
                         }
                         points.push(`${pt.x},${pt.y}`);
                     }
-                    const stroke: SVGJS.StrokeData = {
+                    const stroke: StrokeData = {
                         color: colour,
                         opacity,
                         width: this.cellsize * strokeWidth,
@@ -1023,7 +1023,7 @@ export abstract class RendererBase {
                         }
                         points.push(`${pt.x},${pt.y}`);
                     }
-                    const stroke: SVGJS.StrokeData = {
+                    const stroke: StrokeData = {
                         color: colour,
                         opacity,
                         width: this.cellsize * strokeWidth,
@@ -1072,7 +1072,7 @@ export abstract class RendererBase {
                         throw new Error(`Annotation - Eject: Could not find coordinates for row ${to.row}, column ${to.col}.`);
                     }
                     const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
-                    const stroke: SVGJS.StrokeData = {
+                    const stroke: StrokeData = {
                         color: colour,
                         opacity,
                         width: this.cellsize * 0.03,
@@ -1483,7 +1483,7 @@ export abstract class RendererBase {
                         throw new Error(`At least one target must be given for glyph annotations.`);
                     }
                     const key = note.glyph as string;
-                    const piece = notes.root().findOne("#" + key) as SVGJS.Svg;
+                    const piece = notes.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). The glyph *must* exist in the \`legend\`.`);
                     }
@@ -1559,7 +1559,7 @@ export abstract class RendererBase {
                         if (delta.delta !== 0) {
                             const key = `_delta_${delta.delta < 0 ? `n${Math.abs(delta.delta)}` : delta.delta}`;
                             const point = grid[delta.row][delta.col];
-                            const piece = this.rootSvg.findOne(`#${key}`) as SVGJS.Svg;
+                            const piece = this.rootSvg.findOne(`#${key}`) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested delta (${key}).`);
                             }
@@ -1677,7 +1677,7 @@ export abstract class RendererBase {
                     delete cloned.points;
                 }
                 if (marker.type === "dots") {
-                    let colour: string|SVGJS.Gradient = baseColour;
+                    let colour: string|SVGGradient = baseColour;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         colour = this.resolveColour(marker.colour as string|number|Gradient);
                     }
@@ -1707,7 +1707,7 @@ export abstract class RendererBase {
                             .addClass(`aprender-marker-${x2uid(cloned)}`);
                     });
                 } else if (marker.type === "shading") {
-                    let colour: string|SVGJS.Gradient = this.options.colourContext.fill;
+                    let colour: string|SVGGradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         colour = this.resolveColour(marker.colour as string|number|Gradient);
                     }
@@ -1734,7 +1734,7 @@ export abstract class RendererBase {
                     }
                     let isGradient = false;
                     let isFlatten = false;
-                    let colour: string|SVGJS.Gradient = this.options.colourContext.fill;
+                    let colour: string|SVGGradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "object" && ("stops" in marker.colour)) {
                             isGradient = true;
@@ -1758,19 +1758,19 @@ export abstract class RendererBase {
                     if (pattern !== undefined) {
                         this.loadPattern(pattern, {bg: "none", fg: typeof colour === "string" ? colour : undefined});
                     }
-                    let fill: SVGJS.FillData|SVGJS.Gradient|SVGJS.Element;
+                    let fill: FillData|SVGGradient|SVGElement;
                     if (isGradient) {
-                        fill = colour as SVGJS.Gradient;
+                        fill = colour as SVGGradient;
                     } else if (pattern !== undefined) {
-                        fill = this.rootSvg.findOne(`#${pattern}`) as SVGJS.Element;
+                        fill = this.rootSvg.findOne(`#${pattern}`) as SVGElement;
                         if (fill === undefined) {
                             throw new Error("Could not load the requested pattern.");
                         }
                     } else {
-                        fill = {color: colour as string, opacity} as SVGJS.FillData;
+                        fill = {color: colour as string, opacity} as FillData;
                     }
                     for (const point of marker.points as ITarget[]) {
-                        let floodEle: SVGJS.Circle|SVGJS.Polygon|SVGJS.Path|undefined;
+                        let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
                         const cell = polys[point.row][point.col];
                         if (cell === undefined || cell === null) {
                             throw new Error(`There is no polygon at row ${point.row}, col ${point.col}. (In "wheel" boards, polygons are only present on odd-numbered rows.)`);
@@ -1792,7 +1792,7 @@ export abstract class RendererBase {
                         }
                         if (marker.pulse !== undefined && floodEle !== undefined) {
 
-                            floodEle.animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as SVGJS.TimeLike).during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
+                            floodEle.animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike).during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
                         }
                     }
                 } else if (marker.type === "line") {
@@ -1808,7 +1808,7 @@ export abstract class RendererBase {
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
                         width = marker.width;
                     }
-                    const stroke: SVGJS.StrokeData = {
+                    const stroke: StrokeData = {
                         color: colour,
                         opacity,
                         width,
@@ -1913,12 +1913,12 @@ export abstract class RendererBase {
                                 if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
                                     opacity = segment.opacity;
                                 }
-                                const fill: SVGJS.FillData = {
+                                const fill: FillData = {
                                     color: colour,
                                     opacity,
                                 };
                                 // if there's only one segment, draw a full circle/ellipse
-                                let haloPoly: SVGJS.Circle|SVGJS.Path;
+                                let haloPoly: SVGCircle|SVGPath;
                                 if (phi === 360) {
                                     haloPoly = this.rootSvg.circle(r * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill(fill).stroke("none");
                                 }
@@ -2027,7 +2027,7 @@ export abstract class RendererBase {
                                 if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
                                     opacity = segment.opacity;
                                 }
-                                const stroke: SVGJS.StrokeData = {
+                                const stroke: StrokeData = {
                                     color: colour,
                                     opacity,
                                     width,
@@ -2657,7 +2657,7 @@ export abstract class RendererBase {
                     if ( ("width" in marker) && (marker.width !== undefined) ) {
                         multiplier = marker.width;
                     }
-                    const stroke: SVGJS.StrokeData = {
+                    const stroke: StrokeData = {
                         color: colour,
                         width: baseStroke * multiplier,
                         linecap: "round",
@@ -2726,7 +2726,7 @@ export abstract class RendererBase {
                     }
                 } else if (marker.type === "glyph") {
                     const key = marker.glyph;
-                    const piece = svgGroup.root().findOne("#" + key) as SVGJS.Svg;
+                    const piece = svgGroup.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
@@ -2842,7 +2842,7 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeButtonBar(box: SVGJS.Box, position?: "left"|"right", opts?: {padding?: number}): void {
+    protected placeButtonBar(box: SVGBox, position?: "left"|"right", opts?: {padding?: number}): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -2904,7 +2904,7 @@ export abstract class RendererBase {
      * @param bar - The parsed JSON representing the button bar
      * @returns The nested SVG, which is embedded in the root `defs()`
      */
-    protected buildButtonBar(bar: AreaButtonBar): SVGJS.Svg {
+    protected buildButtonBar(bar: AreaButtonBar): Svg {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -2929,7 +2929,7 @@ export abstract class RendererBase {
         const nested = this.rootSvg.defs().nested().id("_btnBar");
 
         // build symbols of each label
-        const labels: SVGJS.Symbol[] = [];
+        const labels: SVGSymbol[] = [];
         let maxWidth = minWidth;
         let maxHeight = 0;
         for (const b of bar.buttons) {
@@ -2959,11 +2959,11 @@ export abstract class RendererBase {
 
         // build the symbol for the rectangle
         const width = maxWidth * 1.5;
-        const rects: SVGJS.Symbol[] = [];
+        const rects: SVGSymbol[] = [];
         for (const b of bar.buttons) {
             const cloned = {attributes: b.attributes, fill: b.fill};
             const symrect = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
-            let fill: SVGJS.FillData = {color: this.options.colourContext.background, opacity: 0};
+            let fill: FillData = {color: this.options.colourContext.background, opacity: 0};
             if ( ("fill" in b) && (b.fill !== undefined) ) {
                 fill = {color: this.resolveColour(b.fill) as string, opacity: 1};
             }
@@ -2974,7 +2974,7 @@ export abstract class RendererBase {
         }
 
         // Composite each into a group, all at 0,0
-        const groups: SVGJS.Svg[] = [];
+        const groups: Svg[] = [];
         for (let i = 0; i < labels.length; i++) {
             const b: ButtonBarButton = bar.buttons[i];
             const symlabel = labels[i];
@@ -3008,7 +3008,7 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeKey(box: SVGJS.Box, position?: "left"|"right", opts?: {padding?: number}): void {
+    protected placeKey(box: SVGBox, position?: "left"|"right", opts?: {padding?: number}): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -3074,7 +3074,7 @@ export abstract class RendererBase {
      * @param key - The parsed JSON representing the button bar
      * @returns The nested SVG, which is embedded in the root `defs()`
      */
-    protected buildKey(key: AreaKey): SVGJS.Svg {
+    protected buildKey(key: AreaKey): Svg {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -3096,7 +3096,7 @@ export abstract class RendererBase {
 
         // build symbols of each label
         const rotation = this.getRotation();
-        const labels: SVGJS.Symbol[] = [];
+        const labels: SVGSymbol[] = [];
         let maxWidth = 0;
         let maxHeight = 0;
         for (const k of key.list) {
@@ -3114,12 +3114,12 @@ export abstract class RendererBase {
         }
 
         // Composite each into a group, all at 0,0, adding click handlers as we go
-        const groups: SVGJS.Svg[] = [];
+        const groups: Svg[] = [];
         let maxScaledWidth = 0;
         for (let i = 0; i < labels.length; i++) {
             const k = key.list[i];
             const symlabel = labels[i];
-            const piece = this.rootSvg.findOne(`#${k.piece}`) as SVGJS.Svg;
+            const piece = this.rootSvg.findOne(`#${k.piece}`) as Svg;
             if ( (piece === undefined) || (piece === null) ) {
                 throw new Error(`Could not find the requested piece (${k.piece}). Each piece *must* exist in the \`legend\`.`);
 
@@ -3158,7 +3158,7 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeScroll(box: SVGJS.Box, position?: "left"|"right"): void {
+    protected placeScroll(box: SVGBox, position?: "left"|"right"): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -3238,7 +3238,7 @@ export abstract class RendererBase {
      * @param json - The parsed JSON representing the button bar
      * @returns The nested SVG, which is embedded in the root `defs()`
      */
-    protected buildScroll(json: AreaScrollBar): SVGJS.Svg {
+    protected buildScroll(json: AreaScrollBar): Svg {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -3303,7 +3303,7 @@ export abstract class RendererBase {
         const nested = this.rootSvg.defs().nested().id("_scroll");
 
         // build symbols of each label
-        const labels: SVGJS.Symbol[] = [];
+        const labels: SVGSymbol[] = [];
         let maxWidth = 0;
         let maxHeight = 0;
         for (const lbl of [lblUpOne, lblUpAll, lblDownOne, lblDownAll]) {
@@ -3334,7 +3334,7 @@ export abstract class RendererBase {
 
         // Composite each into a group, all at 0,0
         // Click handlers don't work here
-        const groups: SVGJS.Svg[] = [];
+        const groups: Svg[] = [];
         let maxScaledWidth = -Infinity;
         // up buttons first
         for (const lbl of [labels[1], labels[0]]) {
@@ -3345,7 +3345,7 @@ export abstract class RendererBase {
         }
         // segments
         for (let i = json.max; i > min; i--) {
-            let sym: SVGJS.Symbol;
+            let sym: SVGSymbol;
             if (i > current) {
                 sym = segBlank;
             } else {
@@ -3387,7 +3387,7 @@ export abstract class RendererBase {
      * @param grid - The grid of points; used for positioning.
      * @param position - If given, overrides the JSON setting.
      */
-    protected placeCompass(box: SVGJS.Box, position?: "left"|"right"): void {
+    protected placeCompass(box: SVGBox, position?: "left"|"right"): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -3466,7 +3466,7 @@ export abstract class RendererBase {
      * @param json - The parsed JSON representing the button bar
      * @returns The nested SVG, which is embedded in the root `defs()`
      */
-    protected buildCompass(json: AreaCompassRose): SVGJS.Svg {
+    protected buildCompass(json: AreaCompassRose): Svg {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Invalid object state.");
         }
@@ -3500,7 +3500,7 @@ export abstract class RendererBase {
      *
      * @param gridPoints -
      */
-    protected piecesArea(box: SVGJS.Box, opts?: {padding?: number, canvas?: SVGJS.Svg}): {newY: number|undefined; width: number|undefined} {
+    protected piecesArea(box: SVGBox, opts?: {padding?: number, canvas?: Svg}): {newY: number|undefined; width: number|undefined} {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
         }
@@ -3561,7 +3561,7 @@ export abstract class RendererBase {
                     const p = area.pieces[iPiece];
                     const row = Math.floor(iPiece / desiredWidth);
                     const col = iPiece % desiredWidth;
-                    const piece = this.rootSvg.findOne("#" + p) as SVGJS.Svg;
+                    const piece = this.rootSvg.findOne("#" + p) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                     }
@@ -3620,7 +3620,7 @@ export abstract class RendererBase {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `reserves` area until the root SVG is initialized!");
         }
-        const board = this.rootSvg.findOne("#board") as SVGJS.G|null;
+        const board = this.rootSvg.findOne("#board") as SVGG|null;
         if (board === null) {
             throw new Error("Can't place a `reserves` area unless a `board` group already exists.");
         }
@@ -3641,11 +3641,11 @@ export abstract class RendererBase {
                     markColour = this.resolveColour(area.ownerMark) as string;
                 }
                 const nested = board.nested().id(`_reserves${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
-                let rect: SVGJS.Rect;
+                let rect: SVGRect;
                 if ("background" in area) {
                     rect = nested.rect(areaWidth,areaHeight).fill({ color: this.resolveColour(area.background) as string, opacity: 0.25 });
                 } else {
-                    rect = nested.rect(areaWidth,areaHeight).fill({opacity: 0}) as SVGJS.Rect;
+                    rect = nested.rect(areaWidth,areaHeight).fill({opacity: 0});
                 }
                 if (this.options.boardClick !== undefined) {
                     rect.click((e: Event) => {this.options.boardClick!(-1, -1, `_reserves_${area.side}`); e.stopPropagation();});
@@ -3654,7 +3654,7 @@ export abstract class RendererBase {
                     const p = area.pieces[iPiece];
                     const row = Math.floor(iPiece / boardWidth);
                     const col = iPiece % boardWidth;
-                    const piece = this.rootSvg.findOne("#" + p) as SVGJS.Svg;
+                    const piece = this.rootSvg.findOne("#" + p) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                     }
@@ -3741,7 +3741,7 @@ export abstract class RendererBase {
                 const bbox = this.rootSvg.bbox();
                 this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill-full").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
             } else {
-                const board = this.rootSvg.findOne("#board") as SVGJS.G|null;
+                const board = this.rootSvg.findOne("#board") as SVGG|null;
                 if (board === null) {
                     throw new Error(`Can't do a board fill if there's no board.`);
                 }
@@ -3791,7 +3791,7 @@ export abstract class RendererBase {
         if (this.rootSvg === undefined) {
             throw new Error("Cannot calculate the board centre unless SVG is initialized and a board is present.");
         }
-        const board = this.rootSvg.findOne("#board") as SVGJS.G|null;
+        const board = this.rootSvg.findOne("#board") as SVGG|null;
         if (board === null) {
             throw new Error("Could not find the core board group to calculate the centre.");
         }
@@ -3799,7 +3799,7 @@ export abstract class RendererBase {
         return {x: bbox.cx, y: bbox.cy}
     }
 
-    protected rotateBoard(opts?: {ignoreRotation?: boolean, ignoreLabels?: boolean}): SVGJS.Box {
+    protected rotateBoard(opts?: {ignoreRotation?: boolean, ignoreLabels?: boolean}): SVGBox {
         let ignoreRotation = false;
         if (opts !== undefined && opts.ignoreRotation !== undefined) {
             ignoreRotation = opts.ignoreRotation;
@@ -3812,7 +3812,7 @@ export abstract class RendererBase {
             throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
         }
 
-        const board = this.rootSvg.findOne("#board") as SVGJS.G|null;
+        const board = this.rootSvg.findOne("#board") as SVGG|null;
         if (board === null) {
             throw new Error("Could not find the core board group to rotate.");
         }
@@ -3827,9 +3827,9 @@ export abstract class RendererBase {
             rotate(board, rotation, startingBox.cx, startingBox.cy);
             // reorient all labels
             if (!ignoreLabels) {
-                const labels = this.rootSvg.findOne("#labels") as SVGJS.G|null;
+                const labels = this.rootSvg.findOne("#labels") as SVGG|null;
                 if (labels !== null) {
-                    labels.find("text").each((e: SVGJS.Element) => {
+                    labels.find("text").each((e: SVGElement) => {
                         // const box = e.bbox();
                         const box = e.rbox(board);
                         rotate(e, rotation * -1, box.cx, box.cy);
@@ -3847,7 +3847,7 @@ export abstract class RendererBase {
     }
 
     // These functions let the base class build polyominoes
-    protected buildPoly(svg: SVGJS.Svg, matrix: Polymatrix, {divided = false, tlmark = false} = {}): void {
+    protected buildPoly(svg: Svg, matrix: Polymatrix, {divided = false, tlmark = false} = {}): void {
         if (this.json === undefined || this.json.board === null) {
             throw new Error("Invalid JSON");
         }
@@ -3901,7 +3901,7 @@ export abstract class RendererBase {
         }
     }
 
-    protected drawBorder(svg: SVGJS.Svg, x1: number, y1: number, x2: number, y2: number): void {
+    protected drawBorder(svg: Svg, x1: number, y1: number, x2: number, y2: number): void {
         if ( (this.json === undefined) || (this.json.board === null) ) {
             throw new Error("No valid json found.");
         }
@@ -3977,11 +3977,12 @@ export abstract class RendererBase {
      * @param def - the default value
      * @returns
      */
-    public resolveColour(val: number|string|Gradient|Colourfuncs, def?: string): string|SVGJS.Gradient {
+    public resolveColour(val: number|string|Gradient|Colourfuncs, def?: string): string|SVGGradient {
         if (this.rootSvg === undefined || this.rootSvg === null) {
             throw new Error(`Cannot resolve colour values until the root SVG is initialized.`);
         }
-        let colour: string|SVGJS.Gradient|undefined = def;
+
+        let colour: string|SVGGradient|undefined = def;
         if (typeof val === "object") {
             // check for gradient first
             if ("stops" in val) {

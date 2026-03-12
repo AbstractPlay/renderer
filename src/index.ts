@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import * as SVGJS from "@svgdotjs/svg.js";
+import { NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 export { sheets } from "./sheets";
@@ -44,19 +44,19 @@ export interface IRenderOptions extends IRendererOptionsIn {
      * In that case, pass the Svg object.
      *
      */
-    target?: SVGJS.Svg;
+    target?: Svg;
     /**
      * The width of the final SVG. This can be a string (representing something like a percentage).
      * See the SVG.js docs for details.
      *
      */
-    width?: SVGJS.NumberAlias;
+    width?: NumberAlias;
     /**
      * The height of the final SVG. This can be a string (representing something like a percentage).
      * See the SVG.js docs for details.
      *
      */
-    height?: SVGJS.NumberAlias;
+    height?: NumberAlias;
     /**
      * The string DOM ID you want the final output out be given.
      *
@@ -184,19 +184,19 @@ export const renderglyph = (glyphid: string, colour: number | string | Colourfun
  * @returns A valid SVG.js Svg object
  * @beta
  */
-export const render = (json: APRenderRep, opts = {} as IRenderOptions): SVGJS.Svg => {
+export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     // Validate the JSON
     if (! validate(json)) {
         throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as AJVError[])}`);
     }
 
     // Initialize the SVG container
-    let draw: SVGJS.Svg;
+    let draw: Svg;
     if ( ("target" in opts) && (opts.target != null) ) {
         draw = opts.target;
     } else if ( ("divelem" in opts) && (opts.divelem != null) ) {
-        let height: SVGJS.NumberAlias = "100%";
-        let width: SVGJS.NumberAlias = "100%";
+        let height: NumberAlias = "100%";
+        let width: NumberAlias = "100%";
         if ( ("height" in opts) && (opts.height !== null) && (opts.height !== undefined) ) {
             height = opts.height;
         }
@@ -207,10 +207,10 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): SVGJS.Sv
         if ( ("svgid" in opts) && (opts.svgid !== undefined) && (opts.svgid.length > 0) ) {
             svgid = opts.svgid;
         }
-        draw = SVGJS.SVG().addTo(opts.divelem).size(width, height).id(svgid);
+        draw = SVG().addTo(opts.divelem).size(width, height).id(svgid);
     } else {
-        let height: SVGJS.NumberAlias = "100%";
-        let width: SVGJS.NumberAlias = "100%";
+        let height: NumberAlias = "100%";
+        let width: NumberAlias = "100%";
         if ( ("height" in opts) && (opts.height !== null) && (opts.height !== undefined) ) {
             height = opts.height;
         }
@@ -224,7 +224,7 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): SVGJS.Sv
         if (opts.divid === undefined) {
             throw new Error("No target for the rendered SVG was given.");
         }
-        draw = SVGJS.SVG().addTo("#" + opts.divid).size(width, height).id(svgid);
+        draw = SVG().addTo("#" + opts.divid).size(width, height).id(svgid);
     }
 
     let boardClick: (row: number, col: number, piece: string) => void = () => undefined;

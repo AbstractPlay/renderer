@@ -2,7 +2,7 @@ import { GridPoints } from "../grids/_base";
 import { AnnotationBasic, APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { rectOfRects } from "../grids";
-import * as SVGJS from "@svgdotjs/svg.js";
+import { Svg, StrokeData, G as SVGG } from "@svgdotjs/svg.js";
 import { usePieceAt } from "../common/plotting";
 import { x2uid } from "../common/glyph2uid";
 
@@ -174,7 +174,7 @@ export class Stacking3DRenderer extends RendererBase {
 
         // Get a grid of points
         const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
-        const board = this.rootSvg.group().id("board") as SVGJS.G;
+        const board = this.rootSvg.group().id("board");
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -364,14 +364,14 @@ export class Stacking3DRenderer extends RendererBase {
                     }
 
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
-                    const markerCircle = notes.marker(2, 2, (add) => (add.circle(2) as SVGJS.Circle).fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const points: [number, number][] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = grid[node.row][node.col];
                         const ptp = this.project(pt.x, pt.y);
                         points.push([ptp[0],ptp[1]]);
                     }
-                    const stroke: SVGJS.StrokeData = {
+                    const stroke: StrokeData = {
                         color: colour,
                         opacity,
                         width: this.cellsize * 0.015,
@@ -410,12 +410,12 @@ export class Stacking3DRenderer extends RendererBase {
 
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
                     const markerArrow = notes.marker(4, 4, (add) => add.path("M0,0 L4,2 0,4").fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
-                    const markerCircle = notes.marker(2, 2, (add) => (add.circle(2) as SVGJS.Circle).fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
+                    const markerCircle = notes.marker(2, 2, (add) => add.circle(2).fill(colour)).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const [from, to] = note.targets as ITarget[];
                     const ptFrom = grid[from.row][from.col];
                     const ptTo = grid[to.row][to.col];
                     const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
-                    const stroke: SVGJS.StrokeData = {
+                    const stroke: StrokeData = {
                         color: colour,
                         opacity,
                         width: this.cellsize * 0.03,
@@ -513,7 +513,7 @@ export class Stacking3DRenderer extends RendererBase {
         }
     }
 
-    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -548,8 +548,8 @@ export class Stacking3DRenderer extends RendererBase {
         }
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGJS.G;
-        const group = board.group().id("pieces") as SVGJS.G;
+        const board = this.rootSvg.findOne("#board") as SVGG;
+        const group = board.group().id("pieces");
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];
@@ -597,7 +597,7 @@ export class Stacking3DRenderer extends RendererBase {
                         const key = pieces[row][col][i];
                         if ( (key !== null) && (key !== "-") ) {
                             const point = gridPoints[row][col];
-                            const piece = this.rootSvg.findOne("#" + key) as SVGJS.Svg;
+                            const piece = this.rootSvg.findOne("#" + key) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                             }
@@ -628,7 +628,7 @@ export class Stacking3DRenderer extends RendererBase {
                         for (let i = 0; i < stack.length; i++) {
                             const p = stack[i];
                             if ( p !== "-" ) {
-                                const piece = this.rootSvg.findOne("#" + p) as SVGJS.Svg;
+                                const piece = this.rootSvg.findOne("#" + p) as Svg;
                                 if ( (piece === null) || (piece === undefined) ) {
                                     throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                                 }

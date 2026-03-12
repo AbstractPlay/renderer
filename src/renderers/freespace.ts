@@ -1,4 +1,4 @@
-import * as SVGJS from "@svgdotjs/svg.js";
+import { Svg, StrokeData } from "@svgdotjs/svg.js";
 import { APRenderRep, AnnotationFreespace, AreaKey, Freepiece as IPiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { IPoint } from "../grids/_base";
@@ -19,7 +19,7 @@ export class FreespaceRenderer extends RendererBase {
 
     public static readonly rendererName: string = "freespace";
 
-    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -88,7 +88,7 @@ export class FreespaceRenderer extends RendererBase {
                 if ( ("id" in pc) && (pc.id !== undefined) ) {
                     pcid = pc.id;
                 }
-                const piece = this.rootSvg.findOne("#" + pc.glyph) as SVGJS.Svg;
+                const piece = this.rootSvg.findOne("#" + pc.glyph) as Svg;
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${pc.glyph}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
@@ -146,7 +146,7 @@ export class FreespaceRenderer extends RendererBase {
         draw.viewbox(x, y, w, h);
     }
 
-    protected annotateField(field: SVGJS.Svg) {
+    protected annotateField(field: Svg) {
         if (this.json === undefined) {
             throw new Error("Object in an invalid state!");
         }
@@ -182,7 +182,7 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("fillOpacity" in note) && (note.fillOpacity !== undefined) ) {
                         fillOpacity = note.fillOpacity;
                     }
-                    const strokeData: SVGJS.StrokeData = {
+                    const strokeData: StrokeData = {
                         color: stroke,
                         width: strokeWidth,
                         opacity: strokeOpacity,
@@ -193,7 +193,7 @@ export class FreespaceRenderer extends RendererBase {
                     notes.path(note.path ).addClass(`aprender-annotation-${x2uid(note)}`).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
                 } else if (note.type === "glyph") {
                     const key = note.glyph;
-                    const piece = field.root().findOne("#" + key) as SVGJS.Svg;
+                    const piece = field.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
@@ -211,7 +211,7 @@ export class FreespaceRenderer extends RendererBase {
      *
      * @param field - The SVG `<group>` you want to add the markers too. This is just for the sake of organization.
      */
-    protected markField(field: SVGJS.Svg): void {
+    protected markField(field: Svg): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -243,7 +243,7 @@ export class FreespaceRenderer extends RendererBase {
                         .attr("startOffset", "50%");
                 } else if (marker.type === "glyph") {
                     const key = marker.glyph;
-                    const piece = field.root().findOne("#" + key) as SVGJS.Svg;
+                    const piece = field.root().findOne("#" + key) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
@@ -281,7 +281,7 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("fillOpacity" in marker) && (marker.fillOpacity !== undefined) ) {
                         fillOpacity = marker.fillOpacity;
                     }
-                    const strokeData: SVGJS.StrokeData = {
+                    const strokeData: StrokeData = {
                         color: stroke,
                         width: strokeWidth,
                         opacity: strokeOpacity,
@@ -361,3 +361,4 @@ export class FreespaceRenderer extends RendererBase {
         return 0;
     }
 }
+
