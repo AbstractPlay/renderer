@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-import { Box, StrokeData, Svg, Use } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import type { IPoint } from "../grids/_base";
 import { APRenderRep, AreaHWStash } from "../schemas/schema";
@@ -37,7 +37,7 @@ export class HomeworldsRenderer extends RendererBase {
         super();
     }
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -184,7 +184,7 @@ export class HomeworldsRenderer extends RendererBase {
             const systems = [...sysPeriph.filter(s => parseInt(s.stars[0][1], 10) === starSize)].sort(sysSort);
             for (const sys of systems) {
                 const id = `#_sysPeriph_${sys.name}`;
-                const system = this.rootSvg.findOne(id) as Svg;
+                const system = this.rootSvg.findOne(id) as SVGJS.Svg;
                 if ( (system === null) || (system === undefined) ) {
                     throw new Error(`Could not find the requested system (${id}). This should never happen`);
                 }
@@ -208,7 +208,7 @@ export class HomeworldsRenderer extends RendererBase {
         const periphHeight = maxy;
         sysHome.forEach((sys) => {
             const id = `#_sysHome_${sys.seat}`;
-            const system = this.rootSvg!.findOne(id) as Svg;
+            const system = this.rootSvg!.findOne(id) as SVGJS.Svg;
             if ( (system === null) || (system === undefined) ) {
                 throw new Error(`Could not find the requested system (${id}). This should never happen`);
             }
@@ -292,7 +292,7 @@ export class HomeworldsRenderer extends RendererBase {
                 }
                 const ship = colour + size + "S";
                 const point = sgrid[i][parseInt(size, 10) - 1];
-                const piece = this.rootSvg.findOne("#p" + ship) as Svg;
+                const piece = this.rootSvg.findOne("#p" + ship) as SVGJS.Svg;
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
@@ -406,7 +406,7 @@ export class HomeworldsRenderer extends RendererBase {
      * @param highlight - An optional colour to highlight the border with. This is used for the custom annotations.
      * @returns The resulting SVG.js Svg object
      */
-    private genSystem(id: string, sys: ISystem, orientation: "H"|"V" = "H", highlight?: string): Svg {
+    private genSystem(id: string, sys: ISystem, orientation: "H"|"V" = "H", highlight?: string): SVGJS.Svg {
         const [shipWidth, shipHeight] = HomeworldsRenderer.dimensions(sys);
         let gridWidth = Math.max(2, shipWidth + 1);
         let gridHeight = Math.max(shipHeight, sys.stars.length);
@@ -448,7 +448,7 @@ export class HomeworldsRenderer extends RendererBase {
             // now ships
             for (let y = 0; y < seats.length; y++) {
                 const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
-                const used: Box[] = [];
+                const used: SVGJS.Box[] = [];
                 for (let x = 0; x < ships.length; x++) {
                     const ship = ships[x];
                     const designation = ship.substring(0, 3);
@@ -479,7 +479,7 @@ export class HomeworldsRenderer extends RendererBase {
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
                     const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
-                    const used: Box[] = [];
+                    const used: SVGJS.Box[] = [];
                     for (let x = 0; x < ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
@@ -508,7 +508,7 @@ export class HomeworldsRenderer extends RendererBase {
                 // now ships
                 for (let y = 0; y < seats.length; y++) {
                     const ships = seatMap.filter(e => e[1] === seats[y]).map(e => e[0]).sort((a, b) => a.localeCompare(b));
-                    const used: Box[] = [];
+                    const used: SVGJS.Box[] = [];
                     for (let x = 0; x < ships.length; x++) {
                         const ship = ships[x];
                         const designation = ship.substring(0, 3);
@@ -540,7 +540,7 @@ export class HomeworldsRenderer extends RendererBase {
         nested.size(realWidth, realHeight).viewbox(realX - 2, realY - 2, realWidth + 4, realHeight + 4);
 
         // Add fill and border
-        let stroke: StrokeData = {width: 2, color: this.contrastColour};
+        let stroke: SVGJS.StrokeData = {width: 2, color: this.contrastColour};
         if (highlight !== undefined) {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
@@ -570,8 +570,8 @@ export class HomeworldsRenderer extends RendererBase {
         return nested;
     }
 
-    private placePiece(nested: Svg, ship: string, point: IPoint, clickName: string): [Use, number] {
-        const piece = this.rootSvg!.findOne("#" + ship) as Svg;
+    private placePiece(nested: SVGJS.Svg, ship: string, point: IPoint, clickName: string): [SVGJS.Use, number] {
+        const piece = this.rootSvg!.findOne("#" + ship) as SVGJS.Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
@@ -583,4 +583,3 @@ export class HomeworldsRenderer extends RendererBase {
         return [use, cellsize / 500];
     }
 }
-

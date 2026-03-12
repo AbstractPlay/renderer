@@ -1,4 +1,4 @@
-import { Svg, G as SVGG } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
 import { APRenderRep, type Multipiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -14,7 +14,7 @@ export class MulticellSquareRenderer extends RendererBase {
 
     public static readonly rendererName: string = "multicell-square";
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -50,8 +50,8 @@ export class MulticellSquareRenderer extends RendererBase {
         }
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const board = this.rootSvg.findOne("#board") as SVGJS.G;
+        const group = board.group().id("pieces") as SVGJS.G;
         if ( (this.json.pieces !== null) && (Array.isArray(this.json.pieces)) && (! Array.isArray(this.json.pieces[0])) ) {
             const pieces = this.json.pieces as Multipiece[];
             pieces.forEach(p => {
@@ -69,7 +69,7 @@ export class MulticellSquareRenderer extends RendererBase {
 
             for (const piece of pieces) {
                 const {row, col} = piece;
-                const svg = this.rootSvg.findOne("#" + piece.glyph) as Svg;
+                const svg = this.rootSvg.findOne("#" + piece.glyph) as SVGJS.Svg;
                 if ( (svg === null) || (svg === undefined) ) {
                     throw new Error(`Could not find the requested piece (${piece.glyph}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
@@ -132,7 +132,7 @@ export class MulticellSquareRenderer extends RendererBase {
             throw new Error("There must be a piece given in the `pieces` property.");
         }
         const key = this.json.pieces as string;
-        const piece = this.rootSvg.findOne("#" + key) as Svg;
+        const piece = this.rootSvg.findOne("#" + key) as SVGJS.Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }

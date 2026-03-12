@@ -1,5 +1,5 @@
 
-import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
 import { AnnotationBasic, APRenderRep, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -71,7 +71,7 @@ export class IsometricRenderer extends RendererBase {
         super();
     }
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -124,7 +124,7 @@ export class IsometricRenderer extends RendererBase {
             blocked = [...(this.json.board.blocked as Blocked)];
         }
 
-        let board = this.rootSvg.findOne("#board") as SVGG;
+        let board = this.rootSvg.findOne("#board") as SVGJS.G;
         if (board === null) {
             board = this.rootSvg.group().id("board");
         }
@@ -318,7 +318,7 @@ export class IsometricRenderer extends RendererBase {
                 height = heightmap[entry.row][entry.col];
             }
             const idHeight = height.toString().replace(".", "_");
-            const cell = this.rootSvg.findOne(`#_surface_${idHeight}`) as Svg;
+            const cell = this.rootSvg.findOne(`#_surface_${idHeight}`) as SVGJS.Svg;
             if ( (cell === null) || (cell === undefined) ) {
                 throw new Error(`Could not find the requested surface of height ${idHeight}.`);
             }
@@ -369,7 +369,7 @@ export class IsometricRenderer extends RendererBase {
                 const stack = pieces[entry.row][entry.col];
                 for (const [idx, pc] of stack.entries()) {
                     if (pc === "" || pc === "-") { continue; }
-                    const piece = this.rootSvg.findOne("#" + pc) as Svg;
+                    const piece = this.rootSvg.findOne("#" + pc) as SVGJS.Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${pc}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
@@ -444,7 +444,7 @@ export class IsometricRenderer extends RendererBase {
         }
     }
 
-    private preAnnotate(group: SVGG, entry: PointEntry) {
+    private preAnnotate(group: SVGJS.G, entry: PointEntry) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -568,7 +568,7 @@ export class IsometricRenderer extends RendererBase {
         }
     }
 
-    private postAnnotate(group: SVGG, entries: PointEntry[], transform: Matrix) {
+    private postAnnotate(group: SVGJS.G, entries: PointEntry[], transform: Matrix) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -627,7 +627,7 @@ export class IsometricRenderer extends RendererBase {
                         const inverted = tInverted.applyToPoint(entry.x, entry.y);
                         points.push(`${inverted.x},${inverted.y}`);
                     }
-                    const stroke: StrokeData = {
+                    const stroke: SVGJS.StrokeData = {
                         color: colour,
                         opacity,
                         width: this.cellsize * strokeWidth,
@@ -686,7 +686,7 @@ export class IsometricRenderer extends RendererBase {
                     const toInverted = tInverted.applyToPoint(entryTo.x, entryTo.y);
                     const ptTo = {x: toInverted.x, y: toInverted.y};
                     const ptCtr = this.getArcCentre(ptFrom, ptTo, radius * direction);
-                    const stroke: StrokeData = {
+                    const stroke: SVGJS.StrokeData = {
                         color: colour,
                         opacity,
                         width: this.cellsize * 0.03,
@@ -750,7 +750,7 @@ export class IsometricRenderer extends RendererBase {
         }
     }
 
-    private isoMark(group: SVGG, entry: PointEntry, transform: Matrix): void {
+    private isoMark(group: SVGJS.G, entry: PointEntry, transform: Matrix): void {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
@@ -784,7 +784,7 @@ export class IsometricRenderer extends RendererBase {
                 }
                 if (marker.type === "dots") {
                     let isGradient = false;
-                    let colour: string|SVGGradient = this.options.colourContext.fill;
+                    let colour: string|SVGJS.Gradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "object") {
                             isGradient = true;
@@ -810,13 +810,13 @@ export class IsometricRenderer extends RendererBase {
                         .attr({ 'pointer-events': 'none' })
                         .addClass(`aprender-marker-${x2uid(cloned)}`);
                     if (isGradient) {
-                        dot.fill(colour as SVGGradient);
+                        dot.fill(colour as SVGJS.Gradient);
                     } else {
-                        dot.fill({color: colour, opacity} as FillData)
+                        dot.fill({color: colour, opacity} as SVGJS.FillData)
                     }
                 } else if (marker.type === "flood") {
                     let isGradient = false;
-                    let colour: string|SVGGradient = this.options.colourContext.fill;
+                    let colour: string|SVGJS.Gradient = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "object") {
                             isGradient = true;
@@ -827,7 +827,7 @@ export class IsometricRenderer extends RendererBase {
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
                         opacity = marker.opacity;
                     }
-                    let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
+                    let floodEle: SVGJS.Circle|SVGJS.Polygon|SVGJS.Path|undefined;
                     const cell = entry.poly;
                     // the following eslint and ts exceptions are due to poor SVGjs typing
                     switch (cell.type) {
@@ -843,14 +843,14 @@ export class IsometricRenderer extends RendererBase {
                     }
                     if (floodEle !== undefined) {
                         if (isGradient) {
-                            floodEle.fill(colour as SVGGradient);
+                            floodEle.fill(colour as SVGJS.Gradient);
                         } else {
-                            floodEle.fill({color: colour, opacity} as FillData);
+                            floodEle.fill({color: colour, opacity} as SVGJS.FillData);
                         }
                     }
                     if (marker.pulse !== undefined && floodEle !== undefined) {
                         floodEle
-                            .animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike)
+                            .animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as SVGJS.TimeLike)
 
                             .during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
                     }

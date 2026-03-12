@@ -1,4 +1,4 @@
-import { Svg, G as SVGG } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -15,7 +15,7 @@ export class StackingTilesRenderer extends RendererBase {
         super();
     }
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -67,8 +67,8 @@ export class StackingTilesRenderer extends RendererBase {
         }
 
         // Now place the pieces
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const board = this.rootSvg.findOne("#board") as SVGJS.G;
+        const group = board.group().id("pieces") as SVGJS.G;
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];

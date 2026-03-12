@@ -1,4 +1,4 @@
-import { Svg, G as SVGG, Box as SVGBox } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
 import { APRenderRep, type Polypiece, type AreaPieces as IPiecesArea, type AreaPolyomino as IPolyArea } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -23,7 +23,7 @@ export class PolyominoRenderer extends RendererBase {
 
     public static readonly rendererName: string = "polyomino";
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -68,8 +68,8 @@ export class PolyominoRenderer extends RendererBase {
         const cellsize = this.cellsize;
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const board = this.rootSvg.findOne("#board") as SVGJS.G;
+        const group = board.group().id("pieces") as SVGJS.G;
         if ( (this.json.pieces !== null) && (Array.isArray(this.json.pieces)) && (! Array.isArray(this.json.pieces[0])) ) {
             const pieces = this.json.pieces as Polypiece[];
             pieces.forEach(p => {
@@ -130,7 +130,7 @@ export class PolyominoRenderer extends RendererBase {
         }
     }
 
-    protected piecesArea(box: SVGBox): {newY: number|undefined; width: number|undefined} {
+    protected piecesArea(box: SVGJS.Box): {newY: number|undefined; width: number|undefined} {
         if (this.rootSvg === undefined) {
             throw new Error("Can't place a `pieces` area until the root SVG is initialized!");
         }
@@ -167,7 +167,7 @@ export class PolyominoRenderer extends RendererBase {
                         const p = area.pieces[iPiece];
                         const row = Math.floor(iPiece / desiredWidth);
                         const col = iPiece % desiredWidth;
-                        const piece = this.rootSvg.findOne("#" + p) as Svg;
+                        const piece = this.rootSvg.findOne("#" + p) as SVGJS.Svg;
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
@@ -220,7 +220,7 @@ export class PolyominoRenderer extends RendererBase {
                     // place icons along the top
                     const iconOrder = ["ccw", "cw", "flipx", "flipy", "cancel"];
                     for (let i = 0; i < iconOrder.length; i++) {
-                        const piece = this.rootSvg.findOne(`#_icon-${iconOrder[i]}`) as Svg;
+                        const piece = this.rootSvg.findOne(`#_icon-${iconOrder[i]}`) as SVGJS.Svg;
                         if (piece === null || piece === undefined) {
                             throw new Error(`Could not load the icon ${iconOrder[i]}`);
                         }
@@ -285,7 +285,7 @@ export class PolyominoRenderer extends RendererBase {
             throw new Error("There must be a piece given in the `pieces` property.");
         }
         const key = this.json.pieces as string;
-        const piece = this.rootSvg.findOne("#" + key) as Svg;
+        const piece = this.rootSvg.findOne("#" + key) as SVGJS.Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }

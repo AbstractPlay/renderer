@@ -1,4 +1,4 @@
-import { Svg } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { IPoint } from "../grids/_base";
 import { AnnotationTree, APRenderRep, BoardBasic, PiecesTree, TreeNode } from "../schemas/schema";
 import { x2uid } from "../common/glyph2uid";
@@ -14,7 +14,7 @@ export class TreePyramidRenderer extends RendererBase {
     public static readonly rendererName: string = "tree-pyramid";
     public padding = this.cellsize * 0.1;
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -115,7 +115,7 @@ export class TreePyramidRenderer extends RendererBase {
                 if ( ("glyph" in node) && (node.glyph !== undefined) ) {
                     pcid = node.glyph;
                 }
-                const piece = this.rootSvg.findOne("#" + pcid) as Svg;
+                const piece = this.rootSvg.findOne("#" + pcid) as SVGJS.Svg;
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${pcid}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
@@ -184,7 +184,7 @@ export class TreePyramidRenderer extends RendererBase {
         draw.viewbox(x, y, w, h);
     }
 
-    protected annotateField(field: Svg, node2xy: Map<string, IPoint>, pieces: TreeNode[][]) {
+    protected annotateField(field: SVGJS.Svg, node2xy: Map<string, IPoint>, pieces: TreeNode[][]) {
         if (this.json === undefined) {
             throw new Error("Object in an invalid state!");
         }
@@ -317,4 +317,3 @@ export class TreePyramidRenderer extends RendererBase {
         }
     }
 }
-

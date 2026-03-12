@@ -1,4 +1,4 @@
-import { Svg, G as SVGG } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -16,7 +16,7 @@ export class StackingOffsetRenderer extends RendererBase {
         super();
     }
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -130,8 +130,8 @@ export class StackingOffsetRenderer extends RendererBase {
         }
 
         // PIECES
-        const board = this.rootSvg.findOne("#board") as SVGG;
-        const group = board.group().id("pieces");
+        const board = this.rootSvg.findOne("#board") as SVGJS.G;
+        const group = board.group().id("pieces") as SVGJS.G;
         if (this.json.pieces !== null) {
             // Generate pieces array
             let pieces: string[][][] = [];
@@ -225,7 +225,7 @@ export class StackingOffsetRenderer extends RendererBase {
             for (const cell of pcs) {
                 for (const entry of cell) {
                     const { key, x, y, row, col, idx } = entry;
-                    const piece = this.rootSvg.findOne("#" + key) as Svg;
+                    const piece = this.rootSvg.findOne("#" + key) as SVGJS.Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }

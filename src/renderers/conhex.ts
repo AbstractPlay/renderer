@@ -1,4 +1,4 @@
-import { Svg } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 // import { GridPoints } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -104,7 +104,7 @@ export class ConhexRenderer extends RendererBase {
         return polys;
     }
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -324,7 +324,7 @@ export class ConhexRenderer extends RendererBase {
             throw new Error("There must be a piece given in the `pieces` property.");
         }
         const key = this.json.pieces as string;
-        const piece = this.rootSvg.findOne("#" + key) as Svg;
+        const piece = this.rootSvg.findOne("#" + key) as SVGJS.Svg;
         if ( (piece === null) || (piece === undefined) ) {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
@@ -332,4 +332,3 @@ export class ConhexRenderer extends RendererBase {
         usePieceAt({svg: this.rootSvg, piece, cellsize: this.cellsize, x: this.cellsize / 2, y: this.cellsize / 2, scalingFactor: 0.9});
     }
 }
-

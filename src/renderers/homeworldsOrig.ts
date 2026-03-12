@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-import { StrokeData, Svg } from "@svgdotjs/svg.js";
+import * as SVGJS from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
@@ -33,7 +33,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
         super();
     }
 
-    public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
+    public render(json: APRenderRep, draw: SVGJS.Svg, options: IRendererOptionsIn): void {
         this.jsonPrechecks(json);
         if (this.json === undefined) {
             throw new Error("JSON prechecks fatally failed.");
@@ -221,7 +221,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
                 const sys = sysPeriph[idx];
                 const point = grid[row][col];
                 const id = `#_sysPeriph_${sys.name}`;
-                const system = this.rootSvg.findOne(id) as Svg;
+                const system = this.rootSvg.findOne(id) as SVGJS.Svg;
                 if ( (system === null) || (system === undefined) ) {
                     throw new Error(`Could not find the requested system (${id}). This should never happen`);
                 }
@@ -256,7 +256,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
                     throw new Error(`Unrecognized seat (${sys.seat}). This should never happen.`);
             }
             const id = `#_sysHome_${sys.seat}`;
-            const system = this.rootSvg!.findOne(id) as Svg;
+            const system = this.rootSvg!.findOne(id) as SVGJS.Svg;
             if ( (system === null) || (system === undefined) ) {
                 throw new Error(`Could not find the requested system (${id}). This should never happen`);
             }
@@ -298,7 +298,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
                 }
                 const ship = colour + size + "S";
                 const point = sgrid[i][parseInt(size, 10) - 1];
-                const piece = this.rootSvg.findOne("#p" + ship) as Svg;
+                const piece = this.rootSvg.findOne("#p" + ship) as SVGJS.Svg;
                 if ( (piece === null) || (piece === undefined) ) {
                     throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                 }
@@ -393,7 +393,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
      * @param highlight - An optional colour to highlight the border with. This is used for the custom annotations.
      * @returns The resulting SVG.js Svg object
      */
-    private genSystem(id: string, name: string, ports: (string|undefined)[][], highlight?: string): Svg {
+    private genSystem(id: string, name: string, ports: (string|undefined)[][], highlight?: string): SVGJS.Svg {
         const grid = rectOfRects({cellSize: 50, gridHeight: 5, gridWidth: 5});
         const nested = this.rootSvg!.nested().id(id).size(250, 250).viewbox(0, 0, 250, 250);
 
@@ -411,7 +411,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
                 add.circle(Math.random() + 1).center(x, y).fill("white");
             }
         });
-        let stroke: StrokeData = {width: 2, color: "#fff"};
+        let stroke: SVGJS.StrokeData = {width: 2, color: "#fff"};
         if (highlight !== undefined) {
             stroke = {width: 5, color: highlight, dasharray: "4"};
         }
@@ -439,7 +439,7 @@ export class HomeworldsOrigRenderer extends RendererBase {
                         ship = cell.slice(0, 3) + newowner;
                     }
                     const point = grid[row][col];
-                    const piece = this.rootSvg!.findOne("#" + ship) as Svg;
+                    const piece = this.rootSvg!.findOne("#" + ship) as SVGJS.Svg;
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${ship}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
