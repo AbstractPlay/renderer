@@ -1558,7 +1558,13 @@ export abstract class RendererBase {
                     for (const delta of note.deltas as Delta[]) {
                         if (delta.delta !== 0) {
                             const key = `_delta_${delta.delta < 0 ? `n${Math.abs(delta.delta)}` : delta.delta}`;
-                            const point = grid[delta.row][delta.col];
+                            let point: IPoint;
+                            try {
+                                const [gx, gy] = this.interpolateFromGrid(grid, delta);
+                                point = { x: gx, y: gy };
+                            } catch {
+                                continue;
+                            }
                             const piece = this.rootSvg.findOne(`#${key}`) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
                                 throw new Error(`Could not find the requested delta (${key}).`);
@@ -3926,7 +3932,12 @@ export abstract class RendererBase {
             throw new Error(`Cannot calculate the stacked point if the base object is not properly populated.`);
         }
         if (this.json.board.style !== "squares-stacked") {
-            return pts[row][col];
+            try {
+                const [gx, gy] = this.interpolateFromGrid(pts, { row, col });
+                return { x: gx, y: gy };
+            } catch {
+                return undefined;
+            }
         }
         if ((! ("width" in this.json.board)) || (this.json.board.width === undefined) || (! ("height" in this.json.board)) || (this.json.board.height === undefined)) {
             throw new Error(`Cannot calculate the stacked point if the base object is not properly populated.`);
