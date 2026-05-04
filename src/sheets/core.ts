@@ -952,6 +952,19 @@ sheet.glyphs.set("piece-cog", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("piece-dashed", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    group.circle(sheet.cellsize)
+        .attr("data-context-border", true)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000", dasharray: "12"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
 sheet.glyphs.set("piece-horse", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
