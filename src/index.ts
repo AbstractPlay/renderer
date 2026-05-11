@@ -11,7 +11,8 @@
 import { NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
-export { sheets } from "./sheets";
+import { sheets } from "./sheets";
+export { sheets };
 import { IRendererOptionsIn } from "./renderers/_base";
 import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings, Colourfuncs } from "./schemas/schema";
 import schema from "./schemas/schema.json";
@@ -256,3 +257,11 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     }
     return draw;
 }
+
+export default {
+    addPrefix,
+    render,
+    renderStatic,
+    renderglyph,
+    sheets
+};
