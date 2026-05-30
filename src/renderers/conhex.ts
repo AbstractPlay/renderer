@@ -171,6 +171,7 @@ export class ConhexRenderer extends RendererBase {
         gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
 
         const board = this.rootSvg.group().id("board");
+        const grpCells = board.group().id("cells");
         const gridlines = board.group().id("gridlines");
         const cells = getConhexCells(boardsize, cellsize);
         this.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys: cells});
@@ -219,7 +220,7 @@ export class ConhexRenderer extends RendererBase {
         for (let row = 0; row < cells.length; row++) {
             for (let col = 0; col < cells[row].length; col++) {
                 const poly = cells[row][col];
-                const p = board.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity}).fill({color: cellFill, opacity: cellOpacity});
+                const p = grpCells.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity}).fill({color: cellFill, opacity: cellOpacity});
                 if (this.options.boardClick !== undefined) {
                     p.click(() => this.options.boardClick!(row, col, "cell"))
                 }
