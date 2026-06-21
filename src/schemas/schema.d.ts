@@ -61,6 +61,7 @@ export type BoardStyles =
   | "onyx"
   | "pentagonal"
   | "pentagonal-bluestone"
+  | "bent-tri"
   | "circular-wheel"
   | "circular-cobweb"
   | "circular-moon"

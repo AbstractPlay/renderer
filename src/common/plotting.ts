@@ -298,6 +298,24 @@ export const centroid = (pts: IPoint[]): IPoint|undefined => {
     return {x: cx, y: cy};
 }
 
+/**
+ * Move `target` toward `anchor` by at most `dist` (fixed distance along the segment).
+ * If `dist` exceeds the separation, the point lands on the anchor.
+ */
+export const pullTowards = (target: IPoint, anchor: IPoint, dist: number): IPoint => {
+    const dx = anchor.x - target.x;
+    const dy = anchor.y - target.y;
+    const len = Math.hypot(dx, dy);
+    if (len < 1e-9 || dist <= 0) {
+        return { x: target.x, y: target.y };
+    }
+    const move = Math.min(dist, len);
+    return {
+        x: target.x + (dx / len) * move,
+        y: target.y + (dy / len) * move,
+    };
+}
+
 // Builds a circle as a polygon of `steps` sides
 export const circle2poly = (cx: number, cy: number, r: number, steps = 64): [number,number][] => {
     const coordinates: [number,number][] = [];

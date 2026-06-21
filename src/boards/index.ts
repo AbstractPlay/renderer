@@ -17,6 +17,7 @@ export { hexSlanted } from "./hexSlanted";
 export { moon } from "./moon";
 export { onyx } from "./onyx";
 export { pentagonal } from "./pentagonal";
+export { bentTri } from "./bentTri";
 export { pyramidHex } from "./pyramidHex";
 export { rectOfHex } from "./rectOfHex";
 export { rectOfTri } from "./rectOfTri";

@@ -2,6 +2,7 @@
 // import { SVG } from "@svgdotjs/svg.js";
 
 import { Graph } from "../common/pentagons";
+import { Graph as BentTriGraph } from "../common/bentTri";
 
 /**
  * A simple x,y coordinate container.
@@ -115,6 +116,19 @@ export interface IGeneratorArgs {
      * Only used by the pentagonal generator. Give it the generated graph.
      */
     readonly pentagonalGraph?: Graph;
+    /**
+     * Only used by the bentTri generator. Give it the generated graph.
+     */
+    readonly bentTriGraph?: BentTriGraph;
+    /**
+     * Outward bend for the bentTri grid (0 = flat). Default 0.35.
+     */
+    readonly bow?: number;
+    /**
+     * Close hub overlap gaps after bowing (bentTri only). Defaults to true when
+     * bow is positive; set false to keep bowed positions without the inward pull pass.
+     */
+    readonly closeHubGaps?: boolean;
 }
 
 /**
