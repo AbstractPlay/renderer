@@ -3,7 +3,7 @@ import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase} from "./_base";
 import { usePieceAt } from "../common/plotting";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
 
 /**
  * This is the default renderer used for most games.
@@ -70,6 +70,9 @@ export class DefaultRenderer extends RendererBase {
                 break;
             case "bent-tri":
                 ({ grid: gridPoints, boardFill } = bentTri(this));
+                break;
+            case "star":
+                ({ grid: gridPoints, boardFill } = star(this));
                 break;
             case "hex-of-hex":
                 ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));

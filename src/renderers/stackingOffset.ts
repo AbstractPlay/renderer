@@ -3,7 +3,7 @@ import { GridPoints, IPoint, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { centroid, projectPoint, rotatePoint, usePieceAt } from "../common/plotting";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowingRound, squares, squaresDiamonds, vertex, wheel } from "../boards";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowingRound, squares, squaresDiamonds, vertex, wheel } from "../boards";
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
@@ -70,6 +70,9 @@ export class StackingOffsetRenderer extends RendererBase {
                 break;
             case "bent-tri":
                 ({ grid: gridPoints, boardFill } = bentTri(this));
+                break;
+            case "star":
+                ({ grid: gridPoints, boardFill } = star(this));
                 break;
             case "hex-of-hex":
                 ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));

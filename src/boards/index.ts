@@ -18,6 +18,7 @@ export { moon } from "./moon";
 export { onyx } from "./onyx";
 export { pentagonal } from "./pentagonal";
 export { bentTri } from "./bentTri";
+export { star } from "./star";
 export { pyramidHex } from "./pyramidHex";
 export { rectOfHex } from "./rectOfHex";
 export { rectOfTri } from "./rectOfTri";

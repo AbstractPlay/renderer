@@ -3,6 +3,7 @@
 
 import { Graph } from "../common/pentagons";
 import { Graph as BentTriGraph } from "../common/bentTri";
+import { Graph as StarGraph } from "../common/star";
 
 /**
  * A simple x,y coordinate container.
@@ -120,6 +121,10 @@ export interface IGeneratorArgs {
      * Only used by the bentTri generator. Give it the generated graph.
      */
     readonly bentTriGraph?: BentTriGraph;
+    /**
+     * Only used by the star generator. Give it the generated graph.
+     */
+    readonly starGraph?: StarGraph;
     /**
      * Outward bend for the bentTri grid (0 = flat). Default 0.35.
      */
