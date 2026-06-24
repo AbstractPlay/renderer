@@ -29,7 +29,7 @@ Detailed instructions will appear here once the API is stable. For now, here's j
 
 ## Contact
 
-The [main website](https://www.abstractplay.com) houses the development blog and wiki.
+The [main website](https://www.abstractplay.com) houses the development blog and wiki. We encourage coders to join us on Discord (<https://discord.abstractplay.com>) in our `#dev-curious` channel if you have questions, and basic docs are available [on our wiki](https://abstractplay.com/wiki/doku.php?id=coding_docs).
 
 ## Deploy
 
