@@ -1,5 +1,6 @@
 import { GridPoints, IGeneratorArgs, IPoint } from "./_base";
 import { computeBentPositions, Graph as BentTriGraph } from "../common/bentTri";
+import { buildGridLayers as buildPlayableGridLayers } from "../common/bentTri/gridLayers";
 import { centroid, pullTowards } from "../common/plotting";
 
 export type BentTriGridResult = {
@@ -266,9 +267,34 @@ export const bentTri = (args: IGeneratorArgs): BentTriGridResult => {
 
     const bow = args.bow ?? DEFAULT_BOW;
     const positions = computeBentPositions(args.bentTriGraph, { bow });
+    const legacyGridLayers = args.bentTriGraph.gridLayers;
 
+    const pullGrid: GridPoints = [];
+    for (const layer of legacyGridLayers) {
+        const row: IPoint[] = [];
+        for (const vertex of layer) {
+            const pt = positions.get(vertex.id);
+            if (pt === undefined) {
+                throw new Error(`Missing bent position for vertex ${vertex.id}`);
+            }
+            row.push(pt);
+        }
+        pullGrid.push(row);
+    }
+
+    const shouldCloseHubGaps = args.closeHubGaps ?? true;
+    if (bow > 0 && shouldCloseHubGaps) {
+        closeHubGaps(
+            pullGrid,
+            args.bentTriGraph,
+            positions,
+            boardCentroidFromGrid(pullGrid),
+        );
+    }
+
+    const playableLayers = buildPlayableGridLayers(args.bentTriGraph);
     const grid: GridPoints = [];
-    for (const layer of args.bentTriGraph.gridLayers) {
+    for (const layer of playableLayers) {
         const row: IPoint[] = [];
         for (const vertex of layer) {
             const pt = positions.get(vertex.id);
@@ -280,15 +306,7 @@ export const bentTri = (args: IGeneratorArgs): BentTriGridResult => {
         grid.push(row);
     }
 
-    const shouldCloseHubGaps = args.closeHubGaps ?? true;
-    if (bow > 0 && shouldCloseHubGaps) {
-        closeHubGaps(
-            grid,
-            args.bentTriGraph,
-            positions,
-            boardCentroidFromGrid(grid),
-        );
-    }
+    args.bentTriGraph.gridLayers = playableLayers;
 
     return { grid, positions };
 };

@@ -387,11 +387,8 @@ export class Graph {
     }
 
     /**
-     * Step 10: grid rings outside-in, clockwise from the northmost (apex) vertex.
-     *
-     * Each perimeter ring walks:
-     *   copy-1 spine (right wing) → copy-0 base row → copy-2 hypotenuse (left wing).
-     * The innermost ring is the small copy-0 hub triangle.
+     * Legacy grid rings used by closeHubGaps and bow geometry.
+     * Playable grid ordering is built separately in grids/bentTri.ts.
      */
     private buildGridLayers(
         n: number,
@@ -416,7 +413,6 @@ export class Graph {
             };
 
             if (gr === rings) {
-                // Innermost playable triangle on the base copy.
                 add(vid(0, 0, 0));
                 for (let row = 1; row < gr; row++) {
                     add(vid(0, row, 0));
@@ -428,21 +424,18 @@ export class Graph {
                     add(vid(0, row, row));
                 }
             } else {
-                // Copy-1 spine descending the right wing (full length to outer edge).
                 for (let row = gr; row <= n - 1; row++) {
                     add(vid(1, row, gr));
                 }
 
                 const baseRow = n - gr;
 
-                // Copy-0 base row (skip cap rows that are not part of this ring).
                 if (baseRow >= overlapRows) {
                     for (let col = 0; col <= baseRow; col++) {
                         add(vid(0, baseRow, col));
                     }
                 }
 
-                // Copy-2 hypotenuse ascending the left wing (full length from outer edge).
                 for (let row = n - 1; row >= gr + 1; row--) {
                     add(vid(2, row, row - gr));
                 }
@@ -451,7 +444,6 @@ export class Graph {
             layers.push(ring);
         }
 
-        // Copy-0 hub interior: concentric triangles inside the overlap cap.
         let spineCol = 1;
         let bottomRow = overlapRows - 2;
 

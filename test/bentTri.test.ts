@@ -1,8 +1,12 @@
 import { expect } from "chai";
 import "mocha";
 import { bentTriBoard } from "../src/common/bentTri";
+import { buildGridLayers } from "../src/common/bentTri/gridLayers";
 import { bentTri as bentTriGrid } from "../src/grids";
 import { BentTri } from "../src/graphs";
+
+const playableLayers = (frequency: number) =>
+    buildGridLayers(bentTriBoard(frequency));
 
 describe("bentTri graph", () => {
     it("should produce expected vertex and edge counts at frequency 8", () => {
@@ -57,7 +61,9 @@ describe("bentTri graph", () => {
     it("should include every vertex in the playable grid", () => {
         for (const n of [2, 3, 4, 5, 6, 7, 8, 9, 10, 18]) {
             const topo = bentTriBoard(n);
-            const inGrid = new Set(topo.gridLayers.flatMap(layer => layer.map(v => v.id)));
+            const inGrid = new Set(
+                buildGridLayers(topo).flatMap(layer => layer.map(v => v.id)),
+            );
             const missing = topo.vertices.filter(v => !inGrid.has(v.id)).map(v => v.id);
             expect(missing, `n=${n}`).to.deep.equal([]);
         }
@@ -66,22 +72,22 @@ describe("bentTri graph", () => {
     it("should produce grid layers outside-in along the three copy wings", () => {
         const topo = bentTriBoard(8);
         const { grid } = bentTriGrid({ bentTriGraph: topo });
+        const gridLayers = buildGridLayers(topo);
 
         expect(grid.length).to.equal(6);
 
-        const outerIds = topo.gridLayers[0].map(v => v.id);
+        const outerIds = gridLayers[0].map(v => v.id);
         expect(outerIds[0]).to.equal(45);
         expect(outerIds).to.deep.equal([
             45, 46, 48, 51, 55, 59, 63, 67,
             36, 37, 38, 39, 40, 41, 42, 43, 44,
             92, 88, 84, 80, 76, 73, 71,
         ]);
-        expect(topo.gridLayers[5].map(v => v.id)).to.deep.equal([4, 7, 8]);
+        expect(gridLayers[5].map(v => v.id)).to.deep.equal([4, 7, 8]);
     });
 
     it("should order frequency-4 outer ring clockwise from the apex", () => {
-        const topo = bentTriBoard(4);
-        const rowIds = topo.gridLayers.map(layer => layer.map(v => v.id));
+        const rowIds = playableLayers(4).map(layer => layer.map(v => v.id));
         expect(rowIds[0]).to.deep.equal([15, 16, 18, 20, 10, 11, 12, 13, 14, 26, 24, 22]);
         expect(rowIds[1]).to.deep.equal([17, 19, 21, 6, 7, 8, 9, 25, 23]);
         expect(rowIds[2]).to.deep.equal([0, 1, 3, 4, 5, 2]);
@@ -91,7 +97,7 @@ describe("bentTri graph", () => {
         const topo = bentTriBoard(6);
         const { grid, positions } = bentTriGrid({ bentTriGraph: topo, bow: 0.35 });
 
-        const rowIds = topo.gridLayers.map(layer => layer.map(v => v.id));
+        const rowIds = buildGridLayers(topo).map(layer => layer.map(v => v.id));
         expect(rowIds[0]).to.deep.equal([
             28, 29, 31, 34, 37, 40, 21, 22, 23, 24, 25, 26, 27,
             54, 51, 48, 45, 43,
@@ -111,6 +117,85 @@ describe("bentTri graph", () => {
 
         expect(grid[0][0].x).to.equal(positions.get(28)!.x);
         expect(grid[0][0].y).to.equal(positions.get(28)!.y);
+    });
+
+    it("should partition every vertex into exactly one grid row", () => {
+        for (const n of Array.from({ length: 17 }, (_, i) => i + 2)) {
+            const topo = bentTriBoard(n);
+            const seen = new Set<number>();
+            const duplicates: number[] = [];
+
+            for (const layer of buildGridLayers(topo)) {
+                for (const vertex of layer) {
+                    if (seen.has(vertex.id)) {
+                        duplicates.push(vertex.id);
+                    }
+                    seen.add(vertex.id);
+                }
+            }
+
+            expect(duplicates, `n=${n}`).to.deep.equal([]);
+            expect(seen.size, `n=${n}`).to.equal(topo.vertices.length);
+        }
+    });
+
+    it("should order frequency-9 grid rows with the hub shell on row 4", () => {
+        const rowIds = playableLayers(9).map(layer => layer.map(v => v.id));
+
+        expect(rowIds[4]).to.deep.equal([
+            0, 1, 3, 6, 10, 15, 16, 17, 18, 19, 20, 14, 9, 5, 2,
+        ]);
+        expect(rowIds[5]).to.deep.equal([4, 7, 11, 12, 13, 8]);
+    });
+
+    it("should order frequency-10 grid rows with the hub shell on row 5", () => {
+        const rowIds = playableLayers(10).map(layer => layer.map(v => v.id));
+
+        expect(rowIds[5]).to.deep.equal([
+            0, 1, 3, 6, 10, 15, 16, 17, 18, 19, 20, 14, 9, 5, 2,
+        ]);
+        expect(rowIds[6]).to.deep.equal([4, 7, 11, 12, 13, 8]);
+    });
+
+    it("should order frequency-13 grid rows without duplicate hub shells", () => {
+        const rowIds = playableLayers(13).map(layer => layer.map(v => v.id));
+
+        expect(rowIds[6]).to.deep.equal([
+            0, 1, 3, 6, 10, 15, 21, 28, 29, 30, 31, 32, 33, 34, 35,
+            27, 20, 14, 9, 5, 2,
+        ]);
+        expect(rowIds[7]).to.deep.equal([
+            4, 7, 11, 16, 22, 23, 24, 25, 26, 19, 13, 8,
+        ]);
+
+        const inner = rowIds[7]!;
+        expect(inner.indexOf(19)).to.be.lessThan(inner.indexOf(13));
+
+        const allIds = rowIds.flat();
+        expect(new Set(allIds).size).to.equal(allIds.length);
+    });
+
+    it("should wind each grid ring clockwise in flat coordinates", () => {
+        for (const n of [4, 6, 8, 10, 13]) {
+            for (const layer of buildGridLayers(bentTriBoard(n))) {
+                if (layer.length < 3) {
+                    continue;
+                }
+
+                const cy =
+                    layer.reduce((sum, vertex) => sum + vertex.pt!.y, 0) /
+                    layer.length;
+                let winding = 0;
+                for (let i = 0; i < layer.length; i++) {
+                    const a = layer[i]!.pt!;
+                    const b = layer[(i + 1) % layer.length]!.pt!;
+                    winding += (b.x - a.x) * (b.y + a.y - 2 * cy);
+                }
+                expect(winding, `n=${n} ring length ${layer.length}`).to.be.lessThan(
+                    0,
+                );
+            }
+        }
     });
 
     it("should produce expected vertex counts across frequencies", () => {
@@ -167,7 +252,7 @@ describe("bentTri graph", () => {
         expect(bl).to.not.equal(undefined);
         expect(topo.vertices[bl!].pt!.x).to.be.lessThan(topo.vertices[br!].pt!.x);
 
-        const outerIds = topo.gridLayers[0].map(v => v.id);
+        const outerIds = buildGridLayers(topo)[0]!.map(v => v.id);
         expect(outerIds[0]).to.equal(topo.refToVid.get("1,0,0"));
         expect(outerIds).to.include(bl);
         expect(outerIds).to.include(br);
@@ -268,7 +353,7 @@ describe("bentTri graph", () => {
         const flat = bentTriGrid({ bentTriGraph: topo, bow: 0 });
         const bent = bentTriGrid({ bentTriGraph: topo, bow: 0.35 });
 
-        for (const { id } of topo.gridLayers.at(-1)!) {
+        for (const { id } of buildGridLayers(topo).at(-1)!) {
             const f = flat.positions.get(id)!;
             const b = bent.positions.get(id)!;
             expect(b.x).to.be.closeTo(f.x, 1e-6);
@@ -279,14 +364,15 @@ describe("bentTri graph", () => {
     it("should preserve spacing around the hub at high frequency", () => {
         const topo = bentTriBoard(18);
         const bent = bentTriGrid({ bentTriGraph: topo, bow: 0.35 });
-        const hubId = topo.gridLayers.at(-1)![0].id;
+        const gridLayers = buildGridLayers(topo);
+        const hubId = gridLayers.at(-1)![0].id;
         const hub = bent.positions.get(hubId)!;
         const dist = (id: number): number => {
             const p = bent.positions.get(id)!;
             return Math.hypot(p.x - hub.x, p.y - hub.y);
         };
 
-        const shell = topo.gridLayers.at(-2)!;
+        const shell = gridLayers.at(-2)!;
         const shellDists = shell.map(v => dist(v.id));
         const minShell = Math.min(...shellDists);
         const maxShell = Math.max(...shellDists);
@@ -307,7 +393,7 @@ describe("bentTri graph", () => {
         const flat = bentTriGrid({ bentTriGraph: topo, bow: 0 });
         const bent = bentTriGrid({ bentTriGraph: topo, bow: 0.35 });
 
-        const coreIds = new Set(topo.gridLayers.at(-1)!.map(v => v.id));
+        const coreIds = new Set(buildGridLayers(topo).at(-1)!.map(v => v.id));
         const center = (pos: Map<number, { x: number; y: number }>): { x: number; y: number } => {
             let x = 0;
             let y = 0;
