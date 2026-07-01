@@ -1192,13 +1192,13 @@ export abstract class RendererBase {
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                             } else if (shape === "circle") {
-                                notes.circle(this.cellsize * 1.1)
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
                                     .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
-                                notes.circle(this.cellsize * 1.1)
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
                                     .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round", opacity})
@@ -1319,13 +1319,13 @@ export abstract class RendererBase {
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                             } else if (shape === "circle") {
-                                notes.circle(this.cellsize * 1.1)
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
                                     .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
-                                notes.circle(this.cellsize * 1.1)
+                                notes.circle(this.cellsize * 1.1, this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
                                     .stroke({color: colour, width: strokeWeight, dasharray, linecap: "round", linejoin: "round", opacity})
