@@ -19,6 +19,28 @@ export type PositiveInteger = number;
  */
 export type Polymatrix = (PositiveInteger | Colourstrings | Colourfuncs | 0 | null)[][];
 /**
+ * Schema for a single piece in an `isoPieces` object.
+ */
+export type IsoPiece =
+  | {
+      piece: IsometricPieces;
+      height: number;
+      colour: Colourstrings | Colourfuncs | PositiveInteger;
+      /**
+       * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
+       */
+      scale?: number;
+    }
+  | {
+      piece: "cube";
+      height: number;
+      faces: IsoCubeFaces;
+      /**
+       * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
+       */
+      scale?: number;
+    };
+/**
  * The types of pieces supported in an isometric legend.
  */
 export type IsometricPieces =
@@ -270,7 +292,7 @@ export interface APRenderRep {
   pieces:
     | null
     | string
-    | [string[][], ...string[][][]]
+    | [(string | IsoStackPiece)[][], ...(string | IsoStackPiece)[][][]]
     | PiecesHomeworlds
     | PiecesTree
     | Freepiece[]
@@ -428,16 +450,18 @@ export interface GradientStop {
   opacity?: number;
 }
 /**
- * Schema for a single piece in an `isoPieces` object.
+ * Intrinsic face colours for an isometric cube. Uses the same N/E/S/W convention as the isometric cube geometry (north = top edge of the square top face). The bottom face is hidden when the cube sits on the board.
  */
-export interface IsoPiece {
-  piece: IsometricPieces;
-  height: number;
-  colour: Colourstrings | Colourfuncs | PositiveInteger;
+export interface IsoCubeFaces {
+  top: Colourstrings | Colourfuncs | PositiveInteger;
+  north: Colourstrings | Colourfuncs | PositiveInteger;
+  east: Colourstrings | Colourfuncs | PositiveInteger;
+  south: Colourstrings | Colourfuncs | PositiveInteger;
+  west: Colourstrings | Colourfuncs | PositiveInteger;
   /**
-   * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
+   * Hidden when the cube sits on the board. Optional.
    */
-  scale?: number;
+  bottom?: Colourstrings | Colourfuncs | PositiveInteger;
 }
 /**
  * One of the preset boards.
@@ -1127,6 +1151,19 @@ export interface MarkerFreespaceGlyph {
       y: number;
     }[]
   ];
+}
+/**
+ * Placement of an isometric legend piece with optional yaw (quarter-turns clockwise viewed from above). Used in the nested `pieces` array for the `isometric` renderer.
+ */
+export interface IsoStackPiece {
+  /**
+   * Legend key for the piece.
+   */
+  glyph: string;
+  /**
+   * Quarter-turns clockwise viewed from above (0–3).
+   */
+  yaw?: number;
 }
 /**
  * The node itself.

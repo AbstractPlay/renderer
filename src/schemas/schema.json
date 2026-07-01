@@ -433,37 +433,135 @@
             "required": ["col", "row", "matrix"],
             "additionalProperties": false
         },
+        "isoCubeFaces": {
+            "description": "Intrinsic face colours for an isometric cube. Uses the same N/E/S/W convention as the isometric cube geometry (north = top edge of the square top face). The bottom face is hidden when the cube sits on the board.",
+            "type": "object",
+            "properties": {
+                "top": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/positiveInteger"}
+                    ]
+                },
+                "north": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/positiveInteger"}
+                    ]
+                },
+                "east": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/positiveInteger"}
+                    ]
+                },
+                "south": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/positiveInteger"}
+                    ]
+                },
+                "west": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/positiveInteger"}
+                    ]
+                },
+                "bottom": {
+                    "description": "Hidden when the cube sits on the board. Optional.",
+                    "anyOf": [
+                        {"$ref": "#/$defs/colourstrings"},
+                        {"$ref": "#/$defs/colourfuncs"},
+                        {"$ref": "#/$defs/positiveInteger"}
+                    ]
+                }
+            },
+            "required": ["top", "north", "east", "south", "west"],
+            "additionalProperties": false
+        },
+        "isoStackPiece": {
+            "description": "Placement of an isometric legend piece with optional yaw (quarter-turns clockwise viewed from above). Used in the nested `pieces` array for the `isometric` renderer.",
+            "type": "object",
+            "properties": {
+                "glyph": {
+                    "description": "Legend key for the piece.",
+                    "type": "string"
+                },
+                "yaw": {
+                    "description": "Quarter-turns clockwise viewed from above (0–3).",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3,
+                    "default": 0
+                }
+            },
+            "required": ["glyph"],
+            "additionalProperties": false
+        },
         "isometricPieces": {
             "description": "The types of pieces supported in an isometric legend.",
             "enum": ["cube", "cylinder", "hexp", "hexf", "lintelN", "lintelE", "lintelS", "lintelW", "lintelNS", "lintelEW", "spaceCube"]
         },
         "isoPiece": {
             "description": "Schema for a single piece in an `isoPieces` object.",
-            "type": "object",
-            "properties": {
-                "piece": {"$ref": "#/$defs/isometricPieces"},
-                "height": {
-                    "type": "number",
-                    "minimum": 0,
-                    "default": 0
+            "oneOf": [
+                {
+                    "description": "Uniform colour (legacy).",
+                    "type": "object",
+                    "properties": {
+                        "piece": {"$ref": "#/$defs/isometricPieces"},
+                        "height": {
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0
+                        },
+                        "colour": {
+                            "anyOf": [
+                                {"$ref": "#/$defs/colourstrings"},
+                                {"$ref": "#/$defs/colourfuncs"},
+                                {"$ref": "#/$defs/positiveInteger"}
+                            ],
+                            "default": "#000"
+                        },
+                        "scale": {
+                            "description": "As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.",
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.75
+                        }
+                    },
+                    "required": ["piece", "height", "colour"],
+                    "additionalProperties": false
                 },
-                "colour": {
-                    "anyOf": [
-                        {"$ref": "#/$defs/colourstrings"},
-                        {"$ref": "#/$defs/colourfuncs"},
-                        {"$ref": "#/$defs/positiveInteger"}
-                    ],
-                    "default": "#000"
-                },
-                "scale": {
-                    "description": "As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.",
-                    "type": "number",
-                    "minimum": 0,
-                    "default": 0.75
+                {
+                    "description": "Multi-face cube with per-face colours.",
+                    "type": "object",
+                    "properties": {
+                        "piece": {
+                            "const": "cube"
+                        },
+                        "height": {
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0
+                        },
+                        "faces": {"$ref": "#/$defs/isoCubeFaces"},
+                        "scale": {
+                            "description": "As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.",
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.75
+                        }
+                    },
+                    "required": ["piece", "height", "faces"],
+                    "additionalProperties": false
                 }
-            },
-            "required": ["piece", "height", "colour"],
-            "additionalProperties": false
+            ]
         },
         "annotationBasic": {
             "description": "These are pulled into the definitions section to make referencing them easier in the game code.",
@@ -2615,8 +2713,11 @@
                             "type": "array",
                             "minItems": 0,
                             "items": {
-                                "description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend. Leaving an entire row empty will result in the renderer using the `board.width` property. Use an empty array to represent an empty cell.",
-                                "type": "string"
+                                "description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend. Leaving an entire row empty will result in the renderer using the `board.width` property. Use an empty array to represent an empty cell. The `isometric` renderer also accepts `{glyph, yaw}` objects for oriented multi-face cubes.",
+                                "anyOf": [
+                                    {"type": "string"},
+                                    {"$ref": "#/$defs/isoStackPiece"}
+                                ]
                             }
                         }
                     }

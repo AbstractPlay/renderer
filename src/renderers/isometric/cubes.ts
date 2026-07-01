@@ -80,8 +80,14 @@ export const genCube = (topSize: number, sideHeight: number): Cube => {
     }
 }
 
-export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, idSymbol?: string, sides?: ("N"|"E"|"S"|"W")[]}): void => {
-    const { rootSvg, heights, stroke, fill} = opts;
+export type CubeFaceFills = {
+    top: FillData;
+    left: FillData;
+    right: FillData;
+};
+
+export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, faceFills?: CubeFaceFills, idSymbol?: string, sides?: ("N"|"E"|"S"|"W")[]}): void => {
+    const { rootSvg, heights, stroke, fill, faceFills} = opts;
     const tSize = 100;
     let sides: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
     if (opts.sides !== undefined) {
@@ -113,7 +119,7 @@ export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: St
         rectTop = defs.findOne("#" + sourceId) as SVGG|null;
         if (rectTop === null) {
             rectTop = defs.group().id(sourceId);
-            rectTop.rect(tSize, tSize).fill(fill).stroke("none");
+            rectTop.rect(tSize, tSize).fill(faceFills?.top ?? fill).stroke("none");
             if (sides.includes("N")) {
                 rectTop.line(0,0,tSize,0).stroke({linecap: "round", linejoin: "round", ...stroke});
             }
@@ -127,18 +133,34 @@ export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: St
                 rectTop.line(0,0,0,tSize).stroke({linecap: "round", linejoin: "round", ...stroke});
             }
         }
-        let rectSide: SVGRect|null;
+        let rectSideLeft: SVGRect|null = null;
+        let rectSideRight: SVGRect|null = null;
         if (sideHeight > 0 && sides.length > 0) {
             let sideSourceId = `isoRectSide${idSide}`;
             if (opts.idSymbol !== undefined) {
                 sideSourceId = `isoRectSide${idSide}_${opts.idSymbol}`;
             }
-            rectSide = defs.findOne("#" + sideSourceId) as SVGRect|null;
-            if (rectSide === null) {
-                rectSide = defs.rect(tSize,sideHeight).id(sideSourceId).fill(fill).stroke("none");
+            if (faceFills !== undefined) {
+                const sideSourceIdLeft = `${sideSourceId}_L`;
+                const sideSourceIdRight = `${sideSourceId}_R`;
+                rectSideLeft = defs.findOne("#" + sideSourceIdLeft) as SVGRect|null;
+                if (rectSideLeft === null) {
+                    rectSideLeft = defs.rect(tSize, sideHeight).id(sideSourceIdLeft).fill(faceFills.left).stroke("none");
+                }
+                rectSideRight = defs.findOne("#" + sideSourceIdRight) as SVGRect|null;
+                if (rectSideRight === null) {
+                    rectSideRight = defs.rect(tSize, sideHeight).id(sideSourceIdRight).fill(faceFills.right).stroke("none");
+                }
+                nested.use(rectSideRight).matrix(cube.right.toArray());
+                nested.use(rectSideLeft).matrix(cube.left.toArray());
+            } else {
+                rectSideLeft = defs.findOne("#" + sideSourceId) as SVGRect|null;
+                if (rectSideLeft === null) {
+                    rectSideLeft = defs.rect(tSize, sideHeight).id(sideSourceId).fill(fill).stroke("none");
+                }
+                nested.use(rectSideLeft).matrix(cube.right.toArray());
+                nested.use(rectSideLeft).matrix(cube.left.toArray());
             }
-            nested.use(rectSide).matrix(cube.right.toArray());
-            nested.use(rectSide).matrix(cube.left.toArray());
 
             const a1: IPoint = cube.top.applyToPoint(tSize,0);
             const a2: IPoint = cube.right.applyToPoint(tSize,sideHeight);

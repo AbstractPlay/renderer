@@ -537,8 +537,8 @@
                 },
                 "niche-isometric": {
                     "name": "Niche: Isometric",
-                    "description": "This is still experimental! Not all features will work as expected. The only glyphs currently supported are cubes and cylinders. Glyphs are generated on the fly, with a special legend structure. 90-degree rotation works correctly.",
-                    "render": `{"renderer":"isometric","board":{"style":"squares","width":6,"height":6,"heightmap":[[100,75,50,50,75,100],[75,50,25,25,50,75],[50,25,0,0,25,50],[50,25,0,0,25,50],[75,50,25,25,50,75],[100,75,50,50,75,100]]},"legend":{"A":{"piece":"cylinder","height":20,"colour":1},"B":{"piece":"cylinder","height":20,"colour":2}},"pieces":"_\\n_\\n_\\n-,-,-,B,-,-\\n-,-,B,A,B,-\\n-,A,-,A,BA,B\\n-,-,-,-,ABA,-"}`
+                    "description": "Isometric renderer with on-the-fly glyphs. Includes uniform-colour cylinders and a multi-face cube (top + N/E/S/W sides) with per-piece yaw. Rotate the board to see face colours update without changing the renderrep.",
+                    "render": `{"renderer":"isometric","board":{"style":"squares","width":4,"height":4,"heightmap":[[50,50,50,50],[50,25,25,50],[50,25,25,50],[50,50,50,50]]},"legend":{"A":{"piece":"cylinder","height":20,"colour":1},"B":{"piece":"cylinder","height":20,"colour":2},"D":{"piece":"cube","height":30,"faces":{"top":1,"north":2,"east":3,"south":4,"west":5}}},"pieces":[[[],[],[],[]],[[],[],[],[]],[[],[{"glyph":"D","yaw":0}],[{"glyph":"D","yaw":1}],[]],[[],[],[],[]]]}`
                 },
                 "niche-functions": {
                     "name": "Niche: Functions",

@@ -1,11 +1,12 @@
 
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, IsometricPieces, IsoCubeFaces, IsoPiece, IsoStackPiece, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
 import { generateCubes } from "./isometric/cubes";
+import { effectiveCubeYaw, permuteCubeFaces } from "./isometric/cubeOrientation";
 import { generateCylinders } from "./isometric/cylinders";
 import { generateHexes } from "./isometric/hexes";
 import { x2uid } from "../common/glyph2uid";
@@ -26,6 +27,19 @@ interface ITarget {
     row: number;
     col: number;
 }
+
+type IsoStackEntry = string | IsoStackPiece;
+type IsoPiecesGrid = IsoStackEntry[][][];
+
+const isMultiFaceCube = (pc: IsoPiece): pc is Extract<IsoPiece, { faces: IsoCubeFaces }> =>
+    pc.piece === "cube" && "faces" in pc;
+
+const parseStackEntry = (item: IsoStackEntry): { glyph: string; yaw: number } => {
+    if (typeof item === "string") {
+        return { glyph: item, yaw: 0 };
+    }
+    return { glyph: item.glyph, yaw: item.yaw ?? 0 };
+};
 
 const rotationMap = new Map<IsometricPieces, Map<number, IsometricPieces>>([
     ["lintelN", new Map([
@@ -129,18 +143,15 @@ export class IsometricRenderer extends RendererBase {
             board = this.rootSvg.group().id("board");
         }
         // any user-specified rotation has to happen before laying everything out
-        let extraRotation = 0;
-        if (this.options.rotate !== undefined) {
-            // ensure it's a multiple of 90
-            extraRotation = 90 * Math.floor(this.options.rotate / 90);
-            while (extraRotation < 0) { extraRotation += 360; }
-            extraRotation = extraRotation % 360;
-            if (extraRotation !== 0) {
-                // the points and polys
-                const tUserRotate = new Matrix().rotate(deg2rad(extraRotation));
-                gridPoints = gridPoints.map(row => row = row.map(pt => tUserRotate.applyToPoint(pt.x, pt.y)));
-                polys = (polys as IPolyPolygon[][]).map(row => row = row.map(poly => poly = {...poly, points: poly.points.map(pt => tUserRotate.applyToPoint(pt.x, pt.y))} as IPolyPolygon));
-            }
+        const boardRotation = this.getRotation();
+        let extraRotation = 90 * Math.floor(boardRotation / 90);
+        while (extraRotation < 0) { extraRotation += 360; }
+        extraRotation = extraRotation % 360;
+        if (extraRotation !== 0) {
+            // the points and polys
+            const tUserRotate = new Matrix().rotate(deg2rad(extraRotation));
+            gridPoints = gridPoints.map(row => row = row.map(pt => tUserRotate.applyToPoint(pt.x, pt.y)));
+            polys = (polys as IPolyPolygon[][]).map(row => row = row.map(poly => poly = {...poly, points: poly.points.map(pt => tUserRotate.applyToPoint(pt.x, pt.y))} as IPolyPolygon));
         }
         const numRotations = Math.floor(extraRotation / 90) % 4;
 
@@ -243,7 +254,27 @@ export class IsometricRenderer extends RendererBase {
                 }
 
                 // generate the pieces
-                if (effPiece === "cube") {
+                if (isMultiFaceCube(pc)) {
+                    const cubeStroke = {width: strokeWeight, color: strokeColour, opacity: strokeOpacity};
+                    for (let y = 0; y < 4; y++) {
+                        const visible = permuteCubeFaces(pc.faces, y);
+                        const topFill = {color: this.resolveColour(visible.top, "#000") as string};
+                        generateCubes({
+                            rootSvg: this.rootSvg,
+                            heights: [pc.height],
+                            stroke: cubeStroke,
+                            fill: topFill,
+                            faceFills: {
+                                top: topFill,
+                                left: {color: this.resolveColour(visible.left, "#000") as string},
+                                right: {color: this.resolveColour(visible.right, "#000") as string},
+                            },
+                            idSymbol: `${key}__y${y}`,
+                        });
+                    }
+                } else if (!("colour" in pc)) {
+                    throw new Error(`Legend entry "${key}" is missing colour.`);
+                } else if (effPiece === "cube") {
                     generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key});
                 } else if (effPiece === "lintelN") {
                     generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: {width: strokeWeight, color: strokeColour, opacity: strokeOpacity}, fill: {color: this.resolveColour(pc.colour, "#000") as string}, idSymbol: key, sides: ["E", "S", "W"]});
@@ -273,16 +304,16 @@ export class IsometricRenderer extends RendererBase {
         }
 
         // initialize the list of pieces
-        let pieces: string[][][]|undefined;
+        let pieces: IsoPiecesGrid | undefined;
         if (this.json.pieces !== null) {
             pieces = [];
             if (typeof this.json.pieces === "string") {
                 // Does it contain commas
                 if (this.json.pieces.indexOf(",") >= 0) {
                     for (const row of this.json.pieces.split("\n")) {
-                        let node: string[][] = [];
+                        let node: IsoStackEntry[][] = [];
                         if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]) as string[][];
+                            node = new Array(this.json.board.width).fill([]) as IsoStackEntry[][];
                         } else {
                             const cells = row.split(",");
                             for (const cell of cells) {
@@ -299,7 +330,7 @@ export class IsometricRenderer extends RendererBase {
                     throw new Error("This renderer requires that you use the comma-delimited or array format of the `pieces` property.");
                 }
             } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
-                pieces = this.json.pieces as string[][][];
+                pieces = this.json.pieces as IsoPiecesGrid;
             } else {
                 throw new Error("Unrecognized `pieces` property.");
             }
@@ -367,11 +398,16 @@ export class IsometricRenderer extends RendererBase {
             // place any pieces that belong on this cell
             if (pieces !== undefined) {
                 const stack = pieces[entry.row][entry.col];
-                for (const [idx, pc] of stack.entries()) {
-                    if (pc === "" || pc === "-") { continue; }
-                    const piece = this.rootSvg.findOne("#" + pc) as Svg;
+                for (const [idx, stackItem] of stack.entries()) {
+                    const { glyph, yaw } = parseStackEntry(stackItem);
+                    if (glyph === "" || glyph === "-") { continue; }
+                    let pieceId = glyph;
+                    if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
+                        pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
+                    }
+                    const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {
-                        throw new Error(`Could not find the requested piece (${pc}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                        throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
                     widthRatio = parseFloat(piece.attr("data-width-ratio") as string);
                     heightRatio = undefined;
@@ -379,8 +415,8 @@ export class IsometricRenderer extends RendererBase {
                         heightRatio = parseFloat(piece.attr("data-height-ratio") as string);
                     }
                     let pcScale = 0.75;
-                    if (legend !== undefined && pc in legend && "scale" in legend[pc] && legend[pc].scale !== undefined) {
-                        pcScale = legend[pc].scale as number;
+                    if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
+                        pcScale = legend[glyph].scale as number;
                     }
                     pcScale *= basePcScale;
                     factor = this.cellsize / piece.viewbox().width * widthRatio * pcScale;
