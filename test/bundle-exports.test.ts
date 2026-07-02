@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { createRequire } from "module";
 
-const require = createRequire(import.meta.url);
 const buildIndex = path.join(process.cwd(), "build", "index.js");
 
 describe("bundled build exports", function () {
@@ -14,8 +11,9 @@ describe("bundled build exports", function () {
         }
     });
 
-    it("should export the public API from build/index.js", () => {
-        const { render, renderglyph, addPrefix, sheets } = require("../build");
+    it("should export the public API from build/index.js", async () => {
+        const mod = await import("../build/index.js");
+        const { render, renderglyph, addPrefix, sheets } = mod.default;
 
         expect(render).to.be.a("function");
         expect(renderglyph).to.be.a("function");
