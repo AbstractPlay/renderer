@@ -143,16 +143,23 @@ export class IsometricRenderer extends RendererBase {
         if (board === null) {
             board = this.rootSvg.group().id("board");
         }
+
+        const boardLocalGrid: GridPoints = gridPoints.map(row => row.map(pt => ({ x: pt.x, y: pt.y })));
+
         // any user-specified rotation has to happen before laying everything out
         const boardRotation = this.getRotation();
         let extraRotation = 90 * Math.floor(boardRotation / 90);
         while (extraRotation < 0) { extraRotation += 360; }
         extraRotation = extraRotation % 360;
+        let tUserRotate = new Matrix();
         if (extraRotation !== 0) {
-            // the points and polys
-            const tUserRotate = new Matrix().rotate(deg2rad(extraRotation));
+            const centre = this.boardGridCentre(boardLocalGrid);
+            tUserRotate = new Matrix()
+                .translate(centre.x, centre.y)
+                .rotate(deg2rad(extraRotation))
+                .translate(-centre.x, -centre.y);
             gridPoints = gridPoints.map(row => row = row.map(pt => tUserRotate.applyToPoint(pt.x, pt.y)));
-            polys = (polys as IPolyPolygon[][]).map(row => row = row.map(poly => poly = {...poly, points: poly.points.map(pt => tUserRotate.applyToPoint(pt.x, pt.y))} as IPolyPolygon));
+            polys = this.rotatePolys(polys, tUserRotate);
         }
         const numRotations = Math.floor(extraRotation / 90) % 4;
 
@@ -443,6 +450,11 @@ export class IsometricRenderer extends RendererBase {
                 }
             }
         }
+
+        if (!this.json.options?.includes("hide-labels")) {
+            this.placeBoardLabels(board, boardLocalGrid, tUserRotate, tFinal);
+        }
+
         // do post-annotations
         if (this.options.showAnnotations) {
             this.postAnnotate(board, transformedPoints, tFinal);
@@ -463,7 +475,6 @@ export class IsometricRenderer extends RendererBase {
         // if there's a board backfill, it needs to be done before rotation
         const backfilled = this.backFill(boardFill, true);
 
-        // const box = this.rotateBoard();
         const box = board.rbox(this.rootSvg);
 
         // `pieces` area, if present
@@ -478,6 +489,163 @@ export class IsometricRenderer extends RendererBase {
         if (!backfilled) {
             this.backFill(boardFill);
         }
+    }
+
+    private rotatePolys(polys: Poly[][], tUserRotate: Matrix): Poly[][] {
+        return polys.map(row => row.map(poly => {
+            if (poly.type === "circle") {
+                const c = tUserRotate.applyToPoint(poly.cx, poly.cy);
+                return { ...poly, cx: c.x, cy: c.y };
+            }
+            if (poly.type === "poly") {
+                return {
+                    ...poly,
+                    points: poly.points.map(pt => tUserRotate.applyToPoint(pt.x, pt.y)),
+                };
+            }
+            throw new Error(`Unsupported poly type for rotation: ${poly.type}`);
+        }));
+    }
+
+    private boardGridCentre(grid: GridPoints): IPoint {
+        const pts = grid.flat();
+        return {
+            x: pts.reduce((sum, pt) => sum + pt.x, 0) / pts.length,
+            y: pts.reduce((sum, pt) => sum + pt.y, 0) / pts.length,
+        };
+    }
+
+    private mapBoardToScreen(localX: number, localY: number, tUserRotate: Matrix, tFinal: Matrix): IPoint {
+        const rotated = tUserRotate.applyToPoint(localX, localY);
+        return tFinal.applyToPoint(rotated.x, rotated.y);
+    }
+
+    private isoLabelTransform(localX: number, localY: number, tUserRotate: Matrix, tFinal: Matrix): {a: number; b: number; c: number; d: number; e: number; f: number} {
+        const p = this.mapBoardToScreen(localX, localY, tUserRotate, tFinal);
+        const o = this.mapBoardToScreen(0, 0, tUserRotate, tFinal);
+        const ux = this.mapBoardToScreen(1, 0, tUserRotate, tFinal);
+        const uy = this.mapBoardToScreen(0, 1, tUserRotate, tFinal);
+        return {
+            a: ux.x - o.x,
+            b: ux.y - o.y,
+            c: uy.x - o.x,
+            d: uy.y - o.y,
+            e: p.x,
+            f: p.y,
+        };
+    }
+
+    private placeIsoLabel(labels: SVGG, text: string, localX: number, localY: number, tUserRotate: Matrix, tFinal: Matrix, colour: string, opacity: number): void {
+        labels.text(text)
+            .fill(colour)
+            .opacity(opacity)
+            .transform(this.isoLabelTransform(localX, localY, tUserRotate, tFinal))
+            .attr({ "text-anchor": "middle", "dominant-baseline": "central" });
+    }
+
+    private placeBoardLabels(board: SVGG, boardLocalGrid: GridPoints, tUserRotate: Matrix, tFinal: Matrix): void {
+        if ( (this.json === undefined) || (this.json.board === null) ) {
+            throw new Error("Invalid object state.");
+        }
+
+        const gridHeight = boardLocalGrid.length;
+        if (gridHeight === 0) {
+            return;
+        }
+
+        let labelColour = this.options.colourContext.labels;
+        if ( ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
+        }
+        let labelOpacity = 1;
+        if ( ("labelOpacity" in this.json.board) && (this.json.board.labelOpacity !== undefined) ) {
+            labelOpacity = this.json.board.labelOpacity;
+        }
+
+        if (!("style" in this.json.board) || this.json.board.style === undefined) {
+            return;
+        }
+
+        const labels = board.group().id("labels").attr({ "pointer-events": "none" });
+        const cellsize = this.cellsize;
+
+        switch (this.json.board.style) {
+            case "squares": {
+                if ( (!("width" in this.json.board)) || (!("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
+                    throw new Error("Both the `width` and `height` properties are required for this board type.");
+                }
+                const width = this.json.board.width;
+                const boardHeight = this.json.board.height;
+                let hideHalf = false;
+                if (this.json.options?.includes("hide-labels-half")) {
+                    hideHalf = true;
+                }
+                let customLabels: string[]|undefined;
+                if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                    customLabels = this.json.board.columnLabels;
+                }
+                let columnLabels = this.getLabels(customLabels, width);
+                if (this.json.options?.includes("reverse-letters")) {
+                    columnLabels.reverse();
+                }
+                let rowLabels = this.getRowLabels("rowLabels" in this.json.board ? this.json.board.rowLabels : undefined, boardHeight);
+                if (this.json.options?.includes("reverse-numbers")) {
+                    rowLabels.reverse();
+                }
+                if (this.json.options?.includes("swap-labels")) {
+                    const scratch = [...columnLabels];
+                    columnLabels = [...rowLabels];
+                    columnLabels.reverse();
+                    rowLabels = [...scratch];
+                    rowLabels.reverse();
+                }
+                for (let col = 0; col < width; col++) {
+                    const flatTop = {x: boardLocalGrid[0][col].x, y: boardLocalGrid[0][col].y - cellsize};
+                    const flatBottom = {x: boardLocalGrid[boardHeight - 1][col].x, y: boardLocalGrid[boardHeight - 1][col].y + cellsize};
+                    if (!hideHalf) {
+                        this.placeIsoLabel(labels, columnLabels[col], flatTop.x, flatTop.y, tUserRotate, tFinal, labelColour, labelOpacity);
+                    }
+                    this.placeIsoLabel(labels, columnLabels[col], flatBottom.x, flatBottom.y, tUserRotate, tFinal, labelColour, labelOpacity);
+                }
+                for (let row = 0; row < boardHeight; row++) {
+                    const flatL = {x: boardLocalGrid[row][0].x - cellsize, y: boardLocalGrid[row][0].y};
+                    const flatR = {x: boardLocalGrid[row][width - 1].x + cellsize, y: boardLocalGrid[row][width - 1].y};
+                    this.placeIsoLabel(labels, rowLabels[row], flatL.x, flatL.y, tUserRotate, tFinal, labelColour, labelOpacity);
+                    if (!hideHalf) {
+                        this.placeIsoLabel(labels, rowLabels[row], flatR.x, flatR.y, tUserRotate, tFinal, labelColour, labelOpacity);
+                    }
+                }
+                break;
+            }
+            case "hex-of-hex":
+            case "hex-of-cir": {
+                let customLabels: string[]|undefined;
+                if ( ("columnLabels" in this.json.board) && (this.json.board.columnLabels !== undefined) ) {
+                    customLabels = this.json.board.columnLabels;
+                }
+                const columnLabels = this.getLabels(customLabels, gridHeight);
+                if (this.json.options?.includes("reverse-letters")) {
+                    columnLabels.reverse();
+                }
+                for (let row = 0; row < gridHeight; row++) {
+                    let leftNum = "1";
+                    let rightNum = boardLocalGrid[row].length.toString();
+                    if (this.json.options?.includes("reverse-numbers")) {
+                        const scratch = leftNum;
+                        leftNum = rightNum;
+                        rightNum = scratch;
+                    }
+                    const flatL = {x: boardLocalGrid[row][0].x - cellsize, y: boardLocalGrid[row][0].y};
+                    const flatR = {x: boardLocalGrid[row][boardLocalGrid[row].length - 1].x + cellsize, y: boardLocalGrid[row][boardLocalGrid[row].length - 1].y};
+                    const label = columnLabels[gridHeight - row - 1];
+                    this.placeIsoLabel(labels, label + leftNum, flatL.x, flatL.y, tUserRotate, tFinal, labelColour, labelOpacity);
+                    this.placeIsoLabel(labels, label + rightNum, flatR.x, flatR.y, tUserRotate, tFinal, labelColour, labelOpacity);
+                }
+                break;
+            }
+        }
+
+        labels.back();
     }
 
     protected buildKey(key: AreaKey): Svg {
