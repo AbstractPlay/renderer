@@ -1,7 +1,8 @@
 import { Matrix } from "transformation-matrix-js";
-import { circle2poly, deg2rad, projectPoint, ptDistance } from "../../common/plotting";
+import { circle2poly, projectPoint, ptDistance } from "../../common/plotting";
 import { FillData, StrokeData, Svg, Circle as SVGCircle } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
+import { buildIsoProjectionMatrix } from "./projection";
 
 export type Cylinder = {
     transform: Matrix;
@@ -24,11 +25,7 @@ export type Cylinder = {
 
 const genCylinder = (topSize: number, sideHeight: number): Cylinder => {
     const r = topSize/2;
-
-    const tScale = new Matrix().scaleY(Math.cos(deg2rad(30)));
-    const tShear = new Matrix().shearX(Math.tan(deg2rad(-30)));
-    const tRotate = new Matrix().rotate(deg2rad(30));
-    const tFinal = tRotate.multiply(tShear.multiply(tScale));
+    const tFinal = buildIsoProjectionMatrix();
 
     type Vertex = [number,number];
     const ptsTop: Vertex[] = circle2poly(0, 0, r)

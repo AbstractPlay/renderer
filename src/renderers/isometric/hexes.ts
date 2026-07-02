@@ -1,8 +1,9 @@
 import { Matrix } from "transformation-matrix-js";
-import { centroid, deg2rad } from "../../common/plotting";
+import { centroid } from "../../common/plotting";
 import { FillData, StrokeData, Svg, Polygon as SVGPoly } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
 import { defineHex, Orientation } from "honeycomb-grid";
+import { buildIsoProjectionMatrix } from "./projection";
 
 export type Hex = {
     transform: Matrix;
@@ -26,10 +27,7 @@ export type Hex = {
 };
 
 const genHex = (topSize: number, sideHeight: number, orientation: Orientation): Hex => {
-    const tScale = new Matrix().scaleY(Math.cos(deg2rad(30)));
-    const tShear = new Matrix().shearX(Math.tan(deg2rad(-30)));
-    const tRotate = new Matrix().rotate(deg2rad(30));
-    const tFinal = tRotate.multiply(tShear.multiply(tScale));
+    const tFinal = buildIsoProjectionMatrix();
 
     type Vertex = [number,number];
     const pHex = defineHex({orientation, dimensions: topSize});

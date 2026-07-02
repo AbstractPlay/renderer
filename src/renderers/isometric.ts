@@ -1,7 +1,7 @@
 
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike, Symbol as SVGSymbol, Use } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, AreaKey, IsometricPieces, IsoCubeFaces, IsoPiece, IsoStackPiece, RowCol } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, AreaKey, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
@@ -9,6 +9,11 @@ import { generateCubes } from "./isometric/cubes";
 import { effectiveCubeYaw, permuteCubeFaces } from "./isometric/cubeOrientation";
 import { generateCylinders } from "./isometric/cylinders";
 import { generateHexes } from "./isometric/hexes";
+import { compareCellSortKeys, computeCellSortKey } from "./isometric/cellSort";
+import { parseIsoPiecesString } from "./isometric/piecesGrid";
+import { buildIsoProjectionMatrix, isoLabelTransform } from "./isometric/projection";
+import { isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement";
+import { IsoPiecesGrid, isMultiFaceCube, parseStackEntry } from "./isometric/stack";
 import { x2uid } from "../common/glyph2uid";
 import { Orientation } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, squares } from "../boards";
@@ -28,19 +33,7 @@ interface ITarget {
     col: number;
 }
 
-type IsoStackEntry = string | IsoStackPiece;
-type IsoPiecesGrid = IsoStackEntry[][][];
 type IsoLegend = {[k: string]: IsoPiece};
-
-const isMultiFaceCube = (pc: IsoPiece): pc is Extract<IsoPiece, { faces: IsoCubeFaces }> =>
-    pc.piece === "cube" && "faces" in pc;
-
-const parseStackEntry = (item: IsoStackEntry): { glyph: string; yaw: number } => {
-    if (typeof item === "string") {
-        return { glyph: item, yaw: 0 };
-    }
-    return { glyph: item.glyph, yaw: item.yaw ?? 0 };
-};
 
 const rotationMap = new Map<IsometricPieces, Map<number, IsometricPieces>>([
     ["lintelN", new Map([
@@ -176,10 +169,7 @@ export class IsometricRenderer extends RendererBase {
             strokeOpacity = this.json.board.strokeOpacity;
         }
 
-        const tScale = new Matrix().scaleY(Math.cos(deg2rad(30)));
-        const tShear = new Matrix().shearX(Math.tan(deg2rad(-30)));
-        const tRotate = new Matrix().rotate(deg2rad(30));
-        const tFinal = tRotate.multiply(tShear.multiply(tScale));
+        const tFinal = buildIsoProjectionMatrix();
         // "isometricize" the points and polys
         gridPoints = gridPoints.map(row => row = row.map(pt => tFinal.applyToPoint(pt.x, pt.y)));
         if (this.json.board.style === "squares" || this.json.board.style === "hex-of-hex") {
@@ -211,21 +201,26 @@ export class IsometricRenderer extends RendererBase {
                 });
             }
         }
-        transformedPoints.sort((a,b) => {
-            if (Math.round(a.y) === Math.round(b.y)) {
-                return Math.round(a.x) - Math.round(b.x);
-            } else {
-                return Math.round(a.y) - Math.round(b.y);
-            }
-        });
-
-        // build the board, looking at the heightmap if provided
-        // first generate the height cubes
         let heightmap: number[][]|undefined;
         let allHeights: number[] = [0];
         if ("heightmap" in this.json.board && this.json.board.heightmap !== undefined) {
             heightmap = this.json.board.heightmap;
             allHeights = [...new Set(heightmap.flat()).values()];
+        }
+
+        // initialize the list of pieces (parsed before sort so stack depth is known)
+        let pieces: IsoPiecesGrid | undefined;
+        if (this.json.pieces !== null) {
+            if (typeof this.json.pieces === "string") {
+                const boardWidth = ("width" in this.json.board && this.json.board.width !== undefined)
+                    ? this.json.board.width
+                    : undefined;
+                pieces = parseIsoPiecesString(this.json.pieces, gridPoints, boardWidth);
+            } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
+                pieces = this.json.pieces as IsoPiecesGrid;
+            } else {
+                throw new Error("Unrecognized `pieces` property.");
+            }
         }
         for (const height of allHeights) {
             const id = `_surface_${height.toString().replace(".", "_")}`;
@@ -310,38 +305,20 @@ export class IsometricRenderer extends RendererBase {
             }
         }
 
-        // initialize the list of pieces
-        let pieces: IsoPiecesGrid | undefined;
-        if (this.json.pieces !== null) {
-            pieces = [];
-            if (typeof this.json.pieces === "string") {
-                // Does it contain commas
-                if (this.json.pieces.indexOf(",") >= 0) {
-                    for (const row of this.json.pieces.split("\n")) {
-                        let node: IsoStackEntry[][] = [];
-                        if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]) as IsoStackEntry[][];
-                        } else {
-                            const cells = row.split(",");
-                            for (const cell of cells) {
-                                if (cell === "") {
-                                    node.push([]);
-                                } else {
-                                    node.push([...cell]);
-                                }
-                            }
-                        }
-                        pieces.push(node);
-                    }
-                } else {
-                    throw new Error("This renderer requires that you use the comma-delimited or array format of the `pieces` property.");
-                }
-            } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
-                pieces = this.json.pieces as IsoPiecesGrid;
-            } else {
-                throw new Error("Unrecognized `pieces` property.");
-            }
-        }
+        const sortKeyForEntry = (entry: PointEntry) =>
+            computeCellSortKey({
+                entry,
+                cellsize: this.cellsize,
+                boardLocalGrid,
+                tUserRotate,
+                heightmap,
+                pieces,
+                legend,
+                basePcScale,
+                boardRotation,
+                rootSvg: this.rootSvg!,
+            });
+        transformedPoints.sort((a, b) => compareCellSortKeys(sortKeyForEntry(a), sortKeyForEntry(b)));
 
         // Now place the surface components and any pieces on top of them, one cell at a time.
         // To make things overlap correctly, we can't sort the board into logical groups.
@@ -360,27 +337,9 @@ export class IsometricRenderer extends RendererBase {
             if ( (cell === null) || (cell === undefined) ) {
                 throw new Error(`Could not find the requested surface of height ${idHeight}.`);
             }
-            let widthRatio = parseFloat(cell.attr("data-width-ratio") as string);
-            let heightRatio: number|undefined;
-            if (cell.attr("data-height-ratio") !== undefined) {
-                heightRatio = parseFloat(cell.attr("data-height-ratio") as string);
-            }
-            let factor = this.cellsize / cell.viewbox().width * widthRatio;
-            let factorHeight: number|undefined;
-            if (heightRatio !== undefined) {
-                factorHeight = this.cellsize / cell.viewbox().height * heightRatio;
-            }
-            let newWidth = factor * cell.viewbox().width;
-            let newHeight = factor * cell.viewbox().height;
-            if (factorHeight !== undefined) {
-                newHeight = factorHeight * cell.viewbox().height;
-            }
-            let dyBottom = parseFloat(cell.attr("data-dy-bottom") as string) * newHeight;
-            let newx = entry.x - (newWidth / 2);
-            let newy = entry.y - dyBottom;
-            let dyTop = parseFloat(cell.attr("data-dy-top") as string) * newHeight;
-            entry.y = newy + dyTop;
-            let used = board.use(cell).move(newx, newy).size(newWidth, newHeight);
+            const surfacePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, cell, 1);
+            entry.y = surfacePlacement.anchorY;
+            let used = board.use(cell).move(surfacePlacement.newx, surfacePlacement.newy).size(surfacePlacement.newWidth, surfacePlacement.newHeight);
             if (this.options.boardClick !== undefined) {
                 used.click((e : Event) => {this.options.boardClick!(entry.row, entry.col, ""); e.stopPropagation();});
             } else {
@@ -404,7 +363,7 @@ export class IsometricRenderer extends RendererBase {
 
             // place any pieces that belong on this cell
             if (pieces !== undefined) {
-                const stack = pieces[entry.row][entry.col];
+                const stack = pieces[entry.row]?.[entry.col] ?? [];
                 for (const [idx, stackItem] of stack.entries()) {
                     const { glyph, yaw } = parseStackEntry(stackItem);
                     if (glyph === "" || glyph === "-") { continue; }
@@ -416,32 +375,14 @@ export class IsometricRenderer extends RendererBase {
                     if ( (piece === null) || (piece === undefined) ) {
                         throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                     }
-                    widthRatio = parseFloat(piece.attr("data-width-ratio") as string);
-                    heightRatio = undefined;
-                    if (piece.attr("data-height-ratio") !== undefined) {
-                        heightRatio = parseFloat(piece.attr("data-height-ratio") as string);
-                    }
                     let pcScale = 0.75;
                     if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
                         pcScale = legend[glyph].scale as number;
                     }
                     pcScale *= basePcScale;
-                    factor = this.cellsize / piece.viewbox().width * widthRatio * pcScale;
-                    factorHeight = undefined;
-                    if (heightRatio !== undefined) {
-                        factorHeight = this.cellsize / piece.viewbox().height * heightRatio * pcScale;
-                    }
-                    newWidth = factor * piece.viewbox().width;
-                    newHeight = factor * piece.viewbox().height;
-                    if (factorHeight !== undefined) {
-                        newHeight = factorHeight * piece.viewbox().height;
-                    }
-                    dyBottom = parseFloat(piece.attr("data-dy-bottom") as string) * newHeight;
-                    newx = entry.x - (newWidth / 2);
-                    newy = entry.y - dyBottom;
-                    dyTop = parseFloat(piece.attr("data-dy-top") as string) * newHeight;
-                    entry.y = newy + dyTop;
-                    used = board.use(piece).move(newx, newy).size(newWidth, newHeight);
+                    const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
+                    entry.y = piecePlacement.anchorY;
+                    used = board.use(piece).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
                     if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
                         used.click((e : Event) => {this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation();});
                     } else {
@@ -515,31 +456,11 @@ export class IsometricRenderer extends RendererBase {
         };
     }
 
-    private mapBoardToScreen(localX: number, localY: number, tUserRotate: Matrix, tFinal: Matrix): IPoint {
-        const rotated = tUserRotate.applyToPoint(localX, localY);
-        return tFinal.applyToPoint(rotated.x, rotated.y);
-    }
-
-    private isoLabelTransform(localX: number, localY: number, tUserRotate: Matrix, tFinal: Matrix): {a: number; b: number; c: number; d: number; e: number; f: number} {
-        const p = this.mapBoardToScreen(localX, localY, tUserRotate, tFinal);
-        const o = this.mapBoardToScreen(0, 0, tUserRotate, tFinal);
-        const ux = this.mapBoardToScreen(1, 0, tUserRotate, tFinal);
-        const uy = this.mapBoardToScreen(0, 1, tUserRotate, tFinal);
-        return {
-            a: ux.x - o.x,
-            b: ux.y - o.y,
-            c: uy.x - o.x,
-            d: uy.y - o.y,
-            e: p.x,
-            f: p.y,
-        };
-    }
-
     private placeIsoLabel(labels: SVGG, text: string, localX: number, localY: number, tUserRotate: Matrix, tFinal: Matrix, colour: string, opacity: number): void {
         labels.text(text)
             .fill(colour)
             .opacity(opacity)
-            .transform(this.isoLabelTransform(localX, localY, tUserRotate, tFinal))
+            .transform(isoLabelTransform(localX, localY, tUserRotate, tFinal))
             .attr({ "text-anchor": "middle", "dominant-baseline": "central" });
     }
 
@@ -749,25 +670,7 @@ export class IsometricRenderer extends RendererBase {
     }
 
     private isoPieceDimsForKey(piece: Svg, rowHeight: number, pieceKey: string, legend: IsoLegend|undefined): {width: number; height: number} {
-        const pcScale = this.getPieceScale(pieceKey, legend);
-        const widthRatio = parseFloat(piece.attr("data-width-ratio") as string);
-        let heightRatio: number|undefined;
-        if (piece.attr("data-height-ratio") !== undefined) {
-            heightRatio = parseFloat(piece.attr("data-height-ratio") as string);
-        }
-        const vb = piece.viewbox();
-        const factor = rowHeight / vb.width * widthRatio * pcScale;
-        let factorHeight: number|undefined;
-        if (heightRatio !== undefined) {
-            factorHeight = rowHeight / vb.height * heightRatio * pcScale;
-        }
-        const width = factor * vb.width;
-        let height = factor * vb.height;
-        if (factorHeight !== undefined) {
-            height = factorHeight * vb.height;
-        }
-        const fit = Math.min(1, rowHeight / width, rowHeight / height);
-        return { width: width * fit, height: height * fit };
+        return isoSymbolDimensions(this.cellsize, piece, this.getPieceScale(pieceKey, legend), rowHeight);
     }
 
     private placeIsoPieceInKey(svg: Svg, piece: Svg, rowHeight: number, glyphColumnWidth: number, dims: {width: number; height: number}): Use {

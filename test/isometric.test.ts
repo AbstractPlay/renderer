@@ -301,3 +301,152 @@ describe("IsometricRenderer board labels", () => {
         expect(draw.findOne("#board")).to.not.equal(null);
     });
 });
+
+const boardUseIndices = (draw: Svg, symbolId: string): number[] => {
+    const indices: number[] = [];
+    draw.find("#board use").forEach((use, index) => {
+        const href = (use.attr("href") ?? use.attr("xlink:href")) as string | undefined;
+        if (href === `#${symbolId}`) {
+            indices.push(index);
+        }
+    });
+    return indices;
+};
+
+describe("IsometricRenderer depth sorting", () => {
+    // Anti-diagonal cells (0,2) and (2,0) share the same rounded screen Y on a
+    // squares board at rotation 0. The old sort tied on Math.round(y) and ordered
+    // by screen X, painting the NE stack over the SW front cell.
+    it("should paint the SW front cell over a tall NE stack on a 3x3 board", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 3, height: 3 },
+            legend: {
+                B: { piece: "cube", height: 30, colour: "#2980b9" },
+                F: { piece: "cube", height: 30, colour: "#e74c3c" },
+            },
+            pieces: [
+                [[], [], [{ glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }]],
+                [[], [], []],
+                [[{ glyph: "F" }], [], []],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const backStack = boardUseIndices(draw, "B");
+        const front = boardUseIndices(draw, "F");
+        expect(backStack.length).to.equal(6);
+        expect(front.length).to.equal(1);
+        expect(front[0]).to.be.greaterThan(Math.max(...backStack));
+    });
+
+    it("should paint the SW front cell over a tall NE stack on a 4x4 board", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 4, height: 4 },
+            legend: {
+                B: { piece: "cube", height: 30, colour: "#2980b9" },
+                F: { piece: "cube", height: 30, colour: "#e74c3c" },
+            },
+            pieces: [
+                [[], [], [{ glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }], []],
+                [[], [], [], []],
+                [[{ glyph: "F" }], [], [], []],
+                [[], [], [], []],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const backStack = boardUseIndices(draw, "B");
+        const front = boardUseIndices(draw, "F");
+        expect(backStack.length).to.equal(6);
+        expect(front.length).to.equal(1);
+        expect(front[0]).to.be.greaterThan(Math.max(...backStack));
+    });
+});
+
+describe("IsometricRenderer pieces string", () => {
+    it("should expand underscore rows to the correct width on hex-of-cir boards", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const emptyRow = (width: number): string => ",".repeat(width - 1);
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "hex-of-cir", minWidth: 3, maxWidth: 5 },
+            legend: {
+                R: { piece: "cylinder", height: 30, colour: "#c0392b" },
+            },
+            pieces: ["R,,", "_", emptyRow(5), emptyRow(4), emptyRow(3)].join("\n"),
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const uses = boardUseIndices(draw, "R");
+        expect(uses.length).to.equal(1);
+    });
+});
+
+describe("IsometricRenderer heightmap", () => {
+    it("should generate a surface symbol for each distinct heightmap value", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: {
+                style: "squares",
+                width: 2,
+                height: 2,
+                heightmap: [[0, 30], [30, 0]],
+            },
+            legend: {
+                X: { piece: "cube", height: 30, colour: "#c0392b" },
+            },
+            pieces: null,
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(draw.findOne("#_surface_0")).to.not.equal(null);
+        expect(draw.findOne("#_surface_30")).to.not.equal(null);
+    });
+});
+
+describe("IsometricRenderer swap-labels", () => {
+    it("should swap letters and numbers on squares boards", () => {
+        const drawDefault = makeDraw();
+        const drawSwapped = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep = squaresLabelRep(["swap-labels"]);
+        renderer.render(squaresLabelRep(), drawDefault, baseOptions);
+        renderer.render(rep, drawSwapped, baseOptions);
+
+        const defaultTexts = labelTexts(drawDefault);
+        const swappedTexts = labelTexts(drawSwapped);
+        expect(defaultTexts).to.include("a");
+        expect(swappedTexts).to.include("1");
+        expect(swappedTexts).to.include("2");
+    });
+});
+
+describe("IsometricRenderer lintel pieces", () => {
+    it("should render lintel pieces when the board is rotated", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2 },
+            legend: {
+                L: { piece: "lintelN", height: 30, colour: "#8e44ad" },
+            },
+            pieces: [
+                [[{ glyph: "L" }], []],
+                [[], []],
+            ],
+        };
+        renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
+        expect(draw.findOne("#L")).to.not.equal(null);
+        expect(draw.find("#board use").length).to.be.greaterThan(0);
+    });
+});

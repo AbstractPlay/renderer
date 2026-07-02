@@ -2,6 +2,7 @@ import { Matrix } from "transformation-matrix-js";
 import { deg2rad } from "../../common/plotting";
 import { FillData, StrokeData, Svg, G as SVGG, Rect as SVGRect } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
+import { buildIsoProjectionMatrix } from "./projection";
 
 export type Cube = {
     top: Matrix;
@@ -21,10 +22,7 @@ export type Cube = {
 };
 
 export const genCube = (topSize: number, sideHeight: number): Cube => {
-    const tScale = new Matrix().scaleY(Math.cos(deg2rad(30)));
-    const tShear = new Matrix().shearX(Math.tan(deg2rad(-30)));
-    const tRotate = new Matrix().rotate(deg2rad(30));
-    const tFinal = tRotate.multiply(tShear.multiply(tScale));
+    const tFinal = buildIsoProjectionMatrix();
     const tAnchorBottom = tFinal.applyToPoint(topSize, topSize);
     const lScale = new Matrix().scaleX(Math.cos(deg2rad(30)));
     const lShear = new Matrix().shearY(Math.tan(deg2rad(30)));
