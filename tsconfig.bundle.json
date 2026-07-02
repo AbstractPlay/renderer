@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "emitDeclarationOnly": false,
+        "declaration": false,
+        "noEmit": false,
+        "outDir": "build-bundle-temp"
+    },
+    "include": ["src/**/*"]
+}

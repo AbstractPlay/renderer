@@ -8,9 +8,29 @@
     },
     "main": "build/index.js",
     "types": "build/index.d.ts",
+    "files": [
+        "build/index.js",
+        "build/index.js.map",
+        "build/**/*.d.ts",
+        "LICENSE"
+    ],
+    "exports": {
+        ".": {
+            "types": "./build/index.d.ts",
+            "default": "./build/index.js"
+        },
+        "./build/schemas/schema": {
+            "types": "./build/schemas/schema.d.ts"
+        },
+        "./build/renderers/_base": {
+            "types": "./build/renderers/_base.d.ts"
+        }
+    },
     "scripts": {
-        "build": "npm run build-ts && npm run lint && npm pack",
-        "build-ts": "npm run json2ts && tsc && shx cp ./src/schemas/schema.d.ts ./build/schemas",
+        "build": "npm run build-ts && npm run build-bundle && npm run smoke-test && npm run lint && npm pack",
+        "build-ts": "npm run json2ts && rimraf build && tsc && shx mkdir -p build/schemas && shx cp ./src/schemas/schema.d.ts ./build/schemas",
+        "build-bundle": "webpack --config webpack.npm.config.js",
+        "smoke-test": "node scripts/smoke-build.js",
         "test": "mocha -r ts-node/register test/**/*.test.ts",
         "lint": "npx eslint .",
         "dist-dev": "rimraf dist && webpack",
@@ -27,7 +47,7 @@
         "svg"
     ],
     "dependencies": {
-        "@svgdotjs/svg.js": "3.2.0",
+        "@svgdotjs/svg.js": "3.2.5",
         "@turf/union": "^6.5.0",
         "@types/fnv-plus": "^1.3.2",
         "ajv": "^8.12.0",

@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ["src/schemas/*", "bin/*", "build/*", "dist/*", "docs/*", "**/*.config.js"],
+    ignores: ["src/schemas/*", "bin/*", "build/*", "dist/*", "docs/*", "scripts/*", "**/*.config.js"],
   },
   eslint.configs.recommended,
   tseslint.configs.recommended,
