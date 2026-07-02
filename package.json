@@ -27,10 +27,10 @@
         }
     },
     "scripts": {
-        "build": "npm run build-ts && npm run build-bundle && npm run smoke-test && npm run lint && npm pack",
+        "build": "npm run build-ts && npm run build-bundle && npm run test:bundle && npm run lint && npm pack",
         "build-ts": "npm run json2ts && rimraf build && tsc && shx mkdir -p build/schemas && shx cp ./src/schemas/schema.d.ts ./build/schemas",
         "build-bundle": "webpack --config webpack.npm.config.js",
-        "smoke-test": "node scripts/smoke-build.js",
+        "test:bundle": "mocha -r ts-node/register test/bundle-exports.test.ts",
         "test": "mocha -r ts-node/register test/**/*.test.ts",
         "lint": "npx eslint .",
         "dist-dev": "rimraf dist && webpack",

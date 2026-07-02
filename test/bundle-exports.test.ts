@@ -1,0 +1,26 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+import { expect } from "chai";
+import fs from "fs";
+import path from "path";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const buildIndex = path.join(process.cwd(), "build", "index.js");
+
+describe("bundled build exports", function () {
+    before(function () {
+        if (!fs.existsSync(buildIndex)) {
+            this.skip();
+        }
+    });
+
+    it("should export the public API from build/index.js", () => {
+        const { render, renderglyph, addPrefix, sheets } = require("../build");
+
+        expect(render).to.be.a("function");
+        expect(renderglyph).to.be.a("function");
+        expect(addPrefix).to.be.a("function");
+        expect(sheets).to.be.instanceOf(Map);
+        expect(sheets.size).to.be.greaterThan(0);
+    });
+});
