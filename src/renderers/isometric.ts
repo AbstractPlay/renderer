@@ -1,7 +1,7 @@
 
-import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike } from "@svgdotjs/svg.js";
+import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike, Symbol as SVGSymbol, Use } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, IsometricPieces, IsoCubeFaces, IsoPiece, IsoStackPiece, RowCol } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, AreaKey, IsometricPieces, IsoCubeFaces, IsoPiece, IsoStackPiece, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
@@ -30,6 +30,7 @@ interface ITarget {
 
 type IsoStackEntry = string | IsoStackPiece;
 type IsoPiecesGrid = IsoStackEntry[][][];
+type IsoLegend = {[k: string]: IsoPiece};
 
 const isMultiFaceCube = (pc: IsoPiece): pc is Extract<IsoPiece, { faces: IsoCubeFaces }> =>
     pc.piece === "cube" && "faces" in pc;
@@ -237,11 +238,10 @@ export class IsometricRenderer extends RendererBase {
         }
 
         // now load the custom legend
-        type MyLegend = {[k: string]: IsoPiece};
-        let legend: MyLegend|undefined;
+        let legend: IsoLegend|undefined;
         if (this.json.legend !== null && this.json.legend !== undefined) {
-            legend = this.json.legend as MyLegend;
-            for (const [key, pc] of Object.entries(this.json.legend as MyLegend)) {
+            legend = this.json.legend as IsoLegend;
+            for (const [key, pc] of Object.entries(this.json.legend as IsoLegend)) {
                 // pieces may change based on rotation
                 let effPiece = pc.piece;
                 if (numRotations > 0) {
@@ -478,6 +478,134 @@ export class IsometricRenderer extends RendererBase {
         if (!backfilled) {
             this.backFill(boardFill);
         }
+    }
+
+    protected buildKey(key: AreaKey): Svg {
+        if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
+            throw new Error("Invalid object state.");
+        }
+
+        let labelColour = this.options.colourContext.labels;
+        if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
+        }
+        let height = this.cellsize * 0.333;
+        if (key.height !== undefined) {
+            height = this.cellsize * key.height;
+        }
+        let buffer = height * 0.1;
+        if (key.buffer !== undefined) {
+            buffer = height * key.buffer;
+        }
+        const nested = this.rootSvg.defs().nested().id("_key");
+        const legend = this.json.legend as IsoLegend|undefined;
+
+        const labels: SVGSymbol[] = [];
+        const pieceDims: {width: number; height: number}[] = [];
+        let maxGlyphWidth = 0;
+        for (let i = 0; i < key.list.length; i++) {
+            const k = key.list[i];
+            const tmptxt = this.rootSvg.text(k.name).font({size: 17, fill: labelColour, anchor: "start"});
+            const symtxt = nested.symbol();
+            symtxt.text(k.name).font({size: 17, fill: labelColour, anchor: "start"});
+            symtxt.viewbox(tmptxt.bbox());
+            tmptxt.remove();
+            labels.push(symtxt);
+
+            const pieceId = this.resolveKeyPieceId(k.piece, legend);
+            const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
+            if ( (piece === undefined) || (piece === null) ) {
+                throw new Error(`Could not find the requested piece (${pieceId}). Each piece *must* exist in the \`legend\`.`);
+            }
+            const dims = this.isoPieceDimsForKey(piece, height, k.piece, legend);
+            pieceDims.push(dims);
+            maxGlyphWidth = Math.max(maxGlyphWidth, dims.width);
+        }
+
+        const glyphGap = height * 0.1;
+        const glyphColumnWidth = maxGlyphWidth + glyphGap;
+
+        const groups: Svg[] = [];
+        let maxScaledWidth = 0;
+        for (let i = 0; i < labels.length; i++) {
+            const k = key.list[i];
+            const symlabel = labels[i];
+            const pieceId = this.resolveKeyPieceId(k.piece, legend);
+            const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
+            let id = `_key_${k.name}`;
+            if (k.value !== undefined) {
+                id = `_key_${k.value}`;
+            }
+            const g = nested.nested().id(id);
+            const dims = pieceDims[i];
+            this.placeIsoPieceInKey(g, piece, height, glyphColumnWidth, dims);
+            const factor = height / symlabel.viewbox().h;
+            const labelWidth = symlabel.viewbox().w * factor;
+            const usedLabel = g.use(symlabel).size(labelWidth, height).move(glyphColumnWidth, 0);
+            maxScaledWidth = Math.max(maxScaledWidth, usedLabel.width() as number);
+            groups.push(g);
+        }
+
+        let dy = 0;
+        for (const g of groups) {
+            g.dy(dy);
+            dy += height + buffer;
+        }
+
+        nested.viewbox(0, 0, glyphColumnWidth + maxScaledWidth, (height * key.list.length) + (buffer * (key.list.length - 1)));
+        return nested;
+    }
+
+    private resolveKeyPieceId(pieceKey: string, legend: IsoLegend|undefined): string {
+        if (legend !== undefined && legend[pieceKey] !== undefined && isMultiFaceCube(legend[pieceKey])) {
+            return `${pieceKey}__y${effectiveCubeYaw(0, this.getRotation())}`;
+        }
+        return pieceKey;
+    }
+
+    private getBasePcScale(): number {
+        if (this.json?.board !== null && this.json?.board !== undefined && "style" in this.json.board) {
+            if (this.json.board.style === "hex-of-hex" || this.json.board.style === "hex-of-cir") {
+                return 0.85;
+            }
+        }
+        return 1;
+    }
+
+    private getPieceScale(pieceKey: string, legend: IsoLegend|undefined): number {
+        let pcScale = 1;
+        if (legend !== undefined && pieceKey in legend && "scale" in legend[pieceKey] && legend[pieceKey].scale !== undefined) {
+            pcScale = legend[pieceKey].scale as number;
+        }
+        return pcScale * this.getBasePcScale();
+    }
+
+    private isoPieceDimsForKey(piece: Svg, rowHeight: number, pieceKey: string, legend: IsoLegend|undefined): {width: number; height: number} {
+        const pcScale = this.getPieceScale(pieceKey, legend);
+        const widthRatio = parseFloat(piece.attr("data-width-ratio") as string);
+        let heightRatio: number|undefined;
+        if (piece.attr("data-height-ratio") !== undefined) {
+            heightRatio = parseFloat(piece.attr("data-height-ratio") as string);
+        }
+        const vb = piece.viewbox();
+        const factor = rowHeight / vb.width * widthRatio * pcScale;
+        let factorHeight: number|undefined;
+        if (heightRatio !== undefined) {
+            factorHeight = rowHeight / vb.height * heightRatio * pcScale;
+        }
+        const width = factor * vb.width;
+        let height = factor * vb.height;
+        if (factorHeight !== undefined) {
+            height = factorHeight * vb.height;
+        }
+        const fit = Math.min(1, rowHeight / width, rowHeight / height);
+        return { width: width * fit, height: height * fit };
+    }
+
+    private placeIsoPieceInKey(svg: Svg, piece: Svg, rowHeight: number, glyphColumnWidth: number, dims: {width: number; height: number}): Use {
+        const newx = (glyphColumnWidth - dims.width) / 2;
+        const newy = (rowHeight - dims.height) / 2;
+        return svg.use(piece).move(newx, newy).size(dims.width, dims.height);
     }
 
     private preAnnotate(group: SVGG, entry: PointEntry) {
