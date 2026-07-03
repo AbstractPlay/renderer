@@ -19,11 +19,11 @@ describe("permuteCubeFaces", () => {
         });
     });
 
-    it("should map yaw 1 to west left and south right", () => {
+    it("should map yaw 1 to east left and north right", () => {
         expect(permuteCubeFaces(faces, 1)).to.deep.equal({
             top: "top",
-            left: "west",
-            right: "south",
+            left: "east",
+            right: "north",
         });
     });
 
@@ -35,11 +35,11 @@ describe("permuteCubeFaces", () => {
         });
     });
 
-    it("should map yaw 3 to east left and north right", () => {
+    it("should map yaw 3 to west left and south right", () => {
         expect(permuteCubeFaces(faces, 3)).to.deep.equal({
             top: "top",
-            left: "east",
-            right: "north",
+            left: "west",
+            right: "south",
         });
     });
 

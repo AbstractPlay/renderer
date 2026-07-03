@@ -72,8 +72,8 @@ describe("cube face geometry at yaw 0", () => {
         renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
 
         const faces = sideFaceColours(draw, "D__y1");
-        expect(faces.left).to.equal(isoShadeFace("#ff00ff", "left").toLowerCase()); // west
-        expect(faces.right).to.equal(isoShadeFace("#ffff00", "right").toLowerCase()); // south
+        expect(faces.left).to.equal(isoShadeFace("#0000ff", "left").toLowerCase()); // east
+        expect(faces.right).to.equal(isoShadeFace("#00ff00", "right").toLowerCase()); // north
     });
 
     it("should render a proper cube when height is omitted", () => {
@@ -83,5 +83,35 @@ describe("cube face geometry at yaw 0", () => {
 
         expect(draw.findOne("#isoRectSide100_D__y0_L")).to.not.equal(null);
         expect(draw.findOne("#isoRectSide0_D__y0_L")).to.equal(null);
+    });
+
+    it("should keep east on screen-left after a 90 degree board rotation", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const east = "#c0392b";
+        const west = "#2980b9";
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 1, height: 1 },
+            legend: {
+                C21112: {
+                    piece: "cube",
+                    faces: { top: west, north: east, south: east, east, west },
+                },
+            },
+            areas: [{
+                type: "key",
+                position: "right",
+                list: [{ piece: "C21112", name: "Cube" }],
+            }],
+            pieces: [[[ { glyph: "C21112" } ]]],
+        };
+        renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
+
+        const keySymbol = "C21112__y1";
+        const left = (draw.findOne(`#isoRectSide100_${keySymbol}_L`) as { fill: () => string } | null)?.fill();
+        const right = (draw.findOne(`#isoRectSide100_${keySymbol}_R`) as { fill: () => string } | null)?.fill();
+        expect(left?.toLowerCase()).to.equal(isoShadeFace(east, "left").toLowerCase());
+        expect(right?.toLowerCase()).to.equal(isoShadeFace(east, "right").toLowerCase()); // north
     });
 });
