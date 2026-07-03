@@ -1,7 +1,7 @@
 
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike, Symbol as SVGSymbol, Use } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, AreaKey, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, AreaKey, Colourfuncs, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
@@ -9,7 +9,9 @@ import { generateCubes, CubeFaceFills } from "./isometric/cubes";
 import { effectiveCubeYaw, permuteCubeFaces } from "./isometric/cubeOrientation";
 import { generateCylinders } from "./isometric/cylinders";
 import { generateHexes } from "./isometric/hexes";
-import { compareCellSortKeys, computeCellSortKey } from "./isometric/cellSort";
+import { compareCellSortKeys, computeCellSortKey, IsoCellSortKey } from "./isometric/cellSort";
+import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
+import { isoCellFootprint } from "./isometric/footprint";
 import { parseIsoPiecesString } from "./isometric/piecesGrid";
 import { buildIsoProjectionMatrix, isoLabelTransform } from "./isometric/projection";
 import { isoShadeFace, isoShadeFaces, IsoFaceFills } from "./isometric/shading";
@@ -349,6 +351,23 @@ export class IsometricRenderer extends RendererBase {
             });
         transformedPoints.sort((a, b) => compareCellSortKeys(sortKeyForEntry(a), sortKeyForEntry(b)));
 
+        const cellSortKeys = new Map<string, IsoCellSortKey>();
+        let minDepth = Infinity;
+        let maxDepth = -Infinity;
+        for (const entry of transformedPoints) {
+            const key = sortKeyForEntry(entry);
+            cellSortKeys.set(`${entry.row},${entry.col}`, key);
+            minDepth = Math.min(minDepth, key.depth);
+            maxDepth = Math.max(maxDepth, key.depth);
+        }
+        if (!Number.isFinite(minDepth)) {
+            minDepth = 0;
+            maxDepth = 0;
+        }
+
+        const depthShadeEnabled = !this.json.options?.includes("no-iso-depth-shade");
+        const cellFootprintEnabled = !this.json.options?.includes("no-iso-cell-footprint");
+
         // Now place the surface components and any pieces on top of them, one cell at a time.
         // To make things overlap correctly, we can't sort the board into logical groups.
         // Instead, each cell has to be rendered in its entirety before moving to the next cell.
@@ -393,12 +412,42 @@ export class IsometricRenderer extends RendererBase {
             // place any pieces that belong on this cell
             if (pieces !== undefined) {
                 const stack = pieces[entry.row]?.[entry.col] ?? [];
+                const hasPieces = stack.some((item) => {
+                    const { glyph } = parseStackEntry(item);
+                    return glyph !== "" && glyph !== "-";
+                });
+                if (cellFootprintEnabled && hasPieces) {
+                    isoCellFootprint(
+                        board,
+                        entry.poly,
+                        strokeColour,
+                        this.options.colourContext.background,
+                        this.cellsize,
+                    );
+                }
                 for (const [idx, stackItem] of stack.entries()) {
                     const { glyph, yaw } = parseStackEntry(stackItem);
                     if (glyph === "" || glyph === "-") { continue; }
                     let pieceId = glyph;
                     if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
                         pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
+                    }
+                    const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
+                    if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
+                        pieceId = resolveDepthShadedPieceId({
+                            rootSvg: this.rootSvg,
+                            glyph,
+                            pieceId,
+                            yaw,
+                            legend,
+                            depth: sortKey.depth,
+                            minDepth,
+                            maxDepth,
+                            numRotations,
+                            pieceStroke,
+                            resolveColour: (colour: string | number | Colourfuncs, fallback) =>
+                                this.resolveColour(colour, fallback) as string,
+                        });
                     }
                     const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
                     if ( (piece === null) || (piece === undefined) ) {

@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { Matrix } from "transformation-matrix-js";
 import { compareCellSortKeys, computeCellSortKey, ISO_SORT_EPSILON } from "../src/renderers/isometric/cellSort";
+import { depthBucketIndex, depthToNormalized, isoDepthModulate } from "../src/renderers/isometric/shading";
 import { piecesRowWidth, parseIsoPiecesString } from "../src/renderers/isometric/piecesGrid";
 import { buildIsoProjectionMatrix, isoLabelTransform, mapBoardToScreen } from "../src/renderers/isometric/projection";
 import { rectOfRects } from "../src/grids";
@@ -87,5 +88,25 @@ describe("isometric cell sort helpers", () => {
             rootSvg: { findOne: () => null } as never,
         });
         expect(deep.depth).to.be.lessThan(shallow.depth);
+    });
+});
+
+describe("isometric depth shading helpers", () => {
+    it("should normalize depth across the board range", () => {
+        expect(depthToNormalized(5, 5, 15)).to.equal(0);
+        expect(depthToNormalized(15, 5, 15)).to.equal(1);
+        expect(depthToNormalized(10, 5, 15)).to.equal(0.5);
+    });
+
+    it("should bucket normalized depth for symbol caching", () => {
+        expect(depthBucketIndex(0)).to.equal(0);
+        expect(depthBucketIndex(0.99)).to.equal(7);
+    });
+
+    it("should darken back cells and brighten front cells", () => {
+        const colour = "#808080";
+        const back = isoDepthModulate(colour, 0);
+        const front = isoDepthModulate(colour, 1);
+        expect(back).to.not.equal(front);
     });
 });

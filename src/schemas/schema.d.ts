@@ -279,6 +279,8 @@ export interface APRenderRep {
     | "swap-labels"
     | "no-piece-click"
     | "no-piece-shadow"
+    | "no-iso-depth-shade"
+    | "no-iso-cell-footprint"
   )[];
   /**
    * Map each `piece` to an actual glyph with possible options.

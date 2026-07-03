@@ -3,11 +3,13 @@ import { IsoSymbolPlacement } from "./symbolPlacement";
 
 export const ISO_CONTACT_BLUR_FILTER_ID = "_isoContactBlur";
 
-const SHADOW_RX_RATIO = 0.38;
-const SHADOW_RY_RATIO = 0.14;
-const SHADOW_OFFSET_X_RATIO = 0.02;
-const SHADOW_OFFSET_Y_RATIO = 0.03;
-const SHADOW_OPACITY = 0.25;
+/** Cell-sized footprint ellipse, elongated toward the depth axis (down-right). */
+export const SHADOW_RX_RATIO = 0.35;
+export const SHADOW_RY_RATIO = 0.11;
+export const SHADOW_DEPTH_ELONGATION = 1.35;
+export const SHADOW_OFFSET_X_RATIO = 0.08;
+export const SHADOW_OFFSET_Y_RATIO = 0.1;
+export const SHADOW_OPACITY = 0.38;
 
 /** Ensure the shared blur filter exists in defs. */
 export const ensureIsoContactBlurFilter = (defsNode: SVGDefsElement): void => {
@@ -28,7 +30,7 @@ export const ensureIsoContactBlurFilter = (defsNode: SVGDefsElement): void => {
     defsNode.appendChild(filter);
 };
 
-/** Draw a soft contact shadow at the piece ground-contact point, offset down-right. */
+/** Draw a soft cell-footprint shadow at the piece ground-contact point, offset down-right. */
 export const isoContactShadow = (
     group: SVGG,
     placement: IsoSymbolPlacement,
@@ -39,8 +41,8 @@ export const isoContactShadow = (
     const contactX = placement.newx + placement.newWidth / 2;
     const offsetX = cellsize * SHADOW_OFFSET_X_RATIO;
     const offsetY = cellsize * SHADOW_OFFSET_Y_RATIO;
-    const rx = placement.newWidth * SHADOW_RX_RATIO;
-    const ry = placement.newWidth * SHADOW_RY_RATIO;
+    const rx = cellsize * SHADOW_RX_RATIO * SHADOW_DEPTH_ELONGATION;
+    const ry = cellsize * SHADOW_RY_RATIO;
 
     group.ellipse(rx * 2, ry * 2)
         .center(contactX + offsetX, contactY + offsetY)

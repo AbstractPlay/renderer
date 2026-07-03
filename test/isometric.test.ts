@@ -2,7 +2,8 @@
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { IsometricRenderer } from "../src/renderers/isometric";
-import { isoShadeFace } from "../src/renderers/isometric/shading";
+import { isoShadeFace, isoDepthModulate } from "../src/renderers/isometric/shading";
+import { SHADOW_OPACITY } from "../src/renderers/isometric/shadow";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 
@@ -307,7 +308,7 @@ const boardUseIndices = (draw: Svg, symbolId: string): number[] => {
     const indices: number[] = [];
     draw.find("#board use").forEach((use, index) => {
         const href = (use.attr("href") ?? use.attr("xlink:href")) as string | undefined;
-        if (href === `#${symbolId}`) {
+        if (href === `#${symbolId}` || href?.startsWith(`#${symbolId}__db`)) {
             indices.push(index);
         }
     });
@@ -604,5 +605,115 @@ describe("IsometricRenderer depth cues", () => {
         expect(symbol.find("path").length).to.equal(1);
         const grad = draw.findOne("#isoCylBarrel_B");
         expect(grad).to.not.equal(null);
+    });
+
+    it("should render stronger contact shadows on board pieces", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [[[{ glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board") as Svg;
+        const shadow = board.find("ellipse")[0] as Svg;
+        expect(shadow).to.not.equal(undefined);
+        expect(parseFloat(shadow.attr("fill-opacity") as string)).to.equal(SHADOW_OPACITY);
+    });
+
+    it("should draw cell footprints under occupied cells", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [[[{ glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board") as Svg;
+        expect(board.find("polygon").length).to.be.greaterThan(0);
+    });
+
+    it("should omit cell footprints when no-iso-cell-footprint is set", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            options: ["no-iso-cell-footprint"],
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [[[{ glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board") as Svg;
+        expect(board.find("polygon").length).to.equal(0);
+    });
+
+    it("should generate depth-shaded piece symbols for board placement", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [
+                [[{ glyph: "R" }], []],
+                [[], [{ glyph: "R" }]],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const depthSymbols = draw.find("[id^='R__db']");
+        expect(depthSymbols.length).to.be.greaterThan(0);
+        const hrefs = draw.find("#board use").map((u) => (u.attr("href") ?? u.attr("xlink:href")) as string);
+        expect(hrefs.some((h) => h.includes("__db"))).to.equal(true);
+    });
+
+    it("should use distinct depth shading between front and back cells", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const base = "#c0392b";
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: base } },
+            pieces: [
+                [[{ glyph: "R" }], []],
+                [[], [{ glyph: "R" }]],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const backFill = rectFill(draw, "isoRectSide30_R__db0_L");
+        const frontFill = rectFill(draw, "isoRectSide30_R__db7_L");
+        expect(backFill).to.not.equal(frontFill);
+        expect(backFill).to.equal(isoDepthModulate(isoShadeFace(base, "left"), 0).toLowerCase());
+        expect(frontFill).to.equal(isoDepthModulate(isoShadeFace(base, "left"), 1).toLowerCase());
+    });
+
+    it("should omit depth-shaded symbols when no-iso-depth-shade is set", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            options: ["no-iso-depth-shade"],
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [
+                [[{ glyph: "R" }], []],
+                [[], [{ glyph: "R" }]],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(draw.find("[id^='R__db']").length).to.equal(0);
+        const hrefs = draw.find("#board use").map((u) => (u.attr("href") ?? u.attr("xlink:href")) as string);
+        expect(hrefs.some((h) => h.includes("R__db"))).to.equal(false);
     });
 });
