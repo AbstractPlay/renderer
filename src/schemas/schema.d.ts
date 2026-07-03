@@ -33,7 +33,10 @@ export type IsoPiece =
     }
   | {
       piece: "cube";
-      height: number;
+      /**
+       * Vertical edge length in symbol units (top face is always 100). When omitted, defaults to a proper cube.
+       */
+      height?: number;
       faces: IsoCubeFaces;
       /**
        * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.

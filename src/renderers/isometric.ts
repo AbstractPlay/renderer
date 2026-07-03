@@ -263,7 +263,7 @@ export class IsometricRenderer extends RendererBase {
                         const topFill = {color: this.resolveColour(visible.top, "#000") as string};
                         generateCubes({
                             rootSvg: this.rootSvg,
-                            heights: [pc.height],
+                            heights: [pc.height ?? 100],
                             stroke: cubeStroke,
                             fill: topFill,
                             faceFills: {

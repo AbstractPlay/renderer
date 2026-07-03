@@ -411,6 +411,21 @@ describe("IsometricRenderer heightmap", () => {
         expect(draw.findOne("#_surface_0")).to.not.equal(null);
         expect(draw.findOne("#_surface_30")).to.not.equal(null);
     });
+
+    it("should render height-0 board surfaces flat without side faces", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2, heightmap: [[0, 30], [30, 0]] },
+            legend: { X: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: null,
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(draw.findOne("#isoRectSide100__surface_0")).to.equal(null);
+        expect(draw.findOne("#isoRectSide100__surface_0_L")).to.equal(null);
+    });
 });
 
 describe("IsometricRenderer swap-labels", () => {

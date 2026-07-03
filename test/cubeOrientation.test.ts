@@ -11,34 +11,34 @@ const faces: IsoCubeFaces = {
 };
 
 describe("permuteCubeFaces", () => {
-    it("should map yaw 0 to west left and east right", () => {
+    it("should map yaw 0 to south left and east right", () => {
         expect(permuteCubeFaces(faces, 0)).to.deep.equal({
             top: "top",
-            left: "west",
+            left: "south",
             right: "east",
         });
     });
 
-    it("should map yaw 1 to north left and south right", () => {
+    it("should map yaw 1 to west left and south right", () => {
         expect(permuteCubeFaces(faces, 1)).to.deep.equal({
             top: "top",
-            left: "north",
+            left: "west",
             right: "south",
         });
     });
 
-    it("should map yaw 2 to east left and west right", () => {
+    it("should map yaw 2 to north left and west right", () => {
         expect(permuteCubeFaces(faces, 2)).to.deep.equal({
             top: "top",
-            left: "east",
+            left: "north",
             right: "west",
         });
     });
 
-    it("should map yaw 3 to south left and north right", () => {
+    it("should map yaw 3 to east left and north right", () => {
         expect(permuteCubeFaces(faces, 3)).to.deep.equal({
             top: "top",
-            left: "south",
+            left: "east",
             right: "north",
         });
     });

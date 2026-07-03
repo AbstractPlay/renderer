@@ -546,6 +546,7 @@
                             "const": "cube"
                         },
                         "height": {
+                            "description": "Vertical edge length in symbol units (top face is always 100). When omitted, defaults to a proper cube.",
                             "type": "number",
                             "minimum": 0,
                             "default": 0
@@ -558,7 +559,7 @@
                             "default": 0.75
                         }
                     },
-                    "required": ["piece", "height", "faces"],
+                    "required": ["piece", "faces"],
                     "additionalProperties": false
                 }
             ]

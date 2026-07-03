@@ -8,6 +8,10 @@ export type VisibleCubeFaces = {
 
 /**
  * Maps intrinsic cube face colours to the three faces visible in the fixed isometric projection.
+ *
+ * At yaw 0 the left parallelogram shows the south face (front toward lower ranks) and the right
+ * parallelogram shows the east face. Additional yaws are quarter-turns clockwise viewed from above.
+ *
  * @param faces - Intrinsic face colours (N/E/S/W + top).
  * @param effectiveYaw - Quarter-turns clockwise viewed from above, including board rotation.
  */
@@ -15,13 +19,13 @@ export const permuteCubeFaces = (faces: IsoCubeFaces, effectiveYaw: number): Vis
     const yaw = ((effectiveYaw % 4) + 4) % 4;
     switch (yaw) {
         case 1:
-            return { top: faces.top, left: faces.north, right: faces.south };
+            return { top: faces.top, left: faces.west, right: faces.south };
         case 2:
-            return { top: faces.top, left: faces.east, right: faces.west };
+            return { top: faces.top, left: faces.north, right: faces.west };
         case 3:
-            return { top: faces.top, left: faces.south, right: faces.north };
+            return { top: faces.top, left: faces.east, right: faces.north };
         default:
-            return { top: faces.top, left: faces.west, right: faces.east };
+            return { top: faces.top, left: faces.south, right: faces.east };
     }
 };
 
