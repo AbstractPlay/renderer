@@ -1,8 +1,9 @@
 import { Matrix } from "transformation-matrix-js";
 import { circle2poly, projectPoint, ptDistance } from "../../common/plotting";
-import { FillData, StrokeData, Svg, Circle as SVGCircle } from "@svgdotjs/svg.js";
+import { FillData, StrokeData, Svg, Circle as SVGCircle, Gradient as SVGGradient } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
 import { buildIsoProjectionMatrix } from "./projection";
+import { CubeFaceFills } from "./cubes";
 
 export type Cylinder = {
     transform: Matrix;
@@ -72,9 +73,18 @@ const genCylinder = (topSize: number, sideHeight: number): Cylinder => {
     }
 }
 
-export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, idSymbol?: string}): void => {
-    const { rootSvg, heights, stroke, fill} = opts;
+const barrelPath = (cylinder: Cylinder, sideHeight: number): string => {
+    const {ptRight, ptLeft, rx, ry} = cylinder;
+    return `M ${ptRight.x} ${ptRight.y} L ${ptRight.x} ${ptRight.y + sideHeight} A ${rx} ${ry} 0 1 1 ${ptLeft.x} ${ptLeft.y + sideHeight} L ${ptLeft.x} ${ptLeft.y}`;
+};
+
+export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, faceFills?: CubeFaceFills, idSymbol?: string}): void => {
+    const { rootSvg, heights, stroke, fill, faceFills} = opts;
     const tSize = 100;
+    const topFill = faceFills?.top ?? fill;
+    const barrelFill: FillData | SVGGradient = faceFills !== undefined
+        ? fill // placeholder; replaced per-symbol below
+        : fill;
 
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
@@ -92,7 +102,6 @@ export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke
             .attr("data-width-ratio", cylinder.width / tSize)
             .attr("data-dy-bottom", Math.abs(miny - cylinder.cyBot) / cylinder.height)
             .attr("data-dy-top", Math.abs(miny - cylinder.cyTop) / cylinder.height);
-        // add defs
         const defs = nested.defs();
         let circleTop: SVGCircle|null = null;
         let sourceId = `isoCircle${idTop}`;
@@ -102,15 +111,36 @@ export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke
         circleTop = defs.findOne("#" + sourceId) as SVGCircle|null;
         if (circleTop === null) {
             circleTop = defs.circle(tSize).center(0,0).id(sourceId)
-                .fill(fill)
+                .fill(topFill)
                 .stroke({linecap: "round", linejoin: "round", ...stroke});
         }
 
-        // instantiate
         if (sideHeight > 0) {
-            nested.path(`M ${cylinder.ptRight.x} ${cylinder.ptRight.y} L ${cylinder.ptRight.x} ${cylinder.ptRight.y + sideHeight} A ${cylinder.rx} ${cylinder.ry} 0 1 1 ${cylinder.ptLeft.x} ${cylinder.ptLeft.y + sideHeight} L ${cylinder.ptLeft.x} ${cylinder.ptLeft.y}`)
-                .fill(fill)
+            const pathD = barrelPath(cylinder, sideHeight);
+            let sideFill: FillData | SVGGradient = barrelFill;
+            if (faceFills !== undefined) {
+                const gradId = `isoCylBarrel_${idSymbol}`;
+                const leftColour = typeof faceFills.left.color === "string" ? faceFills.left.color : "#000";
+                const rightColour = typeof faceFills.right.color === "string" ? faceFills.right.color : "#000";
+                const {ptLeft, ptRight} = cylinder;
+                sideFill = defs.gradient("linear", (add) => {
+                    add.stop(0, leftColour);
+                    add.stop(1, rightColour);
+                }).id(gradId).attr({
+                    gradientUnits: "userSpaceOnUse",
+                    x1: ptLeft.x,
+                    y1: ptLeft.y,
+                    x2: ptRight.x,
+                    y2: ptRight.y,
+                });
+            }
+            const path = nested.path(pathD)
                 .stroke({linecap: "round", linejoin: "round", ...stroke});
+            if (faceFills !== undefined) {
+                path.fill(sideFill as SVGGradient);
+            } else {
+                path.fill(sideFill as FillData);
+            }
         }
         nested.use(circleTop).matrix(cylinder.transform.toArray());
         nested.viewbox([minx, miny, cylinder.width + dWidth, cylinder.height + dHeight].join(" "));

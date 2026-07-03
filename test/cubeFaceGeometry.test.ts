@@ -2,6 +2,7 @@
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { IsometricRenderer } from "../src/renderers/isometric";
+import { isoShadeFace } from "../src/renderers/isometric/shading";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 
@@ -60,9 +61,9 @@ describe("cube face geometry at yaw 0", () => {
         renderer.render(rep, draw, baseOptions);
 
         const faces = sideFaceColours(draw, "D__y0");
-        expect(faces.top).to.equal("#ff0000");
-        expect(faces.left).to.equal("#ffff00"); // south (front)
-        expect(faces.right).to.equal("#0000ff"); // east (right)
+        expect(faces.top).to.equal(isoShadeFace("#ff0000", "top").toLowerCase());
+        expect(faces.left).to.equal(isoShadeFace("#ffff00", "left").toLowerCase()); // south (front)
+        expect(faces.right).to.equal(isoShadeFace("#0000ff", "right").toLowerCase()); // east (right)
     });
 
     it("should rotate visible side faces with board rotation", () => {
@@ -71,8 +72,8 @@ describe("cube face geometry at yaw 0", () => {
         renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
 
         const faces = sideFaceColours(draw, "D__y1");
-        expect(faces.left).to.equal("#ff00ff"); // west
-        expect(faces.right).to.equal("#ffff00"); // south
+        expect(faces.left).to.equal(isoShadeFace("#ff00ff", "left").toLowerCase()); // west
+        expect(faces.right).to.equal(isoShadeFace("#ffff00", "right").toLowerCase()); // south
     });
 
     it("should render a proper cube when height is omitted", () => {

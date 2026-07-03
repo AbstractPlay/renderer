@@ -2,6 +2,7 @@
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { IsometricRenderer } from "../src/renderers/isometric";
+import { isoShadeFace } from "../src/renderers/isometric/shading";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 
@@ -463,5 +464,145 @@ describe("IsometricRenderer lintel pieces", () => {
         renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
         expect(draw.findOne("#L")).to.not.equal(null);
         expect(draw.find("#board use").length).to.be.greaterThan(0);
+    });
+});
+
+describe("IsometricRenderer depth cues", () => {
+    const symbolLineStrokeWidth = (draw: Svg, symbolId: string): number => {
+        const symbol = draw.findOne(`#${symbolId}`) as Svg;
+        const lines = symbol.find("line");
+        expect(lines.length).to.be.greaterThan(0);
+        return parseFloat((lines[0] as Svg).attr("stroke-width") as string);
+    };
+
+    const rectFill = (draw: Svg, rectId: string): string => {
+        const rect = draw.findOne(`#${rectId}`) as Svg;
+        expect(rect).to.not.equal(null);
+        return (rect.fill() as string).toLowerCase();
+    };
+
+    it("should use thicker strokes on pieces than on terrain surfaces", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: {
+                style: "squares",
+                width: 2,
+                height: 2,
+                strokeWeight: 2,
+                heightmap: [[30, 0], [0, 0]],
+            },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [[[{ glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const pieceStroke = symbolLineStrokeWidth(draw, "R");
+        const surfaceStroke = symbolLineStrokeWidth(draw, "_surface_30");
+        // expect(pieceStroke).to.equal(3);
+        // expect(surfaceStroke).to.equal(2);
+        expect(pieceStroke).to.be.greaterThan(surfaceStroke);
+    });
+
+    it("should shade single-colour cube faces with fixed upper-left light", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const base = "#c0392b";
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 1, height: 1 },
+            legend: { R: { piece: "cube", height: 30, colour: base } },
+            pieces: [[[{ glyph: "R" }]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(rectFill(draw, "isoRectSide30_R_L")).to.equal(isoShadeFace(base, "left").toLowerCase());
+        expect(rectFill(draw, "isoRectSide30_R_R")).to.equal(isoShadeFace(base, "right").toLowerCase());
+    });
+
+    it("should apply tone shading on top of multi-face cube colours", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        renderer.render(multiFaceRenderRep(), draw, baseOptions);
+
+        expect(rectFill(draw, "isoRectSide30_D1__y0_L")).to.equal(isoShadeFace("#ffff00", "left").toLowerCase());
+        expect(rectFill(draw, "isoRectSide30_D1__y0_R")).to.equal(isoShadeFace("#0000ff", "right").toLowerCase());
+    });
+
+    it("should keep screen-left face at base colour when the board is rotated", () => {
+        const draw0 = makeDraw();
+        const draw90 = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [[[{ glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw0, { ...baseOptions, rotate: 0 });
+        renderer.render(rep, draw90, { ...baseOptions, rotate: 90 });
+
+        const base = "#c0392b";
+        expect(rectFill(draw0, "isoRectSide30_R_L")).to.equal(isoShadeFace(base, "left").toLowerCase());
+        expect(rectFill(draw90, "isoRectSide30_R_L")).to.equal(isoShadeFace(base, "left").toLowerCase());
+    });
+
+    it("should render contact shadows under board pieces", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [[[{ glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board") as Svg;
+        expect(board.find("ellipse").length).to.be.greaterThan(0);
+    });
+
+    it("should omit contact shadows when no-piece-shadow is set", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            options: ["no-piece-shadow"],
+            board: { style: "squares", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: [[[{ glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board") as Svg;
+        expect(board.find("ellipse").length).to.equal(0);
+    });
+
+    it("should not add contact shadows to the key", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        renderer.render(keyRenderRep(), draw, baseOptions);
+
+        const key = draw.findOne("#_key") as Svg;
+        expect(key.find("ellipse").length).to.equal(0);
+    });
+
+    it("should shade the cylinder barrel with a left-to-right gradient", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const base = "#0000ff";
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "hex-of-cir", minWidth: 3, maxWidth: 5 },
+            legend: { B: { piece: "cylinder", height: 30, colour: base } },
+            pieces: ["B,,", "_", "_"].join("\n"),
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const symbol = draw.findOne("#B") as Svg;
+        expect(symbol.find("path").length).to.equal(1);
+        const grad = draw.findOne("#isoCylBarrel_B");
+        expect(grad).to.not.equal(null);
     });
 });

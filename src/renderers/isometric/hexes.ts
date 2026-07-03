@@ -4,6 +4,8 @@ import { FillData, StrokeData, Svg, Polygon as SVGPoly } from "@svgdotjs/svg.js"
 import { IPoint } from "../../grids";
 import { defineHex, Orientation } from "honeycomb-grid";
 import { buildIsoProjectionMatrix } from "./projection";
+import { CubeFaceFills } from "./cubes";
+import { isoShadeProjectedFace } from "./shading";
 
 export type Hex = {
     transform: Matrix;
@@ -90,22 +92,38 @@ const genHex = (topSize: number, sideHeight: number, orientation: Orientation): 
     }
 }
 
-export const generateHexes = (opts: {rootSvg: Svg, heights: number[], orientation: Orientation, stroke: StrokeData, fill: FillData, idSymbol?: string}): void => {
-    const { rootSvg, heights, stroke, fill, orientation} = opts;
+const sideFaceFill = (
+    baseHex: string,
+    hex: Hex,
+    i: number,
+    faceFills?: CubeFaceFills,
+): FillData => {
+    if (faceFills === undefined) {
+        return {color: baseHex};
+    }
+    const a = hex.tCorners[i];
+    const b = hex.tCorners[i + 1];
+    const centroidTop: IPoint = {x: hex.cxTop, y: hex.cyTop};
+    const shaded = isoShadeProjectedFace(baseHex, centroidTop, a, b);
+    return {color: shaded};
+};
+
+export const generateHexes = (opts: {rootSvg: Svg, heights: number[], orientation: Orientation, stroke: StrokeData, fill: FillData, faceFills?: CubeFaceFills, idSymbol?: string}): void => {
+    const { rootSvg, heights, stroke, fill, orientation, faceFills} = opts;
     const tSize = 100;
+    const topFill = faceFills?.top ?? fill;
+    const baseHex = typeof (faceFills?.left ?? fill).color === "string"
+        ? (faceFills?.left ?? fill).color as string
+        : "#000";
 
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
         const idSide = sideHeight.toString().replace(".", "_");
         const hex = genHex(tSize, sideHeight, orientation);
-        // const squareSize = Math.max(hex.width, hex.height);
-        // const dWidth = squareSize - hex.width;
-        // const dHeight = squareSize - hex.height;
         const dWidth = 0;
         const dHeight = 0;
         const minx = hex.xMin - (dWidth / 2);
         const miny = hex.yMin - (dHeight / 2);
-        // console.log(`sqSize: ${squareSize}, dWidth: ${dWidth}, dHeight: ${dHeight}`);
         let idSymbol = `_isoHex_${idSide}`;
         if (opts.idSymbol !== undefined) {
             idSymbol = opts.idSymbol;
@@ -113,11 +131,8 @@ export const generateHexes = (opts: {rootSvg: Svg, heights: number[], orientatio
         const nested = rootSvg.defs().nested().id(idSymbol)
             .attr("data-width-ratio", hex.width / hex.widthOrig)
             .attr("data-height-ratio", hex.height / hex.heightOrig)
-            // .attr("data-width-ratio", hex.width / tSize)
-            // .attr("data-width-ratio", 1)
             .attr("data-dy-bottom", Math.abs(miny - hex.cyBot) / hex.height)
             .attr("data-dy-top", Math.abs(miny - hex.cyTop) / hex.height);
-        // add defs
         const defs = nested.defs();
         let hexTop: SVGPoly|null = null;
         let sourceId = `isoHex${idTop}`;
@@ -128,21 +143,18 @@ export const generateHexes = (opts: {rootSvg: Svg, heights: number[], orientatio
         if (hexTop === null) {
             hexTop = defs.polygon(hex.corners.map(({x,y}) => [x,y].join(",")).join(" "))
                 .id(sourceId)
-                .fill(fill)
+                .fill(topFill)
                 .stroke({linecap: "round", linejoin: "round", ...stroke});
         }
 
-        // instantiate
         if (sideHeight > 0) {
-            nested.path(`M ${hex.tCorners[0].x} ${hex.tCorners[0].y} L ${hex.tCorners[0].x} ${hex.tCorners[0].y + sideHeight} L ${hex.tCorners[1].x} ${hex.tCorners[1].y + sideHeight} L ${hex.tCorners[1].x} ${hex.tCorners[1].y}`)
-                .fill(fill)
-                .stroke({linecap: "round", linejoin: "round", ...stroke});
-            nested.path(`M ${hex.tCorners[1].x} ${hex.tCorners[1].y} L ${hex.tCorners[1].x} ${hex.tCorners[1].y + sideHeight} L ${hex.tCorners[2].x} ${hex.tCorners[2].y + sideHeight} L ${hex.tCorners[2].x} ${hex.tCorners[2].y}`)
-                .fill(fill)
-                .stroke({linecap: "round", linejoin: "round", ...stroke});
-            nested.path(`M ${hex.tCorners[2].x} ${hex.tCorners[2].y} L ${hex.tCorners[2].x} ${hex.tCorners[2].y + sideHeight} L ${hex.tCorners[3].x} ${hex.tCorners[3].y + sideHeight} L ${hex.tCorners[3].x} ${hex.tCorners[3].y}`)
-                .fill(fill)
-                .stroke({linecap: "round", linejoin: "round", ...stroke});
+            for (let i = 0; i < 3; i++) {
+                const a = hex.tCorners[i];
+                const b = hex.tCorners[i + 1];
+                nested.path(`M ${a.x} ${a.y} L ${a.x} ${a.y + sideHeight} L ${b.x} ${b.y + sideHeight} L ${b.x} ${b.y}`)
+                    .fill(sideFaceFill(baseHex, hex, i, faceFills))
+                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+            }
         }
         nested.use(hexTop).matrix(hex.transform.toArray());
         nested.viewbox([minx, miny, hex.width + dWidth, hex.height + dHeight].join(" "));

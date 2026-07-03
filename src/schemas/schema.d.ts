@@ -278,6 +278,7 @@ export interface APRenderRep {
     | "reverse-numbers"
     | "swap-labels"
     | "no-piece-click"
+    | "no-piece-shadow"
   )[];
   /**
    * Map each `piece` to an actual glyph with possible options.
