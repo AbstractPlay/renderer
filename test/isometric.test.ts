@@ -635,7 +635,7 @@ describe("IsometricRenderer depth cues", () => {
                 S: { piece: "cube", height: 30, colour: "#c0392b", scale: 0.33 },
                 L: { piece: "cube", height: 30, colour: "#2980b9", scale: 0.95 },
             },
-            pieces: [[[{ glyph: "S" }, { glyph: "L" }]]],
+            pieces: [[[{ glyph: "S" }], [{ glyph: "L" }]]],
         };
         renderer.render(rep, draw, baseOptions);
 
@@ -648,6 +648,21 @@ describe("IsometricRenderer depth cues", () => {
             .sort((a, b) => a - b);
         const [smallRx, largeRx] = rxValues;
         expect(largeRx / smallRx).to.be.closeTo(0.95 / 0.33, 0.15);
+    });
+
+    it("should omit contact shadows for stacked pieces above the base", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", projection: "shallow", width: 2, height: 2 },
+            legend: { R: { piece: "cube", height: 30, colour: "#c0392b", scale: 1 } },
+            pieces: [[[{ glyph: "R" }, { glyph: "R" }], []], [[], []]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board") as Svg;
+        expect(board.find("ellipse").length).to.equal(1);
     });
 
     it("should draw cell footprints under occupied cells", () => {

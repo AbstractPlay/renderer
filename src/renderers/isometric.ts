@@ -508,7 +508,7 @@ export class IsometricRenderer extends RendererBase {
                             },
                             draw: () => {
                                 entry.y = pieceTopY;
-                                if (!this.json!.options?.includes("no-piece-shadow")) {
+                                if (!this.json!.options?.includes("no-piece-shadow") && idx === 0) {
                                     const dyBottom = parseFloat(pieceSymbol.attr("data-dy-bottom") as string);
                                     isoContactShadow(board, piecePlacement, dyBottom);
                                 }
@@ -616,7 +616,7 @@ export class IsometricRenderer extends RendererBase {
                         pcScale *= basePcScale;
                         const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
                         entry.y = piecePlacement.anchorY;
-                        if (!this.json.options?.includes("no-piece-shadow")) {
+                        if (!this.json.options?.includes("no-piece-shadow") && idx === 0) {
                             const dyBottom = parseFloat(piece.attr("data-dy-bottom") as string);
                             isoContactShadow(board, piecePlacement, dyBottom);
                         }
