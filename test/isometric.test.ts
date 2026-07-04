@@ -738,6 +738,39 @@ describe("IsometricRenderer depth cues", () => {
         expect(frontFill).to.equal(isoDepthModulate(isoShadeFace(base, "left"), 1).toLowerCase());
     });
 
+    it("should keep multi-face cube colours when depth-shaded at board rotation", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const east = "#0000ff";
+        const south = "#ffff00";
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 3, height: 3 },
+            legend: {
+                D: {
+                    piece: "cube",
+                    height: 30,
+                    faces: {
+                        top: "#ff0000",
+                        north: "#00ff00",
+                        east,
+                        south,
+                        west: "#ff00ff",
+                    },
+                },
+            },
+            pieces: [[[], [], []], [[], [{ glyph: "D" }], []], [[], [], []]],
+        };
+        renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
+
+        const shadedSymbol = [...draw.find("[id^='D__y1__db']")].map((el) => el.id())[0];
+        expect(shadedSymbol).to.not.equal(undefined);
+        const leftFill = rectFill(draw, `isoRectSide30_${shadedSymbol}_L`);
+        expect(leftFill.startsWith("#0000")).to.equal(true);
+        expect(leftFill).to.not.equal(isoShadeFace(south, "left").toLowerCase());
+        expect(leftFill).to.not.equal(isoDepthModulate(isoShadeFace(south, "left"), 0.5).toLowerCase());
+    });
+
     it("should omit depth-shaded symbols when no-iso-depth-shade is set", () => {
         const draw = makeDraw();
         const renderer = new IsometricRenderer();

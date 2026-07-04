@@ -2,7 +2,7 @@ import { StrokeData, Svg } from "@svgdotjs/svg.js";
 import { Orientation } from "honeycomb-grid";
 import { IsometricPieces, IsoPiece, Colourfuncs } from "../../schemas/schema";
 import { generateCubes, CubeFaceFills } from "./cubes";
-import { permuteCubeFacesForProjection } from "./cubeOrientation";
+import { permuteCubeFacesForProjection, effectiveCubeYaw } from "./cubeOrientation";
 import { generateCylinders } from "./cylinders";
 import { generateHexes } from "./hexes";
 import { ISO_PROJECTION_PRESETS, IsoProjectionParams } from "./projection";
@@ -75,7 +75,8 @@ const generateDepthShadedSymbol = (opts: {
     const effPiece = effectivePieceType(pc, numRotations);
 
     if (isMultiFaceCube(pc)) {
-        const visible = permuteCubeFacesForProjection(pc.faces, yaw, projection);
+        const effectiveYaw = effectiveCubeYaw(yaw, numRotations * 90);
+        const visible = permuteCubeFacesForProjection(pc.faces, effectiveYaw, projection);
         const top = resolveColour(visible.top, "#000") as string;
         const left = resolveColour(visible.left, "#000") as string;
         const right = resolveColour(visible.right, "#000") as string;
