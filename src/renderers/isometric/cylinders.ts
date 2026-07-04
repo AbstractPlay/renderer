@@ -1,9 +1,10 @@
 import { Matrix } from "transformation-matrix-js";
-import { circle2poly, projectPoint, ptDistance } from "../../common/plotting";
+import { ptDistance } from "../../common/plotting";
 import { FillData, StrokeData, Svg, Circle as SVGCircle, Gradient as SVGGradient } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
-import { buildIsoProjectionMatrix } from "./projection";
+import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique } from "./projection";
 import { CubeFaceFills } from "./cubes";
+import { cylinderSilhouettePoints } from "./cylinderSilhouette";
 
 export type Cylinder = {
     transform: Matrix;
@@ -22,36 +23,43 @@ export type Cylinder = {
     dy: number;
     ptLeft: IPoint;
     ptRight: IPoint;
+    ptRightBot: IPoint;
+    ptLeftBot: IPoint;
+    barrelBottom: IPoint[];
 };
 
-const genCylinder = (topSize: number, sideHeight: number): Cylinder => {
-    const r = topSize/2;
-    const tFinal = buildIsoProjectionMatrix();
+const genCylinder = (
+    topSize: number,
+    sideHeight: number,
+    params: IsoProjectionParams = ISO_PROJECTION_PRESETS.iso,
+): Cylinder => {
+    const r = topSize / 2;
+    const tFinal = buildIsoProjectionMatrix(params);
+    const p = (x: number, y: number, z: number): IPoint => projectOblique(x, y, z, params);
 
-    type Vertex = [number,number];
-    const ptsTop: Vertex[] = circle2poly(0, 0, r)
-    const ptsTransformed: {x: number; y: number}[] = [];
-    for (const pt of ptsTop) {
-        ptsTransformed.push(tFinal.applyToPoint(...pt));
-    }
-    const ptsRadii: IPoint[] = [projectPoint(0, 0, r, 45), projectPoint(0, 0, r, 135)].map(v => tFinal.applyToPoint(...v));
-    const ctrEllipse = tFinal.applyToPoint(0,0);
-    const rx = ptDistance(ctrEllipse.x, ctrEllipse.y, ptsRadii[0].x, ptsRadii[0].y);
-    const ry = ptDistance(ctrEllipse.x, ctrEllipse.y, ptsRadii[1].x, ptsRadii[1].y);
-    const ptsEnds: IPoint[] = [projectPoint(0, 0, r, 45), projectPoint(0, 0, r, 225)].map(v => tFinal.applyToPoint(...v));
-    ptsTransformed.push({x: ptsEnds[0].x, y: ptsEnds[0].y + sideHeight});
-    ptsTransformed.push({x: ptsEnds[1].x, y: ptsEnds[1].y + sideHeight});
-    ptsTransformed.push({x: ptsRadii[1].x, y: ptsRadii[1].y + sideHeight});
+    const { ptsEnds, ptsEndsBot, barrelBottom, ptsTop } = cylinderSilhouettePoints(r, sideHeight, params);
+    const ctrEllipse = p(0, 0, 0);
+    const rx = ptDistance(ctrEllipse.x, ctrEllipse.y, ptsEnds[0].x, ptsEnds[0].y);
+    const ry = ptDistance(ctrEllipse.x, ctrEllipse.y, ptsEnds[1].x, ptsEnds[1].y);
+    const silhouette: IPoint[] = [
+        ...ptsTop,
+        ptsEnds[0],
+        ptsEndsBot[0],
+        ...barrelBottom,
+        ptsEndsBot[1],
+        ptsEnds[1],
+    ];
 
-    const xMin = Math.min(...ptsTransformed.map(pt => pt.x));
-    const xMax = Math.max(...ptsTransformed.map(pt => pt.x));
-    const yMin = Math.min(...ptsTransformed.map(pt => pt.y));
-    const yMax = Math.max(...ptsTransformed.map(pt => pt.y));
+    const xMin = Math.min(...silhouette.map(pt => pt.x));
+    const xMax = Math.max(...silhouette.map(pt => pt.x));
+    const yMin = Math.min(...silhouette.map(pt => pt.y));
+    const yMax = Math.max(...silhouette.map(pt => pt.y));
     const width = xMax - xMin;
     const height = yMax - yMin;
 
     const cx = xMin + (width / 2);
     const cy = yMin + (height / 2);
+    const contact = p(0, 0, sideHeight);
 
     return {
         transform: tFinal,
@@ -65,21 +73,41 @@ const genCylinder = (topSize: number, sideHeight: number): Cylinder => {
         cy,
         cxTop: ctrEllipse.x,
         cyTop: ctrEllipse.y,
-        cxBot: ctrEllipse.x,
-        cyBot: ctrEllipse.y + sideHeight,
+        cxBot: contact.x,
+        cyBot: contact.y,
         dy: Math.abs(cy - ctrEllipse.y),
         ptRight: ptsEnds[0],
         ptLeft: ptsEnds[1],
-    }
-}
-
-const barrelPath = (cylinder: Cylinder, sideHeight: number): string => {
-    const {ptRight, ptLeft, rx, ry} = cylinder;
-    return `M ${ptRight.x} ${ptRight.y} L ${ptRight.x} ${ptRight.y + sideHeight} A ${rx} ${ry} 0 1 1 ${ptLeft.x} ${ptLeft.y + sideHeight} L ${ptLeft.x} ${ptLeft.y}`;
+        ptRightBot: ptsEndsBot[0],
+        ptLeftBot: ptsEndsBot[1],
+        barrelBottom,
+    };
 };
 
-export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, faceFills?: CubeFaceFills, idSymbol?: string}): void => {
-    const { rootSvg, heights, stroke, fill, faceFills} = opts;
+const barrelPath = (cylinder: Cylinder): string => {
+    const { ptRight, ptLeft, ptRightBot, ptLeftBot, barrelBottom } = cylinder;
+    const parts = [
+        `M ${ptRight.x} ${ptRight.y}`,
+        `L ${ptRightBot.x} ${ptRightBot.y}`,
+        ...barrelBottom.map((pt) => `L ${pt.x} ${pt.y}`),
+        `L ${ptLeftBot.x} ${ptLeftBot.y}`,
+        `L ${ptLeft.x} ${ptLeft.y}`,
+    ];
+    return parts.join(" ");
+};
+
+export const generateCylinders = (opts: {
+    rootSvg: Svg;
+    heights: number[];
+    stroke: StrokeData;
+    fill: FillData;
+    faceFills?: CubeFaceFills;
+    idSymbol?: string;
+    projection?: IsoProjectionParams;
+}): void => {
+    const { rootSvg, heights, stroke, fill, faceFills } = opts;
+    const projection = opts.projection ?? ISO_PROJECTION_PRESETS.iso;
+    const projectionSuffix = isoProjectionCacheSuffix(projection);
     const tSize = 100;
     const topFill = faceFills?.top ?? fill;
     const barrelFill: FillData | SVGGradient = faceFills !== undefined
@@ -89,7 +117,7 @@ export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
         const idSide = sideHeight.toString().replace(".", "_");
-        const cylinder = genCylinder(tSize, sideHeight);
+        const cylinder = genCylinder(tSize, sideHeight, projection);
         const dWidth = 0;
         const dHeight = 0;
         const minx = cylinder.xMin - (dWidth / 2);
@@ -104,9 +132,9 @@ export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke
             .attr("data-dy-top", Math.abs(miny - cylinder.cyTop) / cylinder.height);
         const defs = nested.defs();
         let circleTop: SVGCircle|null = null;
-        let sourceId = `isoCircle${idTop}`;
+        let sourceId = `isoCircle${idTop}${projectionSuffix}`;
         if (opts.idSymbol !== undefined) {
-            sourceId = `isoCircle${idTop}_${opts.idSymbol}`;
+            sourceId = `isoCircle${idTop}_${opts.idSymbol}${projectionSuffix}`;
         }
         circleTop = defs.findOne("#" + sourceId) as SVGCircle|null;
         if (circleTop === null) {
@@ -116,7 +144,7 @@ export const generateCylinders = (opts: {rootSvg: Svg, heights: number[], stroke
         }
 
         if (sideHeight > 0) {
-            const pathD = barrelPath(cylinder, sideHeight);
+            const pathD = barrelPath(cylinder);
             let sideFill: FillData | SVGGradient = barrelFill;
             if (faceFills !== undefined) {
                 const gradId = `isoCylBarrel_${idSymbol}`;

@@ -2,6 +2,7 @@
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { IsometricRenderer } from "../src/renderers/isometric";
+import { ISO_PROJECTION_PRESETS, isoProjectionCacheSuffix } from "../src/renderers/isometric/projection";
 import { isoShadeFace, isoDepthModulate } from "../src/renderers/isometric/shading";
 import { SHADOW_OPACITY } from "../src/renderers/isometric/shadow";
 import { IRendererOptionsIn } from "../src/renderers/_base";
@@ -624,6 +625,31 @@ describe("IsometricRenderer depth cues", () => {
         expect(parseFloat(shadow.attr("fill-opacity") as string)).to.equal(SHADOW_OPACITY);
     });
 
+    it("should scale contact shadows to piece footprint", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 1 },
+            legend: {
+                S: { piece: "cube", height: 30, colour: "#c0392b", scale: 0.33 },
+                L: { piece: "cube", height: 30, colour: "#2980b9", scale: 0.95 },
+            },
+            pieces: [[[{ glyph: "S" }, { glyph: "L" }]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board") as Svg;
+        const shadows = board.find("ellipse");
+        expect(shadows.length).to.equal(2);
+
+        const rxValues = shadows
+            .map(el => parseFloat((el as Svg).attr("rx") as string))
+            .sort((a, b) => a - b);
+        const [smallRx, largeRx] = rxValues;
+        expect(largeRx / smallRx).to.be.closeTo(0.95 / 0.33, 0.15);
+    });
+
     it("should draw cell footprints under occupied cells", () => {
         const draw = makeDraw();
         const renderer = new IsometricRenderer();
@@ -715,5 +741,246 @@ describe("IsometricRenderer depth cues", () => {
         expect(draw.find("[id^='R__db']").length).to.equal(0);
         const hrefs = draw.find("#board use").map((u) => (u.attr("href") ?? u.attr("xlink:href")) as string);
         expect(hrefs.some((h) => h.includes("R__db"))).to.equal(false);
+    });
+});
+
+describe("IsometricRenderer projection presets", () => {
+    it("should render boards with shallow and very-shallow projection presets", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 2, projection: "very-shallow" },
+            legend: { R: { piece: "cube", height: 100, colour: "#c0392b" } },
+            pieces: [[[ { glyph: "R" } ]], []],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const symbol = draw.findOne("#R") as Svg | null;
+        expect(symbol).to.not.equal(null);
+
+        const drawIso = makeDraw();
+        const isoRep: APRenderRep = {
+            ...rep,
+            board: { style: "squares", width: 2, height: 2, projection: "iso" },
+        };
+        renderer.render(isoRep, drawIso, baseOptions);
+        const isoSymbol = drawIso.findOne("#R") as Svg | null;
+        expect(isoSymbol).to.not.equal(null);
+        expect(symbol!.viewbox().height).to.be.lessThan(isoSymbol!.viewbox().height);
+        const shallowDy = parseFloat(symbol!.attr("data-dy-top") as string);
+        const isoDy = parseFloat(isoSymbol!.attr("data-dy-top") as string);
+        expect(shallowDy).to.be.greaterThan(isoDy);
+    });
+
+    it("should render boards with oblique projection presets", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        for (const projection of ["compressed", "cabinet", "dimetric", "trimetric"] as const) {
+            const rep: APRenderRep = {
+                renderer: "isometric",
+                board: { style: "squares", width: 2, height: 2, projection },
+                legend: {
+                    R: { piece: "cube", height: 100, colour: "#c0392b" },
+                    C: { piece: "cylinder", height: 20, colour: "#2980b9" },
+                },
+                pieces: [[[ { glyph: "R" }, { glyph: "C" } ]], []],
+            };
+            renderer.render(rep, draw, baseOptions);
+            expect(draw.findOne("#R")).to.not.equal(null);
+            expect(draw.findOne("#C")).to.not.equal(null);
+        }
+    });
+
+    it("should paint front cells over back cells with compressed projection", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 3, height: 3, projection: "compressed" },
+            legend: {
+                B: { piece: "cube", height: 30, colour: "#2980b9" },
+                F: { piece: "cube", height: 30, colour: "#e74c3c" },
+            },
+            pieces: [
+                [[], [], [{ glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }]],
+                [[], [], []],
+                [[{ glyph: "F" }], [], []],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const backStack = boardUseIndices(draw, "B");
+        const front = boardUseIndices(draw, "F");
+        expect(front[0]).to.be.greaterThan(Math.max(...backStack));
+    });
+
+    it("should paint front cells over back cells with cabinet projection", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 3, height: 3, projection: "cabinet" },
+            legend: {
+                B: { piece: "cube", height: 30, colour: "#2980b9" },
+                F: { piece: "cube", height: 30, colour: "#e74c3c" },
+            },
+            pieces: [
+                [[], [], [{ glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }, { glyph: "B" }]],
+                [[], [], []],
+                [[{ glyph: "F" }], [], []],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const backStack = boardUseIndices(draw, "B");
+        const front = boardUseIndices(draw, "F");
+        expect(front[0]).to.be.greaterThan(Math.max(...backStack));
+    });
+
+    it("should paint pit pieces over same-row rim terrain with cabinet heightmap", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: {
+                style: "squares",
+                width: 4,
+                height: 4,
+                projection: "cabinet",
+                heightmap: [[50, 50, 50, 50], [50, 25, 25, 50], [50, 25, 25, 50], [50, 50, 50, 50]],
+            },
+            legend: {
+                D: {
+                    piece: "cube",
+                    height: 30,
+                    faces: { top: 1, north: 2, east: 3, south: 4, west: 5 },
+                },
+            },
+            pieces: [
+                [[], [], [], []],
+                [[], [], [], []],
+                [[], [{ glyph: "D", yaw: 0 }], [], []],
+                [[], [], [], []],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(draw.findOne("#D__y0")).to.not.equal(null);
+        expect(draw.findOne("#_surface_25")).to.not.equal(null);
+        expect(draw.findOne("#_surface_50")).to.not.equal(null);
+
+        const pitSurface = boardUseIndices(draw, "_surface_25");
+        const pitPiece = boardUseIndices(draw, "D__y0");
+        expect(pitPiece.length).to.equal(1);
+        expect(pitPiece[0]).to.be.greaterThan(Math.max(...pitSurface));
+    });
+
+    it("should paint cabinet pieces after their cell terrain surface", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 1, height: 1, projection: "cabinet" },
+            legend: {
+                D: {
+                    piece: "cube",
+                    height: 30,
+                    faces: { top: 1, north: 2, east: 3, south: 4, west: 5 },
+                },
+            },
+            pieces: [[[ { glyph: "D", yaw: 0 } ]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const surfaces = boardUseIndices(draw, "_surface_0");
+        const piece = boardUseIndices(draw, "D__y0");
+        expect(piece.length).to.equal(1);
+        expect(surfaces.length).to.equal(1);
+        expect(piece[0]).to.be.greaterThan(surfaces[0]);
+    });
+
+    it("should paint south and west on cabinet multi-face cubes at yaw 0", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 1, height: 1, projection: "cabinet" },
+            legend: {
+                D: {
+                    piece: "cube",
+                    faces: {
+                        top: "#ff0000",
+                        north: "#00ff00",
+                        east: "#0000ff",
+                        south: "#ffff00",
+                        west: "#ff00ff",
+                    },
+                },
+            },
+            pieces: [[[ { glyph: "D", yaw: 0 } ]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const left = (draw.findOne("#isoRectSide100_D__y0_e35_x0s100_y45s50_L") as { fill: () => string } | null)?.fill();
+        const right = (draw.findOne("#isoRectSide100_D__y0_e35_x0s100_y45s50_R") as { fill: () => string } | null)?.fill();
+        expect(left?.toLowerCase()).to.equal(isoShadeFace("#ffff00", "left").toLowerCase());
+        expect(right?.toLowerCase()).to.equal(isoShadeFace("#ff00ff", "right").toLowerCase());
+        expect(right?.toLowerCase()).to.not.equal(isoShadeFace("#0000ff", "right").toLowerCase());
+
+        const sym = draw.findOne("#D__y0") as Svg | null;
+        expect(sym).to.not.equal(null);
+        const topUse = sym!.findOne("use") as { attr: (n: string) => string } | null;
+        expect(topUse?.attr("href") ?? topUse?.attr("xlink:href")).to.match(/isoRect100_D__y0/);
+    });
+
+    it("should draw full top grid lines on cabinet board surfaces", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 3, height: 3, projection: "cabinet" },
+            legend: { X: { piece: "cube", height: 30, colour: "#c0392b" } },
+            pieces: null,
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const suffix = isoProjectionCacheSuffix(ISO_PROJECTION_PRESETS.cabinet);
+        const surfaceTop = draw.findOne(`#isoRect100__surface_0${suffix}`) as Svg | null;
+        expect(surfaceTop).to.not.equal(null);
+        expect(surfaceTop!.find("line").length).to.equal(4);
+
+        const pieceTop = draw.findOne(`#isoRect100_X${suffix}`) as Svg | null;
+        expect(pieceTop).to.not.equal(null);
+        expect(pieceTop!.find("line").length).to.equal(2);
+    });
+
+    it("should render cabinet heightmap boards with hex and cylinder pieces", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: {
+                style: "squares",
+                width: 4,
+                height: 4,
+                projection: "cabinet",
+                heightmap: [[50, 50, 50, 50], [50, 25, 25, 50], [50, 25, 25, 50], [50, 50, 50, 50]],
+            },
+            legend: {
+                C: { piece: "cylinder", height: 30, colour: "#2980b9" },
+                H: { piece: "hexp", height: 30, colour: "#27ae60" },
+            },
+            pieces: [
+                [[], [], [], []],
+                [[], [{ glyph: "C" }], [{ glyph: "H" }], []],
+                [[], [], [], []],
+                [[], [], [], []],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(draw.findOne("#C")).to.not.equal(null);
+        expect(draw.findOne("#H")).to.not.equal(null);
     });
 });

@@ -659,6 +659,10 @@ export interface BoardBasic {
    */
   heightmap?: [[number, ...number[]], ...[number, ...number[]][]];
   /**
+   * Only meaningful in the `isometric` renderer. Selects camera elevation and ground-axis foreshortening. `iso` is classic 2:1 isometric; `shallow` and `very-shallow` raise the viewpoint; `compressed` keeps the iso azimuth with the depth axis at half scale; `cabinet` is true cabinet oblique (east–west undistorted, depth at 45° half scale); `dimetric` and `trimetric` foreshorten both ground axes equally or unequally at the iso azimuth.
+   */
+  projection?: "iso" | "shallow" | "very-shallow" | "compressed" | "cabinet" | "dimetric" | "trimetric";
+  /**
    * Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.
    */
   markers?: (

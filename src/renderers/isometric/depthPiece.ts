@@ -2,9 +2,10 @@ import { StrokeData, Svg } from "@svgdotjs/svg.js";
 import { Orientation } from "honeycomb-grid";
 import { IsometricPieces, IsoPiece, Colourfuncs } from "../../schemas/schema";
 import { generateCubes, CubeFaceFills } from "./cubes";
-import { permuteCubeFaces } from "./cubeOrientation";
+import { permuteCubeFacesForProjection } from "./cubeOrientation";
 import { generateCylinders } from "./cylinders";
 import { generateHexes } from "./hexes";
+import { ISO_PROJECTION_PRESETS, IsoProjectionParams } from "./projection";
 import {
     depthBucketIndex,
     depthToNormalized,
@@ -67,12 +68,14 @@ const generateDepthShadedSymbol = (opts: {
     normalizedDepth: number;
     pieceStroke: StrokeData;
     resolveColour: ResolveColourFn;
+    projection?: IsoProjectionParams;
 }): void => {
     const { rootSvg, shadedId, pc, yaw, numRotations, normalizedDepth, pieceStroke, resolveColour } = opts;
+    const projection = opts.projection ?? ISO_PROJECTION_PRESETS.iso;
     const effPiece = effectivePieceType(pc, numRotations);
 
     if (isMultiFaceCube(pc)) {
-        const visible = permuteCubeFaces(pc.faces, yaw);
+        const visible = permuteCubeFacesForProjection(pc.faces, yaw, projection);
         const top = resolveColour(visible.top, "#000") as string;
         const left = resolveColour(visible.left, "#000") as string;
         const right = resolveColour(visible.right, "#000") as string;
@@ -83,6 +86,7 @@ const generateDepthShadedSymbol = (opts: {
         };
         generateCubes({
             rootSvg,
+            projection,
             heights: [pc.height ?? 100],
             stroke: pieceStroke,
             fill: faceFills.top,
@@ -100,10 +104,11 @@ const generateDepthShadedSymbol = (opts: {
     const fills = modulateFaceFills(isoShadeFaces(base), normalizedDepth);
 
     if (effPiece === "cube") {
-        generateCubes({ rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
+        generateCubes({ rootSvg, projection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
     } else if (effPiece in lintelSides) {
         generateCubes({
             rootSvg,
+            projection,
             heights: [pc.height],
             stroke: pieceStroke,
             fill: fills.top,
@@ -112,10 +117,11 @@ const generateDepthShadedSymbol = (opts: {
             sides: lintelSides[effPiece],
         });
     } else if (effPiece === "cylinder") {
-        generateCylinders({ rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
+        generateCylinders({ rootSvg, projection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
     } else if (effPiece === "hexp") {
         generateHexes({
             rootSvg,
+            projection,
             heights: [pc.height],
             stroke: pieceStroke,
             fill: fills.top,
@@ -126,6 +132,7 @@ const generateDepthShadedSymbol = (opts: {
     } else if (effPiece === "hexf") {
         generateHexes({
             rootSvg,
+            projection,
             heights: [pc.height],
             stroke: pieceStroke,
             fill: fills.top,
@@ -154,6 +161,7 @@ export const resolveDepthShadedPieceId = (opts: {
     numRotations: number;
     pieceStroke: StrokeData;
     resolveColour: ResolveColourFn;
+    projection?: IsoProjectionParams;
 }): string => {
     const normalizedDepth = depthToNormalized(opts.depth, opts.minDepth, opts.maxDepth);
     const bucket = depthBucketIndex(normalizedDepth);
@@ -174,6 +182,7 @@ export const resolveDepthShadedPieceId = (opts: {
         normalizedDepth,
         pieceStroke: opts.pieceStroke,
         resolveColour: opts.resolveColour,
+        projection: opts.projection,
     });
     return shadedId;
 };

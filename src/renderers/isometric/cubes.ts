@@ -1,13 +1,25 @@
 import { Matrix } from "transformation-matrix-js";
-import { deg2rad } from "../../common/plotting";
 import { FillData, StrokeData, Svg, G as SVGG, Rect as SVGRect } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
-import { buildIsoProjectionMatrix } from "./projection";
+import {
+    affineFromUnitRect,
+    cabinetPieceVisibility,
+    ISO_PROJECTION_PRESETS,
+    IsoProjectionParams,
+    isoProjectionCacheSuffix,
+    projectOblique,
+    usesLayeredCellDraw,
+} from "./projection";
+
+export type CubeSideFace = "left" | "right" | "west";
 
 export type Cube = {
     top: Matrix;
     left: Matrix;
     right: Matrix;
+    west: Matrix;
+    /** Side faces to paint (cabinet: south + west). */
+    sideFaces: CubeSideFace[];
     xMin: number;
     yMin: number;
     width: number;
@@ -21,49 +33,77 @@ export type Cube = {
     dy: number;
 };
 
-export const genCube = (topSize: number, sideHeight: number): Cube => {
-    const tFinal = buildIsoProjectionMatrix();
-    const tAnchorBottom = tFinal.applyToPoint(topSize, topSize);
-    const lScale = new Matrix().scaleX(Math.cos(deg2rad(30)));
-    const lShear = new Matrix().shearY(Math.tan(deg2rad(30)));
-    const lPreMove = lShear.multiply(lScale);
-    const lAnchor = lPreMove.applyToPoint(topSize,0);
-    const lTranslate = new Matrix().translate(tAnchorBottom.x - lAnchor.x, tAnchorBottom.y - lAnchor.y);
-    const lFinal = lTranslate.multiply(lPreMove);
-    const rScale = new Matrix().scaleX(Math.cos(deg2rad(30)));
-    const rShear = new Matrix().shearY(Math.tan(deg2rad(-30)));
-    const rPreMove = rShear.multiply(rScale);
-    const rAnchor = rPreMove.applyToPoint(0,0);
-    const rTranslate = new Matrix().translate(tAnchorBottom.x - rAnchor.x, tAnchorBottom.y - rAnchor.y);
-    const rFinal = rTranslate.multiply(rPreMove);
+export const genCube = (
+    topSize: number,
+    sideHeight: number,
+    params: IsoProjectionParams = ISO_PROJECTION_PRESETS.iso,
+): Cube => {
+    const p = (x: number, y: number, z: number): IPoint => projectOblique(x, y, z, params);
+    const cabinet = cabinetPieceVisibility(params);
 
-    const ptsTop: [number,number][] = [[0,0], [topSize,0], [topSize,topSize], [0,topSize]];
-    const ptsSide: [number,number][] = [[0,0], [topSize,0], [0, sideHeight], [topSize, sideHeight]];
-    const ptsTransformed: {x: number; y: number}[] = [];
-    for (const pt of ptsTop) {
-        ptsTransformed.push(tFinal.applyToPoint(...pt));
+    const nw = p(0, 0, 0);
+    const ne = p(topSize, 0, 0);
+    const se = p(topSize, topSize, 0);
+    const sw = p(0, topSize, 0);
+
+    const top = affineFromUnitRect(topSize, topSize, nw, ne, sw);
+
+    const ptsTransformed: IPoint[] = [
+        nw,
+        ne,
+        se,
+        sw,
+        p(0, topSize, sideHeight),
+        p(topSize, topSize, sideHeight),
+        p(topSize, 0, sideHeight),
+    ];
+    if (cabinet !== undefined) {
+        ptsTransformed.push(p(0, 0, sideHeight));
     }
-    for (const pt of ptsSide) {
-        ptsTransformed.push(lFinal.applyToPoint(...pt));
-        ptsTransformed.push(rFinal.applyToPoint(...pt));
-    }
-    const xMin = Math.min(...ptsTransformed.map(pt => pt.x));
-    const xMax = Math.max(...ptsTransformed.map(pt => pt.x));
-    const yMin = Math.min(...ptsTransformed.map(pt => pt.y));
-    const yMax = Math.max(...ptsTransformed.map(pt => pt.y));
+    const left = affineFromUnitRect(
+        topSize,
+        sideHeight,
+        p(0, topSize, 0),
+        p(topSize, topSize, 0),
+        p(0, topSize, sideHeight),
+    );
+    const right = affineFromUnitRect(
+        topSize,
+        sideHeight,
+        p(topSize, topSize, 0),
+        p(topSize, 0, 0),
+        p(topSize, topSize, sideHeight),
+    );
+    const west = affineFromUnitRect(
+        topSize,
+        sideHeight,
+        p(0, 0, 0),
+        p(0, topSize, 0),
+        p(0, 0, sideHeight),
+    );
+
+    const xMin = Math.min(...ptsTransformed.map((pt) => pt.x));
+    const xMax = Math.max(...ptsTransformed.map((pt) => pt.x));
+    const yMin = Math.min(...ptsTransformed.map((pt) => pt.y));
+    const yMax = Math.max(...ptsTransformed.map((pt) => pt.y));
     const width = xMax - xMin;
     const height = yMax - yMin;
 
     const cx = xMin + (width / 2);
     const cy = yMin + (height / 2);
-    const {x: cxTop, y: cyTop} = tFinal.applyToPoint(topSize / 2, topSize / 2);
+    const tAnchorBottom = p(topSize, topSize, 0);
+    const contact = p(topSize / 2, topSize / 2, sideHeight);
+    const { x: cxTop, y: cyTop } = p(topSize / 2, topSize / 2, 0);
     const dy = Math.abs(tAnchorBottom.y - cyTop);
-    const cxBot = cxTop; const cyBot = cyTop + sideHeight;
+    const cxBot = contact.x;
+    const cyBot = contact.y;
 
     return {
-        top: tFinal,
-        left: lFinal,
-        right: rFinal,
+        top,
+        left,
+        right,
+        west,
+        sideFaces: cabinet !== undefined ? ["left", "west"] : ["left", "right"],
         xMin,
         yMin,
         width,
@@ -75,8 +115,47 @@ export const genCube = (topSize: number, sideHeight: number): Cube => {
         cxBot,
         cyBot,
         dy,
+    };
+};
+
+export type CubePaintFace = "top" | "left" | "right" | "west";
+
+/** Screen Y of a face centre in board space — higher means closer to the viewer. */
+const cubeFacePaintDepth = (
+    face: CubePaintFace,
+    topSize: number,
+    sideHeight: number,
+    params: IsoProjectionParams,
+): number => {
+    switch (face) {
+        case "top":
+            return projectOblique(topSize / 2, topSize / 2, 0, params).y;
+        case "left":
+            return projectOblique(topSize / 2, topSize, sideHeight / 2, params).y;
+        case "right":
+            return projectOblique(topSize, topSize / 2, sideHeight / 2, params).y;
+        case "west":
+            return projectOblique(0, topSize / 2, sideHeight / 2, params).y;
     }
-}
+};
+
+/** Paint-order for cube faces: back (smaller screen Y) first, front last. */
+export const cubeFacePaintOrder = (
+    cube: Cube,
+    sideHeight: number,
+    topSize: number,
+    params: IsoProjectionParams = ISO_PROJECTION_PRESETS.iso,
+): CubePaintFace[] => {
+    const faces: CubePaintFace[] = ["top"];
+    if (sideHeight > 0) {
+        for (const slot of cube.sideFaces) {
+            faces.push(slot === "west" ? "west" : slot);
+        }
+    }
+    return faces.sort((a, b) =>
+        cubeFacePaintDepth(a, topSize, sideHeight, params) - cubeFacePaintDepth(b, topSize, sideHeight, params),
+    );
+};
 
 export type CubeFaceFills = {
     top: FillData;
@@ -84,122 +163,168 @@ export type CubeFaceFills = {
     right: FillData;
 };
 
-export const generateCubes = (opts: {rootSvg: Svg, heights: number[], stroke: StrokeData, fill: FillData, faceFills?: CubeFaceFills, idSymbol?: string, sides?: ("N"|"E"|"S"|"W")[]}): void => {
-    const { rootSvg, heights, stroke, fill, faceFills} = opts;
+export const generateCubes = (opts: {
+    rootSvg: Svg;
+    heights: number[];
+    stroke: StrokeData;
+    fill: FillData;
+    faceFills?: CubeFaceFills;
+    idSymbol?: string;
+    sides?: ("N" | "E" | "S" | "W")[];
+    projection?: IsoProjectionParams;
+}): void => {
+    const { rootSvg, heights, stroke, fill, faceFills } = opts;
+    const projection = opts.projection ?? ISO_PROJECTION_PRESETS.iso;
+    const projectionSuffix = isoProjectionCacheSuffix(projection);
     const tSize = 100;
-    let sides: ("N"|"E"|"S"|"W")[] = ["N", "E", "S", "W"];
+    const cabinet = usesLayeredCellDraw(projection);
+    let sides: ("N" | "E" | "S" | "W")[] = ["N", "E", "S", "W"];
     if (opts.sides !== undefined) {
         sides = opts.sides;
+    } else if (cabinet) {
+        sides = ["W", "S"];
     }
 
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
         const idSide = sideHeight.toString().replace(".", "_");
-        const cube = genCube(tSize, sideHeight);
+        const cube = genCube(tSize, sideHeight, projection);
         const dWidth = 0;
         const dHeight = 0;
         const minx = cube.xMin - (dWidth / 2);
         const miny = cube.yMin - (dHeight / 2);
         let idSymbol = `_isoCube_${idSide}`;
         if (opts.idSymbol !== undefined) {
-            idSymbol = opts.idSymbol
+            idSymbol = opts.idSymbol;
         }
         const nested = rootSvg.defs().nested().id(idSymbol)
             .attr("data-width-ratio", cube.width / tSize)
             .attr("data-dy-bottom", Math.abs(miny - cube.cyBot) / cube.height)
             .attr("data-dy-top", Math.abs(miny - cube.cyTop) / cube.height);
         const defs = nested.defs();
-        let rectTop: SVGG|null = null;
-        let sourceId = `isoRect${idTop}`;
+        let rectTop: SVGG | null = null;
+        let sourceId = `isoRect${idTop}${projectionSuffix}`;
         if (opts.idSymbol !== undefined) {
-            sourceId = `isoRect${idTop}_${opts.idSymbol}`;
+            sourceId = `isoRect${idTop}_${opts.idSymbol}${projectionSuffix}`;
         }
-        rectTop = defs.findOne("#" + sourceId) as SVGG|null;
+        rectTop = defs.findOne("#" + sourceId) as SVGG | null;
         if (rectTop === null) {
             rectTop = defs.group().id(sourceId);
             rectTop.rect(tSize, tSize).fill(faceFills?.top ?? fill).stroke("none");
             if (sides.includes("N")) {
-                rectTop.line(0,0,tSize,0).stroke({linecap: "round", linejoin: "round", ...stroke});
+                rectTop.line(0, 0, tSize, 0).stroke({ linecap: "round", linejoin: "round", ...stroke });
             }
             if (sides.includes("E")) {
-                rectTop.line(tSize,0,tSize,tSize).stroke({linecap: "round", linejoin: "round", ...stroke});
+                rectTop.line(tSize, 0, tSize, tSize).stroke({ linecap: "round", linejoin: "round", ...stroke });
             }
             if (sides.includes("S")) {
-                rectTop.line(tSize, tSize,0,tSize).stroke({linecap: "round", linejoin: "round", ...stroke});
+                rectTop.line(tSize, tSize, 0, tSize).stroke({ linecap: "round", linejoin: "round", ...stroke });
             }
             if (sides.includes("W")) {
-                rectTop.line(0,0,0,tSize).stroke({linecap: "round", linejoin: "round", ...stroke});
+                rectTop.line(0, 0, 0, tSize).stroke({ linecap: "round", linejoin: "round", ...stroke });
             }
         }
-        let rectSideLeft: SVGRect|null = null;
-        let rectSideRight: SVGRect|null = null;
+        let rectSideLeft: SVGRect | null = null;
+        let rectSideRight: SVGRect | null = null;
         if (sideHeight > 0 && sides.length > 0) {
-            let sideSourceId = `isoRectSide${idSide}`;
+            let sideSourceId = `isoRectSide${idSide}${projectionSuffix}`;
             if (opts.idSymbol !== undefined) {
-                sideSourceId = `isoRectSide${idSide}_${opts.idSymbol}`;
+                sideSourceId = `isoRectSide${idSide}_${opts.idSymbol}${projectionSuffix}`;
             }
             if (faceFills !== undefined) {
                 const sideSourceIdLeft = `${sideSourceId}_L`;
                 const sideSourceIdRight = `${sideSourceId}_R`;
-                rectSideLeft = defs.findOne("#" + sideSourceIdLeft) as SVGRect|null;
+                rectSideLeft = defs.findOne("#" + sideSourceIdLeft) as SVGRect | null;
                 if (rectSideLeft === null) {
                     rectSideLeft = defs.rect(tSize, sideHeight).id(sideSourceIdLeft).fill(faceFills.left).stroke("none");
                 }
-                rectSideRight = defs.findOne("#" + sideSourceIdRight) as SVGRect|null;
+                rectSideRight = defs.findOne("#" + sideSourceIdRight) as SVGRect | null;
                 if (rectSideRight === null) {
                     rectSideRight = defs.rect(tSize, sideHeight).id(sideSourceIdRight).fill(faceFills.right).stroke("none");
                 }
-                nested.use(rectSideRight).matrix(cube.right.toArray());
-                nested.use(rectSideLeft).matrix(cube.left.toArray());
             } else {
-                rectSideLeft = defs.findOne("#" + sideSourceId) as SVGRect|null;
+                rectSideLeft = defs.findOne("#" + sideSourceId) as SVGRect | null;
                 if (rectSideLeft === null) {
                     rectSideLeft = defs.rect(tSize, sideHeight).id(sideSourceId).fill(fill).stroke("none");
                 }
-                nested.use(rectSideLeft).matrix(cube.right.toArray());
-                nested.use(rectSideLeft).matrix(cube.left.toArray());
             }
 
-            const a1: IPoint = cube.top.applyToPoint(tSize,0);
-            const a2: IPoint = cube.right.applyToPoint(tSize,sideHeight);
-            const a3: IPoint = cube.right.applyToPoint(0,sideHeight);
-            const a4: IPoint = cube.top.applyToPoint(tSize,tSize);
-            const a5: IPoint = cube.left.applyToPoint(0,sideHeight);
-            const a6: IPoint = cube.top.applyToPoint(0,tSize);
-            if ( (!sides.includes("N") && !sides.includes("S")) || (!sides.includes("E") && !sides.includes("W")) ) {
-                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-            } else if (!sides.includes("N")) {
-                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-            } else if (!sides.includes("E")) {
-                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a5.x, a5.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-            } else if (!sides.includes("S")) {
-                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a5.x, a5.y, a3.x, a3.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-            } else if (!sides.includes("W")) {
-                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-            } else {
-                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a2.x, a2.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({linecap: "round", linejoin: "round", ...stroke});
-                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({linecap: "round", linejoin: "round", ...stroke});
+            const paintTop = (): void => {
+                if (rectTop !== null) {
+                    nested.use(rectTop).matrix(cube.top.toArray());
+                }
+            };
+
+            const paintFace = (face: CubePaintFace): void => {
+                if (face === "left" && cube.sideFaces.includes("left") && rectSideLeft !== null) {
+                    nested.use(rectSideLeft).matrix(cube.left.toArray());
+                } else if (face === "right" && cube.sideFaces.includes("right")) {
+                    const sideRect = faceFills !== undefined ? rectSideRight : rectSideLeft;
+                    if (sideRect !== null) {
+                        nested.use(sideRect).matrix(cube.right.toArray());
+                    }
+                } else if (face === "west" && cube.sideFaces.includes("west")) {
+                    const sideRect = faceFills !== undefined ? rectSideRight : rectSideLeft;
+                    if (sideRect !== null) {
+                        nested.use(sideRect).matrix(cube.west.toArray());
+                    }
+                } else if (face === "top") {
+                    paintTop();
+                }
+            };
+            for (const face of cubeFacePaintOrder(cube, sideHeight, tSize, projection)) {
+                paintFace(face);
             }
-        }
-        if (sides.length > 0) {
-            nested.use(rectTop).matrix(cube.top.toArray());
+
+            const a1: IPoint = cube.top.applyToPoint(tSize, 0);
+            const a2: IPoint = cube.right.applyToPoint(tSize, sideHeight);
+            const a3: IPoint = cube.right.applyToPoint(0, sideHeight);
+            const a4: IPoint = cube.top.applyToPoint(tSize, tSize);
+            const a5: IPoint = cube.left.applyToPoint(0, sideHeight);
+            const a6: IPoint = cube.top.applyToPoint(0, tSize);
+            const aWestTop: IPoint = cube.west.applyToPoint(0, 0);
+            const aWestBot: IPoint = cube.west.applyToPoint(0, sideHeight);
+            if (cabinet) {
+                nested.line(aWestTop.x, aWestTop.y, aWestBot.x, aWestBot.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(aWestBot.x, aWestBot.y, a5.x, a5.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+            } else if ((!sides.includes("N") && !sides.includes("S")) || (!sides.includes("E") && !sides.includes("W"))) {
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+            } else if (!sides.includes("N")) {
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+            } else if (!sides.includes("E")) {
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a5.x, a5.y, a3.x, a3.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+            } else if (!sides.includes("S")) {
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a2.x, a2.y, a3.x, a3.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a5.x, a5.y, a3.x, a3.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+            } else if (!sides.includes("W")) {
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a2.x, a2.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+            } else {
+                nested.line(a1.x, a1.y, a2.x, a2.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a2.x, a2.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a4.x, a4.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a3.x, a3.y, a5.x, a5.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                nested.line(a5.x, a5.y, a6.x, a6.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+            }
+        } else if (sides.length > 0) {
+            if (rectTop !== null) {
+                nested.use(rectTop).matrix(cube.top.toArray());
+            }
         }
         nested.viewbox([minx, miny, cube.width + dWidth, cube.height + dHeight].join(" "));
     }
-}
+};

@@ -3,16 +3,25 @@ import { IsoPiece } from "../../schemas/schema";
 import { Svg } from "@svgdotjs/svg.js";
 import { Matrix } from "transformation-matrix-js";
 import { effectiveCubeYaw } from "./cubeOrientation";
+import { IsoProjectionParams, projectedCellDepth, usesLayeredCellDraw } from "./projection";
 import { isoSymbolPlacement } from "./symbolPlacement";
 import { IsoPiecesGrid, isMultiFaceCube, parseStackEntry } from "./stack";
+
+export type IsoDepthWeight = { wx: number; wy: number };
 
 export type IsoCellSortKey = {
     depth: number;
     topY: number;
     rotatedX: number;
+    layer: number;
     row: number;
     col: number;
 };
+
+export const ISO_DRAW_LAYER_SURFACE = 0;
+export const ISO_DRAW_LAYER_MARK = 1;
+export const ISO_DRAW_LAYER_FOOTPRINT = 2;
+export const ISO_DRAW_LAYER_PIECE = 3;
 
 export const ISO_SORT_EPSILON = 1e-4;
 
@@ -39,6 +48,41 @@ export const compareCellSortKeys = (a: IsoCellSortKey, b: IsoCellSortKey): numbe
     return a.col - b.col;
 };
 
+/** Layer-aware compare for cabinet draw tasks (surfaces before pieces at equal depth). */
+export const compareDrawTaskSortKeys = (a: IsoCellSortKey, b: IsoCellSortKey): number => {
+    if (Math.abs(a.depth - b.depth) > ISO_SORT_EPSILON) {
+        return a.depth - b.depth;
+    }
+    if (Math.abs(a.layer - b.layer) > ISO_SORT_EPSILON) {
+        return a.layer - b.layer;
+    }
+    if (Math.abs(a.topY - b.topY) > ISO_SORT_EPSILON) {
+        return a.topY - b.topY;
+    }
+    if (Math.abs(a.rotatedX - b.rotatedX) > ISO_SORT_EPSILON) {
+        return a.rotatedX - b.rotatedX;
+    }
+    if (a.row !== b.row) {
+        return a.row - b.row;
+    }
+    return a.col - b.col;
+};
+
+/** Ground-plane sort key shared by every draw pass for one cell. */
+export const cellBaseSortKey = (
+    entry: CellSortEntry,
+    projection?: IsoProjectionParams,
+): IsoCellSortKey => ({
+    depth: projection !== undefined && usesLayeredCellDraw(projection)
+        ? projectedCellDepth(entry, projection)
+        : entry.y,
+    topY: entry.y,
+    rotatedX: entry.x,
+    layer: ISO_DRAW_LAYER_SURFACE,
+    row: entry.row,
+    col: entry.col,
+});
+
 export const computeCellSortKey = (opts: {
     entry: CellSortEntry;
     cellsize: number;
@@ -50,29 +94,24 @@ export const computeCellSortKey = (opts: {
     basePcScale: number;
     boardRotation: number;
     rootSvg: Svg;
+    projection?: IsoProjectionParams;
 }): IsoCellSortKey => {
     const {
         entry,
         cellsize,
-        boardLocalGrid,
-        tUserRotate,
         heightmap,
         pieces,
         legend,
         basePcScale,
         boardRotation,
         rootSvg,
+        projection,
     } = opts;
-
-    const local = boardLocalGrid[entry.row][entry.col];
-    const rotated = tUserRotate.applyToPoint(local.x, local.y);
-    let depth = rotated.x + rotated.y;
 
     let terrainHeight = 0;
     if (heightmap !== undefined && heightmap.length > entry.row && heightmap[entry.row].length > entry.col) {
         terrainHeight = heightmap[entry.row][entry.col];
     }
-    depth += terrainHeight * (cellsize / 100) * 0.4;
 
     let anchorY = entry.y;
     const surface = rootSvg.findOne(`#_surface_${terrainHeight.toString().replace(".", "_")}`) as Svg | null;
@@ -104,7 +143,11 @@ export const computeCellSortKey = (opts: {
             }
         }
     }
+    let depth = entry.y;
+    if (projection !== undefined && usesLayeredCellDraw(projection)) {
+        depth = projectedCellDepth({ x: entry.x, y: entry.y }, projection);
+    }
     depth -= stackCount * (cellsize / 100) * 0.12;
 
-    return { depth, topY: anchorY, rotatedX: rotated.x, row: entry.row, col: entry.col };
+    return { depth, topY: anchorY, rotatedX: entry.x, layer: ISO_DRAW_LAYER_PIECE, row: entry.row, col: entry.col };
 };

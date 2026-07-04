@@ -6,14 +6,14 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
 import { generateCubes, CubeFaceFills } from "./isometric/cubes";
-import { effectiveCubeYaw, permuteCubeFaces } from "./isometric/cubeOrientation";
+import { effectiveCubeYaw, permuteCubeFacesForProjection } from "./isometric/cubeOrientation";
 import { generateCylinders } from "./isometric/cylinders";
 import { generateHexes } from "./isometric/hexes";
-import { compareCellSortKeys, computeCellSortKey, IsoCellSortKey } from "./isometric/cellSort";
+import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
 import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
 import { isoCellFootprint } from "./isometric/footprint";
 import { parseIsoPiecesString } from "./isometric/piecesGrid";
-import { buildIsoProjectionMatrix, isoLabelTransform } from "./isometric/projection";
+import { buildIsoProjectionMatrix, isoLabelTransform, projectedCellDepth, resolveIsoProjection, usesLayeredCellDraw } from "./isometric/projection";
 import { isoShadeFace, isoShadeFaces, IsoFaceFills } from "./isometric/shading";
 import { ensureIsoContactBlurFilter, isoContactShadow } from "./isometric/shadow";
 import { isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement";
@@ -187,7 +187,12 @@ export class IsometricRenderer extends RendererBase {
 
         ensureIsoContactBlurFilter(this.rootSvg.defs().node as SVGDefsElement);
 
-        const tFinal = buildIsoProjectionMatrix();
+        const isoProjection = resolveIsoProjection(
+            ("projection" in this.json.board && this.json.board.projection !== undefined)
+                ? this.json.board.projection
+                : "iso",
+        );
+        const tFinal = buildIsoProjectionMatrix(isoProjection);
         // "isometricize" the points and polys
         gridPoints = gridPoints.map(row => row = row.map(pt => tFinal.applyToPoint(pt.x, pt.y)));
         if (this.json.board.style === "squares" || this.json.board.style === "hex-of-hex") {
@@ -245,13 +250,23 @@ export class IsometricRenderer extends RendererBase {
             const surfaceFills = toFaceFillsData(isoShadeFaces(this.options.colourContext.background));
             switch (this.json.board.style) {
                 case "squares":
-                    generateCubes({rootSvg: this.rootSvg, heights: [height], stroke: surfaceStroke, fill: surfaceFills.top, faceFills: surfaceFills, idSymbol: id})
+                    generateCubes({
+                        rootSvg: this.rootSvg,
+                        projection: isoProjection,
+                        heights: [height],
+                        stroke: surfaceStroke,
+                        fill: surfaceFills.top,
+                        faceFills: surfaceFills,
+                        idSymbol: id,
+                        // Full top grid so N/E edges survive layered draw order (cabinet default is W+S only).
+                        sides: usesLayeredCellDraw(isoProjection) ? ["N", "E", "S", "W"] : undefined,
+                    })
                     break;
                 case "hex-of-cir":
-                    generateCylinders({rootSvg: this.rootSvg, heights: [height], stroke: surfaceStroke, fill: surfaceFills.top, faceFills: surfaceFills, idSymbol: id})
+                    generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [height], stroke: surfaceStroke, fill: surfaceFills.top, faceFills: surfaceFills, idSymbol: id})
                     break;
                 case "hex-of-hex":
-                    generateHexes({rootSvg: this.rootSvg, heights: [height], stroke: surfaceStroke, fill: surfaceFills.top, faceFills: surfaceFills, idSymbol: id, orientation: numRotations % 2 === 0 ? Orientation.POINTY : Orientation.FLAT})
+                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [height], stroke: surfaceStroke, fill: surfaceFills.top, faceFills: surfaceFills, idSymbol: id, orientation: numRotations % 2 === 0 ? Orientation.POINTY : Orientation.FLAT})
                     break;
                 default:
                     throw new Error("Could not determine how to build the board surface.");
@@ -277,12 +292,13 @@ export class IsometricRenderer extends RendererBase {
                 // generate the pieces
                 if (isMultiFaceCube(pc)) {
                     for (let y = 0; y < 4; y++) {
-                        const visible = permuteCubeFaces(pc.faces, y);
+                        const visible = permuteCubeFacesForProjection(pc.faces, y, isoProjection);
                         const top = this.resolveColour(visible.top, "#000") as string;
                         const left = this.resolveColour(visible.left, "#000") as string;
                         const right = this.resolveColour(visible.right, "#000") as string;
                         generateCubes({
                             rootSvg: this.rootSvg,
+                            projection: isoProjection,
                             heights: [pc.height ?? 100],
                             stroke: pieceStroke,
                             fill: {color: isoShadeFace(top, "top")},
@@ -298,37 +314,37 @@ export class IsometricRenderer extends RendererBase {
                     throw new Error(`Legend entry "${key}" is missing colour.`);
                 } else if (effPiece === "cube") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
                 } else if (effPiece === "lintelN") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "W"]});
                 } else if (effPiece === "lintelE") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S", "W"]});
                 } else if (effPiece === "lintelS") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "N", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "N", "W"]});
                 } else if (effPiece === "lintelW") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "N"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "N"]});
                 } else if (effPiece === "lintelNS") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "W"]});
                 } else if (effPiece === "lintelEW") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S"]});
                 } else if (effPiece === "spaceCube") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: []});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: []});
                 } else if (effPiece === "cylinder") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCylinders({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                    generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
                 } else if (effPiece === "hexp") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.POINTY})
+                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.POINTY})
                 } else if (effPiece === "hexf") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.FLAT})
+                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.FLAT})
                 } else {
 
                     throw new Error(`Unrecognized isoPiece type "${pc.piece}"`);
@@ -348,8 +364,8 @@ export class IsometricRenderer extends RendererBase {
                 basePcScale,
                 boardRotation,
                 rootSvg: this.rootSvg!,
+                projection: isoProjection,
             });
-        transformedPoints.sort((a, b) => compareCellSortKeys(sortKeyForEntry(a), sortKeyForEntry(b)));
 
         const cellSortKeys = new Map<string, IsoCellSortKey>();
         let minDepth = Infinity;
@@ -367,108 +383,249 @@ export class IsometricRenderer extends RendererBase {
 
         const depthShadeEnabled = !this.json.options?.includes("no-iso-depth-shade");
         const cellFootprintEnabled = !this.json.options?.includes("no-iso-cell-footprint");
+        const layeredCellDraw = usesLayeredCellDraw(isoProjection);
 
-        // Now place the surface components and any pieces on top of them, one cell at a time.
-        // To make things overlap correctly, we can't sort the board into logical groups.
-        // Instead, each cell has to be rendered in its entirety before moving to the next cell.
-        for (const entry of transformedPoints) {
-            // skip blocked cells
-            if (blocked !== undefined && blocked.find(b => b.row === entry.row && b.col === entry.col)) {
-                continue;
-            }
-            let height = 0;
-            if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
-                height = heightmap[entry.row][entry.col];
-            }
-            const idHeight = height.toString().replace(".", "_");
-            const cell = this.rootSvg.findOne(`#_surface_${idHeight}`) as Svg;
-            if ( (cell === null) || (cell === undefined) ) {
-                throw new Error(`Could not find the requested surface of height ${idHeight}.`);
-            }
-            const surfacePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, cell, 1);
-            entry.y = surfacePlacement.anchorY;
-            let used = board.use(cell).move(surfacePlacement.newx, surfacePlacement.newy).size(surfacePlacement.newWidth, surfacePlacement.newHeight);
-            if (this.options.boardClick !== undefined) {
-                used.click((e : Event) => {this.options.boardClick!(entry.row, entry.col, ""); e.stopPropagation();});
-            } else {
-                used.attr({"pointer-events": "none"});
-            }
-            // move polys so they are at the correct height
-            if (entry.poly.type === "poly") {
-                const newpts: IPoint[] = entry.poly.points.map(pt => {return {...pt, y: pt.y - Math.abs(entry.yOrig - entry.y)}});
-                entry.poly.points = newpts;
-            } else if (entry.poly.type === "circle") {
-                entry.poly.cy = entry.poly.cy - Math.abs(entry.yOrig - entry.y);
-            }
+        if (layeredCellDraw) {
+            type IsoDrawTask = { sortKey: IsoCellSortKey; draw: () => void };
+            const drawTasks: IsoDrawTask[] = [];
 
-            // do markers
-            this.isoMark(board, entry, tFinal);
-
-            // do pre-annotations
-            if (this.options.showAnnotations) {
-                this.preAnnotate(board, entry);
-            }
-
-            // place any pieces that belong on this cell
-            if (pieces !== undefined) {
-                const stack = pieces[entry.row]?.[entry.col] ?? [];
-                const hasPieces = stack.some((item) => {
-                    const { glyph } = parseStackEntry(item);
-                    return glyph !== "" && glyph !== "-";
-                });
-                if (cellFootprintEnabled && hasPieces) {
-                    isoCellFootprint(
-                        board,
-                        entry.poly,
-                        strokeColour,
-                        this.options.colourContext.background,
-                        this.cellsize,
-                    );
+            for (const entry of transformedPoints) {
+                if (blocked !== undefined && blocked.find(b => b.row === entry.row && b.col === entry.col)) {
+                    continue;
                 }
-                for (const [idx, stackItem] of stack.entries()) {
-                    const { glyph, yaw } = parseStackEntry(stackItem);
-                    if (glyph === "" || glyph === "-") { continue; }
-                    let pieceId = glyph;
-                    if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
-                        pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
-                    }
-                    const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
-                    if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
-                        pieceId = resolveDepthShadedPieceId({
-                            rootSvg: this.rootSvg,
-                            glyph,
-                            pieceId,
-                            yaw,
-                            legend,
-                            depth: sortKey.depth,
-                            minDepth,
-                            maxDepth,
-                            numRotations,
-                            pieceStroke,
-                            resolveColour: (colour: string | number | Colourfuncs, fallback) =>
-                                this.resolveColour(colour, fallback) as string,
+
+                let height = 0;
+                if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
+                    height = heightmap[entry.row][entry.col];
+                }
+                const idHeight = height.toString().replace(".", "_");
+                const cell = this.rootSvg.findOne(`#_surface_${idHeight}`) as Svg;
+                if ( (cell === null) || (cell === undefined) ) {
+                    throw new Error(`Could not find the requested surface of height ${idHeight}.`);
+                }
+
+                const baseKey = cellBaseSortKey(entry, isoProjection);
+                const surfacePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, cell, 1);
+                const anchorYAfterSurface = surfacePlacement.anchorY;
+                const yLift = Math.abs(entry.yOrig - anchorYAfterSurface);
+                const groundDepth = projectedCellDepth({ x: entry.x, y: entry.y }, isoProjection);
+
+                drawTasks.push({
+                    sortKey: { ...baseKey, depth: groundDepth, layer: ISO_DRAW_LAYER_SURFACE, topY: anchorYAfterSurface },
+                    draw: () => {
+                        entry.y = anchorYAfterSurface;
+                        if (entry.poly.type === "poly") {
+                            entry.poly.points = entry.poly.points.map(pt => ({ ...pt, y: pt.y - yLift }));
+                        } else if (entry.poly.type === "circle") {
+                            entry.poly.cy = entry.poly.cy - yLift;
+                        }
+                        const used = board.use(cell).move(surfacePlacement.newx, surfacePlacement.newy).size(surfacePlacement.newWidth, surfacePlacement.newHeight);
+                        if (this.options.boardClick !== undefined) {
+                            used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, ""); e.stopPropagation(); });
+                        } else {
+                            used.attr({ "pointer-events": "none" });
+                        }
+                    },
+                });
+
+                drawTasks.push({
+                    sortKey: { ...baseKey, depth: groundDepth, layer: ISO_DRAW_LAYER_MARK, topY: anchorYAfterSurface },
+                    draw: () => {
+                        this.isoMark(board, entry, tFinal);
+                        if (this.options.showAnnotations) {
+                            this.preAnnotate(board, entry);
+                        }
+                    },
+                });
+
+                if (pieces !== undefined) {
+                    const stack = pieces[entry.row]?.[entry.col] ?? [];
+                    const hasPieces = stack.some((item) => {
+                        const { glyph } = parseStackEntry(item);
+                        return glyph !== "" && glyph !== "-";
+                    });
+                    if (cellFootprintEnabled && hasPieces) {
+                        drawTasks.push({
+                            sortKey: { ...baseKey, depth: groundDepth, layer: ISO_DRAW_LAYER_FOOTPRINT, topY: anchorYAfterSurface },
+                            draw: () => {
+                                isoCellFootprint(
+                                    board,
+                                    entry.poly,
+                                    strokeColour,
+                                    this.options.colourContext.background,
+                                    this.cellsize,
+                                );
+                            },
                         });
                     }
-                    const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
-                    if ( (piece === null) || (piece === undefined) ) {
-                        throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+
+                    let stackAnchorY = anchorYAfterSurface;
+                    for (const [idx, stackItem] of stack.entries()) {
+                        const { glyph, yaw } = parseStackEntry(stackItem);
+                        if (glyph === "" || glyph === "-") { continue; }
+                        let pieceId = glyph;
+                        if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
+                            pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
+                        }
+                        const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
+                        if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
+                            pieceId = resolveDepthShadedPieceId({
+                                rootSvg: this.rootSvg,
+                                glyph,
+                                pieceId,
+                                yaw,
+                                legend,
+                                depth: sortKey.depth,
+                                minDepth,
+                                maxDepth,
+                                numRotations,
+                                projection: isoProjection,
+                                pieceStroke,
+                                resolveColour: (colour: string | number | Colourfuncs, fallback) =>
+                                    this.resolveColour(colour, fallback) as string,
+                            });
+                        }
+                        const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
+                        if ( (piece === null) || (piece === undefined) ) {
+                            throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                        }
+                        let pcScale = 0.75;
+                        if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
+                            pcScale = legend[glyph].scale as number;
+                        }
+                        pcScale *= basePcScale;
+                        const pieceSymbol = piece;
+                        const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, stackAnchorY, pieceSymbol, pcScale);
+                        const pieceTopY = piecePlacement.anchorY;
+                        stackAnchorY = pieceTopY;
+
+                        drawTasks.push({
+                            sortKey: {
+                                ...baseKey,
+                                depth: groundDepth,
+                                layer: ISO_DRAW_LAYER_PIECE + idx * 0.01,
+                                topY: pieceTopY,
+                            },
+                            draw: () => {
+                                entry.y = pieceTopY;
+                                if (!this.json!.options?.includes("no-piece-shadow")) {
+                                    const dyBottom = parseFloat(pieceSymbol.attr("data-dy-bottom") as string);
+                                    isoContactShadow(board, piecePlacement, dyBottom);
+                                }
+                                const used = board.use(pieceSymbol).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
+                                if ( (this.options.boardClick !== undefined) && (! this.json!.options?.includes("no-piece-click")) ) {
+                                    used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation(); });
+                                } else {
+                                    used.attr({ "pointer-events": "none" });
+                                }
+                            },
+                        });
                     }
-                    let pcScale = 0.75;
-                    if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
-                        pcScale = legend[glyph].scale as number;
+                }
+            }
+
+            drawTasks.sort((a, b) => compareDrawTaskSortKeys(a.sortKey, b.sortKey));
+            for (const task of drawTasks) {
+                task.draw();
+            }
+        } else {
+            transformedPoints.sort((a, b) => compareCellSortKeys(sortKeyForEntry(a), sortKeyForEntry(b)));
+
+            for (const entry of transformedPoints) {
+                if (blocked !== undefined && blocked.find(b => b.row === entry.row && b.col === entry.col)) {
+                    continue;
+                }
+                let height = 0;
+                if (heightmap !== undefined && heightmap.length >= entry.row + 1 && heightmap[entry.row].length >= entry.col + 1) {
+                    height = heightmap[entry.row][entry.col];
+                }
+                const idHeight = height.toString().replace(".", "_");
+                const cell = this.rootSvg.findOne(`#_surface_${idHeight}`) as Svg;
+                if ( (cell === null) || (cell === undefined) ) {
+                    throw new Error(`Could not find the requested surface of height ${idHeight}.`);
+                }
+                const surfacePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, cell, 1);
+                entry.y = surfacePlacement.anchorY;
+                let used = board.use(cell).move(surfacePlacement.newx, surfacePlacement.newy).size(surfacePlacement.newWidth, surfacePlacement.newHeight);
+                if (this.options.boardClick !== undefined) {
+                    used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, ""); e.stopPropagation(); });
+                } else {
+                    used.attr({ "pointer-events": "none" });
+                }
+                if (entry.poly.type === "poly") {
+                    const newpts: IPoint[] = entry.poly.points.map(pt => ({ ...pt, y: pt.y - Math.abs(entry.yOrig - entry.y) }));
+                    entry.poly.points = newpts;
+                } else if (entry.poly.type === "circle") {
+                    entry.poly.cy = entry.poly.cy - Math.abs(entry.yOrig - entry.y);
+                }
+
+                this.isoMark(board, entry, tFinal);
+
+                if (this.options.showAnnotations) {
+                    this.preAnnotate(board, entry);
+                }
+
+                if (pieces !== undefined) {
+                    const stack = pieces[entry.row]?.[entry.col] ?? [];
+                    const hasPieces = stack.some((item) => {
+                        const { glyph } = parseStackEntry(item);
+                        return glyph !== "" && glyph !== "-";
+                    });
+                    if (cellFootprintEnabled && hasPieces) {
+                        isoCellFootprint(
+                            board,
+                            entry.poly,
+                            strokeColour,
+                            this.options.colourContext.background,
+                            this.cellsize,
+                        );
                     }
-                    pcScale *= basePcScale;
-                    const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
-                    entry.y = piecePlacement.anchorY;
-                    if (!this.json.options?.includes("no-piece-shadow")) {
-                        const dyBottom = parseFloat(piece.attr("data-dy-bottom") as string);
-                        isoContactShadow(board, piecePlacement, dyBottom, this.cellsize);
-                    }
-                    used = board.use(piece).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
-                    if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
-                        used.click((e : Event) => {this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation();});
-                    } else {
-                        used.attr({"pointer-events": "none"});
+                    for (const [idx, stackItem] of stack.entries()) {
+                        const { glyph, yaw } = parseStackEntry(stackItem);
+                        if (glyph === "" || glyph === "-") { continue; }
+                        let pieceId = glyph;
+                        if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
+                            pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
+                        }
+                        const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
+                        if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
+                            pieceId = resolveDepthShadedPieceId({
+                                rootSvg: this.rootSvg,
+                                glyph,
+                                pieceId,
+                                yaw,
+                                legend,
+                                depth: sortKey.depth,
+                                minDepth,
+                                maxDepth,
+                                numRotations,
+                                projection: isoProjection,
+                                pieceStroke,
+                                resolveColour: (colour: string | number | Colourfuncs, fallback) =>
+                                    this.resolveColour(colour, fallback) as string,
+                            });
+                        }
+                        const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
+                        if ( (piece === null) || (piece === undefined) ) {
+                            throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                        }
+                        let pcScale = 0.75;
+                        if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
+                            pcScale = legend[glyph].scale as number;
+                        }
+                        pcScale *= basePcScale;
+                        const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
+                        entry.y = piecePlacement.anchorY;
+                        if (!this.json.options?.includes("no-piece-shadow")) {
+                            const dyBottom = parseFloat(piece.attr("data-dy-bottom") as string);
+                            isoContactShadow(board, piecePlacement, dyBottom);
+                        }
+                        used = board.use(piece).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
+                        if ( (this.options.boardClick !== undefined) && (! this.json!.options?.includes("no-piece-click")) ) {
+                            used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation(); });
+                        } else {
+                            used.attr({ "pointer-events": "none" });
+                        }
                     }
                 }
             }

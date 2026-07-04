@@ -3,7 +3,7 @@ import { centroid } from "../../common/plotting";
 import { FillData, StrokeData, Svg, Polygon as SVGPoly } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
 import { defineHex, Orientation } from "honeycomb-grid";
-import { buildIsoProjectionMatrix } from "./projection";
+import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique, usesLayeredCellDraw } from "./projection";
 import { CubeFaceFills } from "./cubes";
 import { isoShadeProjectedFace } from "./shading";
 
@@ -26,50 +26,57 @@ export type Hex = {
     dy: number;
     corners: IPoint[];
     tCorners: IPoint[];
+    tBottomCorners: IPoint[];
 };
 
-const genHex = (topSize: number, sideHeight: number, orientation: Orientation): Hex => {
-    const tFinal = buildIsoProjectionMatrix();
+const genHex = (
+    topSize: number,
+    sideHeight: number,
+    orientation: Orientation,
+    params: IsoProjectionParams = ISO_PROJECTION_PRESETS.iso,
+): Hex => {
+    const tFinal = buildIsoProjectionMatrix(params);
+    const p = (x: number, y: number, z: number): IPoint => projectOblique(x, y, z, params);
 
-    type Vertex = [number,number];
-    const pHex = defineHex({orientation, dimensions: topSize});
+    type Vertex = [number, number];
+    const pHex = defineHex({ orientation, dimensions: topSize });
     const hex = new pHex();
 
-    const xMinOrig = Math.min(...hex.corners.map(pt => pt.x));
-    const xMaxOrig = Math.max(...hex.corners.map(pt => pt.x));
-    const yMinOrig = Math.min(...hex.corners.map(pt => pt.y));
-    const yMaxOrig = Math.max(...hex.corners.map(pt => pt.y));
+    const xMinOrig = Math.min(...hex.corners.map((pt) => pt.x));
+    const xMaxOrig = Math.max(...hex.corners.map((pt) => pt.x));
+    const yMinOrig = Math.min(...hex.corners.map((pt) => pt.y));
+    const yMaxOrig = Math.max(...hex.corners.map((pt) => pt.y));
     const widthOrig = xMaxOrig - xMinOrig;
     const heightOrig = yMaxOrig - yMinOrig;
 
-    const ptsTop: Vertex[] = hex.corners.map(({x,y}) => [x,y]);
-    const ptsTransformed: {x: number; y: number}[] = [];
+    const ptsTop: Vertex[] = hex.corners.map(({ x, y }) => [x, y]);
+    const ptsTransformed: IPoint[] = [];
     for (const pt of ptsTop) {
-        ptsTransformed.push(tFinal.applyToPoint(...pt));
+        ptsTransformed.push(p(...pt, 0));
     }
-    const tCorners = ptsTransformed.map(pt => {return {...pt};});
-    const xMinPost = Math.min(...tCorners.map(pt => pt.x));
-    const xMaxPost = Math.max(...tCorners.map(pt => pt.x));
-    const yMinPost = Math.min(...tCorners.map(pt => pt.y));
-    const yMaxPost = Math.max(...tCorners.map(pt => pt.y));
+    const tCorners = ptsTransformed.map((pt) => ({ ...pt }));
+    const tBottomCorners = ptsTop.map(([x, y]) => p(x, y, sideHeight));
+    const xMinPost = Math.min(...tCorners.map((pt) => pt.x));
+    const xMaxPost = Math.max(...tCorners.map((pt) => pt.x));
+    const yMinPost = Math.min(...tCorners.map((pt) => pt.y));
+    const yMaxPost = Math.max(...tCorners.map((pt) => pt.y));
     const widthPost = xMaxPost - xMinPost;
     const heightPost = yMaxPost - yMinPost;
 
-    ptsTransformed.push({x: tCorners[0].x, y: tCorners[0].y + sideHeight});
-    ptsTransformed.push({x: tCorners[1].x, y: tCorners[1].y + sideHeight});
-    ptsTransformed.push({x: tCorners[2].x, y: tCorners[2].y + sideHeight});
-    ptsTransformed.push({x: tCorners[3].x, y: tCorners[3].y + sideHeight});
+    ptsTransformed.push(...tBottomCorners);
 
-    const xMin = Math.min(...ptsTransformed.map(pt => pt.x));
-    const xMax = Math.max(...ptsTransformed.map(pt => pt.x));
-    const yMin = Math.min(...ptsTransformed.map(pt => pt.y));
-    const yMax = Math.max(...ptsTransformed.map(pt => pt.y));
+    const xMin = Math.min(...ptsTransformed.map((pt) => pt.x));
+    const xMax = Math.max(...ptsTransformed.map((pt) => pt.x));
+    const yMin = Math.min(...ptsTransformed.map((pt) => pt.y));
+    const yMax = Math.max(...ptsTransformed.map((pt) => pt.y));
     const width = xMax - xMin;
     const height = yMax - yMin;
 
     const cx = xMin + (width / 2);
     const cy = yMin + (height / 2);
     const cTop = centroid(tCorners)!;
+    const cWorld = centroid(hex.corners)!;
+    const contact = p(cWorld.x, cWorld.y, sideHeight);
     return {
         transform: tFinal,
         xMin,
@@ -84,13 +91,14 @@ const genHex = (topSize: number, sideHeight: number, orientation: Orientation): 
         cy,
         cxTop: cTop.x,
         cyTop: cTop.y,
-        cxBot: cTop.x,
-        cyBot: cTop.y + sideHeight,
+        cxBot: contact.x,
+        cyBot: contact.y,
         dy: Math.abs(cy - cTop.y),
         corners: hex.corners,
         tCorners,
-    }
-}
+        tBottomCorners,
+    };
+};
 
 const sideFaceFill = (
     baseHex: string,
@@ -99,17 +107,28 @@ const sideFaceFill = (
     faceFills?: CubeFaceFills,
 ): FillData => {
     if (faceFills === undefined) {
-        return {color: baseHex};
+        return { color: baseHex };
     }
     const a = hex.tCorners[i];
-    const b = hex.tCorners[i + 1];
-    const centroidTop: IPoint = {x: hex.cxTop, y: hex.cyTop};
+    const b = hex.tCorners[(i + 1) % hex.tCorners.length];
+    const centroidTop: IPoint = { x: hex.cxTop, y: hex.cyTop };
     const shaded = isoShadeProjectedFace(baseHex, centroidTop, a, b);
-    return {color: shaded};
+    return { color: shaded };
 };
 
-export const generateHexes = (opts: {rootSvg: Svg, heights: number[], orientation: Orientation, stroke: StrokeData, fill: FillData, faceFills?: CubeFaceFills, idSymbol?: string}): void => {
-    const { rootSvg, heights, stroke, fill, orientation, faceFills} = opts;
+export const generateHexes = (opts: {
+    rootSvg: Svg;
+    heights: number[];
+    orientation: Orientation;
+    stroke: StrokeData;
+    fill: FillData;
+    faceFills?: CubeFaceFills;
+    idSymbol?: string;
+    projection?: IsoProjectionParams;
+}): void => {
+    const { rootSvg, heights, stroke, fill, orientation, faceFills } = opts;
+    const projection = opts.projection ?? ISO_PROJECTION_PRESETS.iso;
+    const projectionSuffix = isoProjectionCacheSuffix(projection);
     const tSize = 100;
     const topFill = faceFills?.top ?? fill;
     const baseHex = typeof (faceFills?.left ?? fill).color === "string"
@@ -119,7 +138,7 @@ export const generateHexes = (opts: {rootSvg: Svg, heights: number[], orientatio
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
         const idSide = sideHeight.toString().replace(".", "_");
-        const hex = genHex(tSize, sideHeight, orientation);
+        const hex = genHex(tSize, sideHeight, orientation, projection);
         const dWidth = 0;
         const dHeight = 0;
         const minx = hex.xMin - (dWidth / 2);
@@ -134,29 +153,48 @@ export const generateHexes = (opts: {rootSvg: Svg, heights: number[], orientatio
             .attr("data-dy-bottom", Math.abs(miny - hex.cyBot) / hex.height)
             .attr("data-dy-top", Math.abs(miny - hex.cyTop) / hex.height);
         const defs = nested.defs();
-        let hexTop: SVGPoly|null = null;
-        let sourceId = `isoHex${idTop}`;
+        let hexTop: SVGPoly | null = null;
+        let sourceId = `isoHex${idTop}${projectionSuffix}`;
         if (opts.idSymbol !== undefined) {
-            sourceId = `isoHex${idTop}_${opts.idSymbol}`;
+            sourceId = `isoHex${idTop}_${opts.idSymbol}${projectionSuffix}`;
         }
-        hexTop = defs.findOne("#" + sourceId) as SVGPoly|null;
+        hexTop = defs.findOne("#" + sourceId) as SVGPoly | null;
         if (hexTop === null) {
-            hexTop = defs.polygon(hex.corners.map(({x,y}) => [x,y].join(",")).join(" "))
+            hexTop = defs.polygon(hex.corners.map(({ x, y }) => [x, y].join(",")).join(" "))
                 .id(sourceId)
                 .fill(topFill)
-                .stroke({linecap: "round", linejoin: "round", ...stroke});
+                .stroke({ linecap: "round", linejoin: "round", ...stroke });
         }
 
         if (sideHeight > 0) {
-            for (let i = 0; i < 3; i++) {
+            const cWorld = centroid(hex.corners)!;
+            const cabinet = usesLayeredCellDraw(projection);
+            const sideFaceIndices = cabinet
+                ? Array.from({ length: 6 }, (_, i) => i)
+                    .map((i) => {
+                        const a = hex.corners[i];
+                        const b = hex.corners[(i + 1) % 6];
+                        const midX = (a.x + b.x) / 2;
+                        const midY = (a.y + b.y) / 2;
+                        const score = (cWorld.x - midX) + (midY - cWorld.y);
+                        return { i, score };
+                    })
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3)
+                    .map(({ i }) => i)
+                : [0, 1, 2];
+            for (const i of sideFaceIndices) {
+                const next = (i + 1) % hex.tCorners.length;
                 const a = hex.tCorners[i];
-                const b = hex.tCorners[i + 1];
-                nested.path(`M ${a.x} ${a.y} L ${a.x} ${a.y + sideHeight} L ${b.x} ${b.y + sideHeight} L ${b.x} ${b.y}`)
+                const b = hex.tCorners[next];
+                const aBot = hex.tBottomCorners[i];
+                const bBot = hex.tBottomCorners[next];
+                nested.path(`M ${a.x} ${a.y} L ${aBot.x} ${aBot.y} L ${bBot.x} ${bBot.y} L ${b.x} ${b.y}`)
                     .fill(sideFaceFill(baseHex, hex, i, faceFills))
-                    .stroke({linecap: "round", linejoin: "round", ...stroke});
+                    .stroke({ linecap: "round", linejoin: "round", ...stroke });
             }
         }
         nested.use(hexTop).matrix(hex.transform.toArray());
         nested.viewbox([minx, miny, hex.width + dWidth, hex.height + dHeight].join(" "));
     }
-}
+};

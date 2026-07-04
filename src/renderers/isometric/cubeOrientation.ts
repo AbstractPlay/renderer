@@ -1,4 +1,5 @@
 import { IsoCubeFaces } from "../../schemas/schema";
+import { IsoProjectionParams, usesLayeredCellDraw } from "./projection";
 
 export type VisibleCubeFaces = {
     top: IsoCubeFaces["top"];
@@ -28,6 +29,21 @@ export const permuteCubeFaces = (faces: IsoCubeFaces, effectiveYaw: number): Vis
         default:
             return { top: faces.top, left: faces.south, right: faces.east };
     }
+};
+
+/** Maps face colours for the active projection (cabinet swaps east/west before iso permute). */
+export const permuteCubeFacesForProjection = (
+    faces: IsoCubeFaces,
+    effectiveYaw: number,
+    params: IsoProjectionParams,
+): VisibleCubeFaces => {
+    if (!usesLayeredCellDraw(params)) {
+        return permuteCubeFaces(faces, effectiveYaw);
+    }
+    return permuteCubeFaces(
+        { ...faces, east: faces.west, west: faces.east },
+        effectiveYaw,
+    );
 };
 
 /**
