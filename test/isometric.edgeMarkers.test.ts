@@ -142,6 +142,59 @@ describe("IsometricRenderer edge markers", () => {
         expect(edgeIdx).to.be.greaterThan(labelIdx);
     });
 
+    it("should draw edge markers below pieces on the west edge", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: {
+                style: "squares",
+                projection: "shallow",
+                width: 10,
+                height: 10,
+                markers: [
+                    { type: "edge", edge: "E", colour: 1 },
+                    { type: "edge", edge: "W", colour: 1 },
+                    { type: "edge", edge: "N", colour: 2 },
+                    { type: "edge", edge: "S", colour: 2 },
+                ],
+            },
+            legend: {
+                C1: { piece: "cube", height: 50, colour: 1, scale: 1 },
+                C2: { piece: "cube", height: 50, colour: 2, scale: 1 },
+            },
+            pieces: [
+                [[], [], [], [], [], [], [], [], [], []],
+                [[], [], ["C1"], [], [], [], [], [], [], []],
+                [[], [], ["C2"], ["C2"], [], [], [], [], [], []],
+                [["C2"], [], [], [], [], [], [], [], [], []],
+                [[], [], [], [], [], [], ["C1"], [], [], []],
+                [[], [], [], [], [], [], [], [], ["C1"], []],
+                [[], [], [], [], [], [], [], [], [], []],
+                [[], [], [], ["C1"], [], [], [], [], [], []],
+                [[], [], [], [], [], [], ["C2"], [], [], []],
+                [[], [], [], [], [], [], [], [], [], []],
+            ],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const board = draw.findOne("#board")!;
+        const children = board.children();
+        const edgeIdx = children.findIndex((c) => c.id() === "edge-markers");
+        expect(edgeIdx).to.be.greaterThan(-1);
+        const pieceUseIndices = children
+            .map((c, idx) => ({ c, idx }))
+            .filter(({ c }) => {
+                const href = (c.attr("href") ?? c.attr("xlink:href") ?? "") as string;
+                return c.type === "use" && (href.includes("#C1") || href.includes("#C2"));
+            })
+            .map(({ idx }) => idx);
+        expect(pieceUseIndices.length).to.be.greaterThan(0);
+        for (const pieceIdx of pieceUseIndices) {
+            expect(pieceIdx).to.be.greaterThan(edgeIdx);
+        }
+    });
+
     it("should project edge lines through the isometric transform", () => {
         const grid = rectOfRects({ gridHeight: 2, gridWidth: 2, cellSize: 50 });
         const buffer = isoEdgeMarkerBuffer(50, 1);

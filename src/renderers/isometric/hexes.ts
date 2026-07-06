@@ -1,7 +1,8 @@
 import { Matrix } from "transformation-matrix-js";
 import { centroid } from "../../common/plotting";
-import { FillData, StrokeData, Svg, Polygon as SVGPoly } from "@svgdotjs/svg.js";
+import { FillData, StrokeData, Svg, Polygon as SVGPoly, G as SVGG } from "@svgdotjs/svg.js";
 import { IPoint } from "../../grids";
+import { CompassDirection, edges2corners } from "../../boards";
 import { defineHex, Orientation } from "honeycomb-grid";
 import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique, usesLayeredCellDraw } from "./projection";
 import { CubeFaceFills } from "./cubes";
@@ -116,6 +117,15 @@ const sideFaceFill = (
     return { color: shaded };
 };
 
+const strokeLine = (
+    parent: Svg,
+    a: IPoint,
+    b: IPoint,
+    stroke: StrokeData,
+): void => {
+    parent.line(a.x, a.y, b.x, b.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+};
+
 export const generateHexes = (opts: {
     rootSvg: Svg;
     heights: number[];
@@ -125,6 +135,7 @@ export const generateHexes = (opts: {
     faceFills?: CubeFaceFills;
     idSymbol?: string;
     projection?: IsoProjectionParams;
+    drawnEdges?: CompassDirection[];
 }): void => {
     const { rootSvg, heights, stroke, fill, orientation, faceFills } = opts;
     const projection = opts.projection ?? ISO_PROJECTION_PRESETS.iso;
@@ -134,6 +145,28 @@ export const generateHexes = (opts: {
     const baseHex = typeof (faceFills?.left ?? fill).color === "string"
         ? (faceFills?.left ?? fill).color as string
         : "#000";
+    const edgeDirs = edges2corners.get(orientation)!;
+    const allEdgeDirs = edgeDirs.map((edge) => edge.dir);
+    const drawnEdges = opts.drawnEdges ?? allEdgeDirs;
+    const drawnSet = new Set(drawnEdges);
+    const isLintel = opts.drawnEdges !== undefined;
+    const isSpacer = isLintel && drawnEdges.length === 0;
+    const edgeDrawn = (edgeIdx: number): boolean => drawnSet.has(edgeDirs[edgeIdx].dir);
+    const edgeIndexForCorners = (c0: number, c1: number): number =>
+        edgeDirs.findIndex(
+            (edge) =>
+                (edge.corners[0] === c0 && edge.corners[1] === c1)
+                || (edge.corners[0] === c1 && edge.corners[1] === c0),
+        );
+    const cornerVerticalDrawn = (corner: number): boolean => {
+        for (let edgeIdx = 0; edgeIdx < edgeDirs.length; edgeIdx++) {
+            const [c0, c1] = edgeDirs[edgeIdx].corners;
+            if ((c0 === corner || c1 === corner) && edgeDrawn(edgeIdx)) {
+                return true;
+            }
+        }
+        return false;
+    };
 
     for (const sideHeight of heights) {
         const idTop = tSize.toString().replace(".", "_");
@@ -153,20 +186,39 @@ export const generateHexes = (opts: {
             .attr("data-dy-bottom", Math.abs(miny - hex.cyBot) / hex.height)
             .attr("data-dy-top", Math.abs(miny - hex.cyTop) / hex.height);
         const defs = nested.defs();
-        let hexTop: SVGPoly | null = null;
+        let hexTop: SVGPoly | SVGG | null = null;
         let sourceId = `isoHex${idTop}${projectionSuffix}`;
         if (opts.idSymbol !== undefined) {
             sourceId = `isoHex${idTop}_${opts.idSymbol}${projectionSuffix}`;
         }
-        hexTop = defs.findOne("#" + sourceId) as SVGPoly | null;
+        hexTop = defs.findOne("#" + sourceId) as SVGPoly | SVGG | null;
         if (hexTop === null) {
-            hexTop = defs.polygon(hex.corners.map(({ x, y }) => [x, y].join(",")).join(" "))
-                .id(sourceId)
-                .fill(topFill)
-                .stroke({ linecap: "round", linejoin: "round", ...stroke });
+            if (isLintel) {
+                const topGroup = defs.group().id(sourceId);
+                if (!isSpacer) {
+                    topGroup.polygon(hex.corners.map(({ x, y }) => [x, y].join(",")).join(" "))
+                        .fill(topFill)
+                        .stroke("none");
+                    for (let edgeIdx = 0; edgeIdx < edgeDirs.length; edgeIdx++) {
+                        if (!edgeDrawn(edgeIdx)) {
+                            continue;
+                        }
+                        const [c0, c1] = edgeDirs[edgeIdx].corners;
+                        const a = hex.corners[c0];
+                        const b = hex.corners[c1];
+                        topGroup.line(a.x, a.y, b.x, b.y).stroke({ linecap: "round", linejoin: "round", ...stroke });
+                    }
+                }
+                hexTop = topGroup;
+            } else {
+                hexTop = defs.polygon(hex.corners.map(({ x, y }) => [x, y].join(",")).join(" "))
+                    .id(sourceId)
+                    .fill(topFill)
+                    .stroke({ linecap: "round", linejoin: "round", ...stroke });
+            }
         }
 
-        if (sideHeight > 0) {
+        if (sideHeight > 0 && !isSpacer && (!isLintel || drawnEdges.length > 0)) {
             const cWorld = centroid(hex.corners)!;
             const cabinet = usesLayeredCellDraw(projection);
             const sideFaceIndices = cabinet
@@ -185,16 +237,34 @@ export const generateHexes = (opts: {
                 : [0, 1, 2];
             for (const i of sideFaceIndices) {
                 const next = (i + 1) % hex.tCorners.length;
+                const edgeIdx = edgeIndexForCorners(i, next);
                 const a = hex.tCorners[i];
                 const b = hex.tCorners[next];
                 const aBot = hex.tBottomCorners[i];
                 const bBot = hex.tBottomCorners[next];
-                nested.path(`M ${a.x} ${a.y} L ${aBot.x} ${aBot.y} L ${bBot.x} ${bBot.y} L ${b.x} ${b.y}`)
-                    .fill(sideFaceFill(baseHex, hex, i, faceFills))
-                    .stroke({ linecap: "round", linejoin: "round", ...stroke });
+                const sidePath = nested.path(`M ${a.x} ${a.y} L ${aBot.x} ${aBot.y} L ${bBot.x} ${bBot.y} L ${b.x} ${b.y}`)
+                    .fill(sideFaceFill(baseHex, hex, edgeIdx >= 0 ? edgeIdx : i, faceFills));
+                if (isLintel) {
+                    sidePath.stroke("none");
+                } else {
+                    sidePath.stroke({ linecap: "round", linejoin: "round", ...stroke });
+                }
+                if (isLintel && edgeIdx >= 0) {
+                    if (edgeDrawn(edgeIdx)) {
+                        strokeLine(nested, a, b, stroke);
+                    }
+                    if (cornerVerticalDrawn(i)) {
+                        strokeLine(nested, a, aBot, stroke);
+                    }
+                    if (cornerVerticalDrawn(next)) {
+                        strokeLine(nested, b, bBot, stroke);
+                    }
+                }
             }
         }
-        nested.use(hexTop).matrix(hex.transform.toArray());
+        if (!isSpacer && hexTop !== null) {
+            nested.use(hexTop).matrix(hex.transform.toArray());
+        }
         nested.viewbox([minx, miny, hex.width + dWidth, hex.height + dHeight].join(" "));
     }
 };

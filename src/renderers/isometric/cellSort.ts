@@ -21,6 +21,8 @@ export type IsoCellSortKey = {
 export const ISO_DRAW_LAYER_SURFACE = 0;
 export const ISO_DRAW_LAYER_MARK = 1;
 export const ISO_DRAW_LAYER_FOOTPRINT = 2;
+/** Board outline edge markers — after terrain, before pieces. */
+export const ISO_DRAW_LAYER_EDGE = 2.5;
 export const ISO_DRAW_LAYER_PIECE = 3;
 
 export const ISO_SORT_EPSILON = 1e-4;

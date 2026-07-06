@@ -1,7 +1,7 @@
 
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike, Symbol as SVGSymbol, Use } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, AreaKey, Colourfuncs, IsometricPieces, IsoPiece, MarkerEdge, RowCol } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, AreaKey, Colourfuncs, IsoPiece, MarkerEdge, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
@@ -12,7 +12,7 @@ import { generateCones } from "./isometric/cones";
 import { generateHexes } from "./isometric/hexes";
 import { generatePyramids } from "./isometric/pyramids";
 import { resolvePyramidDims, isPyramidPiece } from "./isometric/pyramidDims";
-import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
+import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_EDGE, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
 import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
 import { isoCellFootprint } from "./isometric/footprint";
 import { parseIsoPiecesString } from "./isometric/piecesGrid";
@@ -22,6 +22,8 @@ import { isoShadeFace, isoShadeFaces, IsoFaceFills } from "./isometric/shading";
 import { ensureIsoContactBlurFilter, isoContactShadow } from "./isometric/shadow";
 import { isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement";
 import { IsoPiecesGrid, isMultiFaceCube, isoPieceHeight, parseStackEntry } from "./isometric/stack";
+import { effectiveRotatedPiece, generateIsoLintelOrSpacer } from "./isometric/pieceSymbols";
+import { boardHexOrientation, isSpacerPiece, parseLintelPiece } from "./isometric/lintels";
 import { x2uid } from "../common/glyph2uid";
 import { Orientation } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, squares } from "../boards";
@@ -42,39 +44,6 @@ interface ITarget {
 }
 
 type IsoLegend = {[k: string]: IsoPiece};
-
-const rotationMap = new Map<IsometricPieces, Map<number, IsometricPieces>>([
-    ["lintelN", new Map([
-        [1, "lintelE"],
-        [2, "lintelS"],
-        [3, "lintelW"],
-    ])],
-    ["lintelE", new Map([
-        [1, "lintelS"],
-        [2, "lintelW"],
-        [3, "lintelN"],
-    ])],
-    ["lintelS", new Map([
-        [1, "lintelW"],
-        [2, "lintelN"],
-        [3, "lintelE"],
-    ])],
-    ["lintelW", new Map([
-        [1, "lintelN"],
-        [2, "lintelE"],
-        [3, "lintelS"],
-    ])],
-    ["lintelNS", new Map([
-        [1, "lintelEW"],
-        [2, "lintelNS"],
-        [3, "lintelEW"],
-    ])],
-    ["lintelEW", new Map([
-        [1, "lintelNS"],
-        [2, "lintelEW"],
-        [3, "lintelNS"],
-    ])],
-]);
 
 const PIECE_STROKE_MULTIPLIER = 2;
 
@@ -293,16 +262,7 @@ export class IsometricRenderer extends RendererBase {
         if (this.json.legend !== null && this.json.legend !== undefined) {
             legend = this.json.legend as IsoLegend;
             for (const [key, pc] of Object.entries(this.json.legend as IsoLegend)) {
-                // pieces may change based on rotation
-                let effPiece = pc.piece;
-                if (numRotations > 0) {
-                    if (rotationMap.has(pc.piece)) {
-                        const next = rotationMap.get(pc.piece)!;
-                        if (next.has(numRotations)) {
-                            effPiece = next.get(numRotations)!;
-                        }
-                    }
-                }
+                const effPiece = effectiveRotatedPiece(pc.piece, numRotations);
 
                 // generate the pieces
                 if (isMultiFaceCube(pc)) {
@@ -325,32 +285,30 @@ export class IsometricRenderer extends RendererBase {
                             idSymbol: `${key}__y${y}`,
                         });
                     }
+                } else if (isSpacerPiece(pc.piece) || parseLintelPiece(pc.piece) !== null) {
+                    if (!isSpacerPiece(pc.piece) && !("colour" in pc)) {
+                        throw new Error(`Legend entry "${key}" is missing colour.`);
+                    }
+                    const spacerFill = { color: "transparent" };
+                    const fills = isSpacerPiece(pc.piece)
+                        ? { top: spacerFill, left: spacerFill, right: spacerFill }
+                        : toFaceFillsData(isoShadeFaces(this.resolveColour((pc as { colour: string }).colour, "#000") as string));
+                    generateIsoLintelOrSpacer({
+                        rootSvg: this.rootSvg,
+                        piece: pc.piece,
+                        projection: isoProjection,
+                        heights: [isoPieceHeight(pc)],
+                        stroke: pieceStroke,
+                        fill: fills.top,
+                        faceFills: fills,
+                        idSymbol: key,
+                        numRotations,
+                    });
                 } else if (!("colour" in pc)) {
                     throw new Error(`Legend entry "${key}" is missing colour.`);
                 } else if (effPiece === "cube") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
                     generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
-                } else if (effPiece === "lintelN") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "W"]});
-                } else if (effPiece === "lintelE") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S", "W"]});
-                } else if (effPiece === "lintelS") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "N", "W"]});
-                } else if (effPiece === "lintelW") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "N"]});
-                } else if (effPiece === "lintelNS") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "W"]});
-                } else if (effPiece === "lintelEW") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S"]});
-                } else if (effPiece === "spaceCube") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: []});
                 } else if (effPiece === "cylinder") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
                     generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
@@ -368,15 +326,12 @@ export class IsometricRenderer extends RendererBase {
                         baseHex: base,
                         idSymbol: key,
                     });
-                } else if (effPiece === "hexp") {
+                } else if (effPiece === "hexp" || effPiece === "hexf") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.POINTY})
-                } else if (effPiece === "hexf") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.FLAT})
+                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: boardHexOrientation(numRotations)})
                 } else {
 
-                    throw new Error(`Unrecognized isoPiece type "${pc.piece}"`);
+                    throw new Error(`Unrecognized isoPiece type "${effPiece}"`);
                 }
             }
         }
@@ -413,6 +368,12 @@ export class IsometricRenderer extends RendererBase {
         const depthShadeEnabled = !this.json.options?.includes("no-iso-depth-shade");
         const cellFootprintEnabled = !this.json.options?.includes("no-iso-cell-footprint");
         const layeredCellDraw = usesLayeredCellDraw(isoProjection);
+        const edgeMarkerSides = activeEdgeSides(this.json.board.markers ?? []);
+        const hasEdgeMarkers = edgeMarkerSides.size > 0;
+        let edgeLabelOutset = 0;
+        if (hasEdgeMarkers) {
+            edgeLabelOutset = isoEdgeLabelOutset(strokeWeight);
+        }
 
         if (layeredCellDraw) {
             type IsoDrawTask = { sortKey: IsoCellSortKey; draw: () => void };
@@ -553,6 +514,22 @@ export class IsometricRenderer extends RendererBase {
                 }
             }
 
+            if (hasEdgeMarkers) {
+                drawTasks.push({
+                    sortKey: {
+                        depth: minDepth,
+                        topY: 0,
+                        rotatedX: 0,
+                        layer: ISO_DRAW_LAYER_EDGE,
+                        row: -1,
+                        col: -1,
+                    },
+                    draw: () => {
+                        this.placeEdgeMarkers(board, boardLocalGrid, boardLocalPolys, tUserRotate, tFinal, strokeWeight);
+                    },
+                });
+            }
+
             drawTasks.sort((a, b) => compareDrawTaskSortKeys(a.sortKey, b.sortKey));
             for (const task of drawTasks) {
                 task.draw();
@@ -575,7 +552,7 @@ export class IsometricRenderer extends RendererBase {
                 }
                 const surfacePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, cell, 1);
                 entry.y = surfacePlacement.anchorY;
-                let used = board.use(cell).move(surfacePlacement.newx, surfacePlacement.newy).size(surfacePlacement.newWidth, surfacePlacement.newHeight);
+                const used = board.use(cell).move(surfacePlacement.newx, surfacePlacement.newy).size(surfacePlacement.newWidth, surfacePlacement.newHeight);
                 if (this.options.boardClick !== undefined) {
                     used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, ""); e.stopPropagation(); });
                 } else {
@@ -609,62 +586,69 @@ export class IsometricRenderer extends RendererBase {
                             this.cellsize,
                         );
                     }
-                    for (const [idx, stackItem] of stack.entries()) {
-                        const { glyph, yaw } = parseStackEntry(stackItem);
-                        if (glyph === "" || glyph === "-") { continue; }
-                        let pieceId = glyph;
-                        if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
-                            pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
-                        }
-                        const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
-                        if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
-                            pieceId = resolveDepthShadedPieceId({
-                                rootSvg: this.rootSvg,
-                                glyph,
-                                pieceId,
-                                yaw,
-                                legend,
-                                depth: sortKey.depth,
-                                minDepth,
-                                maxDepth,
-                                numRotations,
-                                projection: isoProjection,
-                                pieceStroke,
-                                resolveColour: (colour: string | number | Colourfuncs, fallback) =>
-                                    this.resolveColour(colour, fallback) as string,
-                            });
-                        }
-                        const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
-                        if ( (piece === null) || (piece === undefined) ) {
-                            throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                        }
-                        let pcScale = 0.75;
-                        if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
-                            pcScale = legend[glyph].scale as number;
-                        }
-                        pcScale *= basePcScale;
-                        const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
-                        entry.y = piecePlacement.anchorY;
-                        if (!this.json.options?.includes("no-piece-shadow") && idx === 0) {
-                            const dyBottom = parseFloat(piece.attr("data-dy-bottom") as string);
-                            isoContactShadow(board, piecePlacement, dyBottom);
-                        }
-                        used = board.use(piece).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
-                        if ( (this.options.boardClick !== undefined) && (! this.json!.options?.includes("no-piece-click")) ) {
-                            used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation(); });
-                        } else {
-                            used.attr({ "pointer-events": "none" });
-                        }
+                }
+            }
+
+            if (hasEdgeMarkers) {
+                this.placeEdgeMarkers(board, boardLocalGrid, boardLocalPolys, tUserRotate, tFinal, strokeWeight);
+            }
+
+            for (const entry of transformedPoints) {
+                if (blocked !== undefined && blocked.find(b => b.row === entry.row && b.col === entry.col)) {
+                    continue;
+                }
+                if (pieces === undefined) {
+                    continue;
+                }
+                const stack = pieces[entry.row]?.[entry.col] ?? [];
+                for (const [idx, stackItem] of stack.entries()) {
+                    const { glyph, yaw } = parseStackEntry(stackItem);
+                    if (glyph === "" || glyph === "-") { continue; }
+                    let pieceId = glyph;
+                    if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
+                        pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
+                    }
+                    const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
+                    if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
+                        pieceId = resolveDepthShadedPieceId({
+                            rootSvg: this.rootSvg,
+                            glyph,
+                            pieceId,
+                            yaw,
+                            legend,
+                            depth: sortKey.depth,
+                            minDepth,
+                            maxDepth,
+                            numRotations,
+                            projection: isoProjection,
+                            pieceStroke,
+                            resolveColour: (colour: string | number | Colourfuncs, fallback) =>
+                                this.resolveColour(colour, fallback) as string,
+                        });
+                    }
+                    const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
+                    if ( (piece === null) || (piece === undefined) ) {
+                        throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                    }
+                    let pcScale = 0.75;
+                    if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
+                        pcScale = legend[glyph].scale as number;
+                    }
+                    pcScale *= basePcScale;
+                    const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
+                    entry.y = piecePlacement.anchorY;
+                    if (!this.json.options?.includes("no-piece-shadow") && idx === 0) {
+                        const dyBottom = parseFloat(piece.attr("data-dy-bottom") as string);
+                        isoContactShadow(board, piecePlacement, dyBottom);
+                    }
+                    const used = board.use(piece).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
+                    if ( (this.options.boardClick !== undefined) && (! this.json!.options?.includes("no-piece-click")) ) {
+                        used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation(); });
+                    } else {
+                        used.attr({ "pointer-events": "none" });
                     }
                 }
             }
-        }
-
-        const edgeMarkerSides = activeEdgeSides(this.json.board.markers ?? []);
-        let edgeLabelOutset = 0;
-        if (edgeMarkerSides.size > 0) {
-            edgeLabelOutset = isoEdgeLabelOutset(strokeWeight);
-            this.placeEdgeMarkers(board, boardLocalGrid, boardLocalPolys, tUserRotate, tFinal, strokeWeight);
         }
 
         if (!this.json.options?.includes("hide-labels")) {

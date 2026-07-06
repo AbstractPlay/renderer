@@ -23,6 +23,17 @@ export type Polymatrix = (PositiveInteger | Colourstrings | Colourfuncs | 0 | nu
  */
 export type IsoPiece =
   | {
+      piece: "spaceCube" | "spaceHex";
+      /**
+       * Vertical edge length in symbol units (top face is always 100). When omitted, defaults to a proper cube.
+       */
+      height?: number;
+      /**
+       * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
+       */
+      scale?: number;
+    }
+  | {
       piece: IsometricPieces;
       /**
        * Vertical edge length in symbol units (top face is always 100). When omitted, defaults to a proper cube. For pyramids without `size`, defaults to large Icehouse height (175); base width stays 100.
@@ -48,7 +59,7 @@ export type IsoPiece =
       scale?: number;
     };
 /**
- * The types of pieces supported in an isometric legend.
+ * The types of pieces supported in an isometric legend. Hex lintel entries (lintelp_*, lintelf_*) are generated from src/renderers/isometric/lintels.ts.
  */
 export type IsometricPieces =
   | "cube"
@@ -63,7 +74,132 @@ export type IsometricPieces =
   | "lintelW"
   | "lintelNS"
   | "lintelEW"
-  | "spaceCube";
+  | "spaceCube"
+  | "spaceHex"
+  | "lintelp_NE"
+  | "lintelp_E"
+  | "lintelp_NE_E"
+  | "lintelp_SE"
+  | "lintelp_NE_SE"
+  | "lintelp_E_SE"
+  | "lintelp_NE_E_SE"
+  | "lintelp_SW"
+  | "lintelp_NE_SW"
+  | "lintelp_E_SW"
+  | "lintelp_NE_E_SW"
+  | "lintelp_SE_SW"
+  | "lintelp_NE_SE_SW"
+  | "lintelp_E_SE_SW"
+  | "lintelp_NE_E_SE_SW"
+  | "lintelp_W"
+  | "lintelp_NE_W"
+  | "lintelp_E_W"
+  | "lintelp_NE_E_W"
+  | "lintelp_SE_W"
+  | "lintelp_NE_SE_W"
+  | "lintelp_E_SE_W"
+  | "lintelp_NE_E_SE_W"
+  | "lintelp_SW_W"
+  | "lintelp_NE_SW_W"
+  | "lintelp_E_SW_W"
+  | "lintelp_NE_E_SW_W"
+  | "lintelp_SE_SW_W"
+  | "lintelp_NE_SE_SW_W"
+  | "lintelp_E_SE_SW_W"
+  | "lintelp_NE_E_SE_SW_W"
+  | "lintelp_NW"
+  | "lintelp_NE_NW"
+  | "lintelp_E_NW"
+  | "lintelp_NE_E_NW"
+  | "lintelp_SE_NW"
+  | "lintelp_NE_SE_NW"
+  | "lintelp_E_SE_NW"
+  | "lintelp_NE_E_SE_NW"
+  | "lintelp_SW_NW"
+  | "lintelp_NE_SW_NW"
+  | "lintelp_E_SW_NW"
+  | "lintelp_NE_E_SW_NW"
+  | "lintelp_SE_SW_NW"
+  | "lintelp_NE_SE_SW_NW"
+  | "lintelp_E_SE_SW_NW"
+  | "lintelp_NE_E_SE_SW_NW"
+  | "lintelp_W_NW"
+  | "lintelp_NE_W_NW"
+  | "lintelp_E_W_NW"
+  | "lintelp_NE_E_W_NW"
+  | "lintelp_SE_W_NW"
+  | "lintelp_NE_SE_W_NW"
+  | "lintelp_E_SE_W_NW"
+  | "lintelp_NE_E_SE_W_NW"
+  | "lintelp_SW_W_NW"
+  | "lintelp_NE_SW_W_NW"
+  | "lintelp_E_SW_W_NW"
+  | "lintelp_NE_E_SW_W_NW"
+  | "lintelp_SE_SW_W_NW"
+  | "lintelp_NE_SE_SW_W_NW"
+  | "lintelp_E_SE_SW_W_NW"
+  | "lintelf_N"
+  | "lintelf_NE"
+  | "lintelf_N_NE"
+  | "lintelf_SE"
+  | "lintelf_N_SE"
+  | "lintelf_NE_SE"
+  | "lintelf_N_NE_SE"
+  | "lintelf_S"
+  | "lintelf_N_S"
+  | "lintelf_NE_S"
+  | "lintelf_N_NE_S"
+  | "lintelf_SE_S"
+  | "lintelf_N_SE_S"
+  | "lintelf_NE_SE_S"
+  | "lintelf_N_NE_SE_S"
+  | "lintelf_SW"
+  | "lintelf_N_SW"
+  | "lintelf_NE_SW"
+  | "lintelf_N_NE_SW"
+  | "lintelf_SE_SW"
+  | "lintelf_N_SE_SW"
+  | "lintelf_NE_SE_SW"
+  | "lintelf_N_NE_SE_SW"
+  | "lintelf_S_SW"
+  | "lintelf_N_S_SW"
+  | "lintelf_NE_S_SW"
+  | "lintelf_N_NE_S_SW"
+  | "lintelf_SE_S_SW"
+  | "lintelf_N_SE_S_SW"
+  | "lintelf_NE_SE_S_SW"
+  | "lintelf_N_NE_SE_S_SW"
+  | "lintelf_NW"
+  | "lintelf_N_NW"
+  | "lintelf_NE_NW"
+  | "lintelf_N_NE_NW"
+  | "lintelf_SE_NW"
+  | "lintelf_N_SE_NW"
+  | "lintelf_NE_SE_NW"
+  | "lintelf_N_NE_SE_NW"
+  | "lintelf_S_NW"
+  | "lintelf_N_S_NW"
+  | "lintelf_NE_S_NW"
+  | "lintelf_N_NE_S_NW"
+  | "lintelf_SE_S_NW"
+  | "lintelf_N_SE_S_NW"
+  | "lintelf_NE_SE_S_NW"
+  | "lintelf_N_NE_SE_S_NW"
+  | "lintelf_SW_NW"
+  | "lintelf_N_SW_NW"
+  | "lintelf_NE_SW_NW"
+  | "lintelf_N_NE_SW_NW"
+  | "lintelf_SE_SW_NW"
+  | "lintelf_N_SE_SW_NW"
+  | "lintelf_NE_SE_SW_NW"
+  | "lintelf_N_NE_SE_SW_NW"
+  | "lintelf_S_SW_NW"
+  | "lintelf_N_S_SW_NW"
+  | "lintelf_NE_S_SW_NW"
+  | "lintelf_N_NE_S_SW_NW"
+  | "lintelf_SE_S_SW_NW"
+  | "lintelf_N_SE_S_SW_NW"
+  | "lintelf_NE_SE_S_SW_NW";
 /**
  * Icehouse pyramid size preset. Proportions from https://www.wunderland.com/icehouse/MakingIcehouse.html (large: 1" base × 1¾" height; medium: 25/32" × 1⅜"; small: 9/16" × 1"). When set, `height` is ignored.
  */

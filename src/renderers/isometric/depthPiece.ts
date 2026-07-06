@@ -1,6 +1,5 @@
 import { StrokeData, Svg } from "@svgdotjs/svg.js";
-import { Orientation } from "honeycomb-grid";
-import { IsometricPieces, IsoPiece, Colourfuncs } from "../../schemas/schema";
+import { IsoPiece, Colourfuncs } from "../../schemas/schema";
 import { generateCubes, CubeFaceFills } from "./cubes";
 import { permuteCubeFacesForProjection, effectiveCubeYaw } from "./cubeOrientation";
 import { generateCylinders } from "./cylinders";
@@ -19,25 +18,8 @@ import {
     IsoFaceFills,
 } from "./shading";
 import { isMultiFaceCube, isoPieceHeight } from "./stack";
-
-const rotationMap = new Map<IsometricPieces, Map<number, IsometricPieces>>([
-    ["lintelN", new Map([[1, "lintelE"], [2, "lintelS"], [3, "lintelW"]])],
-    ["lintelE", new Map([[1, "lintelS"], [2, "lintelW"], [3, "lintelN"]])],
-    ["lintelS", new Map([[1, "lintelW"], [2, "lintelN"], [3, "lintelE"]])],
-    ["lintelW", new Map([[1, "lintelN"], [2, "lintelE"], [3, "lintelS"]])],
-    ["lintelNS", new Map([[1, "lintelEW"], [2, "lintelNS"], [3, "lintelEW"]])],
-    ["lintelEW", new Map([[1, "lintelNS"], [2, "lintelEW"], [3, "lintelNS"]])],
-]);
-
-const lintelSides: Partial<Record<IsometricPieces, ("N" | "E" | "S" | "W")[]>> = {
-    lintelN: ["E", "S", "W"],
-    lintelE: ["N", "S", "W"],
-    lintelS: ["E", "N", "W"],
-    lintelW: ["E", "S", "N"],
-    lintelNS: ["E", "W"],
-    lintelEW: ["N", "S"],
-    spaceCube: [],
-};
+import { effectiveRotatedPiece, generateIsoLintelOrSpacer } from "./pieceSymbols";
+import { boardHexOrientation, isSpacerPiece, parseLintelPiece } from "./lintels";
 
 type ResolveColourFn = (colour: string | number | Colourfuncs, fallback?: string) => string;
 
@@ -50,17 +32,6 @@ const modulateFaceFills = (
     left: { color: isoDepthModulate(fills.left, normalizedDepth, strength) },
     right: { color: isoDepthModulate(fills.right, normalizedDepth, strength) },
 });
-
-const effectivePieceType = (pc: IsoPiece, numRotations: number): IsometricPieces => {
-    let effPiece = pc.piece;
-    if (numRotations > 0 && rotationMap.has(pc.piece)) {
-        const next = rotationMap.get(pc.piece)!;
-        if (next.has(numRotations)) {
-            effPiece = next.get(numRotations)!;
-        }
-    }
-    return effPiece;
-};
 
 const generateDepthShadedSymbol = (opts: {
     rootSvg: Svg;
@@ -75,7 +46,7 @@ const generateDepthShadedSymbol = (opts: {
 }): void => {
     const { rootSvg, shadedId, pc, yaw, numRotations, normalizedDepth, pieceStroke, resolveColour } = opts;
     const projection = opts.projection ?? ISO_PROJECTION_PRESETS.iso;
-    const effPiece = effectivePieceType(pc, numRotations);
+    const effPiece = effectiveRotatedPiece(pc.piece, numRotations);
 
     if (isMultiFaceCube(pc)) {
         const effectiveYaw = effectiveCubeYaw(yaw, numRotations * 90);
@@ -100,6 +71,28 @@ const generateDepthShadedSymbol = (opts: {
         return;
     }
 
+    if (isSpacerPiece(pc.piece) || parseLintelPiece(pc.piece) !== null) {
+        const spacerFill = { color: "transparent" };
+        const fills = isSpacerPiece(pc.piece)
+            ? { top: spacerFill, left: spacerFill, right: spacerFill }
+            : modulateFaceFills(
+                isoShadeFaces(resolveColour((pc as { colour: string }).colour, "#000") as string),
+                normalizedDepth,
+            );
+        generateIsoLintelOrSpacer({
+            rootSvg,
+            piece: pc.piece,
+            projection,
+            heights: [isoPieceHeight(pc)],
+            stroke: pieceStroke,
+            fill: fills.top,
+            faceFills: fills,
+            idSymbol: shadedId,
+            numRotations,
+        });
+        return;
+    }
+
     if (!("colour" in pc)) {
         throw new Error(`Legend entry for depth shading is missing colour.`);
     }
@@ -109,17 +102,6 @@ const generateDepthShadedSymbol = (opts: {
 
     if (effPiece === "cube") {
         generateCubes({ rootSvg, projection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
-    } else if (effPiece in lintelSides) {
-        generateCubes({
-            rootSvg,
-            projection,
-            heights: [isoPieceHeight(pc)],
-            stroke: pieceStroke,
-            fill: fills.top,
-            faceFills: fills,
-            idSymbol: shadedId,
-            sides: lintelSides[effPiece],
-        });
     } else if (effPiece === "cylinder") {
         generateCylinders({ rootSvg, projection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
     } else if (effPiece === "cone") {
@@ -135,7 +117,7 @@ const generateDepthShadedSymbol = (opts: {
             modulateColor: (colour) => isoDepthModulate(colour, normalizedDepth),
             idSymbol: shadedId,
         });
-    } else if (effPiece === "hexp") {
+    } else if (effPiece === "hexp" || effPiece === "hexf") {
         generateHexes({
             rootSvg,
             projection,
@@ -144,18 +126,7 @@ const generateDepthShadedSymbol = (opts: {
             fill: fills.top,
             faceFills: fills,
             idSymbol: shadedId,
-            orientation: Orientation.POINTY,
-        });
-    } else if (effPiece === "hexf") {
-        generateHexes({
-            rootSvg,
-            projection,
-            heights: [isoPieceHeight(pc)],
-            stroke: pieceStroke,
-            fill: fills.top,
-            faceFills: fills,
-            idSymbol: shadedId,
-            orientation: Orientation.FLAT,
+            orientation: boardHexOrientation(numRotations),
         });
     } else {
         throw new Error(`Unrecognized isoPiece type "${effPiece}" for depth shading.`);

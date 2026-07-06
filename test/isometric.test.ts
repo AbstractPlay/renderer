@@ -467,6 +467,98 @@ describe("IsometricRenderer lintel pieces", () => {
         expect(draw.findOne("#L")).to.not.equal(null);
         expect(draw.find("#board use").length).to.be.greaterThan(0);
     });
+
+    it("should render hex lintel pieces on a hex-of-hex board", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "hex-of-hex", minWidth: 2, maxWidth: 4 },
+            legend: {
+                A: { piece: "lintelp_NE", height: 30, colour: "#8e44ad" },
+                B: { piece: "lintelf_N_S", height: 30, colour: "#2980b9" },
+                S: { piece: "spaceHex", height: 30 },
+            },
+            pieces: [[["A"]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+        expect(draw.findOne("#A")).to.not.equal(null);
+
+        const drawB = makeDraw();
+        renderer.render({ ...rep, pieces: [[["B"]]] }, drawB, baseOptions);
+        expect(drawB.findOne("#B")).to.not.equal(null);
+
+        const drawS = makeDraw();
+        renderer.render({ ...rep, pieces: [[["S"]]] }, drawS, baseOptions);
+        expect(drawS.findOne("#S")).to.not.equal(null);
+    });
+
+    it("should render hex lintels when the board is rotated", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "hex-of-hex", minWidth: 2, maxWidth: 4, rotate: 90 },
+            legend: {
+                L: { piece: "lintelp_E", height: 30, colour: "#8e44ad" },
+            },
+            pieces: [[["L"]]],
+        };
+        renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
+        expect(draw.findOne("#L")).to.not.equal(null);
+        expect(draw.find("#board use").length).to.be.greaterThan(0);
+        const surfaceRatio = parseFloat(draw.findOne("#_surface_0")!.attr("data-width-ratio") as string);
+        const pieceRatio = parseFloat(draw.findOne("#L")!.attr("data-width-ratio") as string);
+        expect(pieceRatio).to.be.closeTo(surfaceRatio, 0.001);
+    });
+
+    it("should match board cell orientation for hex pieces when rotated", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "hex-of-hex", minWidth: 4, maxWidth: 7 },
+            legend: {
+                A: { piece: "hexp", height: 30, scale: 1.1765, colour: 1 },
+                X: { piece: "spaceHex", scale: 1.1765, height: 30 },
+                A1: { piece: "lintelp_E", height: 30, scale: 1.1765, colour: 1 },
+                A2: { piece: "lintelp_E_W", height: 30, scale: 1.1765, colour: 1 },
+                A3: { piece: "lintelp_W", height: 30, scale: 1.1765, colour: 1 },
+            },
+            pieces: [[["A", "A1"], ["X", "A2"], ["A", "A3"]]],
+        };
+        renderer.render(rep, draw, { ...baseOptions, rotate: 90 });
+        const surfaceRatio = parseFloat(draw.findOne("#_surface_0")!.attr("data-width-ratio") as string);
+        for (const id of ["A", "A1", "A2", "A3"]) {
+            const pieceRatio = parseFloat(draw.findOne(`#${id}`)!.attr("data-width-ratio") as string);
+            expect(pieceRatio, id).to.be.closeTo(surfaceRatio, 0.001);
+        }
+    });
+
+    it("should draw fewer lines when more hex edges are omitted", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "hex-of-hex", minWidth: 2, maxWidth: 4 },
+            legend: {
+                L1: { piece: "lintelp_NE", height: 30, colour: "#8e44ad" },
+                L2: { piece: "lintelp_NE_E", height: 30, colour: "#8e44ad" },
+            },
+            pieces: [[["L1"]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+        const oneOmitLines = (draw.findOne("#L1") as Svg).find("line").length;
+
+        const draw2 = makeDraw();
+        renderer.render(
+            { ...rep, pieces: [[["L2"]]] },
+            draw2,
+            baseOptions,
+        );
+        const twoOmitLines = (draw2.findOne("#L2") as Svg).find("line").length;
+        expect(twoOmitLines).to.be.lessThan(oneOmitLines);
+    });
 });
 
 describe("IsometricRenderer depth cues", () => {
