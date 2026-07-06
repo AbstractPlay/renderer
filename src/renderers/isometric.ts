@@ -1,7 +1,7 @@
 
 import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike, Symbol as SVGSymbol, Use } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base";
-import { AnnotationBasic, APRenderRep, AreaKey, Colourfuncs, IsometricPieces, IsoPiece, RowCol } from "../schemas/schema";
+import { AnnotationBasic, APRenderRep, AreaKey, Colourfuncs, IsometricPieces, IsoPiece, MarkerEdge, RowCol } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
@@ -16,7 +16,8 @@ import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeC
 import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
 import { isoCellFootprint } from "./isometric/footprint";
 import { parseIsoPiecesString } from "./isometric/piecesGrid";
-import { buildIsoProjectionMatrix, isoLabelTransform, projectedCellDepth, resolveIsoProjection, usesLayeredCellDraw } from "./isometric/projection";
+import { activeEdgeSides, collectEdgeMarkerSegments, EdgeSide, isoEdgeLabelOutset } from "./isometric/edgeMarkers";
+import { buildIsoProjectionMatrix, isoLabelTransform, mapBoardToScreen, projectedCellDepth, resolveIsoProjection, usesLayeredCellDraw } from "./isometric/projection";
 import { isoShadeFace, isoShadeFaces, IsoFaceFills } from "./isometric/shading";
 import { ensureIsoContactBlurFilter, isoContactShadow } from "./isometric/shadow";
 import { isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement";
@@ -153,6 +154,17 @@ export class IsometricRenderer extends RendererBase {
         }
 
         const boardLocalGrid: GridPoints = gridPoints.map(row => row.map(pt => ({ x: pt.x, y: pt.y })));
+        const boardLocalPolys: Poly[][] = polys.map((row) =>
+            row.map((poly) => {
+                if (poly.type === "circle") {
+                    return { ...poly };
+                }
+                if (poly.type === "poly") {
+                    return { type: "poly" as const, points: poly.points.map((pt) => ({ x: pt.x, y: pt.y })) };
+                }
+                throw new Error(`Unsupported poly type for edge markers: ${poly.type}`);
+            }),
+        );
 
         // any user-specified rotation has to happen before laying everything out
         const boardRotation = this.getRotation();
@@ -648,8 +660,15 @@ export class IsometricRenderer extends RendererBase {
             }
         }
 
+        const edgeMarkerSides = activeEdgeSides(this.json.board.markers ?? []);
+        let edgeLabelOutset = 0;
+        if (edgeMarkerSides.size > 0) {
+            edgeLabelOutset = isoEdgeLabelOutset(strokeWeight);
+            this.placeEdgeMarkers(board, boardLocalGrid, boardLocalPolys, tUserRotate, tFinal, strokeWeight);
+        }
+
         if (!this.json.options?.includes("hide-labels")) {
-            this.placeBoardLabels(board, boardLocalGrid, tUserRotate, tFinal);
+            this.placeBoardLabels(board, boardLocalGrid, tUserRotate, tFinal, edgeMarkerSides, edgeLabelOutset);
         }
 
         // do post-annotations
@@ -712,6 +731,78 @@ export class IsometricRenderer extends RendererBase {
         };
     }
 
+    private placeEdgeMarkers(
+        board: SVGG,
+        boardLocalGrid: GridPoints,
+        boardLocalPolys: Poly[][],
+        tUserRotate: Matrix,
+        tFinal: Matrix,
+        baseStroke: number,
+    ): void {
+        if (this.json === undefined || this.json.board === null) {
+            throw new Error("Invalid object state.");
+        }
+        if (!("style" in this.json.board) || this.json.board.style === undefined) {
+            return;
+        }
+        const style = this.json.board.style;
+        if (style !== "squares" && style !== "hex-of-hex" && style !== "hex-of-cir") {
+            return;
+        }
+        const markers = (this.json.board.markers ?? []).filter((m): m is MarkerEdge => m.type === "edge");
+        if (markers.length === 0) {
+            return;
+        }
+
+        let baseOpacity = 1;
+        if ("strokeOpacity" in this.json.board && this.json.board.strokeOpacity !== undefined) {
+            baseOpacity = this.json.board.strokeOpacity;
+        }
+
+        const edges = board.group().id("edge-markers").attr({ "pointer-events": "none" });
+
+        for (const marker of markers) {
+            const cloned = { ...marker };
+            const segments = collectEdgeMarkerSegments(
+                style,
+                marker.edge,
+                boardLocalGrid,
+                boardLocalPolys,
+                this.cellsize,
+                baseStroke,
+            );
+            if (segments.length === 0) {
+                continue;
+            }
+
+            let colour = this.options.colourContext.strokes;
+            if ("colour" in marker && marker.colour !== undefined) {
+                colour = this.resolveColour(marker.colour) as string;
+            }
+            let opacity = baseOpacity + ((1 - baseOpacity) / 2);
+            if ("opacity" in marker && marker.opacity !== undefined) {
+                opacity = marker.opacity;
+            }
+
+            const stroke: StrokeData = {
+                width: baseStroke * 3,
+                color: colour,
+                opacity,
+                linecap: "round",
+                linejoin: "round",
+            };
+
+            for (const { x1, y1, x2, y2 } of segments) {
+                const from = mapBoardToScreen(x1, y1, tUserRotate, tFinal);
+                const to = mapBoardToScreen(x2, y2, tUserRotate, tFinal);
+                edges
+                    .line(from.x, from.y, to.x, to.y)
+                    .addClass(`aprender-marker-${x2uid(cloned)}`)
+                    .stroke(stroke);
+            }
+        }
+    }
+
     private placeIsoLabel(labels: SVGG, text: string, localX: number, localY: number, tUserRotate: Matrix, tFinal: Matrix, colour: string, opacity: number): void {
         labels.text(text)
             .fill(colour)
@@ -720,7 +811,14 @@ export class IsometricRenderer extends RendererBase {
             .attr({ "text-anchor": "middle", "dominant-baseline": "central" });
     }
 
-    private placeBoardLabels(board: SVGG, boardLocalGrid: GridPoints, tUserRotate: Matrix, tFinal: Matrix): void {
+    private placeBoardLabels(
+        board: SVGG,
+        boardLocalGrid: GridPoints,
+        tUserRotate: Matrix,
+        tFinal: Matrix,
+        edgeSides: Set<EdgeSide> = new Set(),
+        edgeLabelOutset = 0,
+    ): void {
         if ( (this.json === undefined) || (this.json.board === null) ) {
             throw new Error("Invalid object state.");
         }
@@ -745,6 +843,14 @@ export class IsometricRenderer extends RendererBase {
 
         const labels = board.group().id("labels").attr({ "pointer-events": "none" });
         const cellsize = this.cellsize;
+        const nOutset = edgeSides.has("N") ? edgeLabelOutset : 0;
+        const sOutset = edgeSides.has("S") ? edgeLabelOutset : 0;
+        const eOutset = edgeSides.has("E") ? edgeLabelOutset : 0;
+        const wOutset = edgeSides.has("W") ? edgeLabelOutset : 0;
+        const neOutset = edgeSides.has("NE") ? edgeLabelOutset : 0;
+        const seOutset = edgeSides.has("SE") ? edgeLabelOutset : 0;
+        const swOutset = edgeSides.has("SW") ? edgeLabelOutset : 0;
+        const nwOutset = edgeSides.has("NW") ? edgeLabelOutset : 0;
 
         switch (this.json.board.style) {
             case "squares": {
@@ -777,16 +883,16 @@ export class IsometricRenderer extends RendererBase {
                     rowLabels.reverse();
                 }
                 for (let col = 0; col < width; col++) {
-                    const flatTop = {x: boardLocalGrid[0][col].x, y: boardLocalGrid[0][col].y - cellsize};
-                    const flatBottom = {x: boardLocalGrid[boardHeight - 1][col].x, y: boardLocalGrid[boardHeight - 1][col].y + cellsize};
+                    const flatTop = {x: boardLocalGrid[0][col].x, y: boardLocalGrid[0][col].y - cellsize - nOutset};
+                    const flatBottom = {x: boardLocalGrid[boardHeight - 1][col].x, y: boardLocalGrid[boardHeight - 1][col].y + cellsize + sOutset};
                     if (!hideHalf) {
                         this.placeIsoLabel(labels, columnLabels[col], flatTop.x, flatTop.y, tUserRotate, tFinal, labelColour, labelOpacity);
                     }
                     this.placeIsoLabel(labels, columnLabels[col], flatBottom.x, flatBottom.y, tUserRotate, tFinal, labelColour, labelOpacity);
                 }
                 for (let row = 0; row < boardHeight; row++) {
-                    const flatL = {x: boardLocalGrid[row][0].x - cellsize, y: boardLocalGrid[row][0].y};
-                    const flatR = {x: boardLocalGrid[row][width - 1].x + cellsize, y: boardLocalGrid[row][width - 1].y};
+                    const flatL = {x: boardLocalGrid[row][0].x - cellsize - wOutset, y: boardLocalGrid[row][0].y};
+                    const flatR = {x: boardLocalGrid[row][width - 1].x + cellsize + eOutset, y: boardLocalGrid[row][width - 1].y};
                     this.placeIsoLabel(labels, rowLabels[row], flatL.x, flatL.y, tUserRotate, tFinal, labelColour, labelOpacity);
                     if (!hideHalf) {
                         this.placeIsoLabel(labels, rowLabels[row], flatR.x, flatR.y, tUserRotate, tFinal, labelColour, labelOpacity);
@@ -812,8 +918,13 @@ export class IsometricRenderer extends RendererBase {
                         leftNum = rightNum;
                         rightNum = scratch;
                     }
-                    const flatL = {x: boardLocalGrid[row][0].x - cellsize, y: boardLocalGrid[row][0].y};
-                    const flatR = {x: boardLocalGrid[row][boardLocalGrid[row].length - 1].x + cellsize, y: boardLocalGrid[row][boardLocalGrid[row].length - 1].y};
+                    const hexRowOutsetL = nwOutset + swOutset;
+                    const hexRowOutsetR = neOutset + seOutset;
+                    const flatL = {x: boardLocalGrid[row][0].x - cellsize - wOutset - hexRowOutsetL, y: boardLocalGrid[row][0].y};
+                    const flatR = {
+                        x: boardLocalGrid[row][boardLocalGrid[row].length - 1].x + cellsize + eOutset + hexRowOutsetR,
+                        y: boardLocalGrid[row][boardLocalGrid[row].length - 1].y,
+                    };
                     const label = columnLabels[gridHeight - row - 1];
                     this.placeIsoLabel(labels, label + leftNum, flatL.x, flatL.y, tUserRotate, tFinal, labelColour, labelOpacity);
                     this.placeIsoLabel(labels, label + rightNum, flatR.x, flatR.y, tUserRotate, tFinal, labelColour, labelOpacity);
