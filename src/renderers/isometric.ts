@@ -8,7 +8,10 @@ import { Matrix } from "transformation-matrix-js";
 import { generateCubes, CubeFaceFills } from "./isometric/cubes";
 import { effectiveCubeYaw, permuteCubeFacesForProjection } from "./isometric/cubeOrientation";
 import { generateCylinders } from "./isometric/cylinders";
+import { generateCones } from "./isometric/cones";
 import { generateHexes } from "./isometric/hexes";
+import { generatePyramids } from "./isometric/pyramids";
+import { resolvePyramidDims, isPyramidPiece } from "./isometric/pyramidDims";
 import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
 import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
 import { isoCellFootprint } from "./isometric/footprint";
@@ -17,7 +20,7 @@ import { buildIsoProjectionMatrix, isoLabelTransform, projectedCellDepth, resolv
 import { isoShadeFace, isoShadeFaces, IsoFaceFills } from "./isometric/shading";
 import { ensureIsoContactBlurFilter, isoContactShadow } from "./isometric/shadow";
 import { isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement";
-import { IsoPiecesGrid, isMultiFaceCube, parseStackEntry } from "./isometric/stack";
+import { IsoPiecesGrid, isMultiFaceCube, isoPieceHeight, parseStackEntry } from "./isometric/stack";
 import { x2uid } from "../common/glyph2uid";
 import { Orientation } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, squares } from "../boards";
@@ -299,7 +302,7 @@ export class IsometricRenderer extends RendererBase {
                         generateCubes({
                             rootSvg: this.rootSvg,
                             projection: isoProjection,
-                            heights: [pc.height ?? 100],
+                            heights: [isoPieceHeight(pc)],
                             stroke: pieceStroke,
                             fill: {color: isoShadeFace(top, "top")},
                             faceFills: {
@@ -314,37 +317,51 @@ export class IsometricRenderer extends RendererBase {
                     throw new Error(`Legend entry "${key}" is missing colour.`);
                 } else if (effPiece === "cube") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
                 } else if (effPiece === "lintelN") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "W"]});
                 } else if (effPiece === "lintelE") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S", "W"]});
                 } else if (effPiece === "lintelS") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "N", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "N", "W"]});
                 } else if (effPiece === "lintelW") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "N"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "S", "N"]});
                 } else if (effPiece === "lintelNS") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "W"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["E", "W"]});
                 } else if (effPiece === "lintelEW") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S"]});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: ["N", "S"]});
                 } else if (effPiece === "spaceCube") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: []});
+                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, sides: []});
                 } else if (effPiece === "cylinder") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                    generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                } else if (effPiece === "cone") {
+                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
+                    generateCones({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                } else if (effPiece === "pyramid" && isPyramidPiece(pc)) {
+                    const base = this.resolveColour(pc.colour, "#000") as string;
+                    generatePyramids({
+                        rootSvg: this.rootSvg,
+                        projection: isoProjection,
+                        dims: [resolvePyramidDims(pc)],
+                        stroke: pieceStroke,
+                        fill: { color: base },
+                        baseHex: base,
+                        idSymbol: key,
+                    });
                 } else if (effPiece === "hexp") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.POINTY})
+                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.POINTY})
                 } else if (effPiece === "hexf") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.FLAT})
+                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: Orientation.FLAT})
                 } else {
 
                     throw new Error(`Unrecognized isoPiece type "${pc.piece}"`);

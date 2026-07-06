@@ -12,3 +12,6 @@ export const parseStackEntry = (item: IsoStackEntry): { glyph: string; yaw: numb
     }
     return { glyph: item.glyph, yaw: item.yaw ?? 0 };
 };
+
+/** Symbol-unit height; defaults to top-face width (100) when omitted. */
+export const isoPieceHeight = (pc: IsoPiece): number => pc.height ?? 100;

@@ -608,6 +608,76 @@ describe("IsometricRenderer depth cues", () => {
         expect(grad).to.not.equal(null);
     });
 
+    it("should render a cone with light-aware side shading", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const base = "#0000ff";
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 1, height: 1 },
+            legend: { C: { piece: "cone", height: 30, colour: base } },
+            pieces: [[[{ glyph: "C" }]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const symbol = draw.findOne("#C") as Svg;
+        expect(symbol.find("path").length).to.equal(1);
+        expect(symbol.find("use").length).to.equal(0);
+        expect(draw.findOne("#isoConeSide_C")).to.not.equal(null);
+    });
+
+    it("should render a proper cone when height is omitted", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 1, height: 1 },
+            legend: { C: { piece: "cone", colour: "#c0392b" } },
+            pieces: [[[{ glyph: "C" }]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const symbol = draw.findOne("#C") as Svg;
+        expect(symbol).to.not.equal(null);
+        expect(symbol.find("path").length).to.equal(1);
+    });
+
+    it("should render Icehouse pyramids with size presets and face shading", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", width: 3, height: 1 },
+            legend: {
+                L: { piece: "pyramid", size: "large", colour: "#c0392b" },
+                M: { piece: "pyramid", size: "medium", colour: "#2980b9" },
+                S: { piece: "pyramid", size: "small", colour: "#27ae60" },
+            },
+            pieces: [[[{ glyph: "L" }], [{ glyph: "M" }], [{ glyph: "S" }]]],
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        for (const id of ["L", "M", "S"]) {
+            const symbol = draw.findOne(`#${id}`) as Svg;
+            expect(symbol).to.not.equal(null);
+            expect(symbol.find("path").length).to.be.greaterThan(0);
+        }
+    });
+
+    it("should render a proper cylinder when height is omitted", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "hex-of-cir", minWidth: 3, maxWidth: 5 },
+            legend: { B: { piece: "cylinder", colour: "#2980b9" } },
+            pieces: ["B,,", "_", "_"].join("\n"),
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(draw.findOne("#B")).to.not.equal(null);
+    });
+
     it("should render stronger contact shadows on board pieces", () => {
         const draw = makeDraw();
         const renderer = new IsometricRenderer();

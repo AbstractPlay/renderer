@@ -505,7 +505,11 @@
         },
         "isometricPieces": {
             "description": "The types of pieces supported in an isometric legend.",
-            "enum": ["cube", "cylinder", "hexp", "hexf", "lintelN", "lintelE", "lintelS", "lintelW", "lintelNS", "lintelEW", "spaceCube"]
+            "enum": ["cube", "cylinder", "cone", "pyramid", "hexp", "hexf", "lintelN", "lintelE", "lintelS", "lintelW", "lintelNS", "lintelEW", "spaceCube"]
+        },
+        "isoPyramidSize": {
+            "description": "Icehouse pyramid size preset. Proportions from https://www.wunderland.com/icehouse/MakingIcehouse.html (large: 1\" base × 1¾\" height; medium: 25/32\" × 1⅜\"; small: 9/16\" × 1\"). When set, `height` is ignored.",
+            "enum": ["small", "medium", "large"]
         },
         "isoPiece": {
             "description": "Schema for a single piece in an `isoPieces` object.",
@@ -516,9 +520,13 @@
                     "properties": {
                         "piece": {"$ref": "#/$defs/isometricPieces"},
                         "height": {
+                            "description": "Vertical edge length in symbol units (top face is always 100). When omitted, defaults to a proper cube. For pyramids without `size`, defaults to large Icehouse height (175); base width stays 100.",
                             "type": "number",
                             "minimum": 0,
                             "default": 0
+                        },
+                        "size": {
+                            "$ref": "#/$defs/isoPyramidSize"
                         },
                         "colour": {
                             "anyOf": [
@@ -535,7 +543,7 @@
                             "default": 0.75
                         }
                     },
-                    "required": ["piece", "height", "colour"],
+                    "required": ["piece", "colour"],
                     "additionalProperties": false
                 },
                 {

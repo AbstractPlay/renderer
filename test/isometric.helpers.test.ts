@@ -6,6 +6,8 @@ import { deg2rad } from "../src/common/plotting";
 import { compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_SORT_EPSILON } from "../src/renderers/isometric/cellSort";
 import { genCube, cubeFacePaintOrder } from "../src/renderers/isometric/cubes";
 import { generateCylinders } from "../src/renderers/isometric/cylinders";
+import { generateCones } from "../src/renderers/isometric/cones";
+import { coneSilhouette } from "../src/renderers/isometric/coneSilhouette";
 import { cylinderSilhouette } from "../src/renderers/isometric/cylinderSilhouette";
 import { depthBucketIndex, depthToNormalized, isoDepthModulate } from "../src/renderers/isometric/shading";
 import { piecesRowWidth, parseIsoPiecesString } from "../src/renderers/isometric/piecesGrid";
@@ -22,6 +24,7 @@ import {
     resolveGroundBasis,
     resolveIsoProjection,
 } from "../src/renderers/isometric/projection";
+import { isoPieceHeight } from "../src/renderers/isometric/stack";
 import { permuteCubeFaces, permuteCubeFacesForProjection } from "../src/renderers/isometric/cubeOrientation";
 import { rectOfRects } from "../src/grids";
 
@@ -203,6 +206,40 @@ describe("isometric projection helpers", () => {
         const { rightDeg, leftDeg } = cylinderSilhouette(50, 20, ISO_PROJECTION_PRESETS.iso);
         expect(rightDeg).to.be.closeTo(45, 2);
         expect(leftDeg).to.be.closeTo(225, 2);
+    });
+
+    it("should find iso cone silhouette tangent angles on the base circle", () => {
+        const { rightDeg, leftDeg } = coneSilhouette(50, 20, ISO_PROJECTION_PRESETS.iso);
+        expect(rightDeg).to.be.closeTo(45, 2);
+        expect(leftDeg).to.be.closeTo(225, 2);
+    });
+
+    it("should default omitted piece height to top-face width", () => {
+        expect(isoPieceHeight({ piece: "cube", colour: "#000" })).to.equal(100);
+        expect(isoPieceHeight({ piece: "cylinder", colour: "#000", height: 30 })).to.equal(30);
+    });
+
+    it("should anchor cone contact at the projected base center", () => {
+        const draw = makeDraw();
+
+        const dyBottomFor = (idSymbol: string, projection: typeof ISO_PROJECTION_PRESETS.iso): number => {
+            generateCones({
+                rootSvg: draw,
+                heights: [20],
+                stroke: { width: 1, color: "#000" },
+                fill: { color: "#f00" },
+                projection,
+                idSymbol,
+            });
+            const symbol = draw.findOne(`#${idSymbol}`) as { attr: (n: string) => string };
+            return parseFloat(symbol.attr("data-dy-bottom"));
+        };
+
+        const dyBottomIso = dyBottomFor("testConeIso", ISO_PROJECTION_PRESETS.iso);
+        const dyBottomShallow = dyBottomFor("testConeVeryShallow", ISO_PROJECTION_PRESETS["very-shallow"]);
+        expect(dyBottomShallow).to.be.lessThan(dyBottomIso);
+        expect(dyBottomIso).to.be.at.least(0.4);
+        expect(dyBottomIso).to.be.at.most(0.95);
     });
 
     it("should keep ground projection on z=0 identical to buildIsoProjectionMatrix", () => {

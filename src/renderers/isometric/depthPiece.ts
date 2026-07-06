@@ -4,7 +4,10 @@ import { IsometricPieces, IsoPiece, Colourfuncs } from "../../schemas/schema";
 import { generateCubes, CubeFaceFills } from "./cubes";
 import { permuteCubeFacesForProjection, effectiveCubeYaw } from "./cubeOrientation";
 import { generateCylinders } from "./cylinders";
+import { generateCones } from "./cones";
 import { generateHexes } from "./hexes";
+import { generatePyramids } from "./pyramids";
+import { resolvePyramidDims, isPyramidPiece } from "./pyramidDims";
 import { ISO_PROJECTION_PRESETS, IsoProjectionParams } from "./projection";
 import {
     depthBucketIndex,
@@ -15,7 +18,7 @@ import {
     isoShadeFaces,
     IsoFaceFills,
 } from "./shading";
-import { isMultiFaceCube } from "./stack";
+import { isMultiFaceCube, isoPieceHeight } from "./stack";
 
 const rotationMap = new Map<IsometricPieces, Map<number, IsometricPieces>>([
     ["lintelN", new Map([[1, "lintelE"], [2, "lintelS"], [3, "lintelW"]])],
@@ -88,7 +91,7 @@ const generateDepthShadedSymbol = (opts: {
         generateCubes({
             rootSvg,
             projection,
-            heights: [pc.height ?? 100],
+            heights: [isoPieceHeight(pc)],
             stroke: pieceStroke,
             fill: faceFills.top,
             faceFills,
@@ -105,12 +108,12 @@ const generateDepthShadedSymbol = (opts: {
     const fills = modulateFaceFills(isoShadeFaces(base), normalizedDepth);
 
     if (effPiece === "cube") {
-        generateCubes({ rootSvg, projection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
+        generateCubes({ rootSvg, projection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
     } else if (effPiece in lintelSides) {
         generateCubes({
             rootSvg,
             projection,
-            heights: [pc.height],
+            heights: [isoPieceHeight(pc)],
             stroke: pieceStroke,
             fill: fills.top,
             faceFills: fills,
@@ -118,12 +121,25 @@ const generateDepthShadedSymbol = (opts: {
             sides: lintelSides[effPiece],
         });
     } else if (effPiece === "cylinder") {
-        generateCylinders({ rootSvg, projection, heights: [pc.height], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
+        generateCylinders({ rootSvg, projection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
+    } else if (effPiece === "cone") {
+        generateCones({ rootSvg, projection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: shadedId });
+    } else if (effPiece === "pyramid" && isPyramidPiece(pc)) {
+        generatePyramids({
+            rootSvg,
+            projection,
+            dims: [resolvePyramidDims(pc)],
+            stroke: pieceStroke,
+            fill: { color: base },
+            baseHex: base,
+            modulateColor: (colour) => isoDepthModulate(colour, normalizedDepth),
+            idSymbol: shadedId,
+        });
     } else if (effPiece === "hexp") {
         generateHexes({
             rootSvg,
             projection,
-            heights: [pc.height],
+            heights: [isoPieceHeight(pc)],
             stroke: pieceStroke,
             fill: fills.top,
             faceFills: fills,
@@ -134,7 +150,7 @@ const generateDepthShadedSymbol = (opts: {
         generateHexes({
             rootSvg,
             projection,
-            heights: [pc.height],
+            heights: [isoPieceHeight(pc)],
             stroke: pieceStroke,
             fill: fills.top,
             faceFills: fills,

@@ -24,7 +24,11 @@ export type Polymatrix = (PositiveInteger | Colourstrings | Colourfuncs | 0 | nu
 export type IsoPiece =
   | {
       piece: IsometricPieces;
-      height: number;
+      /**
+       * Vertical edge length in symbol units (top face is always 100). When omitted, defaults to a proper cube. For pyramids without `size`, defaults to large Icehouse height (175); base width stays 100.
+       */
+      height?: number;
+      size?: IsoPyramidSize;
       colour: Colourstrings | Colourfuncs | PositiveInteger;
       /**
        * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
@@ -49,6 +53,8 @@ export type IsoPiece =
 export type IsometricPieces =
   | "cube"
   | "cylinder"
+  | "cone"
+  | "pyramid"
   | "hexp"
   | "hexf"
   | "lintelN"
@@ -58,6 +64,10 @@ export type IsometricPieces =
   | "lintelNS"
   | "lintelEW"
   | "spaceCube";
+/**
+ * Icehouse pyramid size preset. Proportions from https://www.wunderland.com/icehouse/MakingIcehouse.html (large: 1" base × 1¾" height; medium: 25/32" × 1⅜"; small: 9/16" × 1"). When set, `height` is ignored.
+ */
+export type IsoPyramidSize = "small" | "medium" | "large";
 /**
  * Describes the board to be drawn. The `other` style is used for special renderers like `tree-*` where we want optional access to some properties, but otherwise no board is being drawn.
  */
