@@ -12,7 +12,7 @@ import { generateCones } from "./isometric/cones";
 import { generateHexes } from "./isometric/hexes";
 import { generatePyramids } from "./isometric/pyramids";
 import { resolvePyramidDims, isPyramidPiece } from "./isometric/pyramidDims";
-import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_EDGE, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
+import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_ANNOTATION, ISO_DRAW_LAYER_EDGE, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
 import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
 import { isoCellFootprint } from "./isometric/footprint";
 import { parseIsoPiecesString } from "./isometric/piecesGrid";
@@ -428,6 +428,7 @@ export class IsometricRenderer extends RendererBase {
                     },
                 });
 
+                let stackAnchorY = anchorYAfterSurface;
                 if (pieces !== undefined) {
                     const stack = pieces[entry.row]?.[entry.col] ?? [];
                     const hasPieces = stack.some((item) => {
@@ -449,7 +450,6 @@ export class IsometricRenderer extends RendererBase {
                         });
                     }
 
-                    let stackAnchorY = anchorYAfterSurface;
                     for (const [idx, stackItem] of stack.entries()) {
                         const { glyph, yaw } = parseStackEntry(stackItem);
                         if (glyph === "" || glyph === "-") { continue; }
@@ -511,6 +511,21 @@ export class IsometricRenderer extends RendererBase {
                             },
                         });
                     }
+                }
+
+                if (this.options.showAnnotations && this.dotsAnnotationTargets(entry.row, entry.col)) {
+                    drawTasks.push({
+                        sortKey: {
+                            ...baseKey,
+                            depth: groundDepth,
+                            layer: ISO_DRAW_LAYER_ANNOTATION,
+                            topY: stackAnchorY,
+                        },
+                        draw: () => {
+                            entry.y = stackAnchorY;
+                            this.drawCellDotsAnnotations(board, entry, tFinal, entry.row, entry.col);
+                        },
+                    });
                 }
             }
 
@@ -597,56 +612,58 @@ export class IsometricRenderer extends RendererBase {
                 if (blocked !== undefined && blocked.find(b => b.row === entry.row && b.col === entry.col)) {
                     continue;
                 }
-                if (pieces === undefined) {
-                    continue;
+                if (pieces !== undefined) {
+                    const stack = pieces[entry.row]?.[entry.col] ?? [];
+                    for (const [idx, stackItem] of stack.entries()) {
+                        const { glyph, yaw } = parseStackEntry(stackItem);
+                        if (glyph === "" || glyph === "-") { continue; }
+                        let pieceId = glyph;
+                        if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
+                            pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
+                        }
+                        const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
+                        if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
+                            pieceId = resolveDepthShadedPieceId({
+                                rootSvg: this.rootSvg,
+                                glyph,
+                                pieceId,
+                                yaw,
+                                legend,
+                                depth: sortKey.depth,
+                                minDepth,
+                                maxDepth,
+                                numRotations,
+                                projection: isoProjection,
+                                pieceStroke,
+                                resolveColour: (colour: string | number | Colourfuncs, fallback) =>
+                                    this.resolveColour(colour, fallback) as string,
+                            });
+                        }
+                        const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
+                        if ( (piece === null) || (piece === undefined) ) {
+                            throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                        }
+                        let pcScale = 0.75;
+                        if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
+                            pcScale = legend[glyph].scale as number;
+                        }
+                        pcScale *= basePcScale;
+                        const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
+                        entry.y = piecePlacement.anchorY;
+                        if (!this.json.options?.includes("no-piece-shadow") && idx === 0) {
+                            const dyBottom = parseFloat(piece.attr("data-dy-bottom") as string);
+                            isoContactShadow(board, piecePlacement, dyBottom);
+                        }
+                        const used = board.use(piece).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
+                        if ( (this.options.boardClick !== undefined) && (! this.json!.options?.includes("no-piece-click")) ) {
+                            used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation(); });
+                        } else {
+                            used.attr({ "pointer-events": "none" });
+                        }
+                    }
                 }
-                const stack = pieces[entry.row]?.[entry.col] ?? [];
-                for (const [idx, stackItem] of stack.entries()) {
-                    const { glyph, yaw } = parseStackEntry(stackItem);
-                    if (glyph === "" || glyph === "-") { continue; }
-                    let pieceId = glyph;
-                    if (legend !== undefined && legend[glyph] !== undefined && isMultiFaceCube(legend[glyph])) {
-                        pieceId = `${glyph}__y${effectiveCubeYaw(yaw, boardRotation)}`;
-                    }
-                    const sortKey = cellSortKeys.get(`${entry.row},${entry.col}`);
-                    if (depthShadeEnabled && legend !== undefined && sortKey !== undefined) {
-                        pieceId = resolveDepthShadedPieceId({
-                            rootSvg: this.rootSvg,
-                            glyph,
-                            pieceId,
-                            yaw,
-                            legend,
-                            depth: sortKey.depth,
-                            minDepth,
-                            maxDepth,
-                            numRotations,
-                            projection: isoProjection,
-                            pieceStroke,
-                            resolveColour: (colour: string | number | Colourfuncs, fallback) =>
-                                this.resolveColour(colour, fallback) as string,
-                        });
-                    }
-                    const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
-                    if ( (piece === null) || (piece === undefined) ) {
-                        throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                    }
-                    let pcScale = 0.75;
-                    if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
-                        pcScale = legend[glyph].scale as number;
-                    }
-                    pcScale *= basePcScale;
-                    const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
-                    entry.y = piecePlacement.anchorY;
-                    if (!this.json.options?.includes("no-piece-shadow") && idx === 0) {
-                        const dyBottom = parseFloat(piece.attr("data-dy-bottom") as string);
-                        isoContactShadow(board, piecePlacement, dyBottom);
-                    }
-                    const used = board.use(piece).move(piecePlacement.newx, piecePlacement.newy).size(piecePlacement.newWidth, piecePlacement.newHeight);
-                    if ( (this.options.boardClick !== undefined) && (! this.json!.options?.includes("no-piece-click")) ) {
-                        used.click((e: Event) => { this.options.boardClick!(entry.row, entry.col, idx.toString()); e.stopPropagation(); });
-                    } else {
-                        used.attr({ "pointer-events": "none" });
-                    }
+                if (this.options.showAnnotations && this.dotsAnnotationTargets(entry.row, entry.col)) {
+                    this.drawCellDotsAnnotations(board, entry, tFinal, entry.row, entry.col);
                 }
             }
         }
@@ -1030,6 +1047,70 @@ export class IsometricRenderer extends RendererBase {
         return svg.use(piece).move(newx, newy).size(dims.width, dims.height);
     }
 
+    private dotsAnnotationTargets(row: number, col: number): boolean {
+        if (this.json === undefined || !("annotations" in this.json) || this.json.annotations === undefined) {
+            return false;
+        }
+        return (this.json.annotations as AnnotationBasic[]).some(
+            (note) => note.type === "dots"
+                && Array.isArray(note.targets)
+                && (note.targets as ITarget[]).some((t) => t.row === row && t.col === col),
+        );
+    }
+
+    private drawCellDotsAnnotations(group: SVGG, entry: PointEntry, transform: Matrix, row: number, col: number): void {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Object in an invalid state!");
+        }
+        if (!("annotations" in this.json) || this.json.annotations === undefined) {
+            return;
+        }
+
+        for (const note of this.json.annotations as AnnotationBasic[]) {
+            if (note.type !== "dots" || !Array.isArray(note.targets)) {
+                continue;
+            }
+            const targets = (note.targets as ITarget[]).filter((t) => t.row === row && t.col === col);
+            if (targets.length === 0) {
+                continue;
+            }
+
+            const cloned = { ...note };
+            if ("targets" in cloned) {
+                // @ts-expect-error (only used to generate UUID)
+                delete cloned.targets;
+            }
+
+            let colour = this.options.colourContext.annotations;
+            if (("colour" in note) && note.colour !== undefined) {
+                colour = this.resolveColour(note.colour) as string;
+            }
+            let opacity = 1;
+            if (("opacity" in note) && note.opacity !== undefined) {
+                opacity = note.opacity;
+            }
+            let diameter = 0.1;
+            if (("size" in note) && note.size !== undefined) {
+                diameter = note.size;
+            }
+
+            const pt = { x: entry.x, y: entry.y };
+            const tInverted = transform.inverse();
+            const ptInverted = tInverted.applyToPoint(pt.x, pt.y);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for (const _node of targets) {
+                group.circle(this.cellsize * diameter)
+                    .addClass(`aprender-annotation-${x2uid(cloned)}`)
+                    .fill(colour)
+                    .opacity(opacity)
+                    .stroke({ width: 0 })
+                    .center(ptInverted.x, ptInverted.y)
+                    .matrix(transform.toArray())
+                    .attr({ "pointer-events": "none" });
+            }
+        }
+    }
+
     private preAnnotate(group: SVGG, entry: PointEntry) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
@@ -1300,36 +1381,6 @@ export class IsometricRenderer extends RendererBase {
                         if (direction > 0) {
                             radius += rIncrement;
                         }
-                    }
-                } else if ( (note.type !== undefined) && (note.type === "dots") ) {
-                    let colour = this.options.colourContext.annotations;
-                    if ( ("colour" in note) && (note.colour !== undefined) ) {
-                        colour = this.resolveColour(note.colour ) as string;
-                    }
-                    let opacity = 1;
-                    if ( ("opacity" in note) && (note.opacity !== undefined) ) {
-                        opacity = note.opacity;
-                    }
-                    let diameter = 0.1;
-                    if ( ("size" in note) && (note.size !== undefined) ) {
-                        diameter = note.size;
-                    }
-                    for (const node of (note.targets as ITarget[])) {
-                        const entry = entries.find(e => e.col === node.col && e.row === node.row);
-                        if (entry === undefined) {
-                            throw new Error(`Annotation - Dots: Could not find coordinates for row ${node.row}, column ${node.col}.`);
-                        }
-                        const pt = {x: entry.x, y: entry.y};
-                        const tInverted = transform.inverse();
-                        const ptInverted = tInverted.applyToPoint(pt.x, pt.y);
-                        group.circle(this.cellsize * diameter)
-                            .addClass(`aprender-annotation-${x2uid(cloned)}`)
-                            .fill(colour)
-                            .opacity(opacity)
-                            .stroke({width: 0})
-                            .center(ptInverted.x, ptInverted.y)
-                            .matrix(transform.toArray())
-                            .attr({ 'pointer-events': 'none' });
                     }
                 }
             }

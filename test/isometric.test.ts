@@ -561,6 +561,41 @@ describe("IsometricRenderer lintel pieces", () => {
     });
 });
 
+describe("IsometricRenderer annotations", () => {
+    it("should depth-sort dots annotations below stacks in front", () => {
+        const draw = makeDraw();
+        const renderer = new IsometricRenderer();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", projection: "shallow", width: 3, height: 4 },
+            legend: {
+                C1: { piece: "cube", height: 50, colour: 1 },
+            },
+            pieces: [
+                [[], ["C1"], []],
+                [[], [], []],
+                [[], [], []],
+                [[], ["C1", "C1", "C1"], []],
+            ],
+            annotations: [{ type: "dots", targets: [{ row: 0, col: 1 }], size: 0.3 }],
+        };
+        renderer.render(rep, draw, { ...baseOptions, showAnnotations: true });
+
+        const board = draw.findOne("#board")!;
+        const children = board.children();
+        const dotIdx = children.findIndex(
+            (c) => c.type === "circle" && ((c.attr("class") as string) ?? "").includes("aprender-annotation"),
+        );
+        expect(dotIdx).to.be.greaterThan(-1);
+        const frontPieceIdx = children.findIndex(
+            (c, idx) => idx > dotIdx
+                && c.type === "use"
+                && ((c.attr("href") ?? c.attr("xlink:href") ?? "") as string).includes("C1"),
+        );
+        expect(frontPieceIdx).to.be.greaterThan(dotIdx);
+    });
+});
+
 describe("IsometricRenderer depth cues", () => {
     const symbolLineStrokeWidth = (draw: Svg, symbolId: string): number => {
         const symbol = draw.findOne(`#${symbolId}`) as Svg;

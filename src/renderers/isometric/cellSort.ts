@@ -24,6 +24,8 @@ export const ISO_DRAW_LAYER_FOOTPRINT = 2;
 /** Board outline edge markers — after terrain, before pieces. */
 export const ISO_DRAW_LAYER_EDGE = 2.5;
 export const ISO_DRAW_LAYER_PIECE = 3;
+/** Cell-local annotations (e.g. dots) — after that cell's pieces, before cells in front. */
+export const ISO_DRAW_LAYER_ANNOTATION = 3.5;
 
 export const ISO_SORT_EPSILON = 1e-4;
 
