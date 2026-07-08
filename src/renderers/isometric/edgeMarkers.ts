@@ -255,7 +255,7 @@ export const hexOfHexEdgeSegments = (edge: EdgeSide, polys: Poly[][]): LineSegme
     return segments;
 };
 
-export type IsoBoardStyle = "squares" | "hex-of-hex" | "hex-of-cir";
+export type IsoBoardStyle = "squares" | "heightmap-squares" | "hex-of-hex" | "hex-of-cir";
 
 export const collectEdgeMarkerSegments = (
     style: IsoBoardStyle,
@@ -267,6 +267,7 @@ export const collectEdgeMarkerSegments = (
 ): LineSegment[] => {
     const buffer = isoEdgeMarkerBuffer(cellsize, baseStroke);
     switch (style) {
+        case "heightmap-squares":
         case "squares":
             return squaresEdgeSegments(edge, grid, buffer);
         case "hex-of-hex":
