@@ -4,11 +4,15 @@ The `legend` maps keys used in `pieces` to visual glyphs. Player pieces should u
 
 ## Simple glyphs
 
+*Example games:* [Arimaa](https://play.abstractplay.com/game/arimaa), [Go](https://play.abstractplay.com/game/go)
+
 {% renderWidget "samples/pieces-simple.json" %}
 
 ## Composite glyphs
 
 Layer multiple glyphs for stacked appearances:
+
+*Example games:* [Alfred's Wyke](https://play.abstractplay.com/game/wyke), [Advanced Slither](https://play.abstractplay.com/game/slither)
 
 {% renderWidget "samples/pieces-layered.json" %}
 
@@ -18,13 +22,19 @@ Layer multiple glyphs for stacked appearances:
 
 ## Rotated glyphs
 
+*Example games:* [Crosshairs](https://play.abstractplay.com/game/crosshairs), [Cannon](https://play.abstractplay.com/game/cannon)
+
 {% renderWidget "samples/pieces-rotated.json" %}
 
 ## Stacked pieces (`stacking-offset`)
 
+*Example games:* [Abande](https://play.abstractplay.com/game/abande), [Accasta](https://play.abstractplay.com/game/accasta)
+
 {% renderWidget "samples/pieces-stacked.json" %}
 
 ## Dice and text
+
+*Example games:* [Basalt](https://play.abstractplay.com/game/basalt), [Catapult](https://play.abstractplay.com/game/catapult), [Armadas](https://play.abstractplay.com/game/armadas)
 
 {% renderWidget "samples/pieces-dice.json" %}
 

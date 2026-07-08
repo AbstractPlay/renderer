@@ -1,0 +1,83 @@
+{
+  "renderer": "isometric",
+  "board": {
+    "style": "squares",
+    "width": 3,
+    "height": 3,
+    "heightmap": [
+      [
+        25,
+        25,
+        25
+      ],
+      [
+        25,
+        50,
+        25
+      ],
+      [
+        25,
+        25,
+        25
+      ]
+    ],
+    "projection": "cabinet"
+  },
+  "legend": {
+    "A": {
+      "piece": "cylinder",
+      "height": 20,
+      "colour": 1
+    },
+    "B": {
+      "piece": "cylinder",
+      "height": 20,
+      "colour": 2
+    },
+    "D": {
+      "piece": "cube",
+      "faces": {
+        "top": 1,
+        "north": 2,
+        "east": 3,
+        "south": 4,
+        "west": 5
+      }
+    },
+    "F": {
+      "piece": "pyramid",
+      "size": "large",
+      "colour": 2
+    }
+  },
+  "pieces": [
+    [
+      [
+        "A"
+      ],
+      [],
+      [
+        "B"
+      ]
+    ],
+    [
+      [],
+      [
+        {
+          "glyph": "D",
+          "yaw": 0
+        }
+      ],
+      []
+    ],
+    [
+      [
+        "F"
+      ],
+      [],
+      [
+        "A"
+      ]
+    ]
+  ]
+}

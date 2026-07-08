@@ -2,7 +2,7 @@
   "board": {
     "style": "hex-of-tri",
     "minWidth": 4,
-    "maxWidth": 9,
+    "maxWidth": 12,
     "alternatingSymmetry": true
   },
   "pieces": null
