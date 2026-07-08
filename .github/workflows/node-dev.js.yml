@@ -61,7 +61,7 @@ jobs:
 
   deploy-playground:
     needs: [publish]
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
