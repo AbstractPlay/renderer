@@ -59,8 +59,35 @@ jobs:
           env:
             NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-  relay:
+  deploy-playground:
     needs: [publish]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run dist-dev
+    - name: Configure AWS credentials
+      uses: Fooji/create-aws-profile-action@v1
+      with:
+        profile: AbstractPlayDev
+        region: us-east-1
+        key: ${{ secrets.AWS_KEY }}
+        secret: ${{ secrets.AWS_SECRET }}
+    - name: Deploy playground
+      env:
+        AWS_SDK_LOAD_CONFIG: "1"
+        AWS_PROFILE: AbstractPlayDev
+        RENDERER_CF_DIST: ${{ secrets.RENDERER_CF_DIST }}
+      run: npm run deploy:ci
+
+  relay:
+    needs: [deploy-playground]
     runs-on: ubuntu-latest
     steps:
       - name: Trigger gameslib build and test

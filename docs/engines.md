@@ -158,5 +158,3 @@ Ground axes foreshortened unequally at the iso azimuth.
 *Example games:* [Siege of Jacynth](https://play.abstractplay.com/game/siegeofj)
 
 {% renderWidget "samples/board-other.json" %}
-
-[Open in playground](https://renderer.dev.abstractplay.com)

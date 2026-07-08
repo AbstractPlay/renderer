@@ -99,6 +99,44 @@
                 return false;
             }
 
+            function decodeBase64Url(s) {
+                var padded = s.replace(/-/g, "+").replace(/_/g, "/")
+                    + "===".slice((s.length + 3) % 4);
+                return decodeURIComponent(escape(atob(padded)));
+            }
+
+            function loadInitialFromUrl() {
+                var params = new URLSearchParams(window.location.search);
+                var jsonParam = params.get("json");
+                var sampleKey = params.get("sample");
+                var jsonbox = document.getElementById("jsonIn");
+                var select = document.getElementById("samples");
+                var description = document.getElementById("sampledesc");
+
+                if (jsonParam) {
+                    try {
+                        var parsed = JSON.parse(decodeBase64Url(jsonParam));
+                        jsonbox.value = JSON.stringify(parsed, null, 2);
+                        select.value = "_empty";
+                        description.innerHTML = "";
+                        processJson();
+                        return true;
+                    } catch (e) {
+                        description.innerHTML = "<p class=\"has-text-danger\">Could not load JSON from URL: "
+                            + e.message + "</p>";
+                        return false;
+                    }
+                }
+
+                if (sampleKey && samples[sampleKey]) {
+                    select.value = sampleKey;
+                    select.dispatchEvent(new Event("change"));
+                    return true;
+                }
+
+                return false;
+            }
+
             var samples = {
                 "pieces-simple": {
                     "name": "Glyphs: Simple",
@@ -621,6 +659,8 @@
                     notes.value = "#99cccc";
                     board.value = "";
                 });
+
+                loadInitialFromUrl();
             });
         </script>
     </head>

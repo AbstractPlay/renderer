@@ -49,5 +49,3 @@ Embed legend glyphs directly on the board:
 *Example games:* [Phutball](https://play.abstractplay.com/game/phutball), [Emu Ranchers](https://play.abstractplay.com/game/emu)
 
 {% renderWidget "samples/markers-labels.json" %}
-
-[Open in playground](https://renderer.dev.abstractplay.com)

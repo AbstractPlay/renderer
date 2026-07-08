@@ -21,5 +21,3 @@ Annotations render **above** pieces to show moves, entries, exits, and highlight
 {% renderWidget "samples/notes-dots.json" %}
 
 {% renderWidget "samples/notes-glyph.json" %}
-
-[Open in playground](https://renderer.dev.abstractplay.com)
