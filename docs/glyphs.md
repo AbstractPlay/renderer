@@ -39,4 +39,4 @@ Common legend object properties:
 - `player` / `colour` — fill colour
 - `scale`, `opacity`, `rotate`, `nudge`, `orientation`
 
-[Open in playground](https://renderer.dev.abstractplay.com) · [Schema reference — legend](../schema-reference/)
+[Open in playground](https://renderer.dev.abstractplay.com) · [Schema reference — legend](/renderer/schema-reference/)

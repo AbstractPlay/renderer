@@ -32,6 +32,6 @@ Extra clickable margin around the board (`buffer` property):
 
 {% renderWidget "samples/formatting-buffers-separated.json" %}
 
-Renderer options like `hide-labels`, `swap-labels`, and `reverse-letters` are listed in the [schema reference](../schema-reference/#options).
+Renderer options like `hide-labels`, `swap-labels`, and `reverse-letters` are listed in the [schema reference](/renderer/schema-reference/#options).
 
 [Open in playground](https://renderer.dev.abstractplay.com)

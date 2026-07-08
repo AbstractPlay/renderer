@@ -14,27 +14,27 @@ The JSON document describes the **game table**: at minimum a `board` and `pieces
 | `annotations` | no | Overlays for moves and highlights |
 | `options` | no | Renderer flags |
 
-See the [schema reference](schema-reference/) for the authoritative property list.
+See the [schema reference](/renderer/schema-reference/) for the authoritative property list.
 
 ## Board
 
-The board is drawn first. Styles include square grids, vertex boards, hex fields, sowing pits, circular boards, and many more. See [Boards](boards/).
+The board is drawn first. Styles include square grids, vertex boards, hex fields, sowing pits, circular boards, and many more. See [Boards](/renderer/boards/).
 
 ## Pieces
 
-Usually a string grid (rows separated by `\n`) where each character maps through `legend`. Specialized renderers use arrays or structured objects instead. See [Engines](engines/).
+Usually a string grid (rows separated by `\n`) where each character maps to a `legend` entry that represents a piece on the board. Specialized renderers use arrays or structured objects instead. See [Engines](/renderer/engines/).
 
 ## Legend
 
-Maps short keys to glyph definitions — simple names, composite arrays, gradients, player colours, text glyphs, etc. See [Glyphs](glyphs/).
+Maps short keys to glyph definitions — simple names, composite arrays, gradients, player colours, text glyphs, etc. See [Glyphs](/renderer/glyphs/).
 
 ## Areas
 
-Vertical sections below the board: piece stashes, button bars, Homeworlds stashes, polyomino holding areas, and more.
+Specialized sections, usually below the board, to provide additional information: piece stashes, button bars, Homeworlds stashes, polyomino holding areas, and more.
 
 ## Annotations
 
-Drawn above pieces: move arrows, enter/exit markers, dots, outlines, etc. See [Annotations](annotations/).
+Drawn above pieces: move arrows, enter/exit markers, dots, outlines, etc. See [Annotations](/renderer/annotations/).
 
 ## Example
 

@@ -38,6 +38,6 @@ Irregular shapes by blocking outer cells:
 
 {% renderWidget "samples/blocking.json" %}
 
-Full list of board styles: [Schema reference — board styles](../schema-reference/#board-styles).
+Full list of board styles: [Schema reference — board styles](/renderer/schema-reference/#board-styles).
 
 [Open in playground](https://renderer.dev.abstractplay.com)

@@ -2,18 +2,18 @@
 
 The Abstract Play renderer turns a JSON **render representation** into SVG board images. Every game implements `render()` to produce this JSON; the front end and designer pass it to `APRender.render()`.
 
-**Schema version:** see [Schema reference](schema-reference/) (auto-generated from `schema.json`).
+**Schema version:** see [Schema reference](/renderer/schema-reference/) (auto-generated from `schema.json`).
 
 ## Quick links
 
-- [Concepts](concepts/) — board, pieces, legend, areas, annotations
-- [Glyphs](glyphs/) — piece appearance
-- [Boards](boards/) — board styles and topology
-- [Formatting](formatting/) — labels, rotation, tiling
-- [Markers](markers/) — board decorations under pieces
-- [Annotations](annotations/) — move highlights
-- [Engines](engines/) — specialized renderers
-- [Schema reference](schema-reference/) — full enum/property listing
+- [Concepts](/renderer/concepts/) — board, pieces, legend, areas, annotations
+- [Boards](/renderer/boards/) — board styles and topology
+- [Glyphs](/renderer/glyphs/) — piece appearance
+- [Formatting](/renderer/formatting/) — labels, rotation, tiling
+- [Markers](/renderer/markers/) — board decorations under pieces
+- [Annotations](/renderer/annotations/) — move highlights
+- [Engines](/renderer/engines/) — specialized renderers
+- [Schema reference](/renderer/schema-reference/) — full enum/property listing
 
 ## Full playground
 

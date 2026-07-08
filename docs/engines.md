@@ -19,7 +19,7 @@ The `renderer` property selects specialized layout engines. Default is `default`
 | `isometric` | Isometric 3D pieces |
 | `tree-pyramid` | Tree/pyramid layouts |
 
-Full list: [Schema reference — engines](../schema-reference/#engines).
+Full list: [Schema reference — engines](/renderer/schema-reference/#engines).
 
 ## Stacking offset
 
