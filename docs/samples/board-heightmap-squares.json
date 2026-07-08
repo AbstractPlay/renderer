@@ -1,0 +1,15 @@
+{
+  "renderer": "isometric",
+  "board": {
+    "style": "heightmap-squares",
+    "width": 4,
+    "height": 4,
+    "heightmap": [
+      [50, 50, 50, 50],
+      [50, 25, 25, 50],
+      [50, 25, 25, 50],
+      [50, 50, 50, 50]
+    ]
+  },
+  "pieces": null
+}

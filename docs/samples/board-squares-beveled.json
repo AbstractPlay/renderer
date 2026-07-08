@@ -1,0 +1,8 @@
+{
+  "board": {
+    "style": "squares-beveled",
+    "width": 8,
+    "height": 8
+  },
+  "pieces": null
+}

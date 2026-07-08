@@ -93,6 +93,7 @@ export class IsometricRenderer extends RendererBase {
 
         let basePcScale = 1;
         switch (this.json.board.style) {
+            case "heightmap-squares":
             case "squares":
                 ({ grid: gridPoints, polys, boardFill } = squares(this, {noSvg: true}));
                 break;
@@ -179,7 +180,7 @@ export class IsometricRenderer extends RendererBase {
         const tFinal = buildIsoProjectionMatrix(isoProjection);
         // "isometricize" the points and polys
         gridPoints = gridPoints.map(row => row = row.map(pt => tFinal.applyToPoint(pt.x, pt.y)));
-        if (this.json.board.style === "squares" || this.json.board.style === "hex-of-hex") {
+        if (this.json.board.style === "squares" || this.json.board.style === "heightmap-squares" || this.json.board.style === "hex-of-hex") {
             polys = (polys as IPolyPolygon[][]).map(row => row = row.map(poly => poly = {...poly, points: poly.points.map(pt => tFinal.applyToPoint(pt.x, pt.y))} as IPolyPolygon));
         } else if (this.json.board.style === "hex-of-cir") {
             polys = (polys as IPolyCircle[][]).map(row => row.map(poly => {
@@ -233,6 +234,7 @@ export class IsometricRenderer extends RendererBase {
             const id = `_surface_${height.toString().replace(".", "_")}`;
             const surfaceFills = toFaceFillsData(isoShadeFaces(this.options.colourContext.background));
             switch (this.json.board.style) {
+                case "heightmap-squares":
                 case "squares":
                     generateCubes({
                         rootSvg: this.rootSvg,
@@ -747,7 +749,7 @@ export class IsometricRenderer extends RendererBase {
             return;
         }
         const style = this.json.board.style;
-        if (style !== "squares" && style !== "hex-of-hex" && style !== "hex-of-cir") {
+        if (style !== "squares" && style !== "heightmap-squares" && style !== "hex-of-hex" && style !== "hex-of-cir") {
             return;
         }
         const markers = (this.json.board.markers ?? []).filter((m): m is MarkerEdge => m.type === "edge");
@@ -854,6 +856,7 @@ export class IsometricRenderer extends RendererBase {
         const nwOutset = edgeSides.has("NW") ? edgeLabelOutset : 0;
 
         switch (this.json.board.style) {
+            case "heightmap-squares":
             case "squares": {
                 if ( (!("width" in this.json.board)) || (!("height" in this.json.board)) || (this.json.board.width === undefined) || (this.json.board.height === undefined) ) {
                     throw new Error("Both the `width` and `height` properties are required for this board type.");

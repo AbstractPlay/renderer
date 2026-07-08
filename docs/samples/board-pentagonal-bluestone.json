@@ -1,0 +1,22 @@
+{
+  "renderer": "default",
+  "board": {
+    "style": "pentagonal-bluestone",
+    "width": 6
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": "#000"
+    },
+    "B": {
+      "name": "piece",
+      "colour": "#fff"
+    },
+    "C": {
+      "name": "piece-borderless",
+      "colour": 2
+    }
+  },
+  "pieces": "A\nB\n\n\n\n\n-CCCCC-CCCCC-CCCCC-CCCCC-CCCCC"
+}

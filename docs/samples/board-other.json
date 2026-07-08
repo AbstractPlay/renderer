@@ -1,0 +1,33 @@
+{
+  "renderer": "tree-pyramid",
+  "board": {
+    "style": "other"
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": [
+    {
+      "id": "root-a",
+      "glyph": "A",
+      "parents": null
+    },
+    {
+      "id": "root-b",
+      "glyph": "B",
+      "parents": null
+    },
+    {
+      "id": "child",
+      "glyph": "A",
+      "parents": ["root-a", "root-b"]
+    }
+  ]
+}

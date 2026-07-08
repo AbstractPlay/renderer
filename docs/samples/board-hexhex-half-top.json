@@ -1,0 +1,9 @@
+{
+  "board": {
+    "style": "hex-of-hex",
+    "minWidth": 5,
+    "maxWidth": 9,
+    "half": "top"
+  },
+  "pieces": null
+}

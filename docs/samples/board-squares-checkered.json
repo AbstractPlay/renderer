@@ -1,0 +1,8 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8
+  },
+  "pieces": null
+}

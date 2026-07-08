@@ -1,0 +1,8 @@
+{
+  "board": {
+    "style": "hex-odd-f",
+    "width": 7,
+    "height": 7
+  },
+  "pieces": null
+}
