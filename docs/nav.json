@@ -3,6 +3,8 @@
   { "slug": "concepts" },
   { "slug": "boards" },
   { "slug": "glyphs" },
+  { "slug": "contact-sheet", "title": "Contact sheet" },
+  { "slug": "adding-pieces", "title": "Adding pieces" },
   { "slug": "formatting" },
   { "slug": "markers" },
   { "slug": "annotations" },

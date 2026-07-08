@@ -9,6 +9,8 @@ The Abstract Play renderer turns a JSON **render representation** into SVG board
 - [Concepts](/renderer/concepts/) — board, pieces, legend, areas, annotations
 - [Boards](/renderer/boards/) — board styles and topology
 - [Glyphs](/renderer/glyphs/) — piece appearance
+- [Contact sheet](/renderer/contact-sheet/) — all sheet piece names
+- [Adding pieces](/renderer/adding-pieces/) — contributor guide for new sheet artwork
 - [Formatting](/renderer/formatting/) — labels, rotation, tiling
 - [Markers](/renderer/markers/) — board decorations under pieces
 - [Annotations](/renderer/annotations/) — move highlights
