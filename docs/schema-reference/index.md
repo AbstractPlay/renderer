@@ -21,7 +21,7 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 | legend | no | Map each `piece` to an actual glyph with possible options. |
 | areas | no | Areas are renderer-specific elements that are used and rendered in various ways. |
 | annotations | no | Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change. |
-| options | no | A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks. |
+| options | no | Optional list of renderer flags. See [Renderer options](#options) below. |
 
 ## Renderer engines <span id="engines"></span>
 
@@ -94,21 +94,20 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 
 ## Renderer options <span id="options"></span>
 
-| Option |
-| --- |
-| `hide-labels` |
-| `hide-labels-half` |
-| `hide-star-points` |
-| `no-border` |
-| `hw-light` |
-| `hw-no-buttons` |
-| `hw-system-only` |
-| `clickable-edges` |
-| `reverse-letters` |
-| `reverse-numbers` |
-| `swap-labels` |
-| `no-piece-click` |
-| `no-piece-shadow` |
-| `no-iso-depth-shade` |
-| `no-iso-cell-footprint` |
-
+| Option | Description |
+| --- | --- |
+| `hide-labels` | Hides all external row and column labels around the board. |
+| `hide-labels-half` | On boards with labels on every side (e.g. `squares*`), hides only the top and right labels. |
+| `hide-star-points` | On square `vertex` boards, hides the decorative star points. |
+| `no-border` | Hides the outer border line on square-based boards. |
+| `hw-light` | Homeworlds: swaps background and contrast colours for a lighter theme. |
+| `hw-no-buttons` | Homeworlds: hides the sacrifice, pass, and other action buttons. |
+| `hw-system-only` | Homeworlds: renders only the first star system and skips the full layout. |
+| `clickable-edges` | On `squares*` and rect-of-hex boards, makes individual cell edges clickable. |
+| `reverse-letters` | Reverses the order of letter labels (columns or rows, depending on board). |
+| `reverse-numbers` | Reverses the order of numeric labels. |
+| `swap-labels` | Swaps which axis uses letter labels and which uses numeric labels. |
+| `no-piece-click` | Disables click targets on pieces; only board cells receive clicks. |
+| `no-piece-shadow` | Isometric: disables contact shadows drawn under pieces. |
+| `no-iso-depth-shade` | Isometric: disables height-based shading on cells. |
+| `no-iso-cell-footprint` | Isometric: disables the ground footprint drawn under elevated cells. |

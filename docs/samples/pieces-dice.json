@@ -1,19 +1,9 @@
 {
+  "options": ["hide-labels"],
   "board": {
     "style": "squares",
     "width": 5,
     "height": 3,
-    "rowLabels": [
-      "",
-      "",
-      ""
-    ],
-    "columnLabels": [
-      "",
-      "",
-      "",
-      ""
-    ],
     "strokeColour": {
       "func": "flatten",
       "fg": "_context_strokes",

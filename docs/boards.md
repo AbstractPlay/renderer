@@ -6,31 +6,31 @@ Board `style` selects the topology. Width, height, markers, and stroke options f
 
 ### `squares`
 
-*Example games:* [Cifra](https://play.abstractplay.com/game/cifra), [Realm](https://play.abstractplay.com/game/realm)
+*Example games:* [Cifra](https://play.abstractplay.com/games/cifra), [Realm](https://play.abstractplay.com/games/realm)
 
 {% renderWidget "samples/board-squares.json" %}
 
 ### `squares-checkered`
 
-*Example games:* [Amazons](https://play.abstractplay.com/game/amazons), [Arimaa](https://play.abstractplay.com/game/arimaa)
+*Example games:* [Amazons](https://play.abstractplay.com/games/amazons), [Arimaa](https://play.abstractplay.com/games/arimaa)
 
 {% renderWidget "samples/board-squares-checkered.json" %}
 
 ### `squares-beveled`
 
-*Example games:* [Blockade](https://play.abstractplay.com/game/blockade), [Boxes](https://play.abstractplay.com/game/boxes)
+*Example games:* [Blockade](https://play.abstractplay.com/games/blockade), [Boxes](https://play.abstractplay.com/games/boxes)
 
 {% renderWidget "samples/board-squares-beveled.json" %}
 
 ### `squares-stacked`
 
-*Example games:* [Akron](https://play.abstractplay.com/game/akron), [Margo](https://play.abstractplay.com/game/margo)
+*Example games:* [Akron](https://play.abstractplay.com/games/akron), [Margo](https://play.abstractplay.com/games/margo)
 
 {% renderWidget "samples/board-squares-stacked.json" %}
 
 ### `squares-diamonds`
 
-*Example games:* [Alta](https://play.abstractplay.com/game/alta), [Tessella](https://play.abstractplay.com/game/tessella)
+*Example games:* [Alta](https://play.abstractplay.com/games/alta), [Tessella](https://play.abstractplay.com/games/tessella)
 
 {% renderWidget "samples/board-squares-diamonds.json" %}
 
@@ -44,7 +44,7 @@ Square grid with per-cell elevation for the [isometric](/renderer/engines/) rend
 
 ### `vertex`
 
-*Example games:* [Go](https://play.abstractplay.com/game/go), [Alfred's Wyke](https://play.abstractplay.com/game/wyke)
+*Example games:* [Go](https://play.abstractplay.com/games/go), [Asli](https://play.abstractplay.com/games/asli)
 
 {% renderWidget "samples/board-go.json" %}
 
@@ -52,13 +52,13 @@ Go uses a vertex board with automatic star points. Disable with the `hide-star-p
 
 ### `vertex-cross`
 
-*Example games:* [Fabrik](https://play.abstractplay.com/game/fabrik), [Shape Chess](https://play.abstractplay.com/game/shapechess)
+*Example games:* [Fabrik](https://play.abstractplay.com/games/fabrik), [Shape Chess](https://play.abstractplay.com/games/shapechess)
 
 {% renderWidget "samples/board-vertex.json" %}
 
 ### `vertex-fanorona`
 
-*Example games:* [Fanorona](https://play.abstractplay.com/game/fanorona), [Query](https://play.abstractplay.com/game/query)
+*Example games:* [Fanorona](https://play.abstractplay.com/games/fanorona), [Query](https://play.abstractplay.com/games/query)
 
 {% renderWidget "samples/board-vertex-fanorona.json" %}
 
@@ -66,43 +66,43 @@ Go uses a vertex board with automatic star points. Disable with the `hide-star-p
 
 ### `hex-slanted`
 
-*Example games:* [Hex](https://play.abstractplay.com/game/hex), [Lox](https://play.abstractplay.com/game/lox)
+*Example games:* [Hex](https://play.abstractplay.com/games/hex), [Lox](https://play.abstractplay.com/games/lox)
 
 {% renderWidget "samples/board-hexslanted.json" %}
 
 ### `hex-odd-p`
 
-*Example games:* [Exxit](https://play.abstractplay.com/game/exxit), [Storisende](https://play.abstractplay.com/game/storisende)
+*Example games:* [Exxit](https://play.abstractplay.com/games/exxit), [Storisende](https://play.abstractplay.com/games/storisende)
 
 {% renderWidget "samples/board-hex-odd-p.json" %}
 
 ### `hex-even-p`
 
-*Example games:* [Chase](https://play.abstractplay.com/game/chase), [Streetcar Suburb](https://play.abstractplay.com/game/streetcar)
+*Example games:* [Chase](https://play.abstractplay.com/games/chase), [Streetcar Suburb](https://play.abstractplay.com/games/streetcar)
 
 {% renderWidget "samples/board-hex-even-p.json" %}
 
 ### `hex-odd-f`
 
-*Example games:* [Atoll](https://play.abstractplay.com/game/atoll)
+*Example games:* [Atoll](https://play.abstractplay.com/games/atoll)
 
 {% renderWidget "samples/board-hex-odd-f.json" %}
 
 ### `hex-even-f`
 
-*Example games:* [Tintas](https://play.abstractplay.com/game/tintas)
+*Example games:* [Tintas](https://play.abstractplay.com/games/tintas)
 
 {% renderWidget "samples/board-hex-even-f.json" %}
 
 ### `hex-of-hex`
 
-*Example games:* [Crosshairs](https://play.abstractplay.com/game/crosshairs), [Havannah](https://play.abstractplay.com/game/havannah)
+*Example games:* [Crosshairs](https://play.abstractplay.com/games/crosshairs), [Havannah](https://play.abstractplay.com/games/havannah)
 
 {% renderWidget "samples/board-hexhex.json" %}
 
 Top half only (`half: "top"`):
 
-*Example games:* [Basalt](https://play.abstractplay.com/game/basalt), [Druid](https://play.abstractplay.com/game/druid)
+*Example games:* [Basalt](https://play.abstractplay.com/games/basalt), [Y](https://play.abstractplay.com/games/y)
 
 {% renderWidget "samples/board-hexhex-half-top.json" %}
 
@@ -112,13 +112,13 @@ Bottom half only (`half: "bottom"`):
 
 Alternating symmetry (`alternatingSymmetry: true`):
 
-*Example games:* [Churn](https://play.abstractplay.com/game/churn), [Squirm](https://play.abstractplay.com/game/squirm)
+*Example games:* [Churn](https://play.abstractplay.com/games/churn), [Squirm](https://play.abstractplay.com/games/squirm)
 
 {% renderWidget "samples/board-hexhex-alternating.json" %}
 
 ### `hex-of-tri`
 
-*Example games:* [Accasta](https://play.abstractplay.com/game/accasta), [Yavalath](https://play.abstractplay.com/game/yavalath)
+*Example games:* [Accasta](https://play.abstractplay.com/games/accasta), [Yavalath](https://play.abstractplay.com/games/yavalath)
 
 {% renderWidget "samples/board-hextri.json" %}
 
@@ -144,13 +144,13 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `bent-tri`
 
-*Example games:* [Y](https://play.abstractplay.com/game/y)
+*Example games:* [Y](https://play.abstractplay.com/games/y)
 
 {% renderWidget "samples/board-bent-tri.json" %}
 
 ### `snubsquare`
 
-*Example games:* [Cephalopod](https://play.abstractplay.com/game/ceph)
+*Example games:* [Cephalopod](https://play.abstractplay.com/games/ceph)
 
 {% renderWidget "samples/board-snubsquare.json" %}
 
@@ -160,7 +160,7 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `onyx`
 
-*Example games:* [Onyx](https://play.abstractplay.com/game/onyx)
+*Example games:* [Onyx](https://play.abstractplay.com/games/onyx)
 
 {% renderWidget "samples/board-onyx.json" %}
 
@@ -170,7 +170,7 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `pentagonal-bluestone`
 
-*Example games:* [Bluestone](https://play.abstractplay.com/game/bluestone)
+*Example games:* [Bluestone](https://play.abstractplay.com/games/bluestone)
 
 {% renderWidget "samples/board-pentagonal-bluestone.json" %}
 
@@ -182,7 +182,7 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `cairo-collinear`
 
-*Example games:* [Cairo Corridor](https://play.abstractplay.com/game/ccorridor)
+*Example games:* [Cairo Corridor](https://play.abstractplay.com/games/ccorridor)
 
 {% renderWidget "samples/boards-cairo-collinear.json" %}
 
@@ -194,13 +194,13 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `conical-hex`
 
-*Example games:* [Conect](https://play.abstractplay.com/game/conect)
+*Example games:* [Conect](https://play.abstractplay.com/games/conect)
 
 {% renderWidget "samples/board-conicalHex.json" %}
 
 ### `conical-hex-narrow`
 
-*Example games:* [Conect](https://play.abstractplay.com/game/conect)
+*Example games:* [Conect](https://play.abstractplay.com/games/conect)
 
 {% renderWidget "samples/board-conical-hex-narrow.json" %}
 
@@ -216,13 +216,13 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `circular-cobweb`
 
-*Example games:* [Agere](https://play.abstractplay.com/game/agere)
+*Example games:* [Adere](https://play.abstractplay.com/games/agere)
 
 {% renderWidget "samples/board-circular.json" %}
 
 ### `circular-moon`
 
-*Example games:* [Moon Squad](https://play.abstractplay.com/game/moonsquad), [Agere](https://play.abstractplay.com/game/agere)
+*Example games:* [Moon Squad](https://play.abstractplay.com/games/moonsquad), [Adere](https://play.abstractplay.com/games/agere)
 
 {% renderWidget "samples/board-moon.json" %}
 
@@ -230,13 +230,13 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `sowing`
 
-*Example games:* [Bao](https://play.abstractplay.com/game/bao), [Diffusion](https://play.abstractplay.com/game/diffusion)
+*Example games:* [Bao](https://play.abstractplay.com/games/bao), [Diffusion](https://play.abstractplay.com/games/diffusion)
 
 {% renderWidget "samples/boards-sowing-pips.json" %}
 
 ### `sowing-round`
 
-*Example games:* [Rincala](https://play.abstractplay.com/game/rincala)
+*Example games:* [Rincala](https://play.abstractplay.com/games/rincala)
 
 {% renderWidget "samples/boards-sowing-round.json" %}
 
@@ -244,7 +244,7 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `conhex-dots`
 
-*Example games:* [ConHex](https://play.abstractplay.com/game/conhex)
+*Example games:* [ConHex](https://play.abstractplay.com/games/conhex)
 
 {% renderWidget "samples/boards-conhex-dots.json" %}
 
@@ -266,7 +266,7 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `pegboard`
 
-*Example games:* [Connections](https://play.abstractplay.com/game/connections), [Twixt](https://play.abstractplay.com/game/twixt)
+*Example games:* [Connections](https://play.abstractplay.com/games/connections), [Twixt](https://play.abstractplay.com/games/twixt)
 
 {% renderWidget "samples/boards-pegboard.json" %}
 
@@ -276,7 +276,7 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 Placeholder board style for specialized renderers (such as `tree-pyramid`) where no grid is drawn.
 
-*Example games:* [Siege of Jacynth](https://play.abstractplay.com/game/siegeofj)
+*Example games:* [Siege of Jacynth](https://play.abstractplay.com/games/siegeofj)
 
 {% renderWidget "samples/board-other.json" %}
 

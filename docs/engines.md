@@ -23,79 +23,97 @@ Full list: [Schema reference — engines](/renderer/schema-reference/#engines).
 
 ## Default
 
-*Example games:* [Arimaa](https://play.abstractplay.com/game/arimaa), [Go](https://play.abstractplay.com/game/go)
+Simple pieces on boards.
+
+*Example games:* [Arimaa](https://play.abstractplay.com/games/arimaa), [Go](https://play.abstractplay.com/games/go)
 
 {% renderWidget "samples/pieces-simple.json" %}
 
 ## Stacking offset
 
-*Example games:* [Abande](https://play.abstractplay.com/game/abande), [Accasta](https://play.abstractplay.com/game/accasta)
+Simulate stacks by offsetting additional pieces slightly.
+
+*Example games:* [Abande](https://play.abstractplay.com/games/abande), [Accasta](https://play.abstractplay.com/games/accasta)
 
 {% renderWidget "samples/pieces-stacked.json" %}
 
 ## Stacking tiles
 
-*Example games:* [Byte](https://play.abstractplay.com/game/byte), [Focus](https://play.abstractplay.com/game/focus)
+Show a side view of pieces in a stack. Best for smallish stacks.
+
+*Example games:* [Byte](https://play.abstractplay.com/games/byte), [Focus](https://play.abstractplay.com/games/focus)
 
 {% renderWidget "samples/niche-stacking-tiles.json" %}
 
 ## Stacking expanding
 
-*Example games:* [Volcano](https://play.abstractplay.com/game/volcano), [Mega-Volcano](https://play.abstractplay.com/game/mvolcano)
+This engine is basically deprecated. It's a top-down view with a column to the side that shows the hovered pieces (doesn't work in the preview snippet).
+
+*Example games:* [Volcano](https://play.abstractplay.com/games/volcano), [Mega-Volcano](https://play.abstractplay.com/games/mvolcano)
 
 {% renderWidget "samples/niche-expanding.json" %}
 
 ## Stacking 3D
 
-*Example games:* [Volcano](https://play.abstractplay.com/game/volcano), [Pylon](https://play.abstractplay.com/game/pylon)
+The preferred way of showing stacked pyramids on a flat board.
+
+*Example games:* [Volcano](https://play.abstractplay.com/games/volcano), [Pylon](https://play.abstractplay.com/games/pylon)
 
 {% renderWidget "samples/volcano.json" %}
 
 ## Homeworlds
 
-*Example games:* [Homeworlds](https://play.abstractplay.com/game/homeworlds)
+A bespoke engine specifically for Homeworlds.
+
+*Example games:* [Homeworlds](https://play.abstractplay.com/games/homeworlds)
 
 {% renderWidget "samples/niche-homeworlds.json" %}
 
 ## Entropy
 
-*Example games:* [Entropy](https://play.abstractplay.com/game/entropy)
+A bespoke engine specifically for the game Entropy, but could conceivably be leveraged for other games played in a similar "duplicate" style.
+
+*Example games:* [Entropy](https://play.abstractplay.com/games/entropy)
 
 {% renderWidget "samples/niche-entropy.json" %}
 
 ## Freespace
 
-*Example games:* [Armadas](https://play.abstractplay.com/game/armadas), [Calculus](https://play.abstractplay.com/game/calculus)
+Gives the game designer complete fine-grained control over placement of elements on the canvas.
+
+*Example games:* [Armadas](https://play.abstractplay.com/games/armadas), [Calculus](https://play.abstractplay.com/games/calculus)
 
 {% renderWidget "samples/niche-freespace.json" %}
 
 ## Sowing numerals
 
-*Example games:* [Bao](https://play.abstractplay.com/game/bao), [Oware](https://play.abstractplay.com/game/oware)
+*Example games:* [Bao](https://play.abstractplay.com/games/bao), [Oware](https://play.abstractplay.com/games/oware)
 
 {% renderWidget "samples/boards-sowing-numerals.json" %}
 
 ## Sowing pips
 
-*Example games:* [Bao](https://play.abstractplay.com/game/bao), [Oware](https://play.abstractplay.com/game/oware)
+*Example games:* [Bao](https://play.abstractplay.com/games/bao), [Oware](https://play.abstractplay.com/games/oware)
 
 {% renderWidget "samples/boards-sowing-pips.json" %}
 
 ## ConHex
 
-*Example games:* [ConHex](https://play.abstractplay.com/game/conhex)
+*Example games:* [ConHex](https://play.abstractplay.com/games/conhex)
 
 {% renderWidget "samples/boards-conhex-dots.json" %}
 
 ## Multicell square
 
-*Example games:* [Fightopia](https://play.abstractplay.com/game/fightopia)
+Let's you stretch pieces across multiple cells (only rectangular configurations of cells supported).
+
+*Example games:* [Fightopia](https://play.abstractplay.com/games/fightopia)
 
 {% renderWidget "samples/niche-multicell.json" %}
 
 ## Polyomino
 
-*Example games:* [Four](https://play.abstractplay.com/game/four)
+*Example games:* [Four](https://play.abstractplay.com/games/four)
 
 {% renderWidget "samples/niche-polyomino.json" %}
 
@@ -103,7 +121,7 @@ Full list: [Schema reference — engines](/renderer/schema-reference/#engines).
 
 Height-mapped boards with 3D piece glyphs. Set `board.projection` to choose camera elevation and ground-axis foreshortening.
 
-*Example games:* [Bide](https://play.abstractplay.com/game/bide), [Carnac](https://play.abstractplay.com/game/carnac), [Terrace](https://play.abstractplay.com/game/terrace)
+*Example games:* [Bide](https://play.abstractplay.com/games/bide), [Carnac](https://play.abstractplay.com/games/carnac), [Terrace](https://play.abstractplay.com/games/terrace)
 
 {% renderWidget "samples/niche-isometric.json" %}
 
@@ -111,7 +129,7 @@ Height-mapped boards with 3D piece glyphs. Set `board.projection` to choose came
 
 Classic 2:1 isometric (default when `projection` is omitted).
 
-*Example games:* [Bide](https://play.abstractplay.com/game/bide), [Terrace](https://play.abstractplay.com/game/terrace)
+*Example games:* [Bide](https://play.abstractplay.com/games/bide), [Terrace](https://play.abstractplay.com/games/terrace)
 
 {% renderWidget "samples/engine-isometric-iso.json" %}
 
@@ -119,7 +137,7 @@ Classic 2:1 isometric (default when `projection` is omitted).
 
 Raised viewpoint — less vertical foreshortening.
 
-*Example games:* [Carnac](https://play.abstractplay.com/game/carnac), [Druid](https://play.abstractplay.com/game/druid)
+*Example games:* [Carnac](https://play.abstractplay.com/games/carnac), [Druid](https://play.abstractplay.com/games/druid)
 
 {% renderWidget "samples/engine-isometric-shallow.json" %}
 
@@ -155,6 +173,8 @@ Ground axes foreshortened unequally at the iso azimuth.
 
 ## Tree pyramid
 
-*Example games:* [Siege of Jacynth](https://play.abstractplay.com/game/siegeofj)
+This is a specialized engine used only in [Siege of Jacynth](https://play.abstractplay.com/games/siegeofj) where there is no board, but trees of pieces are laid out based on child/parent relationships.
+
+*Example games:* [Siege of Jacynth](https://play.abstractplay.com/games/siegeofj)
 
 {% renderWidget "samples/board-other.json" %}
