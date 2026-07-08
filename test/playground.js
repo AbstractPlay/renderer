@@ -566,7 +566,7 @@
 
                 // load sample renders
                 const select = document.getElementById("samples");
-                for (key in samples) {
+                for (const key in samples) {
                     var opt = document.createElement('option');
                     opt.value = key;
                     opt.innerHTML = samples[key].name;
