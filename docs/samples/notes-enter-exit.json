@@ -1,0 +1,45 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8
+  },
+  "legend": {
+    "P11": {
+      "name": "pyramid-up-small-upscaled",
+      "colour": 1
+    },
+    "P12": {
+      "name": "pyramid-up-medium-upscaled",
+      "colour": 1
+    },
+    "P13": {
+      "name": "pyramid-up-large-upscaled",
+      "colour": 1
+    },
+    "P21": {
+      "name": "pyramid-up-small-upscaled",
+      "colour": 2
+    },
+    "P22": {
+      "name": "pyramid-up-medium-upscaled",
+      "colour": 2
+    },
+    "P23": {
+      "name": "pyramid-up-large-upscaled",
+      "colour": 2
+    }
+  },
+  "pieces": "-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-\n-,-,-,-,P12,-,-,-\n-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-",
+  "annotations": [
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 3,
+          "col": 4
+        }
+      ]
+    }
+  ]
+}

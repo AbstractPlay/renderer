@@ -1,0 +1,66 @@
+{
+  "renderer": "entropy",
+  "board": {
+    "style": "entropy",
+    "orientation": "vertical"
+  },
+  "legend": {
+    "RD": {
+      "name": "piece",
+      "colour": 1
+    },
+    "BU": {
+      "name": "piece",
+      "colour": 2
+    },
+    "GN": {
+      "name": "piece",
+      "colour": 3
+    },
+    "YE": {
+      "name": "piece",
+      "colour": 4
+    },
+    "VT": {
+      "name": "piece",
+      "colour": 5
+    },
+    "OG": {
+      "name": "piece",
+      "colour": 6
+    },
+    "BN": {
+      "name": "piece",
+      "colour": 7
+    }
+  },
+  "pieces": ",,,,,,,,,,,,,\n,GN,,,,,,,YE,,,,,\n,,,,BU,,,,,,,,,YE\n,,,,,YE,,,,,VT,,,\nVT,,BN,,,,,,,,GN,,,\nOG,,YE,,,,,,,VT,VT,BN,,BU\nVT,,,,BN,,VT,,BN,,,,,OG",
+  "annotations": [
+    {
+      "type": "move",
+      "targets": [
+        {
+          "col": 4,
+          "row": 3
+        },
+        {
+          "col": 4,
+          "row": 2
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "targets": [
+        {
+          "col": 9,
+          "row": 4
+        },
+        {
+          "col": 10,
+          "row": 4
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": {
+        "stops": [
+          {
+            "offset": 0,
+            "colour": 1
+          },
+          {
+            "offset": 1,
+            "colour": 2
+          }
+        ]
+      }
+    },
+    "B": {
+      "name": "piece",
+      "colour": {
+        "x2": 0,
+        "y2": 1,
+        "stops": [
+          {
+            "offset": 0,
+            "colour": 1
+          },
+          {
+            "offset": 1,
+            "colour": 2
+          }
+        ]
+      }
+    }
+  },
+  "pieces": "BBBBBBBB\nBBBBBBBB\n_\n_\n_\n_\nAAAAAAAA\nAAAAAAAA"
+}

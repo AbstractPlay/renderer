@@ -1,0 +1,21 @@
+{
+  "renderer": "sowing-numerals",
+  "board": {
+    "style": "sowing",
+    "width": 6,
+    "height": 2,
+    "markers": [
+      {
+        "type": "edge",
+        "edge": "N",
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "S",
+        "colour": 1
+      }
+    ]
+  },
+  "pieces": "5,5,4,,5,5\n5,,4,4,4,5\n1,1"
+}

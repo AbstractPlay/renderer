@@ -1,0 +1,121 @@
+{
+  "board": {
+    "style": "squares-beveled",
+    "width": 7,
+    "height": 7,
+    "markers": [
+      {
+        "type": "fence",
+        "cell": {
+          "row": 0,
+          "col": 4
+        },
+        "side": "E"
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": "----A--\n-------\n-------\n------B\n-------\n-------\n-------",
+  "annotations": [
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 3,
+          "col": 0
+        },
+        {
+          "row": 3,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 3,
+          "col": 1
+        },
+        {
+          "row": 3,
+          "col": 2
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 3,
+          "col": 2
+        },
+        {
+          "row": 3,
+          "col": 3
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 3,
+          "col": 3
+        },
+        {
+          "row": 3,
+          "col": 4
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 3,
+          "col": 4
+        },
+        {
+          "row": 2,
+          "col": 4
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 2,
+          "col": 4
+        },
+        {
+          "row": 1,
+          "col": 4
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 1,
+          "col": 4
+        },
+        {
+          "row": 0,
+          "col": 4
+        }
+      ]
+    }
+  ]
+}

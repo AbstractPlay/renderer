@@ -1,0 +1,18 @@
+{
+  "board": {
+    "style": "hex-of-hex",
+    "minWidth": 5,
+    "maxWidth": 9
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": "-----\n------\n---B---\n-A------\n--A------\n--------\n-------\n-B----\n----A"
+}

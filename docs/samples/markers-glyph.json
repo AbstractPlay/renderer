@@ -1,0 +1,52 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8,
+    "markers": [
+      {
+        "type": "glyph",
+        "glyph": "AHome",
+        "points": [
+          {
+            "row": 7,
+            "col": 0
+          }
+        ]
+      },
+      {
+        "type": "glyph",
+        "glyph": "BHome",
+        "points": [
+          {
+            "row": 0,
+            "col": 7
+          }
+        ]
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "AHome": {
+      "name": "piecepack-suit-anchors",
+      "colour": 1,
+      "opacity": 0.5,
+      "scale": 0.85
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    },
+    "BHome": {
+      "name": "piecepack-suit-anchors",
+      "colour": 2,
+      "opacity": 0.5,
+      "scale": 0.85
+    }
+  },
+  "pieces": "----BBB-\n----BBBB\n-----BBB\n------BB\nAA------\nAAA-----\nAAAA----\n-AAA----"
+}

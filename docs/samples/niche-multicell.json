@@ -1,0 +1,214 @@
+{
+  "renderer": "multicell-square",
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8,
+    "markers": [
+      {
+        "type": "edge",
+        "colour": 1,
+        "edge": "S"
+      },
+      {
+        "type": "edge",
+        "colour": 2,
+        "edge": "N"
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": [
+    {
+      "glyph": "B",
+      "col": 3,
+      "row": 0,
+      "width": 2,
+      "height": 2
+    },
+    {
+      "glyph": "B",
+      "col": 0,
+      "row": 0,
+      "width": 1,
+      "height": 2
+    },
+    {
+      "glyph": "B",
+      "col": 7,
+      "row": 0,
+      "width": 1,
+      "height": 2
+    },
+    {
+      "glyph": "B",
+      "col": 1,
+      "row": 0,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 2,
+      "row": 0,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 2,
+      "row": 1,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 2,
+      "row": 2,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 3,
+      "row": 2,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 4,
+      "row": 2,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 5,
+      "row": 2,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 5,
+      "row": 1,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 5,
+      "row": 0,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "B",
+      "col": 6,
+      "row": 0,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 3,
+      "row": 6,
+      "width": 2,
+      "height": 2
+    },
+    {
+      "glyph": "A",
+      "col": 0,
+      "row": 6,
+      "width": 1,
+      "height": 2
+    },
+    {
+      "glyph": "A",
+      "col": 7,
+      "row": 6,
+      "width": 1,
+      "height": 2
+    },
+    {
+      "glyph": "A",
+      "col": 1,
+      "row": 7,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 2,
+      "row": 7,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 2,
+      "row": 6,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 2,
+      "row": 5,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 3,
+      "row": 5,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 4,
+      "row": 5,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 5,
+      "row": 5,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 5,
+      "row": 6,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 5,
+      "row": 7,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "glyph": "A",
+      "col": 6,
+      "row": 7,
+      "width": 1,
+      "height": 1
+    }
+  ]
+}

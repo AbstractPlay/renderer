@@ -1,0 +1,40 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 12,
+    "height": 12
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "AQ": [
+      {
+        "name": "piece",
+        "colour": 1
+      },
+      {
+        "text": "18",
+        "colour": "#000",
+        "scale": 0.75
+      }
+    ],
+    "B": {
+      "name": "piece",
+      "colour": 2
+    },
+    "BQ": [
+      {
+        "name": "piece",
+        "colour": 2
+      },
+      {
+        "text": "19",
+        "colour": "#000",
+        "scale": 0.75
+      }
+    ]
+  },
+  "pieces": ",,,,,,,BQ,,,,\n,,,,B,,,,,,,\n_\n_\n_\n_\n_\n,,,,,,AQ,,,,,\n_\n,,,,,A,,,,,,\n_\n,,,,,,A,,,,,"
+}

@@ -1,0 +1,48 @@
+{
+  "board": {
+    "style": "pyramid-hex",
+    "minWidth": 14,
+    "markers": [
+      {
+        "type": "flood",
+        "colour": 1,
+        "opacity": 1,
+        "points": [
+          {
+            "row": 3,
+            "col": 23
+          },
+          {
+            "row": 6,
+            "col": 19
+          },
+          {
+            "row": 5,
+            "col": 15
+          }
+        ]
+      },
+      {
+        "type": "flood",
+        "colour": 2,
+        "opacity": 1,
+        "points": [
+          {
+            "row": 2,
+            "col": 8
+          },
+          {
+            "row": 13,
+            "col": 2
+          },
+          {
+            "row": 4,
+            "col": 4
+          }
+        ]
+      }
+    ]
+  },
+  "legend": {},
+  "pieces": null
+}

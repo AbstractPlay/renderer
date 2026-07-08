@@ -1,0 +1,19 @@
+{
+  "renderer": "stacking-offset",
+  "board": {
+    "style": "vertex-cross",
+    "width": 7,
+    "height": 7
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": "-,-,-,-,-,-,-\n-,-,-,-,-,-,-\n-,-,-,-,-,-,-\n-,-,-,-,B,-,-\n-,-,-,B,A,B,-\n-,-,A,-,A,BA,B\n-,-,-,-,-,ABA,-"
+}

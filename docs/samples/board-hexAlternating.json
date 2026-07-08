@@ -1,0 +1,9 @@
+{
+  "board": {
+    "style": "hex-of-tri",
+    "minWidth": 4,
+    "maxWidth": 9,
+    "alternatingSymmetry": true
+  },
+  "pieces": null
+}

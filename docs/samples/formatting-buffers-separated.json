@@ -1,0 +1,45 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8,
+    "buffer": {
+      "separated": true,
+      "width": 0.2,
+      "pattern": "slant"
+    }
+  },
+  "legend": {
+    "A1": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B1": {
+      "name": "piece",
+      "colour": 2
+    },
+    "X12": [
+      {
+        "name": "piece",
+        "colour": 1
+      },
+      {
+        "text": "12",
+        "colour": "#000",
+        "scale": 0.75
+      }
+    ],
+    "Y12": [
+      {
+        "name": "piece",
+        "colour": 2
+      },
+      {
+        "text": "12",
+        "colour": "#000",
+        "scale": 0.75
+      }
+    ]
+  },
+  "pieces": ",,,Y12,,,,\n_\n_\n_\n_\n_\n_\n,,,,X12,,,"
+}

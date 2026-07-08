@@ -1,0 +1,44 @@
+{
+  "board": {
+    "style": "squares-beveled",
+    "width": 7,
+    "height": 7,
+    "markers": [
+      {
+        "type": "fence",
+        "cell": {
+          "row": 2,
+          "col": 0
+        },
+        "side": "S"
+      },
+      {
+        "type": "fence",
+        "cell": {
+          "row": 4,
+          "col": 2
+        },
+        "side": "E"
+      },
+      {
+        "type": "fence",
+        "cell": {
+          "row": 6,
+          "col": 1
+        },
+        "side": "W"
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": "---B---\n-------\n-------\n------B\n-------\n--B----\n-A-----"
+}
