@@ -1,0 +1,11 @@
+[
+  { "slug": "index", "title": "Overview" },
+  { "slug": "concepts" },
+  { "slug": "boards" },
+  { "slug": "glyphs" },
+  { "slug": "formatting" },
+  { "slug": "markers" },
+  { "slug": "annotations" },
+  { "slug": "engines" },
+  { "slug": "schema-reference", "title": "Schema reference" }
+]
