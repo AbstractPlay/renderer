@@ -6,7 +6,7 @@ Board `style` selects the topology. Width, height, markers, and stroke options f
 
 ### `squares`
 
-*Example games:* [Volcano](https://play.abstractplay.com/game/volcano), [Realm](https://play.abstractplay.com/game/realm)
+*Example games:* [Cifra](https://play.abstractplay.com/game/cifra), [Realm](https://play.abstractplay.com/game/realm)
 
 {% renderWidget "samples/board-squares.json" %}
 
