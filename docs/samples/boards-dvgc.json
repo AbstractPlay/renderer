@@ -1,0 +1,80 @@
+{
+  "board": {
+    "style": "dvgc"
+  },
+  "legend": {
+    "A": {
+      "name": "nato-cavalry",
+      "colour": 2,
+      "rotate": null
+    },
+    "B": {
+      "name": "nato-infantry",
+      "colour": 2,
+      "rotate": null
+    },
+    "C": {
+      "name": "nato-artillery",
+      "colour": 2,
+      "rotate": null
+    },
+    "a": {
+      "name": "nato-cavalry",
+      "colour": 9,
+      "rotate": null
+    },
+    "b": {
+      "name": "nato-infantry",
+      "colour": 9,
+      "rotate": null
+    },
+    "c": {
+      "name": "nato-artillery",
+      "colour": 9,
+      "rotate": null
+    }
+  },
+  "pieces": "abc--ABC",
+  "areas": [
+    {
+      "type": "reserves",
+      "side": "S",
+      "background": 2,
+      "pieces": [
+        "B",
+        "B",
+        "B",
+        "B",
+        "B",
+        "B",
+        "B",
+        "B",
+        "C",
+        "C",
+        "A",
+        "A",
+        "A"
+      ]
+    },
+    {
+      "type": "reserves",
+      "side": "N",
+      "background": 9,
+      "pieces": [
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "c",
+        "c",
+        "a",
+        "a",
+        "a"
+      ]
+    }
+  ]
+}

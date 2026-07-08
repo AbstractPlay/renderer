@@ -1,0 +1,137 @@
+{
+  "options": [
+    "reverse-numbers"
+  ],
+  "board": {
+    "style": "pegboard",
+    "width": 24,
+    "height": 24,
+    "blocked": [
+      {
+        "row": 0,
+        "col": 0
+      },
+      {
+        "row": 0,
+        "col": 23
+      },
+      {
+        "row": 23,
+        "col": 0
+      },
+      {
+        "row": 23,
+        "col": 23
+      }
+    ],
+    "markers": [
+      {
+        "type": "line",
+        "points": [
+          {
+            "row": 1,
+            "col": 1
+          },
+          {
+            "row": 1,
+            "col": 23
+          }
+        ],
+        "colour": 1,
+        "width": 5
+      },
+      {
+        "type": "line",
+        "points": [
+          {
+            "row": 23,
+            "col": 1
+          },
+          {
+            "row": 23,
+            "col": 23
+          }
+        ],
+        "colour": 1,
+        "width": 5
+      },
+      {
+        "type": "line",
+        "points": [
+          {
+            "row": 1,
+            "col": 1
+          },
+          {
+            "row": 23,
+            "col": 1
+          }
+        ],
+        "colour": 2,
+        "width": 5
+      },
+      {
+        "type": "line",
+        "points": [
+          {
+            "row": 1,
+            "col": 23
+          },
+          {
+            "row": 23,
+            "col": 23
+          }
+        ],
+        "colour": 2,
+        "width": 5
+      },
+      {
+        "type": "line",
+        "points": [
+          {
+            "row": 8,
+            "col": 9
+          },
+          {
+            "row": 10,
+            "col": 10
+          }
+        ],
+        "colour": 1,
+        "width": 5,
+        "centered": true,
+        "clickable": true
+      },
+      {
+        "type": "line",
+        "points": [
+          {
+            "row": 7,
+            "col": 9
+          },
+          {
+            "row": 9,
+            "col": 10
+          }
+        ],
+        "colour": 2,
+        "width": 5,
+        "centered": true,
+        "clickable": true
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1,
+      "scale": 0.75
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2,
+      "scale": 0.75
+    }
+  },
+  "pieces": "_\n_\n_\n_\n_\n_\n_\n---------B\n---------A\n----------B\n----------A"
+}

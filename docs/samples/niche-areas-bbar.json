@@ -1,0 +1,110 @@
+{
+  "board": {
+    "style": "vertex",
+    "width": 4,
+    "height": 4,
+    "tileHeight": 1,
+    "tileWidth": 1,
+    "tileSpacing": 0.5
+  },
+  "legend": {
+    "B": {
+      "name": "piece-square",
+      "colour": 1
+    },
+    "D": {
+      "name": "piece-square",
+      "colour": 2
+    },
+    "W1": "wyke-1",
+    "W2": "wyke-2",
+    "W3": "wyke-3",
+    "W4": "wyke-4",
+    "W5": "wyke-5",
+    "W6": "wyke-6",
+    "W7": "wyke-7"
+  },
+  "pieces": "W3,W6,W4,W4\nW5,W5,W4,W4\nW4,W4,W5,W3\nW4,W4,W3,D",
+  "annotations": [
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 2,
+          "col": 3
+        }
+      ]
+    },
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 3,
+          "col": 2
+        }
+      ]
+    },
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 2,
+          "col": 2
+        }
+      ]
+    },
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 1,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 0,
+          "col": 0
+        }
+      ]
+    }
+  ],
+  "areas": [
+    {
+      "type": "buttonBar",
+      "position": "left",
+      "buttons": [
+        {
+          "label": "1-1-1-1-1",
+          "attributes": [
+            {
+              "name": "text-decoration",
+              "value": "line-through"
+            }
+          ]
+        },
+        {
+          "label": "2-1-1",
+          "attributes": [
+            {
+              "name": "text-decoration",
+              "value": "line-through"
+            }
+          ]
+        },
+        {
+          "label": "2-2"
+        },
+        {
+          "label": "3-1"
+        },
+        {
+          "label": "4"
+        }
+      ]
+    }
+  ]
+}

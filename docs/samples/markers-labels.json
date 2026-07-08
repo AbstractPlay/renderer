@@ -1,0 +1,146 @@
+{
+  "options": [
+    "hide-labels"
+  ],
+  "board": {
+    "style": "squares",
+    "width": 8,
+    "height": 8,
+    "tileWidth": 4,
+    "tileHeight": 4,
+    "tileSpacing": 1.25,
+    "markers": [
+      {
+        "type": "label",
+        "label": "Placed",
+        "points": [
+          {
+            "col": 0,
+            "row": 4
+          },
+          {
+            "col": 4,
+            "row": 4
+          }
+        ],
+        "size": 15,
+        "nudge": {
+          "dx": 0,
+          "dy": 0.1
+        }
+      },
+      {
+        "type": "label",
+        "label": "Flipped",
+        "points": [
+          {
+            "col": 4,
+            "row": 4
+          },
+          {
+            "col": 8,
+            "row": 4
+          }
+        ],
+        "size": 15,
+        "nudge": {
+          "dx": 1.25,
+          "dy": 0.1
+        }
+      },
+      {
+        "type": "label",
+        "label": "Scored",
+        "points": [
+          {
+            "col": 0,
+            "row": 5
+          },
+          {
+            "col": 4,
+            "row": 5
+          }
+        ],
+        "size": 15,
+        "nudge": {
+          "dx": 0,
+          "dy": -0.1
+        }
+      },
+      {
+        "type": "label",
+        "label": "Current",
+        "points": [
+          {
+            "col": 4,
+            "row": 5
+          },
+          {
+            "col": 8,
+            "row": 5
+          }
+        ],
+        "size": 15,
+        "nudge": {
+          "dx": 1.25,
+          "dy": -0.1
+        }
+      }
+    ]
+  },
+  "legend": {
+    "B": {
+      "name": "piece",
+      "colour": "#000",
+      "opacity": 0.5
+    },
+    "W": {
+      "name": "piece",
+      "colour": "#fff"
+    }
+  },
+  "pieces": "WBWWWBWW\nBW--BW--\nWBBWWWBB\nWWBBWWWB\nWBWWWBWW\nBW--BW--\nWWBBWWBB\nWWWBWWWB\n",
+  "areas": [
+    {
+      "type": "key",
+      "position": "left",
+      "height": 0.7,
+      "list": [
+        {
+          "piece": "W",
+          "name": "",
+          "value": "w"
+        },
+        {
+          "piece": "B",
+          "name": "",
+          "value": "b"
+        }
+      ],
+      "clickable": true
+    }
+  ],
+  "annotations": [
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "col": 2,
+          "row": 2
+        },
+        {
+          "col": 7,
+          "row": 2
+        },
+        {
+          "col": 6,
+          "row": 3
+        },
+        {
+          "col": 5,
+          "row": 2
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,352 @@
+{
+  "renderer": "stacking-3D",
+  "board": {
+    "style": "squares",
+    "width": 5,
+    "height": 5
+  },
+  "legend": {
+    "X": {
+      "name": "pyramid-up-small-3D",
+      "colour": "#000"
+    },
+    "RD1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 1,
+      "opacity": 1
+    },
+    "RD2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 1,
+      "opacity": 1
+    },
+    "RD3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 1,
+      "opacity": 1
+    },
+    "BU1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 2,
+      "opacity": 1
+    },
+    "BU2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 2,
+      "opacity": 1
+    },
+    "BU3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 2,
+      "opacity": 1
+    },
+    "GN1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 3,
+      "opacity": 1
+    },
+    "GN2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 3,
+      "opacity": 1
+    },
+    "GN3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 3,
+      "opacity": 1
+    },
+    "YE1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 4,
+      "opacity": 1
+    },
+    "YE2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 4,
+      "opacity": 1
+    },
+    "YE3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 4,
+      "opacity": 1
+    },
+    "VT1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 5,
+      "opacity": 1
+    },
+    "VT2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 5,
+      "opacity": 1
+    },
+    "VT3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 5,
+      "opacity": 1
+    },
+    "OG1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 6,
+      "opacity": 1
+    },
+    "OG2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 6,
+      "opacity": 1
+    },
+    "OG3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 6,
+      "opacity": 1
+    },
+    "BN1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 7,
+      "opacity": 1
+    },
+    "BN2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 7,
+      "opacity": 1
+    },
+    "BN3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 7,
+      "opacity": 1
+    },
+    "PK1": {
+      "name": "pyramid-up-small-3D",
+      "colour": 8,
+      "opacity": 1
+    },
+    "PK2": {
+      "name": "pyramid-up-medium-3D",
+      "colour": 8,
+      "opacity": 1
+    },
+    "PK3": {
+      "name": "pyramid-up-large-3D",
+      "colour": 8,
+      "opacity": 1
+    }
+  },
+  "pieces": [
+    [
+      [
+        "GN1",
+        "GN2",
+        "GN3",
+        "RD1"
+      ],
+      [
+        "BU1",
+        "BU2",
+        "BU3",
+        "RD2"
+      ],
+      [
+        "BN1",
+        "BN2",
+        "BN3"
+      ],
+      [
+        "YE1",
+        "YE2",
+        "YE3",
+        "X"
+      ],
+      []
+    ],
+    [
+      [
+        "VT1",
+        "VT2",
+        "VT3"
+      ],
+      [
+        "YE1",
+        "YE2",
+        "YE3"
+      ],
+      [
+        "OG1",
+        "OG2",
+        "OG3",
+        "X"
+      ],
+      [
+        "VT1",
+        "VT2",
+        "VT3"
+      ],
+      [
+        "OG1",
+        "OG2",
+        "OG3",
+        "X"
+      ]
+    ],
+    [
+      [
+        "RD1",
+        "RD2",
+        "RD3",
+        "X"
+      ],
+      [
+        "BN1",
+        "BN2",
+        "BN3",
+        "X"
+      ],
+      [],
+      [
+        "BN1",
+        "BN2",
+        "BN3"
+      ],
+      [
+        "GN1",
+        "GN2",
+        "GN3"
+      ]
+    ],
+    [
+      [
+        "BU1",
+        "BU2",
+        "BU3"
+      ],
+      [
+        "RD1"
+      ],
+      [
+        "PK1",
+        "PK2",
+        "PK3"
+      ],
+      [
+        "BU1",
+        "BU2",
+        "BU3"
+      ],
+      [
+        "VT1",
+        "VT2",
+        "VT3"
+      ]
+    ],
+    [
+      [
+        "YE1",
+        "YE2",
+        "YE3"
+      ],
+      [
+        "PK1",
+        "PK2",
+        "PK3"
+      ],
+      [
+        "GN1",
+        "GN2",
+        "GN3"
+      ],
+      [
+        "OG1",
+        "OG2",
+        "OG3",
+        "X"
+      ],
+      [
+        "PK1",
+        "PK2",
+        "PK3"
+      ]
+    ]
+  ],
+  "areas": [
+    {
+      "type": "localStash",
+      "label": "Player 1: Captured Pieces",
+      "stash": [
+        [
+          "-",
+          "-",
+          "RD3"
+        ]
+      ]
+    },
+    {
+      "type": "localStash",
+      "label": "Player 2: Captured Pieces",
+      "stash": [
+        [
+          "-",
+          "RD2",
+          "RD3"
+        ]
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "type": "move",
+      "targets": [
+        {
+          "row": 3,
+          "col": 1
+        },
+        {
+          "row": 2,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "type": "eject",
+      "targets": [
+        {
+          "row": 3,
+          "col": 1
+        },
+        {
+          "row": 1,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "type": "exit",
+      "targets": [
+        {
+          "row": 1,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "type": "eject",
+      "targets": [
+        {
+          "row": 3,
+          "col": 1
+        },
+        {
+          "row": 0,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "type": "exit",
+      "targets": [
+        {
+          "row": 0,
+          "col": 1
+        }
+      ]
+    }
+  ]
+}

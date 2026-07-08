@@ -1,0 +1,76 @@
+{
+  "board": {
+    "style": "conical-hex",
+    "height": 14,
+    "markers": [
+      {
+        "type": "halo",
+        "width": 10,
+        "segments": [
+          {
+            "colour": 1
+          },
+          {
+            "colour": 2
+          }
+        ]
+      },
+      {
+        "type": "flood",
+        "colour": 1,
+        "opacity": 1,
+        "points": [
+          {
+            "col": 0,
+            "row": 10
+          },
+          {
+            "col": 3,
+            "row": 9
+          },
+          {
+            "col": 3,
+            "row": 6
+          },
+          {
+            "col": 7,
+            "row": 4
+          },
+          {
+            "col": 10,
+            "row": 9
+          }
+        ]
+      },
+      {
+        "type": "flood",
+        "colour": 2,
+        "opacity": 1,
+        "points": [
+          {
+            "col": 4,
+            "row": 0
+          },
+          {
+            "col": 10,
+            "row": 1
+          },
+          {
+            "col": 1,
+            "row": 4
+          },
+          {
+            "col": 12,
+            "row": 1
+          },
+          {
+            "col": 7,
+            "row": 11
+          }
+        ]
+      }
+    ]
+  },
+  "legend": {},
+  "pieces": null
+}

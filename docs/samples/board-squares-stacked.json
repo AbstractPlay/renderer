@@ -1,0 +1,42 @@
+{
+  "board": {
+    "style": "squares-stacked",
+    "width": 9,
+    "height": 9,
+    "markers": [
+      {
+        "type": "edge",
+        "edge": "N",
+        "colour": 1
+      },
+      {
+        "type": "edge",
+        "edge": "S",
+        "colour": 1
+      },
+      {
+        "type": "edge",
+        "edge": "E",
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "W",
+        "colour": 2
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "orb",
+      "colour": 1,
+      "scale": 1.15
+    },
+    "B": {
+      "name": "orb",
+      "colour": 2,
+      "scale": 1.15
+    }
+  },
+  "pieces": "\n\n--A--BAB-\n----BBBBA\n----B-AA-\n----ABAB-\n---BABA--\n--BBABBB-\n---BAAA--\n\n\n------A-\n------A-\n\n-----A--\n---BBA--\n---BAB--\n\n\n\n\n\n\n----A--\n"
+}

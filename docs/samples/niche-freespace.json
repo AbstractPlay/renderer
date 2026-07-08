@@ -1,0 +1,250 @@
+{
+  "renderer": "freespace",
+  "board": {
+    "width": 729.1671752929688,
+    "height": 729.1671752929688,
+    "backFill": {
+      "colour": "#eee"
+    },
+    "markers": [
+      {
+        "type": "glyph",
+        "glyph": "ghostB3",
+        "orientation": 167.06,
+        "points": [
+          {
+            "x": 238.29276,
+            "y": 227.3139
+          }
+        ]
+      },
+      {
+        "type": "glyph",
+        "glyph": "ghostB3",
+        "orientation": 153.71,
+        "points": [
+          {
+            "x": 254.50081,
+            "y": 272.79372
+          }
+        ]
+      },
+      {
+        "type": "glyph",
+        "glyph": "ghostR3",
+        "orientation": 301.59,
+        "points": [
+          {
+            "x": 289.8518,
+            "y": 340.87003
+          }
+        ]
+      },
+      {
+        "type": "path",
+        "path": "M194,287L237,305L267,341L257,385L241,429L194,415L160,412L154,378L154,352L153,307Z",
+        "stroke": "#000",
+        "fill": "#000"
+      },
+      {
+        "type": "path",
+        "path": "M535,291L569,317L592,346L599,386L565,407L535,441L509,400L477,383L486,349L511,332Z",
+        "stroke": "#000",
+        "fill": "#000"
+      }
+    ]
+  },
+  "legend": {
+    "R1": {
+      "name": "pyramid-flat-small",
+      "colour": 1
+    },
+    "ghostR1": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "opacity": 0.25
+    },
+    "R2": {
+      "name": "pyramid-flat-medium",
+      "colour": 1
+    },
+    "ghostR2": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "opacity": 0.25
+    },
+    "R3": {
+      "name": "pyramid-flat-large",
+      "colour": 1
+    },
+    "ghostR3": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "opacity": 0.25
+    },
+    "B1": {
+      "name": "pyramid-flat-small",
+      "colour": 2
+    },
+    "ghostB1": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "opacity": 0.25
+    },
+    "B2": {
+      "name": "pyramid-flat-medium",
+      "colour": 2
+    },
+    "ghostB2": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "opacity": 0.25
+    },
+    "B3": {
+      "name": "pyramid-flat-large",
+      "colour": 2
+    },
+    "ghostB3": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "opacity": 0.25
+    },
+    "G1": {
+      "name": "pyramid-flat-small",
+      "colour": 3
+    },
+    "ghostG1": {
+      "name": "pyramid-flat-small",
+      "colour": 3,
+      "opacity": 0.25
+    },
+    "G2": {
+      "name": "pyramid-flat-medium",
+      "colour": 3
+    },
+    "ghostG2": {
+      "name": "pyramid-flat-medium",
+      "colour": 3,
+      "opacity": 0.25
+    },
+    "G3": {
+      "name": "pyramid-flat-large",
+      "colour": 3
+    },
+    "ghostG3": {
+      "name": "pyramid-flat-large",
+      "colour": 3,
+      "opacity": 0.25
+    },
+    "Y1": {
+      "name": "pyramid-flat-small",
+      "colour": 4
+    },
+    "ghostY1": {
+      "name": "pyramid-flat-small",
+      "colour": 4,
+      "opacity": 0.25
+    },
+    "Y2": {
+      "name": "pyramid-flat-medium",
+      "colour": 4
+    },
+    "ghostY2": {
+      "name": "pyramid-flat-medium",
+      "colour": 4,
+      "opacity": 0.25
+    },
+    "Y3": {
+      "name": "pyramid-flat-large",
+      "colour": 4
+    },
+    "ghostY3": {
+      "name": "pyramid-flat-large",
+      "colour": 4,
+      "opacity": 0.25
+    },
+    "D1": {
+      "text": "1",
+      "colour": "#000",
+      "scale": 0.25
+    },
+    "D2": {
+      "text": "2",
+      "colour": "#000",
+      "scale": 0.25
+    }
+  },
+  "pieces": [
+    {
+      "glyph": "R3",
+      "id": "Myquib",
+      "x": 270.09921,
+      "y": 369.30802,
+      "orientation": 355.75
+    },
+    {
+      "glyph": "R2",
+      "id": "Crakew",
+      "x": 582.09725,
+      "y": 308.40279,
+      "orientation": 306.71
+    },
+    {
+      "glyph": "R1",
+      "id": "Ifeeci",
+      "x": 184.45985,
+      "y": 470.34228,
+      "orientation": 49.67
+    },
+    {
+      "glyph": "B3",
+      "id": "Zafu",
+      "x": 286.86639,
+      "y": 305.72918,
+      "orientation": 117.29
+    },
+    {
+      "glyph": "B2",
+      "id": "Uthaf",
+      "x": 318.31899,
+      "y": 210.46746,
+      "orientation": 443.14
+    },
+    {
+      "glyph": "B3",
+      "id": "Preambles",
+      "x": 457.83724,
+      "y": 267.17062,
+      "orientation": 168.03
+    },
+    {
+      "glyph": "B1",
+      "id": "Okrov",
+      "x": 131.65119,
+      "y": 267.90944,
+      "orientation": 203.26
+    }
+  ],
+  "annotations": [
+    {
+      "type": "glyph",
+      "glyph": "D1",
+      "points": [
+        {
+          "x": 270.7106166666667,
+          "y": 377.53554333333335
+        }
+      ]
+    },
+    {
+      "type": "glyph",
+      "glyph": "D2",
+      "points": [
+        {
+          "x": 456.12614,
+          "y": 259.0997766666667
+        }
+      ]
+    }
+  ]
+}

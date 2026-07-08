@@ -1,0 +1,82 @@
+{
+  "options": [
+    "no-piece-click"
+  ],
+  "board": {
+    "style": "triangles-stacked",
+    "width": 7,
+    "height": 7,
+    "strokeOpacity": 0,
+    "skipLabels": [
+      "n"
+    ],
+    "blocked": [
+      {
+        "row": 0,
+        "col": 0
+      },
+      {
+        "row": 0,
+        "col": 5
+      },
+      {
+        "row": 0,
+        "col": 6
+      },
+      {
+        "row": 1,
+        "col": 0
+      },
+      {
+        "row": 1,
+        "col": 6
+      },
+      {
+        "row": 2,
+        "col": 6
+      },
+      {
+        "row": 4,
+        "col": 6
+      },
+      {
+        "row": 5,
+        "col": 0
+      },
+      {
+        "row": 5,
+        "col": 6
+      },
+      {
+        "row": 6,
+        "col": 0
+      },
+      {
+        "row": 6,
+        "col": 5
+      },
+      {
+        "row": 6,
+        "col": 6
+      }
+    ]
+  },
+  "legend": {
+    "H": {
+      "name": "hex-pointy-m21",
+      "colour": "#999",
+      "scale": 1.87
+    },
+    "A": {
+      "name": "hex-pointy-m123",
+      "colour": 1,
+      "scale": 1.87
+    },
+    "B": {
+      "name": "hex-pointy-m123",
+      "colour": 2,
+      "scale": 1.87
+    }
+  },
+  "pieces": "-HHHH--\n-HHHHH-\nBHHAHH-\nHBHBBHH\nHHAAHB-\n-HHHHH-\n-HHHH--\n_\n_\n--A\n--A"
+}

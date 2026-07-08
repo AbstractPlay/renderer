@@ -1,0 +1,20 @@
+{
+  "board": {
+    "style": "onyx",
+    "width": 12,
+    "height": 12
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1,
+      "scale": 0.75
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2,
+      "scale": 0.75
+    }
+  },
+  "pieces": "ABA\nBA\n-AB\nA"
+}

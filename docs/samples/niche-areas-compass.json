@@ -1,0 +1,280 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8
+  },
+  "legend": {
+    "X1N": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": 0
+    },
+    "X1NE": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": 45
+    },
+    "X1E": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": 90
+    },
+    "X1SE": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": 135
+    },
+    "X1S": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": 180
+    },
+    "X1SW": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": -135
+    },
+    "X1W": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": -90
+    },
+    "X1NW": {
+      "name": "pyramid-flat-small",
+      "colour": 1,
+      "rotate": -45
+    },
+    "X1U": {
+      "name": "pyramid-up-small",
+      "colour": 1
+    },
+    "X2N": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": 0
+    },
+    "X2NE": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": 45
+    },
+    "X2E": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": 90
+    },
+    "X2SE": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": 135
+    },
+    "X2S": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": 180
+    },
+    "X2SW": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": -135
+    },
+    "X2W": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": -90
+    },
+    "X2NW": {
+      "name": "pyramid-flat-medium",
+      "colour": 1,
+      "rotate": -45
+    },
+    "X2U": {
+      "name": "pyramid-up-medium",
+      "colour": 1
+    },
+    "X3N": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": 0
+    },
+    "X3NE": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": 45
+    },
+    "X3E": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": 90
+    },
+    "X3SE": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": 135
+    },
+    "X3S": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": 180
+    },
+    "X3SW": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": -135
+    },
+    "X3W": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": -90
+    },
+    "X3NW": {
+      "name": "pyramid-flat-large",
+      "colour": 1,
+      "rotate": -45
+    },
+    "X3U": {
+      "name": "pyramid-up-large",
+      "colour": 1
+    },
+    "Y1N": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": 0
+    },
+    "Y1NE": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": 45
+    },
+    "Y1E": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": 90
+    },
+    "Y1SE": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": 135
+    },
+    "Y1S": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": 180
+    },
+    "Y1SW": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": -135
+    },
+    "Y1W": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": -90
+    },
+    "Y1NW": {
+      "name": "pyramid-flat-small",
+      "colour": 2,
+      "rotate": -45
+    },
+    "Y1U": {
+      "name": "pyramid-up-small",
+      "colour": 2
+    },
+    "Y2N": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": 0
+    },
+    "Y2NE": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": 45
+    },
+    "Y2E": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": 90
+    },
+    "Y2SE": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": 135
+    },
+    "Y2S": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": 180
+    },
+    "Y2SW": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": -135
+    },
+    "Y2W": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": -90
+    },
+    "Y2NW": {
+      "name": "pyramid-flat-medium",
+      "colour": 2,
+      "rotate": -45
+    },
+    "Y2U": {
+      "name": "pyramid-up-medium",
+      "colour": 2
+    },
+    "Y3N": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": 0
+    },
+    "Y3NE": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": 45
+    },
+    "Y3E": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": 90
+    },
+    "Y3SE": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": 135
+    },
+    "Y3S": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": 180
+    },
+    "Y3SW": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": -135
+    },
+    "Y3W": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": -90
+    },
+    "Y3NW": {
+      "name": "pyramid-flat-large",
+      "colour": 2,
+      "rotate": -45
+    },
+    "Y3U": {
+      "name": "pyramid-up-large",
+      "colour": 2
+    }
+  },
+  "pieces": "Y3SE,Y3U,Y3NE,Y2U,Y1U,,,\nY3U,Y2U,Y2U,Y1U,,,,\nY3U,Y2U,Y1U,,,,,\nY2S,,Y1W,,,,,X1U\nY1U,,,,,,X1U,X2N\n,,,,,X1U,X2U,X3U\n,,,,X1SW,X2U,X2U,X3U\n,,,X1SW,X2U,X3N,X3U,X3W",
+  "areas": [
+    {
+      "type": "compassRose",
+      "position": "left"
+    }
+  ]
+}

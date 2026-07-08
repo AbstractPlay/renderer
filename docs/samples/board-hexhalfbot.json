@@ -1,0 +1,23 @@
+{
+  "options": [
+    "reverse-letters"
+  ],
+  "renderer": "stacking-offset",
+  "board": {
+    "style": "hex-of-tri",
+    "minWidth": 3,
+    "maxWidth": 7,
+    "half": "bottom"
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": null
+}

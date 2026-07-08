@@ -1,0 +1,18 @@
+{
+  "board": {
+    "style": "hex-of-tri-f",
+    "minWidth": 5,
+    "maxWidth": 9
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": "AB"
+}

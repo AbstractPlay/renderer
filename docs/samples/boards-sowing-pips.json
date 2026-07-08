@@ -1,0 +1,32 @@
+{
+  "renderer": "sowing-pips",
+  "board": {
+    "style": "sowing",
+    "width": 8,
+    "height": 4,
+    "showEndPits": false,
+    "squarePits": [
+      {
+        "row": 1,
+        "col": 3
+      },
+      {
+        "row": 2,
+        "col": 4
+      }
+    ],
+    "markers": [
+      {
+        "type": "edge",
+        "edge": "N",
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "S",
+        "colour": 1
+      }
+    ]
+  },
+  "pieces": "_\n,2,12,16,,,,\n,,,,24,26,30,\n_"
+}

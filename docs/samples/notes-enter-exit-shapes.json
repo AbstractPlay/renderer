@@ -1,0 +1,55 @@
+{
+  "board": {
+    "style": "vertex",
+    "width": 8,
+    "height": 8
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    }
+  },
+  "pieces": "A\n--A",
+  "annotations": [
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 0,
+          "col": 0
+        }
+      ]
+    },
+    {
+      "type": "enter",
+      "shape": "circle",
+      "targets": [
+        {
+          "row": 1,
+          "col": 2
+        }
+      ]
+    },
+    {
+      "type": "exit",
+      "shape": "hexf",
+      "targets": [
+        {
+          "row": 2,
+          "col": 4
+        }
+      ]
+    },
+    {
+      "type": "exit",
+      "shape": "hexp",
+      "targets": [
+        {
+          "row": 3,
+          "col": 6
+        }
+      ]
+    }
+  ]
+}

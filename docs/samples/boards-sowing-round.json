@@ -1,0 +1,8 @@
+{
+  "renderer": "stacking-offset",
+  "board": {
+    "style": "sowing-round",
+    "width": 8
+  },
+  "pieces": null
+}

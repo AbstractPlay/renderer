@@ -1,0 +1,50 @@
+{
+  "renderer": "conhex",
+  "board": {
+    "style": "conhex-dots",
+    "width": 11,
+    "markers": [
+      {
+        "type": "flood",
+        "points": [
+          {
+            "row": 0,
+            "col": 0
+          }
+        ],
+        "colour": 1
+      },
+      {
+        "type": "flood",
+        "points": [
+          {
+            "row": 0,
+            "col": 1
+          }
+        ],
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "N",
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "S",
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "E",
+        "colour": 1
+      },
+      {
+        "type": "edge",
+        "edge": "W",
+        "colour": 1
+      }
+    ]
+  },
+  "pieces": "1---------1\n--122------"
+}

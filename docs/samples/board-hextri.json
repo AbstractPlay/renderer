@@ -1,0 +1,19 @@
+{
+  "renderer": "stacking-offset",
+  "board": {
+    "style": "hex-of-tri",
+    "minWidth": 4,
+    "maxWidth": 7
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": "-,-,-,-\nB,-,-,-,-\nB,A,-,-,-,-\nA,A,-,-,-,-,-\nA,-,B,-,-,-\nBAB,BA,A,-,-\nB,AB,-,-"
+}

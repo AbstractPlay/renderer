@@ -1,0 +1,95 @@
+{
+  "board": {
+    "style": "squares-stacked",
+    "width": 7,
+    "height": 7,
+    "markers": [
+      {
+        "type": "edge",
+        "edge": "N",
+        "colour": 1
+      },
+      {
+        "type": "edge",
+        "edge": "S",
+        "colour": 1
+      },
+      {
+        "type": "edge",
+        "edge": "E",
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "W",
+        "colour": 2
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "orb2",
+      "colour": 1,
+      "scale": 1.18
+    },
+    "B": {
+      "name": "orb2",
+      "colour": 2,
+      "scale": 1.18
+    },
+    "C": {
+      "name": "orb2",
+      "colour": 3,
+      "scale": 1.18
+    },
+    "D": {
+      "name": "orb2",
+      "colour": 4,
+      "scale": 1.18
+    },
+    "E": {
+      "name": "orb2",
+      "colour": 5,
+      "scale": 1.18
+    },
+    "F": {
+      "name": "orb2",
+      "colour": 6,
+      "scale": 1.18
+    },
+    "G": {
+      "name": "orb2",
+      "colour": 7,
+      "scale": 1.18
+    },
+    "H": {
+      "name": "orb2",
+      "colour": 8,
+      "scale": 1.18
+    },
+    "Y": {
+      "name": "circle",
+      "colour": 1,
+      "scale": 1.15,
+      "opacity": 0.5
+    },
+    "Z": {
+      "name": "circle",
+      "colour": 2,
+      "scale": 1.15,
+      "opacity": 0.5
+    }
+  },
+  "pieces": "_\n-ABBBAA\n-ABBABA\n-BAAAB-\n-ABBAB-\n-AA----\nCDEFGHB\n------\n---BA-\n----B-\n------\n------\n------",
+  "annotations": [
+    {
+      "type": "enter",
+      "targets": [
+        {
+          "row": 6,
+          "col": 0
+        }
+      ]
+    }
+  ]
+}

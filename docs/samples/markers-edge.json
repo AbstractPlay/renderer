@@ -1,0 +1,30 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8,
+    "markers": [
+      {
+        "type": "edge",
+        "edge": "N",
+        "colour": 1
+      },
+      {
+        "type": "edge",
+        "edge": "S",
+        "colour": 2
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": "BBBBBBBB\nBBBBBBBB\n_\n_\n_\n_\nAAAAAAAA\nAAAAAAAA"
+}

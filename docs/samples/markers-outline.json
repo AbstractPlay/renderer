@@ -1,0 +1,42 @@
+{
+  "renderer": "sowing-numerals",
+  "board": {
+    "style": "sowing",
+    "width": 9,
+    "height": 2,
+    "showEndPits": true,
+    "markers": [
+      {
+        "type": "edge",
+        "edge": "N",
+        "colour": 2
+      },
+      {
+        "type": "edge",
+        "edge": "S",
+        "colour": 1
+      },
+      {
+        "type": "outline",
+        "colour": 1,
+        "points": [
+          {
+            "row": 2,
+            "col": 1
+          }
+        ]
+      },
+      {
+        "type": "outline",
+        "colour": 2,
+        "points": [
+          {
+            "row": 2,
+            "col": 0
+          }
+        ]
+      }
+    ]
+  },
+  "pieces": "9,9,9,9,9,9,9,9,9\n9,9,9,9,9,9,9,9,9\n0,0"
+}

@@ -1,0 +1,143 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 8,
+    "height": 8,
+    "markers": [
+      {
+        "type": "line",
+        "points": [
+          {
+            "row": 0,
+            "col": 0
+          },
+          {
+            "row": 8,
+            "col": 8
+          }
+        ],
+        "width": 2,
+        "opacity": 0.25
+      },
+      {
+        "type": "shading",
+        "points": [
+          {
+            "row": 6,
+            "col": 0
+          },
+          {
+            "row": 6,
+            "col": 2
+          },
+          {
+            "row": 8,
+            "col": 2
+          },
+          {
+            "row": 8,
+            "col": 0
+          }
+        ],
+        "colour": 1,
+        "opacity": 0.25
+      },
+      {
+        "type": "shading",
+        "points": [
+          {
+            "row": 7,
+            "col": 0
+          },
+          {
+            "row": 7,
+            "col": 1
+          },
+          {
+            "row": 8,
+            "col": 1
+          },
+          {
+            "row": 8,
+            "col": 0
+          }
+        ],
+        "colour": 1,
+        "opacity": 1
+      },
+      {
+        "type": "shading",
+        "points": [
+          {
+            "col": 6,
+            "row": 0
+          },
+          {
+            "col": 6,
+            "row": 2
+          },
+          {
+            "col": 8,
+            "row": 2
+          },
+          {
+            "col": 8,
+            "row": 0
+          }
+        ],
+        "colour": 2,
+        "opacity": 0.25
+      },
+      {
+        "type": "shading",
+        "points": [
+          {
+            "col": 7,
+            "row": 0
+          },
+          {
+            "col": 7,
+            "row": 1
+          },
+          {
+            "col": 8,
+            "row": 1
+          },
+          {
+            "col": 8,
+            "row": 0
+          }
+        ],
+        "colour": 2,
+        "opacity": 1
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece-chariot",
+      "colour": 1
+    },
+    "C": {
+      "name": "sphere-spiral",
+      "colour": 1
+    },
+    "X": {
+      "name": "piece",
+      "colour": 2
+    },
+    "Y": {
+      "name": "piece-chariot",
+      "colour": 2
+    },
+    "Z": {
+      "name": "sphere-spiral",
+      "colour": 2
+    }
+  },
+  "pieces": "------XX\n------XX\n_\n----Z---\n---C----\n_\nAA------\nAA------"
+}

@@ -1,0 +1,18 @@
+{
+  "renderer": "default",
+  "board": {
+    "style": "star",
+    "width": 11
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "colour": 1
+    },
+    "B": {
+      "name": "piece",
+      "colour": 2
+    }
+  },
+  "pieces": null
+}

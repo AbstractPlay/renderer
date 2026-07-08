@@ -1,0 +1,51 @@
+{
+  "board": {
+    "style": "hex-of-hex",
+    "minWidth": 4,
+    "maxWidth": 7,
+    "backFill": {
+      "type": "board",
+      "colour": "#999"
+    },
+    "markers": [
+      {
+        "type": "flood",
+        "colour": 1,
+        "opacity": 1,
+        "points": [
+          {
+            "row": 1,
+            "col": 3
+          },
+          {
+            "row": 3,
+            "col": 4
+          },
+          {
+            "row": 4,
+            "col": 3
+          },
+          {
+            "row": 5,
+            "col": 1
+          },
+          {
+            "row": 5,
+            "col": 2
+          }
+        ]
+      }
+    ]
+  },
+  "legend": {
+    "A": {
+      "name": "meeple",
+      "colour": "#fff"
+    },
+    "B": {
+      "name": "meeple",
+      "colour": "#000"
+    }
+  },
+  "pieces": "_\n_\n-A--B-\n---A---\n--B---\n_\n_"
+}

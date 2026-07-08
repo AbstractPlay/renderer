@@ -1,0 +1,62 @@
+{
+  "board": {
+    "style": "hex-even-p",
+    "width": 9,
+    "height": 9
+  },
+  "legend": {
+    "A1": {
+      "name": "d6-1",
+      "colour": 1
+    },
+    "A2": {
+      "name": "d6-2",
+      "colour": 1
+    },
+    "A3": {
+      "name": "d6-3",
+      "colour": 1
+    },
+    "A4": {
+      "name": "d6-4",
+      "colour": 1
+    },
+    "A5": {
+      "name": "d6-5",
+      "colour": 1
+    },
+    "A6": {
+      "name": "d6-6",
+      "colour": 1
+    },
+    "B1": {
+      "name": "d6-1",
+      "colour": 2
+    },
+    "B2": {
+      "name": "d6-2",
+      "colour": 2
+    },
+    "B3": {
+      "name": "d6-3",
+      "colour": 2
+    },
+    "B4": {
+      "name": "d6-4",
+      "colour": 2
+    },
+    "B5": {
+      "name": "d6-5",
+      "colour": 2
+    },
+    "B6": {
+      "name": "d6-6",
+      "colour": 2
+    },
+    "X": {
+      "name": "piecepack-number-void",
+      "colour": "_context_strokes"
+    }
+  },
+  "pieces": "B1,B2,B3,B4,B5,B4,B3,B2,B1\n_\n,,,,,,,,\n_\n,,,,X,,,,\n_\n,,,,,,,,\n_\nA1,A2,A3,A4,A5,A4,A3,A2,A1"
+}
