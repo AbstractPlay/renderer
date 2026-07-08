@@ -85,6 +85,7 @@
         "mocha": "^11.2.2",
         "moment": "^2.29.4",
         "rimraf": "^5.0.1",
+        "serverless": "^3.40.0",
         "serverless-finch": "^4.0.3",
         "shx": "^0.4.0",
         "svgdom": "^0.1.14",
