@@ -6,9 +6,10 @@ temp/
 .vscode
 .serverless
 
-# bin folder, except for example.ts
-bin/
+# bin folder, except tracked scripts
+bin/*
 !bin/contact.ts
+!bin/contact-export.ts
 !bin/export.ts
 
 # scratch files in the root

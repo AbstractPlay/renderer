@@ -66,13 +66,15 @@ Some glyphs accept a colour argument `(canvas, color) => symbol` for two-tone sh
 
 ## Update the contact sheet
 
-After adding or renaming pieces, regenerate the visual reference and commit the result:
+After adding or renaming pieces, regenerate the visual reference and commit both outputs:
 
 ```bash
-npx ts-node bin/contact.ts > docs/contact-sheet.svg
+npm run contact-sheet
 ```
 
-This step is **manual** — the docs site and CI do not run it. The [contact sheet page](/renderer/contact-sheet/) embeds whatever is in `docs/contact-sheet.svg`.
+This writes `docs/contact-sheet.svg` (full resolution, for the docs site), `docs/fonts/dejavu-sans.ttf` (label font), and `contact.png` (96 DPI raster for the GitHub README). Labels use **DejaVu Sans**, bundled as TTF so resvg renders text reliably on all platforms. Set `CONTACT_SHEET_DPI=72` for a smaller PNG if you prefer.
+
+CI will fail if sheet sources change without updating these committed files.
 
 ## Verify
 

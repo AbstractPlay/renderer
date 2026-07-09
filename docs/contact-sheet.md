@@ -2,7 +2,7 @@
 
 Every piece name you can use in `legend` `name` fields comes from a **glyph sheet** in the renderer. This reference lists them all, grouped by sheet.
 
-The file below is checked into `docs/contact-sheet.svg` and updated manually when sheets change.
+The file below is checked into `docs/contact-sheet.svg` and regenerated with `npm run contact-sheet` when sheets change (see [Adding pieces](/renderer/adding-pieces/)).
 
 <object data="/renderer/contact-sheet.svg" type="image/svg+xml" class="contact-sheet">
   <img src="/renderer/contact-sheet.svg" alt="Renderer glyph contact sheet" />
