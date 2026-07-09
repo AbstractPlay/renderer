@@ -1,3 +1,4 @@
+/// <reference path="./svgdom.d.ts" />
 import { sheets } from "../src/sheets";
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 
@@ -99,9 +100,8 @@ function injectContactSheetFont(svg: string): string {
     return svg.replace(/(<svg[^>]*>)/, `$1${style}`);
 }
 
-export function generateContactSheetSvg(): string {
-    // tslint:disable-next-line: no-var-requires
-    const { createSVGWindow } = require("svgdom");
+export async function generateContactSheetSvg(): Promise<string> {
+    const { createSVGWindow } = await import("svgdom");
     const window = createSVGWindow();
     const document = window.document;
     registerWindow(window, document);
@@ -176,6 +176,14 @@ export function generateContactSheetSvg(): string {
 }
 
 if (require.main === module) {
-    // tslint:disable-next-line: no-console
-    console.log(generateContactSheetSvg());
+    generateContactSheetSvg()
+        .then((svg) => {
+            // tslint:disable-next-line: no-console
+            console.log(svg);
+        })
+        .catch((err) => {
+            // tslint:disable-next-line: no-console
+            console.error(err);
+            process.exit(1);
+        });
 }

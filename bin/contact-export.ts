@@ -17,22 +17,30 @@ const fontDest = join(fontDestDir, "dejavu-sans.ttf");
 mkdirSync(fontDestDir, { recursive: true });
 copyFileSync(fontSource, fontDest);
 
-const svg = generateContactSheetSvg();
-writeFileSync("docs/contact-sheet.svg", svg, "utf8");
+async function main(): Promise<void> {
+    const svg = await generateContactSheetSvg();
+    writeFileSync("docs/contact-sheet.svg", svg, "utf8");
 
-const outputWidth = Math.round(CONTACT_SHEET_VIEWBOX_WIDTH * (TARGET_DPI / SVG_BASE_DPI));
-const resvg = new Resvg(svg, {
-    fitTo: { mode: "width", value: outputWidth },
-    font: {
-        fontFiles: [fontDest],
-        loadSystemFonts: false,
-        defaultFontFamily: CONTACT_SHEET_FONT_FAMILY,
-    },
+    const outputWidth = Math.round(CONTACT_SHEET_VIEWBOX_WIDTH * (TARGET_DPI / SVG_BASE_DPI));
+    const resvg = new Resvg(svg, {
+        fitTo: { mode: "width", value: outputWidth },
+        font: {
+            fontFiles: [fontDest],
+            loadSystemFonts: false,
+            defaultFontFamily: CONTACT_SHEET_FONT_FAMILY,
+        },
+    });
+    writeFileSync("contact.png", resvg.render().asPng());
+
+    // tslint:disable-next-line: no-console
+    console.log(
+        `Wrote docs/contact-sheet.svg, docs/fonts/dejavu-sans.ttf, and contact.png ` +
+        `(${outputWidth}px wide, ${TARGET_DPI} DPI, font: ${CONTACT_SHEET_FONT_FAMILY})`,
+    );
+}
+
+main().catch((err) => {
+    // tslint:disable-next-line: no-console
+    console.error(err);
+    process.exit(1);
 });
-writeFileSync("contact.png", resvg.render().asPng());
-
-// tslint:disable-next-line: no-console
-console.log(
-    `Wrote docs/contact-sheet.svg, docs/fonts/dejavu-sans.ttf, and contact.png ` +
-    `(${outputWidth}px wide, ${TARGET_DPI} DPI, font: ${CONTACT_SHEET_FONT_FAMILY})`,
-);
