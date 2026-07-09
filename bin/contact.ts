@@ -1,4 +1,3 @@
-/// <reference path="../src/@custom_types/svgdom.d.ts" />
 import { sheets } from "../src/sheets";
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 
@@ -100,8 +99,13 @@ function injectContactSheetFont(svg: string): string {
     return svg.replace(/(<svg[^>]*>)/, `$1${style}`);
 }
 
+function importEsm<T>(specifier: string): Promise<T> {
+    // TypeScript downlevels `import()` to `require()` when module is commonjs; svgdom is ESM-only.
+    return new Function("specifier", "return import(specifier)")(specifier) as Promise<T>;
+}
+
 export async function generateContactSheetSvg(): Promise<string> {
-    const { createSVGWindow } = await import("svgdom");
+    const { createSVGWindow } = await importEsm<{ createSVGWindow: () => Window }>("svgdom");
     const window = createSVGWindow();
     const document = window.document;
     registerWindow(window, document);
