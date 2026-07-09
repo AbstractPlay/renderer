@@ -1,4 +1,4 @@
-/// <reference path="./svgdom.d.ts" />
+/// <reference path="../src/@custom_types/svgdom.d.ts" />
 import { sheets } from "../src/sheets";
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 
