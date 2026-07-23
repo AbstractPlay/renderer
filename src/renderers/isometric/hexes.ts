@@ -7,6 +7,7 @@ import { defineHex, Orientation } from "honeycomb-grid";
 import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique, usesLayeredCellDraw } from "./projection";
 import { CubeFaceFills } from "./cubes";
 import { isoShadeProjectedFace } from "./shading";
+import { applyIsoAffineMatrix } from "./faceGlyphFit";
 
 export type Hex = {
     transform: Matrix;
@@ -30,7 +31,7 @@ export type Hex = {
     tBottomCorners: IPoint[];
 };
 
-const genHex = (
+export const genHex = (
     topSize: number,
     sideHeight: number,
     orientation: Orientation,
@@ -263,7 +264,7 @@ export const generateHexes = (opts: {
             }
         }
         if (!isSpacer && hexTop !== null) {
-            nested.use(hexTop).matrix(hex.transform.toArray());
+            applyIsoAffineMatrix(nested.use(hexTop), hex.transform);
         }
         nested.viewbox([minx, miny, hex.width + dWidth, hex.height + dHeight].join(" "));
     }

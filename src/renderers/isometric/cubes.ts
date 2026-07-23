@@ -10,6 +10,7 @@ import {
     projectOblique,
     usesLayeredCellDraw,
 } from "./projection";
+import { applyIsoAffineMatrix } from "./faceGlyphFit";
 
 export type CubeSideFace = "left" | "right" | "west";
 
@@ -251,22 +252,22 @@ export const generateCubes = (opts: {
 
             const paintTop = (): void => {
                 if (rectTop !== null) {
-                    nested.use(rectTop).matrix(cube.top.toArray());
+                    applyIsoAffineMatrix(nested.use(rectTop), cube.top);
                 }
             };
 
             const paintFace = (face: CubePaintFace): void => {
                 if (face === "left" && cube.sideFaces.includes("left") && rectSideLeft !== null) {
-                    nested.use(rectSideLeft).matrix(cube.left.toArray());
+                    applyIsoAffineMatrix(nested.use(rectSideLeft), cube.left);
                 } else if (face === "right" && cube.sideFaces.includes("right")) {
                     const sideRect = faceFills !== undefined ? rectSideRight : rectSideLeft;
                     if (sideRect !== null) {
-                        nested.use(sideRect).matrix(cube.right.toArray());
+                        applyIsoAffineMatrix(nested.use(sideRect), cube.right);
                     }
                 } else if (face === "west" && cube.sideFaces.includes("west")) {
                     const sideRect = faceFills !== undefined ? rectSideRight : rectSideLeft;
                     if (sideRect !== null) {
-                        nested.use(sideRect).matrix(cube.west.toArray());
+                        applyIsoAffineMatrix(nested.use(sideRect), cube.west);
                     }
                 } else if (face === "top") {
                     paintTop();
@@ -322,7 +323,7 @@ export const generateCubes = (opts: {
             }
         } else if (sides.length > 0) {
             if (rectTop !== null) {
-                nested.use(rectTop).matrix(cube.top.toArray());
+                applyIsoAffineMatrix(nested.use(rectTop), cube.top);
             }
         }
         nested.viewbox([minx, miny, cube.width + dWidth, cube.height + dHeight].join(" "));

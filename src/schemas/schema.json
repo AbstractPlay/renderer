@@ -838,6 +838,46 @@
                 "large"
             ]
         },
+        "isoFaceId": {
+            "description": "Intrinsic face id for isometric cube overlays (`decor`). Uses the same N/E/S/W convention as `isoCubeFaces`.",
+            "enum": [
+                "top",
+                "north",
+                "east",
+                "south",
+                "west"
+            ]
+        },
+        "isoFaceGlyphList": {
+            "description": "Sheet glyphs stacked on one isometric face (bottom to top).",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/$defs/glyph"
+            }
+        },
+        "isoFaceDecor": {
+            "description": "Per-face sheet glyph overlays for cubes and cube lintels in the `isometric` renderer.",
+            "type": "object",
+            "properties": {
+                "top": {
+                    "$ref": "#/$defs/isoFaceGlyphList"
+                },
+                "north": {
+                    "$ref": "#/$defs/isoFaceGlyphList"
+                },
+                "east": {
+                    "$ref": "#/$defs/isoFaceGlyphList"
+                },
+                "south": {
+                    "$ref": "#/$defs/isoFaceGlyphList"
+                },
+                "west": {
+                    "$ref": "#/$defs/isoFaceGlyphList"
+                }
+            },
+            "additionalProperties": false
+        },
         "isoPiece": {
             "description": "Schema for a single piece in an `isoPieces` object.",
             "oneOf": [
@@ -904,6 +944,14 @@
                             "type": "number",
                             "minimum": 0,
                             "default": 0.75
+                        },
+                        "top": {
+                            "description": "Sheet glyphs on the top face only (`cylinder`, `hexp`, `hexf`, hex lintels). Use `decor` for cubes and cube lintels.",
+                            "$ref": "#/$defs/isoFaceGlyphList"
+                        },
+                        "decor": {
+                            "description": "Sheet glyphs on cube faces (`cube` and cube lintels). Keys use intrinsic N/E/S/W + top.",
+                            "$ref": "#/$defs/isoFaceDecor"
                         }
                     },
                     "required": [
@@ -933,6 +981,10 @@
                             "type": "number",
                             "minimum": 0,
                             "default": 0.75
+                        },
+                        "decor": {
+                            "description": "Sheet glyphs on cube faces. Keys use intrinsic N/E/S/W + top (not screen left/right).",
+                            "$ref": "#/$defs/isoFaceDecor"
                         }
                     },
                     "required": [

@@ -21,6 +21,8 @@ import { isMultiFaceCube, isoPieceHeight } from "./stack";
 import { effectiveRotatedPiece, generateIsoLintelOrSpacer } from "./pieceSymbols";
 import { boardHexOrientation, isSpacerPiece, parseLintelPiece } from "./lintels";
 
+export type IsoOverlayApplier = (idSymbol: string, pc: IsoPiece, effectiveYaw: number) => void;
+
 type ResolveColourFn = (colour: string | number | Colourfuncs, fallback?: string) => string;
 
 const modulateFaceFills = (
@@ -43,14 +45,20 @@ const generateDepthShadedSymbol = (opts: {
     pieceStroke: StrokeData;
     resolveColour: ResolveColourFn;
     projection?: IsoProjectionParams;
+    overlayApplier?: IsoOverlayApplier;
 }): void => {
     const { rootSvg, shadedId, pc, yaw, numRotations, normalizedDepth, pieceStroke, resolveColour } = opts;
     const projection = opts.projection ?? ISO_PROJECTION_PRESETS.iso;
     const effPiece = effectiveRotatedPiece(pc.piece, numRotations);
+    const effectiveYaw = effectiveCubeYaw(yaw, numRotations * 90);
+
+    const finish = (): void => {
+        opts.overlayApplier?.(shadedId, pc, effectiveYaw);
+    };
 
     if (isMultiFaceCube(pc)) {
-        const effectiveYaw = effectiveCubeYaw(yaw, numRotations * 90);
-        const visible = permuteCubeFacesForProjection(pc.faces, effectiveYaw, projection);
+        const effectiveYawFace = effectiveCubeYaw(yaw, numRotations * 90);
+        const visible = permuteCubeFacesForProjection(pc.faces, effectiveYawFace, projection);
         const top = resolveColour(visible.top, "#000") as string;
         const left = resolveColour(visible.left, "#000") as string;
         const right = resolveColour(visible.right, "#000") as string;
@@ -68,6 +76,7 @@ const generateDepthShadedSymbol = (opts: {
             faceFills,
             idSymbol: shadedId,
         });
+        finish();
         return;
     }
 
@@ -90,6 +99,9 @@ const generateDepthShadedSymbol = (opts: {
             idSymbol: shadedId,
             numRotations,
         });
+        if (!isSpacerPiece(pc.piece)) {
+            finish();
+        }
         return;
     }
 
@@ -131,6 +143,7 @@ const generateDepthShadedSymbol = (opts: {
     } else {
         throw new Error(`Unrecognized isoPiece type "${effPiece}" for depth shading.`);
     }
+    finish();
 };
 
 /**
@@ -150,6 +163,7 @@ export const resolveDepthShadedPieceId = (opts: {
     pieceStroke: StrokeData;
     resolveColour: ResolveColourFn;
     projection?: IsoProjectionParams;
+    overlayApplier?: IsoOverlayApplier;
 }): string => {
     const normalizedDepth = depthToNormalized(opts.depth, opts.minDepth, opts.maxDepth);
     const bucket = depthBucketIndex(normalizedDepth);
@@ -171,6 +185,7 @@ export const resolveDepthShadedPieceId = (opts: {
         pieceStroke: opts.pieceStroke,
         resolveColour: opts.resolveColour,
         projection: opts.projection,
+        overlayApplier: opts.overlayApplier,
     });
     return shadedId;
 };

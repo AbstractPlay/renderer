@@ -1,0 +1,69 @@
+{
+  "renderer": "isometric",
+  "board": {
+    "style": "squares",
+    "width": 3,
+    "height": 2
+  },
+  "legend": {
+    "Cyl": {
+      "piece": "cylinder",
+      "colour": 1,
+      "height": 35,
+      "top": [
+        { "name": "piecepack-misc-coin-back" },
+        { "name": "piecepack-number-2", "colour": 1, "scale": 0.75 }
+      ]
+    },
+    "Hex": {
+      "piece": "hexp",
+      "colour": 2,
+      "height": 30,
+      "top": [{ "name": "piecepack-suit-hearts", "colour": 2 }]
+    },
+    "Cube": {
+      "piece": "cube",
+      "faces": {
+        "top": 1,
+        "north": 2,
+        "east": 3,
+        "south": 4,
+        "west": 5
+      },
+      "decor": {
+        "top": [{ "name": "piecepack-suit-crowns", "colour": 1 }],
+        "south": [{ "name": "tile-06", "colour": 1 }]
+      }
+    },
+    "DomL": {
+      "piece": "lintelE",
+      "colour": 3,
+      "scale": 1,
+      "height": 30,
+      "decor": {
+        "top": [{ "name": "piecepack-number-3", "colour": 1 }]
+      }
+    },
+    "DomR": {
+      "piece": "lintelW",
+      "colour": 3,
+      "scale": 1,
+      "height": 30,
+      "decor": {
+        "top": [{ "name": "piecepack-number-4", "colour": 2 }]
+      }
+    }
+  },
+  "pieces": [
+    [
+      [{ "glyph": "Cyl" }],
+      [{ "glyph": "Hex" }],
+      [{ "glyph": "Cube", "yaw": 0 }]
+    ],
+    [
+      [{ "glyph": "DomL" }],
+      [{ "glyph": "DomR" }],
+      []
+    ]
+  ]
+}

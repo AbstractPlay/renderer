@@ -45,6 +45,8 @@ export type IsoPiece =
        * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
        */
       scale?: number;
+      top?: IsoFaceGlyphList;
+      decor?: IsoFaceDecor;
     }
   | {
       piece: "cube";
@@ -57,6 +59,7 @@ export type IsoPiece =
        * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
        */
       scale?: number;
+      decor?: IsoFaceDecor1;
     };
 /**
  * The types of pieces supported in an isometric legend. Hex lintel entries (lintelp_*, lintelf_*) are generated from src/renderers/isometric/lintels.ts.
@@ -204,6 +207,18 @@ export type IsometricPieces =
  * Icehouse pyramid size preset. Proportions from https://www.wunderland.com/icehouse/MakingIcehouse.html (large: 1" base × 1¾" height; medium: 25/32" × 1⅜"; small: 9/16" × 1"). When set, `height` is ignored.
  */
 export type IsoPyramidSize = "small" | "medium" | "large";
+/**
+ * Sheet glyphs stacked on one isometric face (bottom to top).
+ *
+ * @minItems 1
+ */
+export type IsoFaceGlyphList = [Glyph, ...Glyph[]];
+/**
+ * Sheet glyphs stacked on one isometric face (bottom to top).
+ *
+ * @minItems 1
+ */
+export type IsoFaceGlyphList1 = [Glyph, ...Glyph[]];
 /**
  * Describes the board to be drawn. The `other` style is used for special renderers like `tree-*` where we want optional access to some properties, but otherwise no board is being drawn.
  */
@@ -602,6 +617,16 @@ export interface GradientStop {
   opacity?: number;
 }
 /**
+ * Sheet glyphs on cube faces (`cube` and cube lintels). Keys use intrinsic N/E/S/W + top.
+ */
+export interface IsoFaceDecor {
+  top?: IsoFaceGlyphList1;
+  north?: IsoFaceGlyphList1;
+  east?: IsoFaceGlyphList1;
+  south?: IsoFaceGlyphList1;
+  west?: IsoFaceGlyphList1;
+}
+/**
  * Intrinsic face colours for an isometric cube. Uses the same N/E/S/W convention as the isometric cube geometry (north = top edge of the square top face). The bottom face is hidden when the cube sits on the board.
  */
 export interface IsoCubeFaces {
@@ -614,6 +639,16 @@ export interface IsoCubeFaces {
    * Hidden when the cube sits on the board. Optional.
    */
   bottom?: Colourstrings | Colourfuncs | PositiveInteger;
+}
+/**
+ * Sheet glyphs on cube faces. Keys use intrinsic N/E/S/W + top (not screen left/right).
+ */
+export interface IsoFaceDecor1 {
+  top?: IsoFaceGlyphList1;
+  north?: IsoFaceGlyphList1;
+  east?: IsoFaceGlyphList1;
+  south?: IsoFaceGlyphList1;
+  west?: IsoFaceGlyphList1;
 }
 /**
  * One of the preset boards.

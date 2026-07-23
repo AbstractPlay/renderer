@@ -14,6 +14,9 @@ import { generatePyramids } from "./isometric/pyramids";
 import { resolvePyramidDims, isPyramidPiece } from "./isometric/pyramidDims";
 import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_ANNOTATION, ISO_DRAW_LAYER_EDGE, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
 import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
+import { applyIsoPieceOverlays } from "./isometric/isoOverlayApply";
+import { collectIsoOverlayGlyphs, assertIsoOverlayValid } from "./isometric/isoOverlayPiece";
+import { IsoFaceGlyphComposer } from "./isometric/faceOverlays";
 import { isoCellFootprint } from "./isometric/footprint";
 import { parseIsoPiecesString } from "./isometric/piecesGrid";
 import { activeEdgeSides, collectEdgeMarkerSegments, EdgeSide, isoEdgeLabelOutset } from "./isometric/edgeMarkers";
@@ -70,8 +73,6 @@ export class IsometricRenderer extends RendererBase {
             throw new Error("JSON prechecks fatally failed.");
         }
         this.optionsPrecheck(options);
-        // only allow pieces from the isometric sheet to be loaded
-        this.options.sheets=["isometric"];
         this.rootSvg = draw;
 
         if (this.json.board === null) {
@@ -261,8 +262,25 @@ export class IsometricRenderer extends RendererBase {
 
         // now load the custom legend
         let legend: IsoLegend|undefined;
+        const faceComposer = this.createIsoFaceComposer();
+        const overlayApplier = (idSymbol: string, pc: IsoPiece, effectiveYaw: number) => {
+            applyIsoPieceOverlays({
+                rootSvg: this.rootSvg!,
+                idSymbol,
+                pc,
+                projection: isoProjection,
+                effectiveYaw,
+                numRotations,
+                effPiece: effectiveRotatedPiece(pc.piece, numRotations) as string,
+                composer: faceComposer,
+            });
+        };
         if (this.json.legend !== null && this.json.legend !== undefined) {
             legend = this.json.legend as IsoLegend;
+            for (const pc of Object.values(legend)) {
+                assertIsoOverlayValid(pc);
+                this.preloadPatternsForGlyphs(collectIsoOverlayGlyphs(pc));
+            }
             for (const [key, pc] of Object.entries(this.json.legend as IsoLegend)) {
                 const effPiece = effectiveRotatedPiece(pc.piece, numRotations);
 
@@ -273,6 +291,7 @@ export class IsometricRenderer extends RendererBase {
                         const top = this.resolveColour(visible.top, "#000") as string;
                         const left = this.resolveColour(visible.left, "#000") as string;
                         const right = this.resolveColour(visible.right, "#000") as string;
+                        const idSymbol = `${key}__y${y}`;
                         generateCubes({
                             rootSvg: this.rootSvg,
                             projection: isoProjection,
@@ -284,8 +303,9 @@ export class IsometricRenderer extends RendererBase {
                                 left: {color: isoShadeFace(left, "left")},
                                 right: {color: isoShadeFace(right, "right")},
                             },
-                            idSymbol: `${key}__y${y}`,
+                            idSymbol,
                         });
+                        this.finishLegendPieceOverlays(idSymbol, pc, pc.piece, y, numRotations, faceComposer, isoProjection);
                     }
                 } else if (isSpacerPiece(pc.piece) || parseLintelPiece(pc.piece) !== null) {
                     if (!isSpacerPiece(pc.piece) && !("colour" in pc)) {
@@ -306,14 +326,19 @@ export class IsometricRenderer extends RendererBase {
                         idSymbol: key,
                         numRotations,
                     });
+                    if (!isSpacerPiece(pc.piece)) {
+                        this.finishLegendPieceOverlays(key, pc, pc.piece, 0, numRotations, faceComposer, isoProjection);
+                    }
                 } else if (!("colour" in pc)) {
                     throw new Error(`Legend entry "${key}" is missing colour.`);
                 } else if (effPiece === "cube") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
                     generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                    this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
                 } else if (effPiece === "cylinder") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
                     generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                    this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
                 } else if (effPiece === "cone") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
                     generateCones({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
@@ -330,7 +355,8 @@ export class IsometricRenderer extends RendererBase {
                     });
                 } else if (effPiece === "hexp" || effPiece === "hexf") {
                     const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: boardHexOrientation(numRotations)})
+                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: boardHexOrientation(numRotations)});
+                    this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
                 } else {
 
                     throw new Error(`Unrecognized isoPiece type "${effPiece}"`);
@@ -475,6 +501,7 @@ export class IsometricRenderer extends RendererBase {
                                 pieceStroke,
                                 resolveColour: (colour: string | number | Colourfuncs, fallback) =>
                                     this.resolveColour(colour, fallback) as string,
+                                overlayApplier,
                             });
                         }
                         const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
@@ -639,6 +666,7 @@ export class IsometricRenderer extends RendererBase {
                                 pieceStroke,
                                 resolveColour: (colour: string | number | Colourfuncs, fallback) =>
                                     this.resolveColour(colour, fallback) as string,
+                                overlayApplier,
                             });
                         }
                         const piece = this.rootSvg.findOne("#" + pieceId) as Svg;
@@ -1497,5 +1525,43 @@ export class IsometricRenderer extends RendererBase {
                 }
             }
         }
+    }
+
+    private createIsoFaceComposer(): IsoFaceGlyphComposer {
+        return (glyphs, ctx) => {
+            const face = this.rootSvg!.defs().nested();
+            this.composeGlyphsLayer(face as unknown as Svg, glyphs, {
+                legendKey: `iso_${ctx.faceKey}_${ctx.hostSymbolId}`,
+                cellsize: ctx.localW,
+                layout: "isoFace",
+                faceInset: ctx.faceInset,
+                faceLocalW: ctx.localW,
+                faceLocalH: ctx.localH,
+                counterRotateWithBoard: ctx.counterRotateWithBoard,
+                maxSquareSide: ctx.maxSquareSide,
+            });
+            return face;
+        };
+    }
+
+    private finishLegendPieceOverlays(
+        idSymbol: string,
+        pc: IsoPiece,
+        effPiece: string,
+        effectiveYaw: number,
+        numRotations: number,
+        composer: IsoFaceGlyphComposer,
+        projection: ReturnType<typeof resolveIsoProjection>,
+    ): void {
+        applyIsoPieceOverlays({
+            rootSvg: this.rootSvg!,
+            idSymbol,
+            pc,
+            projection,
+            effectiveYaw,
+            numRotations,
+            effPiece,
+            composer,
+        });
     }
 }

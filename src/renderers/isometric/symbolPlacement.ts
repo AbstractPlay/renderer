@@ -19,7 +19,14 @@ const symbolScaleFactors = (
     scale: number,
     rowHeight?: number,
 ): { factor: number; factorHeight: number | undefined; viewboxWidth: number; viewboxHeight: number } => {
-    const widthRatio = parseFloat(symbol.attr("data-width-ratio") as string);
+    const widthRatioRaw = symbol.attr("data-width-ratio");
+    let widthRatio = 1;
+    if (widthRatioRaw !== undefined && widthRatioRaw !== null && widthRatioRaw !== "") {
+        const parsed = parseFloat(widthRatioRaw as string);
+        if (!Number.isNaN(parsed)) {
+            widthRatio = parsed;
+        }
+    }
     let heightRatio: number | undefined;
     if (symbol.attr("data-height-ratio") !== undefined) {
         heightRatio = parseFloat(symbol.attr("data-height-ratio") as string);
@@ -49,6 +56,24 @@ export const isoSymbolDimensions = (
     const fitBasis = rowHeight ?? cellsize;
     const fit = Math.min(1, fitBasis / width, fitBasis / height);
     return { width: width * fit, height: height * fit };
+};
+
+/** Square draw side for a sheet glyph: uniform viewBox fit to budget (long side fills the square use). */
+export const glyphViewBoxSquareDrawSize = (budget: number, symbol: Svg): number => {
+    const vb = symbol.viewbox();
+    if (vb.width <= 0 || vb.height <= 0) {
+        return budget;
+    }
+    const scale = Math.min(budget / vb.width, budget / vb.height);
+    const fittedW = vb.width * scale;
+    const fittedH = vb.height * scale;
+    return Math.max(fittedW, fittedH);
+};
+
+/** @deprecated Use glyphViewBoxSquareDrawSize for sheet glyphs on iso faces. */
+export const isoFittedSquareSize = (basis: number, symbol: Svg, scale = 1): number => {
+    const { width, height } = isoSymbolDimensions(basis, symbol, scale);
+    return Math.min(width, height);
 };
 
 /** Place a symbol so its stacking anchor sits on (anchorX, anchorY). */

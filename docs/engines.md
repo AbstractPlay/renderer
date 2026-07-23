@@ -125,6 +125,10 @@ Height-mapped boards with 3D piece glyphs. Set `board.projection` to choose came
 
 {% renderWidget "samples/niche-isometric.json" %}
 
+Sheet glyphs can be layered onto isometric solids using `top` (cylinders and hex prisms) and `decor` (cubes and cube lintels). See [Glyphs — isometric face overlays](/renderer/glyphs/#isometric-face-overlays).
+
+{% renderWidget "samples/niche-isometric-overlays.json" %}
+
 ### `iso`
 
 Classic 2:1 isometric (default when `projection` is omitted).

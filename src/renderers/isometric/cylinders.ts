@@ -5,6 +5,7 @@ import { IPoint } from "../../grids";
 import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique } from "./projection";
 import { CubeFaceFills } from "./cubes";
 import { cylinderSilhouettePoints } from "./cylinderSilhouette";
+import { applyIsoAffineMatrix } from "./faceGlyphFit";
 
 export type Cylinder = {
     transform: Matrix;
@@ -28,7 +29,7 @@ export type Cylinder = {
     barrelBottom: IPoint[];
 };
 
-const genCylinder = (
+export const genCylinder = (
     topSize: number,
     sideHeight: number,
     params: IsoProjectionParams = ISO_PROJECTION_PRESETS.iso,
@@ -170,7 +171,7 @@ export const generateCylinders = (opts: {
                 path.fill(sideFill as FillData);
             }
         }
-        nested.use(circleTop).matrix(cylinder.transform.toArray());
+        applyIsoAffineMatrix(nested.use(circleTop), cylinder.transform);
         nested.viewbox([minx, miny, cylinder.width + dWidth, cylinder.height + dHeight].join(" "));
     }
 }

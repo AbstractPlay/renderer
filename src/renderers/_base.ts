@@ -10,6 +10,7 @@ import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
 import { CompassDirection, edges2corners, getBoardFill } from "../boards";
+import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -510,6 +511,311 @@ export abstract class RendererBase {
     }
 
     /**
+     * Layer glyphs into a parent group (legend composite or isometric face overlay).
+     */
+    protected composeGlyphsLayer(
+        parent: Svg,
+        glyphs: Glyph[],
+        opts: {
+            legendKey: string;
+            cellsize?: number;
+            layout?: "legend" | "isoFace";
+            finalizeLegendViewbox?: boolean;
+            fontStyleRules?: string[];
+            faceInset?: number;
+            faceLocalW?: number;
+            faceLocalH?: number;
+            counterRotateWithBoard?: boolean;
+            maxSquareSide?: number;
+        },
+    ): number {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Object in an invalid state!");
+        }
+        const cellsize = opts.cellsize ?? 500;
+        const layout = opts.layout ?? "legend";
+        const faceLocalW = opts.faceLocalW ?? cellsize;
+        const faceLocalH = opts.faceLocalH ?? cellsize;
+        const faceInset = opts.faceInset ?? 1;
+        const isoFaceBasis = layout === "isoFace" ? Math.min(faceLocalW, faceLocalH) : cellsize;
+        const maxSquareSide = opts.maxSquareSide ?? isoFaceBasis;
+        const isoFaceDrawSize = layout === "isoFace" ? isoFaceBasis * faceInset : cellsize;
+        const isoFaceOriginX = faceLocalW / 2;
+        const isoFaceOriginY = faceLocalH / 2;
+        let size = 0;
+        for (const [idx, g] of glyphs.entries()) {
+            let baseScale = 1;
+            let got: SVGSymbol;
+            if (("name" in g) && (g.name !== undefined)) {
+                let player: number | undefined;
+                if (g.colour !== undefined && typeof g.colour === "number") {
+                    player = g.colour;
+                }
+                got = this.loadGlyph(g.name, player, parent);
+                if (this.options.glyphmap.length > 0) {
+                    const i = this.options.glyphmap.findIndex(t => t[0] === g.name);
+                    if (i >= 0) {
+                        baseScale = this.options.glyphmap[i][2];
+                    }
+                }
+            } else if (("text" in g) && (g.text !== undefined) && (g.text.length > 0)) {
+                const symbolParent = layout === "isoFace" ? (parent.defs() as Svg) : parent;
+                const group = symbolParent.symbol();
+                const fontsize = 17;
+                const fontOpts: Record<string, unknown> = {
+                    anchor: "start",
+                    fill: this.options.colourContext.strokes,
+                    size: fontsize,
+                };
+                if (g.fontFamily !== undefined) {
+                    fontOpts.family = g.fontFamily;
+                }
+                if (g.fontWeight !== undefined) {
+                    fontOpts.weight = g.fontWeight;
+                }
+                const text = group.text(g.text).font(fontOpts);
+                text.attr("data-playerfill", true);
+                const temptext = this.rootSvg.text(g.text).font(fontOpts);
+                const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
+                group.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
+                group.attr("data-cellsize", squaresize);
+                temptext.remove();
+                got = group;
+            } else {
+                throw new Error(`Could not load one of the components of the glyph '${opts.legendKey}': ${JSON.stringify(g)}.`);
+            }
+
+            const glyphId = glyph2uid(g, opts.legendKey, idx);
+            got.id(glyphId);
+
+            if (opts.fontStyleRules !== undefined && "text" in g && (g.fontFamily !== undefined || g.fontWeight !== undefined)) {
+                const props: string[] = [];
+                if (g.fontFamily !== undefined) {
+                    props.push(`font-family: ${g.fontFamily} !important`);
+                }
+                if (g.fontWeight !== undefined) {
+                    props.push(`font-weight: ${g.fontWeight} !important`);
+                }
+                opts.fontStyleRules.push(`#${glyphId} text { ${props.join("; ")}; }`);
+            }
+
+            const contextStroke = this.options.colourContext.strokes;
+            const contextFill = this.options.colourContext.fill;
+            const contextBorder = this.options.colourContext.borders;
+            const contextBackground = this.options.colourContext.background;
+            const contextBoard = this.options.colourContext.board;
+            got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
+            got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
+            got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
+            got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
+            got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
+            if (contextBoard !== undefined) {
+                got.find("[data-context-board=true]").each(function(this: SVGElement) { this.fill(contextBoard); });
+            }
+
+            let sheetCellSize = got.viewbox().height;
+            if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                sheetCellSize = got.attr("data-cellsize") as number;
+                if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                    throw new Error(`The glyph you requested (${opts.legendKey}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                }
+            }
+
+            let opacity = 1;
+            if (g.opacity !== undefined) {
+                opacity = g.opacity;
+            }
+
+            const colourVals = [g.colour, g.colour2];
+            for (let i = 0; i < colourVals.length; i++) {
+                const colourVal = colourVals[i];
+                let isStroke = false;
+                if (colourVal !== undefined && typeof colourVal === "number") {
+                    const player = colourVal;
+                    if (this.options.patterns) {
+                        if (player > this.options.patternList.length) {
+                            throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
+                        }
+                        const useSize = sheetCellSize;
+                        let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGElement;
+                        if (fill === null) {
+                            fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGElement;
+                            fill = fill.clone().id(this.options.patternList[player - 1] + "-" + useSize.toString()).scale(useSize / 150);
+                            this.rootSvg.defs().add(fill);
+                        }
+                        got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill(fill); });
+                    } else {
+                        if (player > this.options.colours.length) {
+                            throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
+                        }
+                        const fill = this.options.colours[player - 1];
+                        got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: fill, opacity}); });
+                        got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: fill, opacity}); isStroke = true; });
+                    }
+                } else if (colourVal !== undefined) {
+                    const normColour = this.resolveColour(colourVal as string | number | Gradient, "#000");
+                    // @ts-expect-error (poor SVGjs typing)
+                    got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
+                    // @ts-expect-error (poor SVGjs typing)
+                    got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
+                } else if ("text" in g && g.text !== undefined) {
+                    let darkest = contextBackground;
+                    for (let j = idx - 1; j >= 0; j--) {
+                        const prev = glyphs[j];
+                        if ("colour" in prev && prev.colour !== undefined) {
+                            darkest = this.resolveColour(prev.colour) as string;
+                            break;
+                        }
+                    }
+                    const func: FunctionBestContrast = {
+                        func: "bestContrast",
+                        bg: darkest,
+                        fg: ["#000", "#fff"],
+                    };
+                    const normColour = this.resolveColour(func, "#000");
+                    // @ts-expect-error (poor SVGjs typing)
+                    got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
+                    // @ts-expect-error (poor SVGjs typing)
+                    got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
+                } else {
+                    got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
+                    got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); isStroke = true; });
+                }
+                void isStroke;
+            }
+
+            let factor = baseScale;
+            if (g.scale !== undefined) {
+                factor *= g.scale;
+            }
+
+            let layerIsoFaceDrawSize = isoFaceDrawSize;
+            let layerIsoFaceX = isoFaceOriginX;
+            let layerIsoFaceY = isoFaceOriginY;
+            if (layout === "isoFace") {
+                if (("name" in g) && (g.name !== undefined)) {
+                    layerIsoFaceDrawSize = isoFaceGlyphDrawSize(
+                        got as unknown as Svg,
+                        isoFaceBasis,
+                        faceInset,
+                        factor,
+                        maxSquareSide,
+                    );
+                    const placement = isoFaceGlyphPlacement(
+                        got as unknown as Svg,
+                        layerIsoFaceDrawSize,
+                        faceLocalW,
+                        faceLocalH,
+                    );
+                    layerIsoFaceDrawSize = placement.drawSize;
+                    layerIsoFaceX = placement.x;
+                    layerIsoFaceY = placement.y;
+                    factor = 1;
+                } else {
+                    layerIsoFaceDrawSize = Math.min(isoFaceBasis, maxSquareSide) * faceInset * factor;
+                    const placement = isoFaceGlyphPlacement(
+                        got as unknown as Svg,
+                        layerIsoFaceDrawSize,
+                        faceLocalW,
+                        faceLocalH,
+                    );
+                    layerIsoFaceDrawSize = placement.drawSize;
+                    layerIsoFaceX = placement.x;
+                    layerIsoFaceY = placement.y;
+                    factor = 1;
+                }
+            }
+
+            const use = layout === "isoFace"
+                ? parent.use(got).height(layerIsoFaceDrawSize).width(layerIsoFaceDrawSize)
+                    .x(layerIsoFaceX).y(layerIsoFaceY)
+                : parent.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
+
+            const boardRotation = this.getRotation();
+            const rotationOpts = layout === "legend"
+                ? { counterRotateWithBoard: true, rotateFluidWithBoard: false }
+                : {
+                    counterRotateWithBoard: opts.counterRotateWithBoard ?? false,
+                    rotateFluidWithBoard: opts.counterRotateWithBoard ?? false,
+                };
+            const rotation = resolveGlyphRotationDegrees(g, boardRotation, rotationOpts);
+            if (rotation !== null) {
+                const rotOrigin = layout === "isoFace" ? layerIsoFaceX + layerIsoFaceDrawSize / 2 : 0;
+                const rotOriginY = layout === "isoFace" ? layerIsoFaceY + layerIsoFaceDrawSize / 2 : 0;
+                rotate(use, rotation, rotOrigin, rotOriginY);
+            }
+
+            if (layout === "legend" && ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined)) {
+                const style = this.json.board.style;
+                if ((style === "hex-of-hex") || (style === "hex-slanted")) {
+                    factor *= 0.85;
+                } else if (style.endsWith("-tri-f")) {
+                    factor *= 0.5;
+                } else if (style.startsWith("vertex")) {
+                    factor *= 1.16;
+                }
+            }
+
+            if (factor !== 1) {
+                const scaleOrigin = layout === "isoFace" ? layerIsoFaceX + layerIsoFaceDrawSize / 2 : 0;
+                const scaleOriginY = layout === "isoFace" ? layerIsoFaceY + layerIsoFaceDrawSize / 2 : 0;
+                scale(use, factor, scaleOrigin, scaleOriginY);
+            }
+            if (factor * cellsize > size) {
+                size = factor * cellsize;
+            }
+
+            if (g.flipx !== undefined && g.flipx) {
+                use.flip("x");
+            }
+            if (g.flipy !== undefined && g.flipy) {
+                use.flip("y");
+            }
+
+            if (g.nudge !== undefined) {
+                let dx = 0;
+                let dy = 0;
+                if (g.nudge.dx !== undefined) {
+                    dx = g.nudge.dx;
+                }
+                if (g.nudge.dy !== undefined) {
+                    dy = g.nudge.dy;
+                }
+                use.dmove(dx, dy);
+            }
+        }
+
+        if (opts.finalizeLegendViewbox) {
+            size *= Math.sqrt(2);
+            parent.viewbox(-size / 2, -size / 2, size, size).size(size, size);
+        } else if (layout === "isoFace") {
+            parent.viewbox(0, 0, faceLocalW, faceLocalH);
+        }
+        return size;
+    }
+
+    protected preloadPatternsForGlyphs(glyphs: Glyph[]): void {
+        if (!this.options.patterns || this.json === undefined) {
+            return;
+        }
+        const patterns: number[] = [];
+        for (const g of glyphs) {
+            if (g.colour !== undefined && typeof g.colour === "number" && !patterns.includes(g.colour)) {
+                patterns.push(g.colour);
+            }
+            if (g.colour2 !== undefined && typeof g.colour2 === "number" && !patterns.includes(g.colour2)) {
+                patterns.push(g.colour2);
+            }
+        }
+        for (const n of patterns) {
+            if (n > this.options.patternList.length) {
+                throw new Error("The system does not support the number of patterns you have requested.");
+            }
+            this.loadPattern(this.options.patternList[n - 1]);
+        }
+    }
+
+    /**
      * This function loads all the glyphs from the `legend` into the given Svg.
      * It deals with text glyphs and composite glyphs, including filling with colours, rotating, and scaling.
      *
@@ -575,271 +881,17 @@ export abstract class RendererBase {
                 }
 
                 // Create a new SVG.Nested to represent the composite piece and add it to <defs>
-                const cellsize = 500;
                 const nested = this.rootSvg.defs().nested().id(key);
                 if (! args.preserve) {
                     nested.attr("preserveAspectRatio", "none");
                 }
-                let size = 0;
-                // Layer the glyphs, manipulating as you go
-                for (const [idx, g] of glyphs.entries()) {
-                    let baseScale = 1;
-                    let got: SVGSymbol;
-                    if ( ("name" in g) && (g.name !== undefined) ) {
-                        let player: number|undefined;
-                        if (g.colour !== undefined && typeof g.colour === "number") {
-                            player = g.colour;
-                        }
-                        got = this.loadGlyph(g.name, player, nested);
-                        // // if this is the first glyph, migrate any important attributes to
-                        // // the root glyph
-                        // if (idx === 0) {
-                        //     const blacklist = ["data-playerfill"]
-                        //     const attributes = Object.keys(got.attr() as object).filter(s => s.startsWith("data-") && !s.startsWith("data-context") && !blacklist.includes(s));
-                        //     for (const a of attributes) {
-                        //         nested.attr(a, got.attr(a));
-                        //     }
-                        // }
-                        // check for substituted glyph scaling
-                        if (this.options.glyphmap.length > 0) {
-                            const i = this.options.glyphmap.findIndex(t => t[0] === g.name);
-                            if (i >= 0) {
-                                baseScale = this.options.glyphmap[i][2];
-                            }
-                        }
-                    } else if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
-                        const group = nested.symbol();
-                        const fontsize = 17;
-                        const fontOpts: Record<string, unknown> = {
-                            anchor: "start",
-                            fill: this.options.colourContext.strokes,
-                            size: fontsize,
-                        };
-                        if (g.fontFamily !== undefined) {
-                            fontOpts.family = g.fontFamily;
-                        }
-                        if (g.fontWeight !== undefined) {
-                            fontOpts.weight = g.fontWeight;
-                        }
-                        const text = group.text(g.text).font(fontOpts);
-                        text.attr("data-playerfill", true);
-                        const temptext = this.rootSvg.text(g.text).font(fontOpts);
-                        const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
-                        // group.viewbox(temptext.bbox().x, temptext.bbox().y - 0.9, temptext.bbox().width, temptext.bbox().height);
-                        group.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
-                        group.attr("data-cellsize", squaresize);
-                        temptext.remove();
-                        got = group;
-                    } else {
-                        throw new Error(`Could not load one of the components of the glyph '${key}': ${JSON.stringify(g)}.`);
-                    }
-
-                    // tag glyph symbol for styling
-                    const glyphId = glyph2uid(g, key, idx);
-                    got.id(glyphId);
-
-                    // Collect CSS rules for text glyphs with custom font properties
-                    if ("text" in g && (g.fontFamily !== undefined || g.fontWeight !== undefined)) {
-                        const props: string[] = [];
-                        if (g.fontFamily !== undefined) {
-                            props.push(`font-family: ${g.fontFamily} !important`);
-                        }
-                        if (g.fontWeight !== undefined) {
-                            props.push(`font-weight: ${g.fontWeight} !important`);
-                        }
-                        fontStyleRules.push(`#${glyphId} text { ${props.join("; ")}; }`);
-                    }
-
-                    // look for context strokes and fills
-                    const contextStroke = this.options.colourContext.strokes;
-                    const contextFill = this.options.colourContext.fill;
-                    const contextBorder = this.options.colourContext.borders;
-                    const contextBackground = this.options.colourContext.background;
-                    const contextBoard = this.options.colourContext.board;
-                    got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
-                    got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
-                    got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
-                    got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
-                    got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
-                    if (contextBoard !== undefined) {
-                        got.find("[data-context-board=true]").each(function(this: SVGElement) { this.fill(contextBoard); });
-                    }
-
-                    let sheetCellSize = got.viewbox().height;
-                    if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                        sheetCellSize = got.attr("data-cellsize") as number;
-                        if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                            throw new Error(`The glyph you requested (${key}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                        }
-                    }
-
-                    // const clone = got.clone();
-                    // const clone = got;
-
-                    // load opacity and only apply it to player fills
-                    let opacity = 1;
-                    if (g.opacity !== undefined) {
-                        opacity = g.opacity;
-                    }
-
-                    // Colourize (`player` first, then `colour` if defined)
-                    // adapted for two colours
-                    const colourVals = [g.colour, g.colour2];
-                    const haveStrokes: boolean[] = [];
-                    for (let i = 0; i < colourVals.length; i++) {
-                        const colourVal = colourVals[i];
-                        let isStroke = false;
-                        if (colourVal !== undefined && typeof colourVal === "number") {
-                            const player = colourVal;
-                            if  (this.options.patterns) {
-                                if (player > this.options.patternList.length) {
-                                    throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
-                                }
-                                const useSize = sheetCellSize;
-                                let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGElement;
-                                if (fill === null) {
-                                    fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGElement;
-                                    fill = fill.clone().id(this.options.patternList[player - 1] + "-" + useSize.toString()).scale(useSize / 150);
-                                    this.rootSvg.defs().add(fill);
-                                }
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill(fill); });
-                            } else {
-                                if (player > this.options.colours.length) {
-                                    throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
-                                }
-                                const fill = this.options.colours[player - 1];
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: fill, opacity}); });
-                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: fill, opacity}); isStroke = true; });
-                            }
-                        } else if (colourVal !== undefined) {
-                            const normColour = this.resolveColour(colourVal as string|number|Gradient, "#000");
-                            // @ts-expect-error (poor SVGjs typing)
-                            got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
-                            // @ts-expect-error (poor SVGjs typing)
-                            got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
-                        }
-                        // if colour is fully undefined, try to deduce the highest contrast colour
-                        else {
-                            // Only applies to text glyphs for now
-                            if ("text" in g && g.text !== undefined) {
-                                // find the first coloured glyph before the text element
-                                // and contrast against it
-                                let darkest = contextBackground;
-                                for (let i = idx-1; i >= 0; i--) {
-                                    const prev = glyphs[i];
-                                    if ("colour" in prev && prev.colour !== undefined) {
-                                        const curr = this.resolveColour(prev.colour) as string;
-                                        darkest = curr;
-                                        break;
-                                    }
-                                }
-                                // now use the bestContrast function to choose a colour
-                                const func: FunctionBestContrast = {
-                                    func: "bestContrast",
-                                    bg: darkest,
-                                    // fg: [contextBackground, contextFill, contextStroke],
-                                    fg: ["#000", "#fff"],
-                                };
-                                const normColour = this.resolveColour(func, "#000");
-                                // @ts-expect-error (poor SVGjs typing)
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
-                                // @ts-expect-error (poor SVGjs typing)
-                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
-                            }
-                            // for everything else, just apply opacity
-                            else {
-                                got.find(`[data-playerfill${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
-                                got.find(`[data-playerstroke${i > 0 ? i+1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); isStroke = true; });
-                            }
-                        }
-                        haveStrokes.push(isStroke);
-                    }
-
-                    // nested.add(clone);
-                    const use = nested.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
-                    // const use = nested.use(got).height(cellsize).width(cellsize).x(0).y(0);
-
-                    // Rotate if requested
-                    // `null` rotation means no rotation whatsoever, including offsetting
-                    let rotation = 0;
-                    if (g.rotate !== null) {
-                        if (g.rotate !== undefined) {
-                            rotation += g.rotate;
-                        }
-                        // Re-jigger rotation for `vertical` glyphs
-                        let vertical = false;
-                        if ( ("text" in g) && (g.text !== undefined) && (g.text.length > 0) ) {
-                            if (g.orientation === undefined || g.orientation !== "fluid") {
-                                vertical = true;
-                            }
-                        } else {
-                            if (g.orientation !== undefined && g.orientation === "vertical") {
-                                vertical = true;
-                            }
-                        }
-                        if (vertical) {
-                            if (this.json.board && ("rotate" in this.json.board) && this.json.board.rotate !== undefined) {
-                                rotation -= this.json.board.rotate;
-                            }
-                            if (this.options.rotate !== undefined) {
-                                rotation -= this.options.rotate;
-                            }
-                        }
-                        rotate(use, rotation, 0, 0);
-                    }
-
-                    // Scale it appropriately
-                    let factor = baseScale;
-                    if (g.scale !== undefined) {
-                        factor *= g.scale;
-                    }
-                    if ( ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined) ) {
-                        const style = this.json.board.style;
-                        // pieces in hexes need to be shrunk a little by default
-                        if ( (style === "hex-of-hex") || (style === "hex-slanted") ) {
-                            factor *= 0.85;
-                        }
-                        // and *-tri-f pieces need to be shrunk a lot
-                        else if (style.endsWith("-tri-f")) {
-                            factor *= 0.5;
-                        }
-                        // but pieces on vertex boards need to be grown a little so they touch
-                        else if (style.startsWith("vertex")) {
-                            factor *= 1.16;
-                        }
-                    }
-
-                    if (factor !== 1) {
-                        scale(use, factor, 0, 0);
-                    }
-                    if (factor * cellsize > size) {
-                        size = factor * cellsize;
-                    }
-
-                    // flip if requested
-                    if (g.flipx !== undefined && g.flipx) {
-                        use.flip("x");
-                    }
-                    if (g.flipy !== undefined && g.flipy) {
-                        use.flip("y");
-                    }
-
-                    // Shift if requested
-                    if (g.nudge !== undefined) {
-                        let dx = 0;
-                        let dy = 0;
-                        if (g.nudge.dx !== undefined) {
-                            dx = g.nudge.dx;
-                        }
-                        if (g.nudge.dy !== undefined) {
-                            dy = g.nudge.dy;
-                        }
-                        use.dmove(dx, dy);
-                    }
-                }
-                // Increase size so that rotations won't get cropped
-                size *= Math.sqrt(2);
-                nested.viewbox(-size / 2, -size / 2, size, size).size(size, size);
+                this.composeGlyphsLayer(nested, glyphs, {
+                    legendKey: key,
+                    cellsize: 500,
+                    layout: "legend",
+                    finalizeLegendViewbox: true,
+                    fontStyleRules,
+                });
 
             }
 

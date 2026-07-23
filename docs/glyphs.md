@@ -141,6 +141,30 @@ Each glyph object in the legend supports these properties. `name` and `text` are
 
 The legend also supports **polymatrix** entries (arrays of arrays for the polyomino renderer) and **isoPiece** entries (isometric renderer). See [Engines](/renderer/engines/).
 
+### Isometric face overlays
+
+When `renderer` is `isometric`, an `isoPiece` legend entry may layer contact-sheet glyphs onto solid faces:
+
+| Property | Use on | Meaning |
+| --- | --- | --- |
+| `top` | `cylinder`, `hexp`, `hexf`, hex lintels | Array of glyph objects stacked on the top face (bottom to top), same fields as flat legend glyphs. |
+| `decor` | `cube`, cube lintels (`lintelN` … `lintelEW`, …) | Map of intrinsic face (`top`, `north`, `east`, `south`, `west`) to glyph arrays. Uses the same N/E/S/W convention as `faces` on multi-colour cubes—not screen left/right. |
+
+Glyphs are isometrically projected with the active `board.projection` preset and rotate with piece yaw like face colours. Include the sheets that define overlay artwork in render options (for example `piecepack`); the default sheet list is unchanged.
+
+Face decor is **centered** on each face using the glyph **viewBox** (square `use`, same idea as flat legends) and sized to **fill the visible face square** (viewBox-uniform fit to the long side). The legend entry’s **`scale`** multiplies that budget (default **1**; use e.g. **`scale: 0.75`** to shrink decor while keeping piece size unchanged). Sheet glyphs are fitted from their **viewBox** into the visible face region (cube/lintel parallelogram inset, cylinder/hex projected top silhouette). Per-glyph `scale` on each layer still multiplies that baseline. Overlays use the same face transforms as the painted mesh (no separate clip mask).
+
+**Rotation and orientation** (sheet `name` vs `text`):
+
+| Kind | Default | `orientation: "vertical"` | `orientation: "fluid"` |
+| --- | --- | --- | --- |
+| Sheet glyph | **fluid** | **vertical** (no board bake on **iso tops**) | fluid |
+| Text | **vertical** (no board bake on **iso tops**) | same as default | **fluid** |
+
+**Top faces only** (`top` on cylinder/hex, `decor.top` on cubes/lintels): `board.rotate` and render `rotate` affect orientation. On the **isometric** renderer (which does not spin `#board` like flat layouts), **fluid** glyphs get **`+board.rotate` baked into the overlay** so they stay aligned with board edges; **vertical** / default **text** get **no board rotation bake** — cube yaw and the top-face projection already reorient the face so labels stay aligned with board edges (north at 0°, east at 90°, etc.). **Flat legend** layout still **counter-rotates** upright glyphs (`-board.rotate`) so screen orientation stays fixed when `#board` is spun. **Cube/lintel side** `decor` (north/east/south/west): art stays in default face-UV orientation; board spin only changes which side is visible (piece yaw), not rotation on the side. Set `rotate: null` on a glyph to disable rotation for that layer.
+
+**Domino-style blocks:** place complementary cube lintels in adjacent cells (for example `lintelE` and `lintelW`) with different `decor` per cell so shared edges are omitted but each half keeps its own face art.
+
 [Schema reference — legend](/renderer/schema-reference/)
 
 ## Contact sheet
