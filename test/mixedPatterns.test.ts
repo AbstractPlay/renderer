@@ -75,6 +75,41 @@ describe("Mixed colours and patterns", () => {
         expect(ajv.validate(schema, data)).to.equal(true);
     });
 
+    it("sanitizes fractional pattern scale in element ids", () => {
+        const renderer = new DefaultRenderer();
+        const draw = makeDraw();
+        renderer.render(
+            {
+                board: null,
+                legend: { A: { name: "piece", colour: "dots" } },
+                pieces: "A",
+            },
+            draw,
+            baseOptions,
+        );
+        const getScaledPattern = (renderer as unknown as {
+            getScaledPattern: (name: string, useSize: number) => { id: () => string };
+        }).getScaledPattern.bind(renderer);
+        const scaled = getScaledPattern("dots", 715.315);
+        expect(scaled.id()).to.equal("dots-715_315");
+        const equivalent = getScaledPattern("dots", 1e2);
+        expect(equivalent.id()).to.equal("dots-100");
+    });
+
+    it("applies legend opacity to pattern-filled glyphs", () => {
+        const renderer = new DefaultRenderer();
+        const draw = makeDraw();
+        const json: APRenderRep = {
+            board: { style: "squares", height: 1, width: 1 },
+            legend: {
+                A: { name: "piece", colour: "dots", opacity: 0.5 },
+            },
+            pieces: "A",
+        };
+        renderer.render(json, draw, baseOptions);
+        expect(draw.svg()).to.match(/opacity="0\.5"/);
+    });
+
     it("renders mixed colours without patterns:true", () => {
         const renderer = new DefaultRenderer();
         const draw = makeDraw();

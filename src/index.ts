@@ -88,6 +88,8 @@ export const addPrefix = (svg: string, opts = {} as IRenderOptions): string => {
             ids.push(match[1]);
         }
 
+        ids.sort((a, b) => b.length - a.length);
+
         // For each ID, replace both the definition and references
         ids.forEach((id) => {
             const newId = `${prefix}${id}`;
