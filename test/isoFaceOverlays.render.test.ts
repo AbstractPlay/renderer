@@ -246,6 +246,32 @@ describe("isometric face glyph overlays", () => {
         expect(tag).to.match(/transform="/);
     });
 
+    it("should ignore non-quarter-turn board rotation for face glyph overlays", () => {
+        const rep = (rotate: number): APRenderRep => ({
+            renderer: "isometric",
+            board: { style: "squares", width: 2, height: 1, rotate },
+            legend: {
+                DomR: {
+                    piece: "lintelW",
+                    colour: 3,
+                    decor: {
+                        top: [{ name: "piecepack-number-4", colour: 2 }],
+                    },
+                },
+            },
+            pieces: [[[], [{ glyph: "DomR" }]]],
+        });
+        const draw0 = makeDraw();
+        const draw45 = makeDraw();
+        new IsometricRenderer().render(rep(0), draw0, baseOptions);
+        new IsometricRenderer().render(rep(45), draw45, baseOptions);
+        const use0 = overlayGlyphUseTag(draw0, "DomR");
+        const use45 = overlayGlyphUseTag(draw45, "DomR");
+        expect(use0).to.not.equal(null);
+        expect(use45).to.not.equal(null);
+        expect(use45).to.equal(use0);
+    });
+
     it("should symbol-fit cube crown decor smaller than the raw face inset box", () => {
         const rep: APRenderRep = {
             renderer: "isometric",

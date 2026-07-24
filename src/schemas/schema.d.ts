@@ -1492,6 +1492,10 @@ export interface AreaPieces {
    * With some piece types, you need extra space between them. Expressed as a percentage of cell size, this will insert some padding between pieces.
    */
   spacing?: number;
+  /**
+   * When true (default for ordinary legend-key pieces), hand pieces rotate with the board so directional markers stay aligned. When false, pieces keep their legend-authored orientation regardless of board rotation. Defaults to false when all entries are domino tile refs.
+   */
+  rotateWithBoard?: boolean;
 }
 /**
  * A domino tile for use in a `pieces` area. Composes two legend entries (west/left and east/right) into one 2:1 flat tile at render time. Domino pairing is area-only; board placement uses separate half legends per cell.

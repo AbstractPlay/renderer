@@ -1468,6 +1468,11 @@
                 "spacing": {
                     "description": "With some piece types, you need extra space between them. Expressed as a percentage of cell size, this will insert some padding between pieces.",
                     "type": "number"
+                },
+                "rotateWithBoard": {
+                    "description": "When true (default for ordinary legend-key pieces), hand pieces rotate with the board so directional markers stay aligned. When false, pieces keep their legend-authored orientation regardless of board rotation. Defaults to false when all entries are domino tile refs.",
+                    "type": "boolean",
+                    "default": true
                 }
             },
             "required": [

@@ -6,7 +6,7 @@ import { IRendererOptionsIn, RendererBase } from "./_base";
 import { circle2poly, deg2rad } from "../common/plotting";
 import { Matrix } from "transformation-matrix-js";
 import { generateCubes, CubeFaceFills } from "./isometric/cubes";
-import { effectiveCubeYaw, permuteCubeFacesForProjection } from "./isometric/cubeOrientation";
+import { effectiveCubeYaw, permuteCubeFacesForProjection, snapRotationToQuarterTurns } from "./isometric/cubeOrientation";
 import { generateCylinders } from "./isometric/cylinders";
 import { generateCones } from "./isometric/cones";
 import { generateHexes } from "./isometric/hexes";
@@ -65,6 +65,10 @@ export class IsometricRenderer extends RendererBase {
     public static readonly rendererName: string = "isometric";
     constructor() {
         super();
+    }
+
+    public getRotation(): number {
+        return snapRotationToQuarterTurns(super.getRotation());
     }
 
     public render(json: APRenderRep, draw: Svg, options: IRendererOptionsIn): void {
@@ -138,9 +142,8 @@ export class IsometricRenderer extends RendererBase {
 
         // any user-specified rotation has to happen before laying everything out
         const boardRotation = this.getRotation();
-        let extraRotation = 90 * Math.floor(boardRotation / 90);
-        while (extraRotation < 0) { extraRotation += 360; }
-        extraRotation = extraRotation % 360;
+        const extraRotation = boardRotation;
+        const numRotations = Math.floor(extraRotation / 90) % 4;
         let tUserRotate = new Matrix();
         if (extraRotation !== 0) {
             const centre = this.boardGridCentre(boardLocalGrid);
@@ -151,7 +154,6 @@ export class IsometricRenderer extends RendererBase {
             gridPoints = gridPoints.map(row => row = row.map(pt => tUserRotate.applyToPoint(pt.x, pt.y)));
             polys = this.rotatePolys(polys, tUserRotate);
         }
-        const numRotations = Math.floor(extraRotation / 90) % 4;
 
         let strokeWeight = 1;
         if ("strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {

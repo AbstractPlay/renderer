@@ -5,7 +5,7 @@ import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
-import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap } from "../common/dominoHand";
+import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys";
@@ -3701,9 +3701,9 @@ export abstract class RendererBase {
             // Width in number of cells, taking the maximum board width
             const boardWidth = Math.floor(box.width / this.cellsize);
             placeY = boardBottom + padding;
-            const rotation = this.getRotation();
             for (let iArea = 0; iArea < areas.length; iArea++) {
                 const area = areas[iArea];
+                const rotation = shouldRotateAreaPieces(area) ? this.getRotation() : 0;
                 let hpad = 0;
                 if (area.spacing !== undefined) {
                     hpad = this.cellsize * area.spacing;

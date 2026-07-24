@@ -1,5 +1,5 @@
 import type { G, Svg } from "@svgdotjs/svg.js";
-import type { DominoTileRef } from "../schemas/schema";
+import type { AreaPieces, DominoTileRef } from "../schemas/schema";
 import { usePieceAt } from "./plotting";
 
 /** Matches default renderer piece scale on `square*` boards. */
@@ -10,6 +10,14 @@ const LEGEND_CELL_SIZE = 500;
 
 export const isDominoTileRef = (entry: string | DominoTileRef): entry is DominoTileRef => {
     return typeof entry === "object" && entry !== null && "domino" in entry;
+};
+
+/** Whether hand pieces in a `pieces` area should receive board rotation at placement time. */
+export const shouldRotateAreaPieces = (area: AreaPieces): boolean => {
+    if (area.rotateWithBoard !== undefined) {
+        return area.rotateWithBoard;
+    }
+    return !area.pieces.every(isDominoTileRef);
 };
 
 export const piecesAreaSlotWidth = (entry: string | DominoTileRef, ordinaryCellsize: number, boardCellsize: number): number => {

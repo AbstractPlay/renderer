@@ -53,3 +53,15 @@ export const effectiveCubeYaw = (pieceYaw: number, boardRotationDeg: number): nu
     const boardQuarterTurns = Math.floor(boardRotationDeg / 90) % 4;
     return ((pieceYaw + boardQuarterTurns) % 4 + 4) % 4;
 };
+
+/**
+ * Isometric board rotation only supports quarter turns. Non-90° remainders are dropped
+ * (e.g. 45° → 0°, 135° → 90°).
+ */
+export const snapRotationToQuarterTurns = (boardRotationDeg: number): number => {
+    let rotation = boardRotationDeg % 360;
+    while (rotation < 0) {
+        rotation += 360;
+    }
+    return 90 * Math.floor(rotation / 90);
+};

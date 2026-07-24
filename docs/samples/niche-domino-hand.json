@@ -32,6 +32,7 @@
     {
       "type": "pieces",
       "label": "Your hand",
+      "rotateWithBoard": false,
       "pieces": [
         { "domino": ["DomL35", "DomR35"], "id": "t0" },
         { "domino": ["DomL22", "DomR22"] }

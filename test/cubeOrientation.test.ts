@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { effectiveCubeYaw, permuteCubeFaces } from "../src/renderers/isometric/cubeOrientation";
+import { effectiveCubeYaw, permuteCubeFaces, snapRotationToQuarterTurns } from "../src/renderers/isometric/cubeOrientation";
 import { IsoCubeFaces } from "../src/schemas/schema";
 
 const faces: IsoCubeFaces = {
@@ -59,5 +59,22 @@ describe("effectiveCubeYaw", () => {
 
     it("should normalize negative board rotation", () => {
         expect(effectiveCubeYaw(0, -90)).to.equal(3);
+    });
+});
+
+describe("snapRotationToQuarterTurns", () => {
+    it("should drop non-quarter-turn remainders", () => {
+        expect(snapRotationToQuarterTurns(0)).to.equal(0);
+        expect(snapRotationToQuarterTurns(45)).to.equal(0);
+        expect(snapRotationToQuarterTurns(90)).to.equal(90);
+        expect(snapRotationToQuarterTurns(135)).to.equal(90);
+        expect(snapRotationToQuarterTurns(180)).to.equal(180);
+        expect(snapRotationToQuarterTurns(270)).to.equal(270);
+        expect(snapRotationToQuarterTurns(315)).to.equal(270);
+    });
+
+    it("should normalize negative angles before snapping", () => {
+        expect(snapRotationToQuarterTurns(-45)).to.equal(270);
+        expect(snapRotationToQuarterTurns(-90)).to.equal(270);
     });
 });
