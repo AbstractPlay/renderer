@@ -1,4 +1,4 @@
-import { Svg, StrokeData } from "@svgdotjs/svg.js";
+import { Svg, StrokeData, Element as SVGElement, FillData, Gradient as SVGGradient } from "@svgdotjs/svg.js";
 import { APRenderRep, AnnotationFreespace, AreaKey, Freepiece as IPiece } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { IPoint } from "../grids/_base";
@@ -174,13 +174,13 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("strokeOpacity" in note) && (note.strokeOpacity !== undefined) ) {
                         strokeOpacity = note.strokeOpacity;
                     }
-                    let fill = "#fff";
-                    if ( ("fill" in note) && (note.fill !== undefined) ) {
-                        fill = this.resolveColour(note.fill) as string;
-                    }
                     let fillOpacity = 1;
                     if ( ("fillOpacity" in note) && (note.fillOpacity !== undefined) ) {
                         fillOpacity = note.fillOpacity;
+                    }
+                    let fill: FillData | SVGGradient | SVGElement = { color: "#fff", opacity: fillOpacity };
+                    if ( ("fill" in note) && (note.fill !== undefined) ) {
+                        fill = this.resolveMarkerFill(note.fill, fillOpacity);
                     }
                     const strokeData: StrokeData = {
                         color: stroke,
@@ -190,7 +190,8 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("dashed" in note) && (note.dashed !== undefined) && (Array.isArray(note.dashed)) && (note.dashed.length > 0) ) {
                         strokeData.dasharray = (note.dashed).join(" ");
                     }
-                    notes.path(note.path ).addClass(`aprender-annotation-${x2uid(note)}`).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
+                    // @ts-expect-error (poor SVGjs typing)
+                    notes.path(note.path ).addClass(`aprender-annotation-${x2uid(note)}`).stroke(strokeData).fill(fill);
                 } else if (note.type === "glyph") {
                     const key = note.glyph;
                     const piece = field.root().findOne("#" + key) as Svg;
@@ -273,13 +274,13 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("strokeOpacity" in marker) && (marker.strokeOpacity !== undefined) ) {
                         strokeOpacity = marker.strokeOpacity;
                     }
-                    let fill = "#fff";
-                    if ( ("fill" in marker) && (marker.fill !== undefined) ) {
-                        fill = this.resolveColour(marker.fill) as string;
-                    }
                     let fillOpacity = 1;
                     if ( ("fillOpacity" in marker) && (marker.fillOpacity !== undefined) ) {
                         fillOpacity = marker.fillOpacity;
+                    }
+                    let fill: FillData | SVGGradient | SVGElement = { color: "#fff", opacity: fillOpacity };
+                    if ( ("fill" in marker) && (marker.fill !== undefined) ) {
+                        fill = this.resolveMarkerFill(marker.fill, fillOpacity);
                     }
                     const strokeData: StrokeData = {
                         color: stroke,
@@ -289,7 +290,8 @@ export class FreespaceRenderer extends RendererBase {
                     if ( ("dashed" in marker) && (marker.dashed !== undefined) && (Array.isArray(marker.dashed)) && (marker.dashed.length > 0) ) {
                         strokeData.dasharray = (marker.dashed).join(" ");
                     }
-                    field.path(marker.path).addClass(`aprender-marker-${x2uid(marker)}`).stroke(strokeData).fill({color: fill, opacity: fillOpacity});
+                    // @ts-expect-error (poor SVGjs typing)
+                    field.path(marker.path).addClass(`aprender-marker-${x2uid(marker)}`).stroke(strokeData).fill(fill);
                 }
             }
         }

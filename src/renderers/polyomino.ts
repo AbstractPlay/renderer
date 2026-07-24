@@ -212,8 +212,8 @@ export class PolyominoRenderer extends RendererBase {
                     const areaHeight = (textHeight * 2) + (cellsize * numRows);
                     const nested = this.rootSvg.nested().id(`_polyomino`).size(areaWidth+2, areaHeight+2).viewbox(-1 - 5, -1, areaWidth+2+10, areaHeight+2);
                     if ("background" in area && area.background !== undefined) {
-                        const colour = this.resolveColour(area.background) as string;
-                        nested.rect(areaWidth,areaHeight).fill(colour); // .opacity(0.25);
+                        // @ts-expect-error (poor SVGjs typing)
+                        nested.rect(areaWidth,areaHeight).fill(this.resolveMarkerFill(area.background, 1));
                     }
 
                     // load icons

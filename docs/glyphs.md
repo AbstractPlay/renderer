@@ -87,16 +87,54 @@ Ties a `default` colour to a `palette` value (player number or `_context_*` toke
 
 {% renderWidget "samples/niche-functions.json" %}
 
+### Patterns and colour functions
+
+When a player assigns a **pattern** to a palette slot (for accessibility), colour functions degrade gracefully instead of erroring:
+
+| Function | When an operand is a pattern | Fallback |
+| --- | --- | --- |
+| `lighten` | `colour` | Return the pattern unchanged. |
+| `flatten` | `fg` | Return the pattern unchanged. |
+| `flatten` | `bg` only | Compute flatten using hex `fg` over `_context_background`. |
+| `bestContrast` | `bg` | Use `_context_background` as the contrast reference. |
+| `bestContrast` | `fg` entry | Ignore pattern entries; if all `fg` values are patterns, use `_context_strokes`. |
+| `custom` | either branch | Resolves to hex or pattern directly. |
+
+Pattern player slots apply to fills (`data-playerfill`). Strokes on those elements fall back to `_context_strokes`.
+
+### Patterns as colours
+
+Named patterns are valid **colour** values anywhere a hex string or player number is accepted:
+
+`microbial`, `chevrons`, `honeycomb`, `triangles`, `wavy`, `slant`, `dots`, `starsWhite`, `cross`, `houndstooth`
+
+```json
+"PATTERN": { "name": "piece", "colour": "dots" }
+```
+
+Use `custom` to offer a pattern default while still honouring player palette overrides:
+
+```json
+{
+  "func": "custom",
+  "default": "chevrons",
+  "palette": 1
+}
+```
+
+{% renderWidget "samples/formatting-mixed-patterns.json" %}
+
 ### Colour value types
 
 Any colour property accepts one of:
 
 | Form | Example | Notes |
 | --- | --- | --- |
-| Player number | `1` | Uses the user's colour for that player (or pattern, if enabled). |
+| Player number | `1` | Uses that player's palette slot (hex or pattern per user settings). |
 | Hex string | `"#ff6633"` | Fixed colour. |
+| Pattern name | `"dots"` | Fixed black-and-white fill pattern. |
 | Context token | `"_context_strokes"` | Resolved from the active colour context (`strokes`, `fill`, `background`, `borders`, `labels`, `annotations`, `board`). |
-| Gradient | `{ "stops": […] }` | Linear gradient; see Gradients above. |
+| Gradient | `{ "stops": […] }` | Linear gradient; see Gradients above. Pattern stops use `_context_strokes` as a stand-in. |
 | Colour function | `{ "func": "lighten", … }` | See table above. |
 
 ## Rotated glyphs

@@ -6,18 +6,40 @@
  */
 
 /**
+ * Any colour value the renderer can resolve: player number, literal colour or pattern, or a colour function.
+ */
+export type ColourResolvable = PositiveInteger | ColourLiteral | Colourfuncs;
+export type PositiveInteger = number;
+/**
+ * A hex colour string, a context token, or a named fill pattern.
+ */
+export type ColourLiteral = Colourstrings | PatternName;
+/**
  * Pattern for hex colour strings
  */
 export type Colourstrings = string;
 /**
+ * A black-and-white fill pattern known by the renderer. Usable as a glyph colour, in colour functions, and in the player palette (via render options).
+ */
+export type PatternName =
+  | "microbial"
+  | "chevrons"
+  | "honeycomb"
+  | "triangles"
+  | "wavy"
+  | "slant"
+  | "dots"
+  | "starsWhite"
+  | "cross"
+  | "houndstooth";
+/**
  * Colours can also be derived using various functions.
  */
 export type Colourfuncs = FunctionFlatten | FunctionBestContrast | FunctionLighten | FunctionCustom;
-export type PositiveInteger = number;
 /**
  * Schema for the `matrix` part of a polyomino-related feature
  */
-export type Polymatrix = (PositiveInteger | Colourstrings | Colourfuncs | 0 | null)[][];
+export type Polymatrix = (ColourResolvable | 0 | null)[][];
 /**
  * Schema for a single piece in an `isoPieces` object.
  */
@@ -40,7 +62,7 @@ export type IsoPiece =
        */
       height?: number;
       size?: IsoPyramidSize;
-      colour: Colourstrings | Colourfuncs | PositiveInteger;
+      colour: ColourResolvable;
       /**
        * As a percentage of the cell size. By default, pieces are shrunk by 25% within the cell.
        */
@@ -267,20 +289,6 @@ export type BoardStyles =
   | "dvgc-checkered"
   | "other";
 /**
- * The patterns known by the renderer
- */
-export type PatternName =
-  | "microbial"
-  | "chevrons"
-  | "honeycomb"
-  | "triangles"
-  | "wavy"
-  | "slant"
-  | "dots"
-  | "starsWhite"
-  | "cross"
-  | "houndstooth";
-/**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
 export type BoardHomeworlds = {
@@ -318,9 +326,9 @@ export type AnnotationFreespace =
   | {
       type: "path";
       path: string;
-      fill?: PositiveInteger | Colourfuncs | Colourstrings;
+      fill?: ColourResolvable;
       fillOpacity?: number;
-      stroke?: PositiveInteger | Colourfuncs | Colourstrings;
+      stroke?: ColourResolvable;
       strokeWidth?: number;
       strokeOpacity?: number;
       /**
@@ -375,7 +383,7 @@ export type AnnotationTree =
        */
       strokeWidth?: number;
       opacity?: number;
-      colour?: Colourstrings | Colourfuncs | PositiveInteger;
+      colour?: ColourResolvable;
       /**
        * A valid `dasharray` appropriate for the game's display.
        */
@@ -392,7 +400,7 @@ export type AnnotationTree =
        */
       strokeWidth?: number;
       opacity?: number;
-      colour?: Colourstrings | Colourfuncs | PositiveInteger;
+      colour?: ColourResolvable;
       /**
        * A valid `dasharray` appropriate for the game's display.
        */
@@ -498,13 +506,13 @@ export interface Glyph {
    */
   text?: string;
   /**
-   * A 3- or 6-digit hex colour value, a player position, or a gradient.
+   * A hex colour, player number, named pattern, colour function, or gradient.
    */
-  colour?: Colourstrings | Colourfuncs | PositiveInteger | Gradient;
+  colour?: ColourResolvable | Gradient;
   /**
-   * A 3- or 6-digit hex colour value, a player position, or a gradient.
+   * A hex colour, player number, named pattern, colour function, or gradient.
    */
-  colour2?: Colourstrings | Colourfuncs | PositiveInteger | Gradient;
+  colour2?: ColourResolvable | Gradient;
   /**
    * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
    */
@@ -556,8 +564,8 @@ export interface Glyph {
  */
 export interface FunctionFlatten {
   func: "flatten";
-  fg: PositiveInteger | Colourstrings | Colourfuncs;
-  bg: PositiveInteger | Colourstrings | Colourfuncs;
+  fg: ColourResolvable;
+  bg: ColourResolvable;
   opacity: number;
 }
 /**
@@ -565,15 +573,15 @@ export interface FunctionFlatten {
  */
 export interface FunctionBestContrast {
   func: "bestContrast";
-  bg: PositiveInteger | Colourstrings | Colourfuncs;
-  fg: (PositiveInteger | Colourstrings | Colourfuncs)[];
+  bg: ColourResolvable;
+  fg: ColourResolvable[];
 }
 /**
  * Lightens or darkens a colour by the specified amount of saturation and luminance. Positive deltas lighten, negative darken.
  */
 export interface FunctionLighten {
   func: "lighten";
-  colour: PositiveInteger | Colourstrings | Colourfuncs;
+  colour: ColourResolvable;
   ds: number;
   dl: number;
 }
@@ -582,8 +590,8 @@ export interface FunctionLighten {
  */
 export interface FunctionCustom {
   func: "custom";
-  default: PositiveInteger | Colourstrings | Colourfuncs;
-  palette: PositiveInteger | Colourstrings | Colourfuncs;
+  default: ColourResolvable;
+  palette: ColourResolvable;
   /**
    * Only needed if the `palette` value is a function and so the function can't tell what test to use.
    */
@@ -613,7 +621,7 @@ export interface GradientStop {
   /**
    * Hex string or player number of the desired colour
    */
-  colour: PositiveInteger | Colourstrings | Colourfuncs;
+  colour: ColourResolvable;
   opacity?: number;
 }
 /**
@@ -630,15 +638,15 @@ export interface IsoFaceDecor {
  * Intrinsic face colours for an isometric cube. Uses the same N/E/S/W convention as the isometric cube geometry (north = top edge of the square top face). The bottom face is hidden when the cube sits on the board.
  */
 export interface IsoCubeFaces {
-  top: Colourstrings | Colourfuncs | PositiveInteger;
-  north: Colourstrings | Colourfuncs | PositiveInteger;
-  east: Colourstrings | Colourfuncs | PositiveInteger;
-  south: Colourstrings | Colourfuncs | PositiveInteger;
-  west: Colourstrings | Colourfuncs | PositiveInteger;
+  top: ColourResolvable;
+  north: ColourResolvable;
+  east: ColourResolvable;
+  south: ColourResolvable;
+  west: ColourResolvable;
   /**
    * Hidden when the cube sits on the board. Optional.
    */
-  bottom?: Colourstrings | Colourfuncs | PositiveInteger;
+  bottom?: ColourResolvable;
 }
 /**
  * Sheet glyphs on cube faces. Keys use intrinsic N/E/S/W + top (not screen left/right).
@@ -822,7 +830,7 @@ export interface BoardBasic {
      */
     colours?: {
       side: "N" | "E" | "S" | "W";
-      colour: PositiveInteger | Colourstrings | Colourfuncs;
+      colour: ColourResolvable;
     }[];
     /**
      * Choose which of the four sides you want displayed. By default, it's all four.
@@ -885,7 +893,7 @@ export interface MarkerDots {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourfuncs | Colourstrings;
+  colour?: ColourResolvable;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -909,7 +917,7 @@ export interface MarkerShading {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourfuncs | Colourstrings;
+  colour?: ColourResolvable;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -958,7 +966,7 @@ export interface MarkerOutline {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour: PositiveInteger | Colourfuncs | Colourstrings;
+  colour: ColourResolvable;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -983,7 +991,7 @@ export interface MarkerHalo {
       /**
        * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
        */
-      colour: PositiveInteger | Colourfuncs | Colourstrings;
+      colour: ColourResolvable;
       /**
        * 1 is fully opaque. 0 is fully transparent.
        */
@@ -994,7 +1002,7 @@ export interface MarkerHalo {
       /**
        * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
        */
-      colour: PositiveInteger | Colourfuncs | Colourstrings;
+      colour: ColourResolvable;
       /**
        * 1 is fully opaque. 0 is fully transparent.
        */
@@ -1020,7 +1028,7 @@ export interface MarkerHalo {
   /**
    * Fill is drawn before grid lines, segments are drawn after grid lines.
    */
-  fill?: PositiveInteger | Colourfuncs | Colourstrings;
+  fill?: ColourResolvable;
 }
 export interface MarkerLine {
   /**
@@ -1037,7 +1045,7 @@ export interface MarkerLine {
   /**
    * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourfuncs | Colourstrings;
+  colour?: ColourResolvable;
   /**
    * 1 is fully opaque. 0 is fully transparent.
    */
@@ -1098,7 +1106,7 @@ export interface MarkerLabel {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourfuncs | Colourstrings;
+  colour?: ColourResolvable;
   /**
    * Font size in absolute pixels
    */
@@ -1120,7 +1128,7 @@ export interface MarkerEdge {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour: PositiveInteger | Colourfuncs | Colourstrings;
+  colour: ColourResolvable;
   opacity?: number;
 }
 export interface MarkerFence {
@@ -1133,7 +1141,7 @@ export interface MarkerFence {
   /**
    * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourfuncs | Colourstrings;
+  colour?: ColourResolvable;
   /**
    * Expressed as a multiple of the base stroke width
    */
@@ -1159,7 +1167,7 @@ export interface MarkerFenceData {
   /**
    * The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourfuncs | Colourstrings;
+  colour?: ColourResolvable;
   /**
    * Expressed as a multiple of the base stroke width
    */
@@ -1273,9 +1281,9 @@ export interface BoardFreespace {
 export interface MarkerPath {
   type: "path";
   path: string;
-  fill?: PositiveInteger | Colourfuncs | Colourstrings;
+  fill?: ColourResolvable;
   fillOpacity?: number;
-  stroke?: PositiveInteger | Colourfuncs | Colourstrings;
+  stroke?: ColourResolvable;
   strokeWidth?: number;
   strokeOpacity?: number;
   /**
@@ -1311,7 +1319,7 @@ export interface MarkerFreespaceLabel {
   /**
    * The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
    */
-  colour?: PositiveInteger | Colourfuncs | Colourstrings;
+  colour?: ColourResolvable;
   /**
    * Font size in absolute pixels
    */
@@ -1479,7 +1487,7 @@ export interface AreaPieces {
   /**
    * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
    */
-  ownerMark?: PositiveInteger | Colourfuncs | Colourstrings;
+  ownerMark?: ColourResolvable;
   /**
    * With some piece types, you need extra space between them. Expressed as a percentage of cell size, this will insert some padding between pieces.
    */
@@ -1517,11 +1525,11 @@ export interface AreaReserves {
   /**
    * Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.
    */
-  background: PositiveInteger | Colourfuncs | Colourstrings;
+  background: ColourResolvable;
   /**
    * Optional. Places a coloured bar to the left of the area, used to indicate ownership.
    */
-  ownerMark?: PositiveInteger | Colourfuncs | Colourstrings;
+  ownerMark?: ColourResolvable;
 }
 /**
  * Used by the `polyomino` renderer to display a selected piece and provide UI for manipulating it. Current maninpulations are rotating in 90-degree increments and flipping horizontally and vertically.
@@ -1759,7 +1767,7 @@ export interface AnnotationBasic {
    */
   strokeWidth?: number;
   opacity?: number;
-  colour?: Colourstrings | Colourfuncs | PositiveInteger;
+  colour?: ColourResolvable;
   arrow?: boolean;
   /**
    * Whether the move annotation should have dot anchors.

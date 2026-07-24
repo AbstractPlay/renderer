@@ -2,7 +2,7 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, type Polymatrix } from "../schemas/schema";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap } from "../common/dominoHand";
@@ -55,8 +55,9 @@ export interface IRendererOptionsIn {
      */
     contextGlobal: boolean;
     /**
-     * A list of hexadecimal colour strings to be used as player colours. Be sure to provide enough for the number of players defined.
-     * Defaults to a set of nine colours, defined in the constructor.
+     * Per-player palette entries: hex colour strings or pattern names (`dots`, `chevrons`, etc.).
+     * Use `null` to keep the default for that slot (hex from the built-in palette, or a pattern
+     * from `patternList` when `patterns` is true).
      *
      */
     colours?: (string|null)[];
@@ -67,13 +68,14 @@ export interface IRendererOptionsIn {
      */
     coloursGlobal: boolean;
     /**
-     * Signals whether you want black and white patterns used instead of colours.
+     * When true, default player slots use `patternList` instead of the built-in hex palette.
+     * Does not prevent mixing hex colours and patterns in a custom `colours` array.
      *
      */
     patterns?: boolean;
     /**
-     * List of pattern IDs to use as player colours.
-     * Defaults to the full set of ten, defined in the constructor.
+     * Pattern IDs used for default player slots when `patterns` is true, and for `null`
+     * entries in a custom `colours` array while `patterns` is true.
      *
      */
     patternList?: string[];
@@ -131,6 +133,7 @@ export interface IRendererOptionsOut {
     contextGlobal: boolean;
     colours: string[];
     coloursGlobal: boolean;
+    playerPalette: PlayerFill[];
     useDefaults: number[];
     patterns: boolean;
     patternList: string[];
@@ -145,6 +148,31 @@ export interface IRendererOptionsOut {
 
 export const paletteDefault = ["#e31a1c", "#1f78b4", "#33a02c", "#ffff99", "#6a3d9a", "#ff7f00", "#b15928", "#fb9a99", "#a6cee3", "#b2df8a", "#fdbf6f", "#cab2d6"];
 export const paletteBlind = ["#9f0162", "#8400cd", "#a40122", "#009f81", "#008df9", "#e20134", "#ff5aaf", "#00c2f9", "#ff6e3a", "#00fccf", "#ffb2fd", "#ffc33b"];
+
+export const PATTERN_NAMES = [
+    "microbial",
+    "chevrons",
+    "honeycomb",
+    "triangles",
+    "wavy",
+    "slant",
+    "dots",
+    "starsWhite",
+    "cross",
+    "houndstooth",
+] as const;
+
+export function isPatternName(s: string): s is PatternName {
+    return (PATTERN_NAMES as readonly string[]).includes(s);
+}
+
+export type PlayerFill =
+    | { kind: "colour"; value: string }
+    | { kind: "pattern"; value: PatternName };
+
+export type ResolvedFill = string | SVGGradient | SVGElement;
+
+type ColourOperand = { kind: "colour"; value: string } | { kind: "pattern"; element: SVGElement };
 
 export interface IMarkBoardOptions {
     svgGroup: SVGG;
@@ -247,9 +275,10 @@ export abstract class RendererBase {
             colourBlind: false,
             colours: [],
             coloursGlobal: true,
+            playerPalette: paletteDefault.map(value => ({ kind: "colour" as const, value })),
             useDefaults: [],
             patterns: false,
-            patternList: ["microbial", "chevrons", "honeycomb", "triangles", "wavy", "slant", "dots", "starsWhite", "cross", "houndstooth"],
+            patternList: [...PATTERN_NAMES],
             showAnnotations: true,
             columnLabels: "abcdefghijklmnopqrstuvwxyz",
             rotate: 0,
@@ -318,13 +347,12 @@ export abstract class RendererBase {
         this.options.patterns = false;
         if (opts.patterns) {
             this.options.patterns = true;
-            // Validate pattern list if given
             if ( (opts.patternList !== undefined) && (opts.patternList.length > 0) ) {
-                // for (const name of opts.patternList) {
-                //     if (this.patternNames.indexOf(name) < 0) {
-                //         throw new Error(`A pattern you requested could not be found: ${ name }`);
-                //     }
-                // }
+                for (const name of opts.patternList) {
+                    if (! isPatternName(name)) {
+                        throw new Error(`A pattern you requested could not be found: ${ name }`);
+                    }
+                }
                 this.options.patternList = opts.patternList;
             }
         }
@@ -345,26 +373,8 @@ export abstract class RendererBase {
             this.options.contextGlobal = opts.contextGlobal ?? true;
         }
 
-        // Validate colour list if given
-        this.options.useDefaults = [];
-        if ( (opts.colours !== undefined) && (opts.colours.length > 0) ) {
-            const normalized: string[] = [];
-            for (let i = 0; i < opts.colours.length; i++) {
-                const c = opts.colours[i];
-                if (c === null) {
-                    this.options.useDefaults.push(i+1);
-                    normalized.push(paletteDefault[i]);
-                } else {
-                    const color = tinycolor(c);
-                    if (! color.isValid()) {
-                        throw new Error(`One of the colours you requested is malformed: ${ c }`);
-                    }
-                    normalized.push(color.toHexString());
-                }
-            }
-            this.options.colours = [...normalized];
-            this.options.coloursGlobal = opts.coloursGlobal ?? true;
-        }
+        // Build per-player palette (hex and/or patterns)
+        this.buildPlayerPalette(opts);
 
         // Check for annotation screening
         if (opts.showAnnotations !== undefined) {
@@ -407,6 +417,164 @@ export abstract class RendererBase {
         if (opts.boardHover !== undefined) {
             this.options.boardHover = opts.boardHover;
         }
+    }
+
+    protected buildPlayerPalette(opts: IRendererOptionsIn): void {
+        const hexPalette = this.options.colourBlind ? paletteBlind : paletteDefault;
+        const patternList = this.options.patternList;
+        const usePatternsDefault = this.options.patterns;
+
+        const defaultSlot = (i: number): PlayerFill => {
+            if (usePatternsDefault) {
+                const name = patternList[i] ?? patternList[patternList.length - 1];
+                return { kind: "pattern", value: name as PatternName };
+            }
+            return { kind: "colour", value: hexPalette[i] ?? hexPalette[hexPalette.length - 1] };
+        };
+
+        this.options.useDefaults = [];
+        let playerPalette: PlayerFill[];
+
+        if ( (opts.colours !== undefined) && (opts.colours.length > 0) ) {
+            playerPalette = [];
+            for (let i = 0; i < opts.colours.length; i++) {
+                const c = opts.colours[i];
+                if (c === null) {
+                    this.options.useDefaults.push(i + 1);
+                    playerPalette.push(defaultSlot(i));
+                } else if (isPatternName(c)) {
+                    playerPalette.push({ kind: "pattern", value: c });
+                } else {
+                    const color = tinycolor(c);
+                    if (! color.isValid()) {
+                        throw new Error(`One of the colours you requested is malformed: ${ c }`);
+                    }
+                    playerPalette.push({ kind: "colour", value: color.toHexString() });
+                }
+            }
+            this.options.coloursGlobal = opts.coloursGlobal ?? true;
+        } else if (usePatternsDefault) {
+            playerPalette = patternList.map(name => ({ kind: "pattern" as const, value: name as PatternName }));
+        } else {
+            playerPalette = hexPalette.map(value => ({ kind: "colour" as const, value }));
+        }
+
+        this.options.playerPalette = playerPalette;
+        this.syncColoursFromPlayerPalette(hexPalette);
+    }
+
+    protected syncColoursFromPlayerPalette(hexPalette: string[]): void {
+        this.options.colours = this.options.playerPalette.map((fill, i) => (
+            fill.kind === "colour"
+                ? fill.value
+                : (hexPalette[i] ?? hexPalette[hexPalette.length - 1])
+        ));
+    }
+
+    protected isPatternSVGElement(fill: ResolvedFill): fill is SVGElement {
+        return typeof fill === "object" && "type" in fill && (fill as SVGElement).type === "pattern";
+    }
+
+    protected coerceFillToHex(fill: ResolvedFill, def?: string): string {
+        if (typeof fill === "string") {
+            return fill;
+        }
+        if (this.isPatternSVGElement(fill)) {
+            return this.options.colourContext.strokes;
+        }
+        return def ?? this.options.colourContext.strokes;
+    }
+
+    protected getScaledPattern(name: string, useSize: number): SVGElement {
+        if (this.rootSvg === undefined) {
+            throw new Error("Object in an invalid state!");
+        }
+        this.loadPattern(name);
+        let fill = this.rootSvg.findOne("#" + name + "-" + useSize.toString()) as SVGElement;
+        if (fill === null) {
+            fill = this.rootSvg.findOne("#" + name) as SVGElement;
+            fill = fill.clone().id(name + "-" + useSize.toString()).scale(useSize / 150);
+            this.rootSvg.defs().add(fill);
+        }
+        return fill;
+    }
+
+    protected collectPatternsFromColourValue(val: number | string | Gradient | Colourfuncs, names: Set<string>): void {
+        if (typeof val === "number") {
+            const slot = this.options.playerPalette[val - 1];
+            if (slot?.kind === "pattern") {
+                names.add(slot.value);
+            }
+            return;
+        }
+        if (typeof val === "string") {
+            if (isPatternName(val)) {
+                names.add(val);
+            }
+            return;
+        }
+        if ("stops" in val) {
+            for (const stop of val.stops) {
+                this.collectPatternsFromColourValue(stop.colour, names);
+            }
+            return;
+        }
+        if ("func" in val) {
+            if (val.func === "flatten") {
+                this.collectPatternsFromColourValue(val.fg, names);
+                this.collectPatternsFromColourValue(val.bg, names);
+            } else if (val.func === "lighten") {
+                this.collectPatternsFromColourValue(val.colour, names);
+            } else if (val.func === "bestContrast") {
+                this.collectPatternsFromColourValue(val.bg, names);
+                for (const c of val.fg) {
+                    this.collectPatternsFromColourValue(c, names);
+                }
+            } else if (val.func === "custom") {
+                this.collectPatternsFromColourValue(val.default, names);
+                if (typeof val.palette === "number" || typeof val.palette === "string" || typeof val.palette === "object") {
+                    this.collectPatternsFromColourValue(val.palette as number | string | Colourfuncs, names);
+                }
+            }
+        }
+    }
+
+    protected preloadPatternsFromColourValues(values: Array<number | string | Gradient | Colourfuncs | undefined>): void {
+        const names = new Set<string>();
+        for (const val of values) {
+            if (val !== undefined) {
+                this.collectPatternsFromColourValue(val, names);
+            }
+        }
+        for (const name of names) {
+            this.loadPattern(name);
+        }
+    }
+
+    protected applyPlayerFillTargets(got: SVGSymbol, suffix: string, fill: ResolvedFill, opacity: number): void {
+        const fillAttr = `data-playerfill${suffix}`;
+        const strokeAttr = `data-playerstroke${suffix}`;
+        if (this.isPatternSVGElement(fill)) {
+            got.find(`[${fillAttr}=true]`).each(function(this: SVGElement) { this.fill(fill); });
+            return;
+        }
+        if (typeof fill === "object") {
+            got.find(`[${fillAttr}=true]`).each(function(this: SVGElement) { this.fill(fill); });
+            return;
+        }
+        got.find(`[${fillAttr}=true]`).each(function(this: SVGElement) { this.fill({color: fill, opacity}); });
+        got.find(`[${strokeAttr}=true]`).each(function(this: SVGElement) { this.stroke({color: fill, opacity}); });
+    }
+
+    protected resolveMarkerFill(val: number | string | Gradient | Colourfuncs, opacity: number, def?: string): FillData | SVGGradient | SVGElement {
+        const fill = this.resolveFill(val, def);
+        if (this.isPatternSVGElement(fill)) {
+            return fill;
+        }
+        if (typeof fill === "object") {
+            return fill;
+        }
+        return { color: fill, opacity };
     }
 
     /**
@@ -452,7 +620,7 @@ export abstract class RendererBase {
                 canvas.defs().svg(`<pattern id="houndstooth" patternUnits="userSpaceOnUse" width="24" height="24" viewbox="0 0 24 24"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>houndstooth</title><g fill="${fg}" fill-opacity="1" fill-rule="evenodd"><path d="M0 18h6l6-6v6h6l-6 6H0M24 18v6h-6M24 0l-6 6h-6l6-6M12 0v6L0 18v-6l6-6H0V0"/></g></svg></pattern>`);
                 break;
             case "microbial":
-                canvas.defs().svg(`<pattern id="microbial" patternUnits="userSpaceOnUse" width="20" height=20><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="40" height="40" fill="${bg}"/><circle r="9.2" stroke-width="1" stroke="${fg}" fill="none"/><circle cy="18.4" r="9.2" stroke-width="1px" stroke="${fg}" fill="none"/><circle cx="18.4" cy="18.4" r="9.2" stroke-width="1" stroke="${fg}" fill="none"/></svg></pattern>`);
+                canvas.defs().svg(`<pattern id="microbial" patternUnits="userSpaceOnUse" width="20" height="20"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="40" height="40" fill="${bg}"/><circle r="9.2" stroke-width="1" stroke="${fg}" fill="none"/><circle cy="18.4" r="9.2" stroke-width="1px" stroke="${fg}" fill="none"/><circle cx="18.4" cy="18.4" r="9.2" stroke-width="1" stroke="${fg}" fill="none"/></svg></pattern>`);
                 break;
             case "slant":
                 canvas.defs().svg(`<pattern id="slant" patternUnits="userSpaceOnUse" width="10" height="10"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="${bg}"/><path d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2" stroke="${fg}" stroke-width="1"/></svg></pattern>`);
@@ -630,35 +798,10 @@ export abstract class RendererBase {
             const colourVals = [g.colour, g.colour2];
             for (let i = 0; i < colourVals.length; i++) {
                 const colourVal = colourVals[i];
-                let isStroke = false;
-                if (colourVal !== undefined && typeof colourVal === "number") {
-                    const player = colourVal;
-                    if (this.options.patterns) {
-                        if (player > this.options.patternList.length) {
-                            throw new Error("The list of patterns provided is not long enough to support the number of players in this game.");
-                        }
-                        const useSize = sheetCellSize;
-                        let fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1] + "-" + useSize.toString()) as SVGElement;
-                        if (fill === null) {
-                            fill = this.rootSvg.findOne("#" + this.options.patternList[player - 1]) as SVGElement;
-                            fill = fill.clone().id(this.options.patternList[player - 1] + "-" + useSize.toString()).scale(useSize / 150);
-                            this.rootSvg.defs().add(fill);
-                        }
-                        got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill(fill); });
-                    } else {
-                        if (player > this.options.colours.length) {
-                            throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
-                        }
-                        const fill = this.options.colours[player - 1];
-                        got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: fill, opacity}); });
-                        got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: fill, opacity}); isStroke = true; });
-                    }
-                } else if (colourVal !== undefined) {
-                    const normColour = this.resolveColour(colourVal as string | number | Gradient, "#000");
-                    // @ts-expect-error (poor SVGjs typing)
-                    got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
-                    // @ts-expect-error (poor SVGjs typing)
-                    got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
+                const suffix = i > 0 ? (i + 1).toString() : "";
+                if (colourVal !== undefined) {
+                    const resolved = this.resolveFill(colourVal as string | number | Gradient | Colourfuncs, "#000", { scale: sheetCellSize });
+                    this.applyPlayerFillTargets(got, suffix, resolved, opacity);
                 } else if ("text" in g && g.text !== undefined) {
                     let darkest = contextBackground;
                     for (let j = idx - 1; j >= 0; j--) {
@@ -675,14 +818,13 @@ export abstract class RendererBase {
                     };
                     const normColour = this.resolveColour(func, "#000");
                     // @ts-expect-error (poor SVGjs typing)
-                    got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
+                    got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
                     // @ts-expect-error (poor SVGjs typing)
-                    got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); isStroke = true; });
+                    got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); });
                 } else {
-                    got.find(`[data-playerfill${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
-                    got.find(`[data-playerstroke${i > 0 ? i + 1 : ""}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); isStroke = true; });
+                    got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
+                    got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); });
                 }
-                void isStroke;
             }
 
             let factor = baseScale;
@@ -796,24 +938,14 @@ export abstract class RendererBase {
     }
 
     protected preloadPatternsForGlyphs(glyphs: Glyph[]): void {
-        if (!this.options.patterns || this.json === undefined) {
+        if (this.json === undefined) {
             return;
         }
-        const patterns: number[] = [];
+        const values: Array<number | string | Gradient | Colourfuncs | undefined> = [];
         for (const g of glyphs) {
-            if (g.colour !== undefined && typeof g.colour === "number" && !patterns.includes(g.colour)) {
-                patterns.push(g.colour);
-            }
-            if (g.colour2 !== undefined && typeof g.colour2 === "number" && !patterns.includes(g.colour2)) {
-                patterns.push(g.colour2);
-            }
+            values.push(g.colour, g.colour2);
         }
-        for (const n of patterns) {
-            if (n > this.options.patternList.length) {
-                throw new Error("The system does not support the number of patterns you have requested.");
-            }
-            this.loadPattern(this.options.patternList[n - 1]);
-        }
+        this.preloadPatternsFromColourValues(values);
     }
 
     /**
@@ -826,42 +958,25 @@ export abstract class RendererBase {
             throw new Error("Object in an invalid state!");
         }
         if ( ("legend" in this.json) && (this.json.legend !== undefined) ) {
-            // Load any requested patterns
-            if (this.options.patterns) {
-                const patterns: Array<number> = new Array<number>();
-
-                for (const key in this.json.legend) {
-                    const node = this.json.legend[key];
-                    if (typeof(node) !== "string") {
-                        let glyphs: Array<Glyph>;
-                        // if it's just a glyph, wrap it in an array
-                        if (! Array.isArray(node)) {
-                            glyphs = [node];
-                        }
-                        // if it's a multi-dimensional array, then it's a polymatrix and can't be dealt with here
-                        else if (Array.isArray(node[0])) {
-                            continue;
-                        }
-                        // otherwise, we know it's an array of glyphs
-                        else {
-                            glyphs = node as [Glyph, ...Glyph[]];
-                        }
-                        glyphs.forEach((e) => {
-                            if (e.colour !== undefined && typeof e.colour === "number") {
-                                if (! patterns.includes(e.colour)) {
-                                    patterns.push(e.colour);
-                                }
-                            }
-                        });
-                    }
+            const preloadValues: Array<number | string | Gradient | Colourfuncs | undefined> = [];
+            for (const key in this.json.legend) {
+                const node = this.json.legend[key];
+                if (typeof node === "string") {
+                    continue;
                 }
-                patterns.forEach((n) => {
-                    if (n > this.options.patternList.length) {
-                        throw new Error("The system does not support the number of patterns you have requested.");
-                    }
-                    this.loadPattern(this.options.patternList[n - 1]);
-                });
+                let glyphs: Array<Glyph>;
+                if (! Array.isArray(node)) {
+                    glyphs = [node];
+                } else if (Array.isArray(node[0])) {
+                    continue;
+                } else {
+                    glyphs = node as [Glyph, ...Glyph[]];
+                }
+                for (const e of glyphs) {
+                    preloadValues.push(e.colour, e.colour2);
+                }
             }
+            this.preloadPatternsFromColourValues(preloadValues);
 
             // Now look for composite and coloured pieces and add those to the <defs> section for placement
 
@@ -1793,14 +1908,14 @@ export abstract class RendererBase {
                     }
                     let isGradient = false;
                     let isFlatten = false;
-                    let colour: string|SVGGradient = this.options.colourContext.fill;
+                    let resolvedFill: ResolvedFill = this.options.colourContext.fill;
                     if ( ("colour" in marker) && (marker.colour !== undefined) ) {
                         if (typeof marker.colour === "object" && ("stops" in marker.colour)) {
                             isGradient = true;
                         } else if (typeof marker.colour === "object" && ("func" in marker.colour) && marker.colour.func === "flatten") {
                             isFlatten = true;
                         }
-                        colour = this.resolveColour(marker.colour);
+                        resolvedFill = this.resolveFill(marker.colour);
                     }
                     let opacity = 0.25;
                     if ( ("opacity" in marker) && (marker.opacity !== undefined) ) {
@@ -1815,18 +1930,22 @@ export abstract class RendererBase {
                         pattern = marker.pattern;
                     }
                     if (pattern !== undefined) {
-                        this.loadPattern(pattern, {bg: "none", fg: typeof colour === "string" ? colour : undefined});
+                        this.loadPattern(pattern, {bg: "none", fg: typeof resolvedFill === "string" ? resolvedFill : undefined});
                     }
                     let fill: FillData|SVGGradient|SVGElement;
                     if (isGradient) {
-                        fill = colour as SVGGradient;
+                        fill = resolvedFill as SVGGradient;
                     } else if (pattern !== undefined) {
                         fill = this.rootSvg.findOne(`#${pattern}`) as SVGElement;
                         if (fill === undefined) {
                             throw new Error("Could not load the requested pattern.");
                         }
+                    } else if (this.isPatternSVGElement(resolvedFill)) {
+                        fill = resolvedFill;
+                    } else if (typeof resolvedFill === "object") {
+                        fill = resolvedFill;
                     } else {
-                        fill = {color: colour as string, opacity} as FillData;
+                        fill = {color: resolvedFill, opacity} as FillData;
                     }
                     for (const point of marker.points as ITarget[]) {
                         let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
@@ -3022,10 +3141,11 @@ export abstract class RendererBase {
         for (const b of bar.buttons) {
             const cloned = {attributes: b.attributes, fill: b.fill};
             const symrect = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
-            let fill: FillData = {color: this.options.colourContext.background, opacity: 0};
+            let fill: FillData | SVGGradient | SVGElement = {color: this.options.colourContext.background, opacity: 0};
             if ( ("fill" in b) && (b.fill !== undefined) ) {
-                fill = {color: this.resolveColour(b.fill) as string, opacity: 1};
+                fill = this.resolveMarkerFill(b.fill, 1);
             }
+            // @ts-expect-error (poor SVGjs typing)
             symrect.rect(width, height).fill(fill).stroke({width: 1, color: colour, linecap: "round", linejoin: "round"});
             // Adding the viewbox triggers auto-filling, auto-centering behaviour that we don't want
             // symrect.viewbox(-1, -1, width + 2, height + 1);
@@ -3632,7 +3752,8 @@ export abstract class RendererBase {
                     finalWidth = Math.max(finalWidth, fullWidth);
                 }
                 if ("background" in area && area.background !== undefined) {
-                    nested.rect(areaWidth,areaHeight).fill(this.resolveColour(area.background) as string);
+                    // @ts-expect-error (poor SVGjs typing)
+                    nested.rect(areaWidth,areaHeight).fill(this.resolveMarkerFill(area.background, 1));
                 }
                 for (let iRow = 0; iRow < pieceRows.length; iRow++) {
                     const row = pieceRows[iRow];
@@ -3758,7 +3879,8 @@ export abstract class RendererBase {
                 const nested = board.nested().id(`_reserves${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
                 let rect: SVGRect;
                 if ("background" in area) {
-                    rect = nested.rect(areaWidth,areaHeight).fill({ color: this.resolveColour(area.background) as string, opacity: 0.25 });
+                    // @ts-expect-error (poor SVGjs typing)
+                    rect = nested.rect(areaWidth,areaHeight).fill(this.resolveMarkerFill(area.background, 0.25));
                 } else {
                     rect = nested.rect(areaWidth,areaHeight).fill({opacity: 0});
                 }
@@ -3837,11 +3959,11 @@ export abstract class RendererBase {
                 throw new Error("Could not determine the backFill options.");
             }
 
-            const bgcolour = this.resolveColour(backFillObj.colour) as string;
             let bgopacity = 1;
             if ( backFillObj.opacity !== undefined ) {
                 bgopacity = backFillObj.opacity;
             }
+            const bgfill = this.resolveMarkerFill(backFillObj.colour, bgopacity);
             let bgtype: "full"|"board" = "full";
             if (backFillObj.type !== undefined) {
                 bgtype = backFillObj.type;
@@ -3854,7 +3976,8 @@ export abstract class RendererBase {
 
             if (bgtype === "full") {
                 const bbox = this.rootSvg.bbox();
-                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill-full").move(bbox.x - 10, bbox.y - 10).fill({color: bgcolour, opacity: bgopacity}).back();
+                // @ts-expect-error (poor SVGjs typing)
+                this.rootSvg.rect(bbox.width + 20, bbox.height + 20).id("aprender-backfill-full").move(bbox.x - 10, bbox.y - 10).fill(bgfill).back();
             } else {
                 const board = this.rootSvg.findOne("#board") as SVGG|null;
                 if (board === null) {
@@ -3863,14 +3986,16 @@ export abstract class RendererBase {
                 // ignore if boardFill is undefined
                 if (boardFill !== undefined) {
                     if (boardFill.type === "circle") {
-                        const poly = this.rootSvg.circle(boardFill.r * 2).id("aprender-backfill-board").center(boardFill.cx, boardFill.cy).fill({color: bgcolour, opacity: bgopacity});
+                        // @ts-expect-error (poor SVGjs typing)
+                        const poly = this.rootSvg.circle(boardFill.r * 2).id("aprender-backfill-board").center(boardFill.cx, boardFill.cy).fill(bgfill);
                         // `board` backfill can't just be pushed to the back but must be inside the `board` group
                         board.add(poly, 0);
 
                     }
                     else if (boardFill.type === "poly") {
                         const path = roundPolygon(boardFill.points, 15);
-                        const poly = this.rootSvg.path(path).id("aprender-backfill").fill({color: bgcolour, opacity: bgopacity}).stroke("none");
+                        // @ts-expect-error (poor SVGjs typing)
+                        const poly = this.rootSvg.path(path).id("aprender-backfill").fill(bgfill).stroke("none");
                         // `board` backfill can't just be pushed to the back but must be inside the `board` group
                         board.add(poly, 0);
                     }
@@ -4090,112 +4215,152 @@ export abstract class RendererBase {
     }
 
     /**
+     * Resolves a colour or pattern value to an SVG fill: hex string, gradient, or pattern element.
+     *
+     * @remarks Colour functions degrade gracefully when a player slot is a pattern: `lighten` and
+     * `flatten`-fg return the pattern unchanged; `flatten`-bg and `bestContrast`-bg use
+     * `colourContext.background` as a stand-in; gradient stops use `colourContext.strokes`.
+     *
+     * @param val - the value in the JSON
+     * @param def - the default value
+     * @param opts - optional scale for pattern fills
+     * @returns
+     */
+    public resolveFill(val: number | string | Gradient | Colourfuncs, def?: string, opts?: { scale?: number }): ResolvedFill {
+        if (this.rootSvg === undefined || this.rootSvg === null) {
+            throw new Error(`Cannot resolve colour values until the root SVG is initialized.`);
+        }
+
+        const patternScale = opts?.scale ?? 150;
+
+        if (typeof val === "object") {
+            if ("stops" in val) {
+                const x1 = val.x1 !== undefined ? val.x1 : 0;
+                const y1 = val.y1 !== undefined ? val.y1 : 0;
+                const x2 = val.x2 !== undefined ? val.x2 : 1;
+                const y2 = val.y2 !== undefined ? val.y2 : 0;
+                const colour = this.rootSvg.defs().gradient("linear", add => {
+                    for (const stop of (val as Gradient).stops) {
+                        const stopFill = this.resolveFill(stop.colour, this.options.colourContext.strokes, opts);
+                        add.stop({
+                            offset: stop.offset,
+                            color: this.coerceFillToHex(stopFill, this.options.colourContext.strokes),
+                            opacity: stop.opacity !== undefined ? stop.opacity : 1,
+                        });
+                    }
+                });
+                colour.from(x1, y1).to(x2, y2);
+                return colour;
+            }
+            if ("func" in val) {
+                if (val.func === "flatten") {
+                    const fgOp = this.resolveColourOperand(val.fg, def, opts);
+                    if (fgOp.kind === "pattern") {
+                        return fgOp.element;
+                    }
+                    const bgOp = this.resolveColourOperand(val.bg, this.options.colourContext.background, opts);
+                    const bgHex = bgOp.kind === "pattern" ? this.options.colourContext.background : bgOp.value;
+                    const fg = hex2rgb(fgOp.value);
+                    const bg = hex2rgb(bgHex);
+                    return rgb2hex(afterOpacity(fg, val.opacity, bg));
+                }
+                if (val.func === "lighten") {
+                    const op = this.resolveColourOperand(val.colour, def, opts);
+                    if (op.kind === "pattern") {
+                        return op.element;
+                    }
+                    const base = hex2rgb(op.value);
+                    return rgb2hex(lighten(base, val.ds, val.dl));
+                }
+                if (val.func === "bestContrast") {
+                    const bgOp = this.resolveColourOperand(val.bg, def, opts);
+                    const bgHex = bgOp.kind === "pattern" ? this.options.colourContext.background : bgOp.value;
+                    const fgHexes: string[] = [];
+                    for (const c of val.fg) {
+                        const op = this.resolveColourOperand(c, def, opts);
+                        if (op.kind === "colour") {
+                            fgHexes.push(op.value);
+                        }
+                    }
+                    if (fgHexes.length === 0) {
+                        return this.options.colourContext.strokes;
+                    }
+                    return tinycolor.mostReadable(bgHex, fgHexes).toHexString();
+                }
+                if (val.func === "custom") {
+                    let branch: number | string | Colourfuncs;
+                    if (typeof val.palette === "number") {
+                        branch = (this.options.coloursGlobal || this.options.useDefaults.includes(val.palette))
+                            ? val.default
+                            : val.palette;
+                    } else if (typeof val.palette === "string" && val.palette.startsWith("_context_")) {
+                        branch = this.options.contextGlobal ? val.default : val.palette;
+                    } else if ("paletteType" in val && val.paletteType !== undefined) {
+                        if (val.paletteType === "context") {
+                            branch = this.options.contextGlobal ? val.default : val.palette;
+                        } else {
+                            branch = (this.options.coloursGlobal) ? val.default : val.palette;
+                        }
+                    } else {
+                        throw new Error(`Could not resolve the custom function. If "palette" is neither a number nor a context, then "paletteType" is required.`);
+                    }
+                    return this.resolveFill(branch as number | string | Colourfuncs, def, opts);
+                }
+            }
+        } else if (typeof val === "number") {
+            if (val > this.options.playerPalette.length) {
+                throw new Error("The list of colours provided is not long enough to support the number of players in this game.");
+            }
+            const slot = this.options.playerPalette[val - 1];
+            if (slot === undefined) {
+                throw new Error(`Unable to resolve colour:\n${JSON.stringify(val)}\nDefault: ${def}`);
+            }
+            if (slot.kind === "pattern") {
+                return this.getScaledPattern(slot.value, patternScale);
+            }
+            return slot.value;
+        } else if (isPatternName(val)) {
+            return this.getScaledPattern(val, patternScale);
+        } else {
+            let colour: string = val;
+            if (/^_context_/.test(colour)) {
+                const [,,prop] = colour.split("_");
+                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"|"board"] !== undefined) {
+                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"|"board"] as string;
+                } else if (prop === "board" && this.options.colourContext.board === undefined) {
+                    colour = this.options.colourContext.background;
+                }
+            }
+            return colour;
+        }
+
+        if (def === undefined) {
+            throw new Error(`Unable to resolve colour:\n${JSON.stringify(val)}`);
+        }
+        return def;
+    }
+
+    protected resolveColourOperand(val: number | string | Gradient | Colourfuncs, def?: string, opts?: { scale?: number }): ColourOperand {
+        const fill = this.resolveFill(val, def, opts);
+        if (this.isPatternSVGElement(fill)) {
+            return { kind: "pattern", element: fill };
+        }
+        return { kind: "colour", value: this.coerceFillToHex(fill, def) };
+    }
+
+    /**
      * This function takes a string, number, or gradient defintion and returns
      * either the corresponding hex colour or an SVGGradient.
-     * Gradients cannot be recursive.
+     * Gradients cannot be recursive. Pattern fills fall back to `colourContext.strokes` for stroke use.
      * @param val - the value in the JSON
      * @param def - the default value
      * @returns
      */
     public resolveColour(val: number|string|Gradient|Colourfuncs, def?: string): string|SVGGradient {
-        if (this.rootSvg === undefined || this.rootSvg === null) {
-            throw new Error(`Cannot resolve colour values until the root SVG is initialized.`);
+        const fill = this.resolveFill(val, def);
+        if (this.isPatternSVGElement(fill)) {
+            return this.options.colourContext.strokes;
         }
-
-        let colour: string|SVGGradient|undefined = def;
-        if (typeof val === "object") {
-            // check for gradient first
-            if ("stops" in val) {
-                const x1 = val.x1 !== undefined ? val.x1  : 0;
-                const y1 = val.y1 !== undefined ? val.y1  : 0;
-                const x2 = val.x2 !== undefined ? val.x2  : 1;
-                const y2 = val.y2 !== undefined ? val.y2  : 0;
-                colour = this.rootSvg.defs().gradient("linear", add => {
-                    for (const stop of (val as Gradient).stops) {
-                        add.stop({offset: stop.offset, color: this.resolveColour(stop.colour, "#000") as string, opacity: stop.opacity !== undefined ? stop.opacity : 1});
-                    }
-                });
-                colour.from(x1,y1).to(x2,y2);
-            }
-            // Now check for functions
-            else if ("func" in val) {
-                // flatten
-                if (val.func === "flatten") {
-                    const fg = hex2rgb(this.resolveColour(val.fg) as string);
-                    const bg = hex2rgb(this.resolveColour(val.bg) as string);
-                    colour = rgb2hex(afterOpacity(fg, val.opacity , bg));
-                }
-                // lighten
-                else if (val.func === "lighten") {
-                    const base = hex2rgb(this.resolveColour(val.colour) as string);
-                    colour = rgb2hex(lighten(base, val.ds, val.dl));
-                }
-                // bestContrast
-                else if (val.func === "bestContrast") {
-                    const bg = this.resolveColour(val.bg) as string;
-                    const fg = val.fg.map(c => this.resolveColour(c) as string);
-                    colour = tinycolor.mostReadable(bg, fg).toHexString();
-                }
-                else if (val.func === "custom") {
-                    // if `palette` is a number
-                    if (typeof val.palette === "number") {
-                        // only choose if passed colours are game-specific customizations
-                        if (this.options.coloursGlobal || this.options.useDefaults.includes(val.palette)) {
-                            colour = this.resolveColour(val.default) as string;
-                        } else {
-                            colour = this.resolveColour(val.palette) as string;
-                        }
-                    }
-                    // if `palette` is a context
-                    else if (typeof val.palette === "string" && val.palette.startsWith("_context_")) {
-                        // only choose if passed context is game-specific customization
-                        if (this.options.contextGlobal) {
-                            colour = this.resolveColour(val.default) as string;
-                        } else {
-                            colour = this.resolveColour(val.palette) as string;
-                        }
-                    }
-                    // otherwise, rely on `paletteType`
-                    else if ("paletteType" in val && val.paletteType !== undefined) {
-                        if (val.paletteType === "context") {
-                            // only choose if passed context is game-specific customization
-                            if (this.options.contextGlobal) {
-                                colour = this.resolveColour(val.default) as string;
-                            } else {
-                                colour = this.resolveColour(val.palette) as string;
-                            }
-                        } else {
-                            // only choose if passed colours are game-specific customizations
-                            if (this.options.coloursGlobal) {
-                                colour = this.resolveColour(val.default) as string;
-                            } else {
-                                colour = this.resolveColour(val.palette) as string;
-                            }
-                        }
-                    }
-                    // otherwise throw
-                    else {
-                        throw new Error(`Could not resolve the custom function. If "palette" is neither a number nor a context, then "paletteType" is required.`);
-                    }
-                }
-            }
-        } else if (typeof val === "number") {
-            colour = this.options.colours[val - 1];
-        } else {
-            colour = val ;
-            if (/^_context_/.test(colour)) {
-                const [,,prop] = colour.split("_");
-                if (prop in this.options.colourContext && this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"|"board"] !== undefined) {
-                    colour = this.options.colourContext[prop as "background"|"strokes"|"labels"|"annotations"|"fill"|"board"];
-                } else if (prop === "board" && this.options.colourContext.board === undefined) {
-                    colour = this.options.colourContext.background;
-                }
-            }
-        }
-        if (colour === undefined) {
-            throw new Error(`Unable to resolve colour:\n${JSON.stringify(val)}\nDefault: ${def}`);
-        } else {
-            return colour;
-        }
+        return fill as string | SVGGradient;
     }
 }

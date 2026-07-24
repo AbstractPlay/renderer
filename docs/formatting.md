@@ -50,4 +50,25 @@ Extra clickable margin around the board (`buffer` property):
 
 {% renderWidget "samples/formatting-buffers-separated.json" %}
 
+## Player colours and patterns
+
+Render options control the per-player palette. Each slot can be a **hex colour** or a **pattern name** (see [Glyphs — Patterns as colours](/renderer/glyphs/#patterns-as-colours)).
+
+```js
+colours: ["#e31a1c", "dots", null, "chevrons"]
+```
+
+- A **hex string** sets that player's colour.
+- A **pattern name** sets that player's fill pattern.
+- **`null`** keeps the default for that slot: built-in hex when `patterns` is false, or the matching entry from `patternList` when `patterns` is true.
+
+Setting **`patterns: true`** without a custom `colours` array makes every default player slot use `patternList` instead of the built-in hex palette. You can still mix hex and patterns in `colours` regardless of the `patterns` flag.
+
+```js
+patterns: true,
+patternList: ["microbial", "honeycomb", "triangles", "wavy"]
+```
+
+{% renderWidget "samples/formatting-mixed-patterns.json" %}
+
 Renderer options like `hide-labels`, `swap-labels`, and `reverse-letters` are listed in the [schema reference](/renderer/schema-reference/#options).

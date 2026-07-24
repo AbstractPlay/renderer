@@ -18,7 +18,7 @@
             "pattern": "^1*2*3*$"
         },
         "patternName": {
-            "description": "The patterns known by the renderer",
+            "description": "A black-and-white fill pattern known by the renderer. Usable as a glyph colour, in colour functions, and in the player palette (via render options).",
             "enum": [
                 "microbial",
                 "chevrons",
@@ -45,6 +45,31 @@
                 }
             ]
         },
+        "colourLiteral": {
+            "description": "A hex colour string, a context token, or a named fill pattern.",
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/colourstrings"
+                },
+                {
+                    "$ref": "#/$defs/patternName"
+                }
+            ]
+        },
+        "colourResolvable": {
+            "description": "Any colour value the renderer can resolve: player number, literal colour or pattern, or a colour function.",
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                {
+                    "$ref": "#/$defs/colourLiteral"
+                },
+                {
+                    "$ref": "#/$defs/colourfuncs"
+                }
+            ]
+        },
         "functionFlatten": {
             "description": "This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.",
             "type": "object",
@@ -57,26 +82,14 @@
                 "fg": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
                 "bg": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -107,13 +120,7 @@
                 "colour": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -144,13 +151,7 @@
                 "bg": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -159,13 +160,7 @@
                     "items": {
                         "anyOf": [
                             {
-                                "$ref": "#/$defs/positiveInteger"
-                            },
-                            {
-                                "$ref": "#/$defs/colourstrings"
-                            },
-                            {
-                                "$ref": "#/$defs/colourfuncs"
+                                "$ref": "#/$defs/colourResolvable"
                             }
                         ]
                     }
@@ -190,26 +185,14 @@
                 "default": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
                 "palette": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -326,13 +309,7 @@
                     "description": "Hex string or player number of the desired colour",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -404,16 +381,10 @@
                     "type": "string"
                 },
                 "colour": {
-                    "description": "A 3- or 6-digit hex colour value, a player position, or a gradient.",
+                    "description": "A hex colour, player number, named pattern, colour function, or gradient.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         },
                         {
                             "$ref": "#/$defs/gradient"
@@ -421,16 +392,10 @@
                     ]
                 },
                 "colour2": {
-                    "description": "A 3- or 6-digit hex colour value, a player position, or a gradient.",
+                    "description": "A hex colour, player number, named pattern, colour function, or gradient.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         },
                         {
                             "$ref": "#/$defs/gradient"
@@ -520,13 +485,7 @@
                 "items": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
+                            "$ref": "#/$defs/colourResolvable"
                         },
                         {
                             "type": "number",
@@ -580,65 +539,35 @@
                 "top": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
                 "north": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
                 "east": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
                 "south": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
                 "west": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -646,13 +575,7 @@
                     "description": "Hidden when the cube sits on the board. Optional.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 }
@@ -928,13 +851,7 @@
                         "colour": {
                             "anyOf": [
                                 {
-                                    "$ref": "#/$defs/colourstrings"
-                                },
-                                {
-                                    "$ref": "#/$defs/colourfuncs"
-                                },
-                                {
-                                    "$ref": "#/$defs/positiveInteger"
+                                    "$ref": "#/$defs/colourResolvable"
                                 }
                             ],
                             "default": "#000"
@@ -1041,13 +958,7 @@
                 "colour": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/colourstrings"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/positiveInteger"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -1197,13 +1108,7 @@
                         "fill": {
                             "anyOf": [
                                 {
-                                    "$ref": "#/$defs/positiveInteger"
-                                },
-                                {
-                                    "$ref": "#/$defs/colourfuncs"
-                                },
-                                {
-                                    "$ref": "#/$defs/colourstrings"
+                                    "$ref": "#/$defs/colourResolvable"
                                 }
                             ],
                             "default": "#fff"
@@ -1217,13 +1122,7 @@
                         "stroke": {
                             "anyOf": [
                                 {
-                                    "$ref": "#/$defs/positiveInteger"
-                                },
-                                {
-                                    "$ref": "#/$defs/colourfuncs"
-                                },
-                                {
-                                    "$ref": "#/$defs/colourstrings"
+                                    "$ref": "#/$defs/colourResolvable"
                                 }
                             ],
                             "default": "#000"
@@ -1348,13 +1247,7 @@
                         "colour": {
                             "anyOf": [
                                 {
-                                    "$ref": "#/$defs/colourstrings"
-                                },
-                                {
-                                    "$ref": "#/$defs/colourfuncs"
-                                },
-                                {
-                                    "$ref": "#/$defs/positiveInteger"
+                                    "$ref": "#/$defs/colourResolvable"
                                 }
                             ],
                             "default": "#000"
@@ -1401,13 +1294,7 @@
                         "colour": {
                             "anyOf": [
                                 {
-                                    "$ref": "#/$defs/colourstrings"
-                                },
-                                {
-                                    "$ref": "#/$defs/colourfuncs"
-                                },
-                                {
-                                    "$ref": "#/$defs/positiveInteger"
+                                    "$ref": "#/$defs/colourResolvable"
                                 }
                             ],
                             "default": "#000"
@@ -1574,13 +1461,7 @@
                     "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -1623,13 +1504,7 @@
                     "description": "Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -1637,13 +1512,7 @@
                     "description": "Optional. Places a coloured bar to the left of the area, used to indicate ownership.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 }
@@ -2117,13 +1986,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2167,13 +2030,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2275,13 +2132,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2328,13 +2179,7 @@
                                 "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                                 "anyOf": [
                                     {
-                                        "$ref": "#/$defs/positiveInteger"
-                                    },
-                                    {
-                                        "$ref": "#/$defs/colourfuncs"
-                                    },
-                                    {
-                                        "$ref": "#/$defs/colourstrings"
+                                        "$ref": "#/$defs/colourResolvable"
                                     }
                                 ]
                             },
@@ -2391,13 +2236,7 @@
                     "description": "Fill is drawn before grid lines, segments are drawn after grid lines.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 }
@@ -2430,13 +2269,7 @@
                     "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2543,13 +2376,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2598,13 +2425,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ]
                 },
@@ -2644,13 +2465,7 @@
                     "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2702,13 +2517,7 @@
                     "description": "The colour of the fence. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2828,13 +2637,7 @@
                     "description": "The colour of the shaded area. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -2912,13 +2715,7 @@
                 "fill": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#fff"
@@ -2932,13 +2729,7 @@
                 "stroke": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/positiveInteger"
-                        },
-                        {
-                            "$ref": "#/$defs/colourfuncs"
-                        },
-                        {
-                            "$ref": "#/$defs/colourstrings"
+                            "$ref": "#/$defs/colourResolvable"
                         }
                     ],
                     "default": "#000"
@@ -3320,13 +3111,7 @@
                                     "colour": {
                                         "anyOf": [
                                             {
-                                                "$ref": "#/$defs/positiveInteger"
-                                            },
-                                            {
-                                                "$ref": "#/$defs/colourstrings"
-                                            },
-                                            {
-                                                "$ref": "#/$defs/colourfuncs"
+                                                "$ref": "#/$defs/colourResolvable"
                                             }
                                         ]
                                     }
