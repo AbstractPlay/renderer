@@ -1454,16 +1454,16 @@ export interface Polypiece {
   z?: number;
 }
 /**
- * The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm.
+ * The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm. Entries may be legend keys or domino tile refs that fuse two half legends into one 2:1 tile.
  */
 export interface AreaPieces {
   type: "pieces";
   /**
-   * A list of strings representing glyphs in the `legend`
+   * Legend keys for ordinary pieces, or domino tile refs that pair two half legends into one hand tile.
    *
    * @minItems 1
    */
-  pieces: [string, ...string[]];
+  pieces: [string | DominoTileRef, ...(string | DominoTileRef)[]];
   /**
    * The text that will appear at the top left of the area
    */
@@ -1484,6 +1484,22 @@ export interface AreaPieces {
    * With some piece types, you need extra space between them. Expressed as a percentage of cell size, this will insert some padding between pieces.
    */
   spacing?: number;
+}
+/**
+ * A domino tile for use in a `pieces` area. Composes two legend entries (west/left and east/right) into one 2:1 flat tile at render time. Domino pairing is area-only; board placement uses separate half legends per cell.
+ */
+export interface DominoTileRef {
+  /**
+   * Legend keys for the west (left) and east (right) ends of the tile, in that order.
+   *
+   * @minItems 2
+   * @maxItems 2
+   */
+  domino: [string, string];
+  /**
+   * Optional stable handle used in click payloads instead of the tile index.
+   */
+  id?: string;
 }
 /**
  * This is a special area currently only used for the DVGC games and incorporates a `pieces`-style area into the game board itself. It is currently only designed for two-player use with 180 degree rotation. The area is clickable, as are the pieces within. You must tell the renderer which area belongs to which player.

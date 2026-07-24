@@ -5,6 +5,7 @@ import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
+import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap } from "../common/dominoHand";
 import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys";
@@ -3581,16 +3582,34 @@ export abstract class RendererBase {
                 if (area.spacing !== undefined) {
                     hpad = this.cellsize * area.spacing;
                 }
-                const numPieces = area.pieces.length;
                 let desiredWidth = boardWidth;
                 if (area.width !== undefined) {
                     desiredWidth = area.width;
                 }
-                const numRows = Math.ceil(numPieces / desiredWidth);
+                const pieceRows = buildPiecesAreaRows(area.pieces, desiredWidth);
                 const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                 const cellsize = this.cellsize * 0.75;
-                const areaWidth = (cellsize * desiredWidth) + (hpad * (desiredWidth-1));
-                const areaHeight = (textHeight * 2) + (cellsize * numRows) + (hpad * (numRows-1));
+                const boardCellsize = this.cellsize;
+                let areaWidth = 0;
+                let areaHeight = textHeight * 2;
+                for (let i = 0; i < pieceRows.length; i++) {
+                    const row = pieceRows[i];
+                    let rowWidth = 0;
+                    let rowHeight = cellsize;
+                    for (let j = 0; j < row.length; j++) {
+                        const entry = area.pieces[row[j]];
+                        rowWidth += piecesAreaSlotWidth(entry, cellsize, boardCellsize);
+                        rowHeight = Math.max(rowHeight, piecesAreaSlotHeight(entry, cellsize, boardCellsize));
+                        if (j < row.length - 1) {
+                            rowWidth += piecesAreaHorizontalGap(entry, hpad, boardCellsize);
+                        }
+                    }
+                    areaWidth = Math.max(areaWidth, rowWidth);
+                    areaHeight += rowHeight;
+                    if (i < pieceRows.length - 1) {
+                        areaHeight += piecesAreaVerticalGap(hpad, boardCellsize);
+                    }
+                }
                 let markWidth = 0;
                 let markColour: string|undefined;
                 if ( ("ownerMark" in area) && (area.ownerMark !== undefined) ) {
@@ -3605,7 +3624,7 @@ export abstract class RendererBase {
                 if (opts !== undefined && opts.canvas !== undefined) {
                     root = opts.canvas;
                 }
-                const nested = root.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2);
+                const nested = root.nested().id(`_pieces${iArea}`).size(areaWidth+2, areaHeight+2).viewbox(-1 - markWidth - 5, -1, areaWidth+2+markWidth+10, areaHeight+2).attr("overflow", "visible");
                 const fullWidth = areaWidth + 2 + markWidth + 10;
                 if (finalWidth === undefined) {
                     finalWidth = fullWidth;
@@ -3615,22 +3634,60 @@ export abstract class RendererBase {
                 if ("background" in area && area.background !== undefined) {
                     nested.rect(areaWidth,areaHeight).fill(this.resolveColour(area.background) as string);
                 }
-                for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
-                    const p = area.pieces[iPiece];
-                    const row = Math.floor(iPiece / desiredWidth);
-                    const col = iPiece % desiredWidth;
-                    const piece = this.rootSvg.findOne("#" + p) as Svg;
-                    if ( (piece === null) || (piece === undefined) ) {
-                        throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
+                for (let iRow = 0; iRow < pieceRows.length; iRow++) {
+                    const row = pieceRows[iRow];
+                    let slotX = 0;
+                    let rowHeight = cellsize;
+                    for (const iPiece of row) {
+                        rowHeight = Math.max(rowHeight, piecesAreaSlotHeight(area.pieces[iPiece], cellsize, boardCellsize));
                     }
-                    const newx = (col * (cellsize + hpad)) + (cellsize / 2);
-                    const newy = (textHeight * 2) + (row * (cellsize+hpad)) + (cellsize / 2);
-                    const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: newy, scalingFactor: 1});
-                    if (rotation !== 0) {
-                        rotate(use, rotation, newx, newy);
-                    }
-                    if (this.options.boardClick !== undefined) {
-                        use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
+                    const slotTop = (textHeight * 2) + pieceRows.slice(0, iRow).reduce((sum, prevRow) => {
+                        let prevHeight = cellsize;
+                        for (const iPiece of prevRow) {
+                            prevHeight = Math.max(prevHeight, piecesAreaSlotHeight(area.pieces[iPiece], cellsize, boardCellsize));
+                        }
+                        return sum + prevHeight + piecesAreaVerticalGap(hpad, boardCellsize);
+                    }, 0);
+                    for (let j = 0; j < row.length; j++) {
+                        const iPiece = row[j];
+                        const entry = area.pieces[iPiece];
+                        const slotWidth = piecesAreaSlotWidth(entry, cellsize, boardCellsize);
+                        const slotHeight = piecesAreaSlotHeight(entry, cellsize, boardCellsize);
+                        const slotCenterY = slotTop + (slotHeight / 2);
+                        if (isDominoTileRef(entry)) {
+                            const [leftKey, rightKey] = entry.domino;
+                            const tileLeft = slotX;
+                            const tileGroup = composeDominoTile(nested, this.rootSvg, leftKey, rightKey, boardCellsize);
+                            tileGroup.move(tileLeft, slotTop);
+                            if (rotation !== 0) {
+                                rotate(tileGroup, rotation, tileLeft + slotWidth / 2, slotCenterY);
+                            }
+                            if (this.options.boardClick !== undefined) {
+                                const handle = entry.id ?? iPiece;
+                                const halfSize = boardCellsize;
+                                const leftHit = nested.rect(halfSize, halfSize).fill({color: "#fff", opacity: 0}).addClass("aprender-domino-hit").move(tileLeft, slotTop);
+                                const rightHit = nested.rect(halfSize, halfSize).fill({color: "#fff", opacity: 0}).addClass("aprender-domino-hit").move(tileLeft + halfSize, slotTop);
+                                leftHit.click((e: Event) => {this.options.boardClick!(-1, -1, dominoClickPayload(handle, leftKey, rightKey, "L")); e.stopPropagation();});
+                                rightHit.click((e: Event) => {this.options.boardClick!(-1, -1, dominoClickPayload(handle, leftKey, rightKey, "R")); e.stopPropagation();});
+                            }
+                        } else {
+                            const piece = this.rootSvg.findOne("#" + entry) as Svg;
+                            if ( (piece === null) || (piece === undefined) ) {
+                                throw new Error(`Could not find the requested piece (${entry}). Each piece in the stack *must* exist in the \`legend\`.`);
+                            }
+                            const newx = slotX + (slotWidth / 2);
+                            const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: slotCenterY, scalingFactor: 1});
+                            if (rotation !== 0) {
+                                rotate(use, rotation, newx, slotCenterY);
+                            }
+                            if (this.options.boardClick !== undefined) {
+                                use.click((e: Event) => {this.options.boardClick!(-1, -1, entry); e.stopPropagation();});
+                            }
+                        }
+                        slotX += slotWidth;
+                        if (j < row.length - 1) {
+                            slotX += piecesAreaHorizontalGap(entry, hpad, boardCellsize);
+                        }
                     }
                 }
 

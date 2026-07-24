@@ -1503,8 +1503,31 @@
             ],
             "additionalProperties": false
         },
+        "dominoTileRef": {
+            "description": "A domino tile for use in a `pieces` area. Composes two legend entries (west/left and east/right) into one 2:1 flat tile at render time. Domino pairing is area-only; board placement uses separate half legends per cell.",
+            "type": "object",
+            "properties": {
+                "domino": {
+                    "description": "Legend keys for the west (left) and east (right) ends of the tile, in that order.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "id": {
+                    "description": "Optional stable handle used in click payloads instead of the tile index.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "domino"
+            ],
+            "additionalProperties": false
+        },
         "areaPieces": {
-            "description": "The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm.",
+            "description": "The only area currently used by the default renderer. Given a list of pieces from the legend, it will place them all in a bar beneath the board. The pieces will be individually clickable. Current use is for tracking pieces being rearranged in Realm. Entries may be legend keys or domino tile refs that fuse two half legends into one 2:1 tile.",
             "type": "object",
             "properties": {
                 "type": {
@@ -1513,10 +1536,17 @@
                     ]
                 },
                 "pieces": {
-                    "description": "A list of strings representing glyphs in the `legend`",
+                    "description": "Legend keys for ordinary pieces, or domino tile refs that pair two half legends into one hand tile.",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/$defs/dominoTileRef"
+                            }
+                        ]
                     },
                     "minItems": 1
                 },

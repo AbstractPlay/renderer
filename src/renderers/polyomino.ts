@@ -165,6 +165,9 @@ export class PolyominoRenderer extends RendererBase {
                     }
                     for (let iPiece = 0; iPiece < area.pieces.length; iPiece++) {
                         const p = area.pieces[iPiece];
+                        if (typeof p !== "string") {
+                            throw new Error("Domino tile refs in a `pieces` area are not supported by the polyomino renderer.");
+                        }
                         const row = Math.floor(iPiece / desiredWidth);
                         const col = iPiece % desiredWidth;
                         const piece = this.rootSvg.findOne("#" + p) as Svg;

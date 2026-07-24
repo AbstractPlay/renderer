@@ -1,0 +1,41 @@
+{
+  "board": {
+    "style": "squares",
+    "width": 4,
+    "height": 4
+  },
+  "legend": {
+    "DomL35": [
+      { "name": "piece-square-single", "rotate": 90, "colour": 1, "scale": 1.25 },
+      { "name": "tile-04", "scale": 1.25 }
+    ],
+    "DomR35": [
+      { "name": "piece-square-single", "rotate": -90, "colour": 2, "scale": 1.25 },
+      { "name": "tile-06", "scale": 1.25 }
+    ],
+    "DomL22": [
+      { "name": "piece-square-single", "rotate": 90, "colour": 3, "scale": 1.25 },
+      { "name": "tile-03", "scale": 1.25 }
+    ],
+    "DomR22": [
+      { "name": "piece-square-single", "rotate": -90, "colour": 4, "scale": 1.25 },
+      { "name": "tile-03", "scale": 1.25 }
+    ]
+  },
+  "pieces": [
+    [[], [], [], []],
+    [[], [], [], []],
+    [[], [], [], []],
+    [["DomL22"], ["DomR22"], [], []]
+  ],
+  "areas": [
+    {
+      "type": "pieces",
+      "label": "Your hand",
+      "pieces": [
+        { "domino": ["DomL35", "DomR35"], "id": "t0" },
+        { "domino": ["DomL22", "DomR22"] }
+      ]
+    }
+  ]
+}
