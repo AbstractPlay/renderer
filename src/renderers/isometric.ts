@@ -15,7 +15,7 @@ import { resolvePyramidDims, isPyramidPiece } from "./isometric/pyramidDims";
 import { cellBaseSortKey, compareCellSortKeys, compareDrawTaskSortKeys, computeCellSortKey, ISO_DRAW_LAYER_ANNOTATION, ISO_DRAW_LAYER_EDGE, ISO_DRAW_LAYER_FOOTPRINT, ISO_DRAW_LAYER_MARK, ISO_DRAW_LAYER_PIECE, ISO_DRAW_LAYER_SURFACE, IsoCellSortKey } from "./isometric/cellSort";
 import { resolveDepthShadedPieceId } from "./isometric/depthPiece";
 import { applyIsoPieceOverlays } from "./isometric/isoOverlayApply";
-import { collectIsoOverlayGlyphs, assertIsoOverlayValid } from "./isometric/isoOverlayPiece";
+import { collectIsoOverlayGlyphs, assertIsoOverlayValid, isIsoLegendPiece } from "./isometric/isoOverlayPiece";
 import { IsoFaceGlyphComposer } from "./isometric/faceOverlays";
 import { isoCellFootprint } from "./isometric/footprint";
 import { parseIsoPiecesString } from "./isometric/piecesGrid";
@@ -88,9 +88,8 @@ export class IsometricRenderer extends RendererBase {
             throw new Error(`This 'board' schema cannot be handled by the '${ IsometricRenderer.rendererName }' renderer.`);
         }
 
-        // In this renderer, the legend is bespoke and glyphs are rendered on the fly
-        // // Load all the pieces in the legend (have to do this early so the glyphs are available for marking the board)
-        // this.loadLegend();
+        // Iso 3D pieces are built below; flat glyph legend entries (e.g. domino halves) use loadLegend.
+        this.loadLegend();
 
         let basePcScale = 1;
         switch (this.json.board.style) {
@@ -278,10 +277,16 @@ export class IsometricRenderer extends RendererBase {
         if (this.json.legend !== null && this.json.legend !== undefined) {
             legend = this.json.legend as IsoLegend;
             for (const pc of Object.values(legend)) {
+                if (!isIsoLegendPiece(pc)) {
+                    continue;
+                }
                 assertIsoOverlayValid(pc);
                 this.preloadPatternsForGlyphs(collectIsoOverlayGlyphs(pc));
             }
             for (const [key, pc] of Object.entries(this.json.legend as IsoLegend)) {
+                if (!isIsoLegendPiece(pc)) {
+                    continue;
+                }
                 const effPiece = effectiveRotatedPiece(pc.piece, numRotations);
 
                 // generate the pieces

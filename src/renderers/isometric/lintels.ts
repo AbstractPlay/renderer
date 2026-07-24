@@ -185,6 +185,9 @@ export const hexLintelName = (
 };
 
 export const parseLintelPiece = (name: string): ParsedLintel | null => {
+    if (typeof name !== "string") {
+        return null;
+    }
     if (name === "spaceCube") {
         return { kind: "cube", omitted: [...CUBE_EDGE_ORDER] };
     }

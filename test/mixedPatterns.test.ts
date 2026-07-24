@@ -6,7 +6,6 @@ import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const schema = require("../src/schemas/schema.json");
 
 const { createSVGWindow } = require("svgdom");
@@ -30,12 +29,38 @@ const pieceLegend: APRenderRep["legend"] = {
     B: { name: "piece", colour: 2 },
 };
 
+/** Self-contained fixture for mixed colour/pattern legend entries (not tied to docs samples). */
+const mixedPatternsFixture: APRenderRep = {
+    board: { style: "squares", height: 2, width: 2 },
+    legend: {
+        P1: { name: "piece", colour: 1 },
+        P2: { name: "piece", colour: 2 },
+        FIXED: { name: "piece", colour: "houndstooth" },
+        LIGHT: {
+            name: "piece",
+            colour: {
+                func: "lighten",
+                colour: "microbial",
+                ds: 0.15,
+                dl: 0.1,
+            },
+        },
+        CUSTOM: {
+            name: "piece",
+            colour: {
+                func: "custom",
+                default: "chevrons",
+                palette: 1,
+            },
+        },
+    },
+    pieces: "P1,P2\nFIXED,LIGHT",
+};
+
 describe("Mixed colours and patterns", () => {
-    it("validates the formatting-mixed-patterns sample", () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const sample = require("../docs/samples/formatting-mixed-patterns.json");
+    it("validates mixed colour and pattern legend entries", () => {
         const ajv = new Ajv();
-        expect(ajv.validate(schema, sample)).to.equal(true);
+        expect(ajv.validate(schema, mixedPatternsFixture)).to.equal(true);
     });
 
     it("validates glyph colour with a pattern name", () => {

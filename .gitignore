@@ -16,3 +16,7 @@ bin/*
 scratch.*
 debug.json
 *.tgz
+
+# Cursor — keep shared rules, ignore other local state
+.cursor/*
+!.cursor/rules/

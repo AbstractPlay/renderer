@@ -964,6 +964,9 @@ export abstract class RendererBase {
                 if (typeof node === "string") {
                     continue;
                 }
+                if (typeof node === "object" && node !== null && !Array.isArray(node) && "piece" in node) {
+                    continue;
+                }
                 let glyphs: Array<Glyph>;
                 if (! Array.isArray(node)) {
                     glyphs = [node];
@@ -984,6 +987,9 @@ export abstract class RendererBase {
 
             for (const key in this.json.legend) {
                 const glyph = this.json.legend[key];
+                if (typeof glyph === "object" && glyph !== null && !Array.isArray(glyph) && "piece" in glyph) {
+                    continue;
+                }
                 let glyphs: Array<Glyph>;
                 if (typeof glyph === "string") {
                     glyphs = [{name: glyph}];

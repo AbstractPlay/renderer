@@ -6,6 +6,10 @@ export type IsoOverlaySpec = {
     decor?: IsoFaceDecor;
 };
 
+/** True when a legend value is an isometric 3D piece definition (not a flat glyph composite). */
+export const isIsoLegendPiece = (entry: unknown): entry is IsoPiece =>
+    typeof entry === "object" && entry !== null && !Array.isArray(entry) && "piece" in entry;
+
 export const isoOverlayFromPiece = (pc: IsoPiece): IsoOverlaySpec | undefined => {
     const top = "top" in pc && pc.top !== undefined && pc.top.length > 0 ? pc.top : undefined;
     const decor = "decor" in pc && pc.decor !== undefined ? pc.decor : undefined;

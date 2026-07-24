@@ -1228,4 +1228,57 @@ describe("IsometricRenderer projection presets", () => {
         expect(draw.findOne("#C")).to.not.equal(null);
         expect(draw.findOne("#H")).to.not.equal(null);
     });
+
+    it("should render mixed iso pieces and domino glyph legend entries", () => {
+        const renderer = new IsometricRenderer();
+        const draw = makeDraw();
+        const rep: APRenderRep = {
+            renderer: "isometric",
+            board: { style: "squares", projection: "shallow", width: 10, height: 6 },
+            legend: {
+                I1LH90: {
+                    piece: "cube",
+                    colour: 2,
+                    scale: 1,
+                    height: 10,
+                    decor: { top: [{ name: "piece-square-single", rotate: 90, opacity: 0 }, { name: "tile-01" }] },
+                },
+                H0L: [{ name: "piece-square-single", rotate: 90, scale: 1.25 }],
+                H0R: [{ name: "piece-square-single", rotate: -90, scale: 1.25 }],
+                H1L: [{ name: "piece-square-single", rotate: 90, scale: 1.25 }],
+                H1R: [
+                    { name: "piece-square-single", rotate: -90, scale: 1.25, colour: 2 },
+                    { name: "tile-01", scale: 1.25 },
+                ],
+            },
+            pieces: [
+                [[], [], [], [], [], [], [], [], [], []],
+                [[], [], [], [], [], [], [], [], [], []],
+                [[], [], [], [], [], [], [], [], [], []],
+                [[], [], [], [], [], [], [], [], [], []],
+                [[], [], [], [], ["I1LH90"], [], [], [], [], []],
+                [[], [], [], [], [], [], [], [], [], []],
+            ],
+            areas: [{
+                type: "pieces",
+                label: "Hand",
+                spacing: 0.25,
+                pieces: [
+                    { domino: ["H0L", "H0R"], id: "T0" },
+                    { domino: ["H1L", "H1R"], id: "T1" },
+                ],
+                width: 6,
+            }],
+        };
+        renderer.render(rep, draw, {
+            ...baseOptions,
+            sheets: ["core", "dominoes"],
+            colours: ["#c44", "#48c"],
+        });
+
+        expect(draw.findOne("#I1LH90")).to.not.equal(null);
+        expect(draw.findOne("#H0L")).to.not.equal(null);
+        expect(draw.findOne("#H1R")).to.not.equal(null);
+        expect(draw.findOne("#_pieces0")).to.not.equal(null);
+    });
 });
