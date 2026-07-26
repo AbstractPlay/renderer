@@ -1903,7 +1903,8 @@ export abstract class RendererBase {
                         pts.push([point.row, point.col]);
                     }
                     pts.forEach((p) => {
-                        const pt = grid[p[0]][p[1]];
+                        const [ptx, pty] = this.interpolateFromGrid(grid, {row: p[0], col: p[1]});
+                        // const pt = grid[p[0]][p[1]];
                         // these exceptions are due to poor SVGjs typing
 
                         svgGroup.circle(this.cellsize * diameter)
@@ -1911,7 +1912,7 @@ export abstract class RendererBase {
                             .fill(colour)
                             .opacity(opacity)
                             .stroke({width: 0})
-                            .center(pt.x, pt.y)
+                            .center(ptx, pty)
                             .attr({ 'pointer-events': 'none' })
                             .addClass(`aprender-marker-${x2uid(cloned)}`);
                     });
@@ -2049,11 +2050,15 @@ export abstract class RendererBase {
                     const point1 = (marker.points as ITarget[])[0];
                     const point2 = (marker.points as ITarget[])[1];
                     if ( (this.json.board.style.startsWith("squares") || this.json.board.style === "pegboard") && (gridExpanded !== undefined) && (! centered) ) {
-                        [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y];
-                        [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y];
+                        [x1, y1] = this.interpolateFromGrid(gridExpanded, point1);
+                        [x2, y2] = this.interpolateFromGrid(gridExpanded, point2);;
+                        // [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y];
+                        // [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y];
                     } else {
-                        [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y];
-                        [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y];
+                        [x1, y1] = this.interpolateFromGrid(grid, point1);
+                        [x2, y2] = this.interpolateFromGrid(grid, point2);;
+                        // [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y];
+                        // [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y];
                     }
 
                     if ("shorten" in marker && marker.shorten !== undefined && marker.shorten > 0) {
