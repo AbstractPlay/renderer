@@ -178,6 +178,32 @@ describe("tileSpacing line markers", () => {
         expect(floodBox.bottom).to.be.at.most(bottomY);
     });
 
+    it("should draw tile-corner boxes on every minigrid, not only tile (0,0)", () => {
+        const polys = buildSpacedPolys();
+        const [nwX, nwY] = tileCornerXY(polys, 0, 1, "nw", TILE, TILE, GAP);
+        const [neX] = tileCornerXY(polys, 0, 1, "ne", TILE, TILE, GAP);
+        const [vX, vTopY] = tileCornerXY(polys, 1, 0, "nw", TILE, TILE, GAP);
+        const [, vBottomY] = tileCornerXY(polys, 1, 0, "sw", TILE, TILE, GAP);
+
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        const rep: APRenderRep = {
+            board: {
+                ...spacedBoardBase(),
+                markers: [
+                    { type: "line", colour: 1, width: 5, points: [{ tileRow: 0, tileCol: 1, corner: "nw" }, { tileRow: 0, tileCol: 1, corner: "ne" }] },
+                    { type: "line", colour: 1, width: 5, points: [{ tileRow: 1, tileCol: 0, corner: "nw" }, { tileRow: 1, tileCol: 0, corner: "sw" }] },
+                ],
+            },
+            legend: {},
+            pieces: "---------\n".repeat(9).trimEnd(),
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        expect(findHorizontalLine(draw, nwY, nwX, neX)).to.not.equal(null);
+        expect(draw.findOne(`#gridlines line[x1='${vX}'][y1='${vTopY}'][x2='${vX}'][y2='${vBottomY}']`)).to.not.equal(null);
+    });
+
     it("should keep tile (0,0) top edge unchanged when spacing is added", () => {
         const draw = makeDraw();
         const renderer = new DefaultRenderer();

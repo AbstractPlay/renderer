@@ -43,12 +43,14 @@ function tileExtent(
     tileCol: number,
     tileWidth: number,
     tileHeight: number,
-    tileSpacing: number,
+    _tileSpacing: number,
     boardWidth: number,
     boardHeight: number,
 ): TileExtent | undefined {
-    const r0 = tileRow * (tileHeight + tileSpacing);
-    const c0 = tileCol * (tileWidth + tileSpacing);
+    // Cell indices are contiguous; tileSpacing is applied as pixel offset in rectOfRects,
+    // not as extra rows/columns between tiles.
+    const r0 = tileRow * tileHeight;
+    const c0 = tileCol * tileWidth;
     if (r0 >= boardHeight || c0 >= boardWidth) {
         return undefined;
     }
