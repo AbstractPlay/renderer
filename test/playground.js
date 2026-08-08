@@ -567,7 +567,7 @@
                 "niche-reference-col": {
                     "name": "Niche: Board reference (Circle of Life annulus)",
                     "description": "Annulus reference ring around a hex-of-hex playfield. Species slots are coloured via `reference.styles`.",
-                    "render": `{"board":{"style":"hex-of-hex","minWidth":5,"maxWidth":9,"reference":{"layout":"annulus","source":"circle-of-life-ring","rotateWithBoard":true,"gap":0.75,"styles":{"species-0":1,"species-1":2,"species-2":3,"species-3":4,"arrows":"_context_strokes","background":"_context_background":"_context_background"}}},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":"-----\\n------\\n---A---\\n----B--\\n------\\n---A---\\n------\\n-----"}`
+                    "render": `{"board":{"style":"hex-of-hex","minWidth":5,"maxWidth":9,"reference":{"layout":"annulus","source":"circle-of-life-ring","rotateWithBoard":true,"gap":0.75,"styles":{"species-0":1,"species-1":2,"species-2":3,"species-3":4,"arrows":"_context_strokes","background":"_context_background"}}},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":"-----\\n------\\n---A---\\n----B--\\n------\\n---A---\\n------\\n-----"}`
                 }
             }
 
