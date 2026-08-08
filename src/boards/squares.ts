@@ -1,5 +1,5 @@
 import { Element as SVGElement, Rect as SVGRect, StrokeData, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
-import { IPoint, IPolyPolygon, rectOfRects } from "../grids";
+import { expandSquareGrid, IPoint, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { rotatePoint, shortenLine } from "../common/plotting";
 import tinycolor from "tinycolor2";
@@ -88,10 +88,8 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
 
     const board = ctx.rootSvg.group().id("board");
 
-    // Make an expanded grid for markers, to accommodate edge marking and shading
-    // Add one row and one column and shift all points up and to the left by half a cell size
-    let gridExpanded = rectOfRects({gridHeight: height + 1, gridWidth: width + 1, cellSize: cellsize});
-    gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
+    // Corner grid for line/shading/label markers (includes tileSpacing offsets when set)
+    const gridExpanded = expandSquareGrid(height, width, cellsize, tilex, tiley, tileSpace);
 
     // define "tiles" earlier so clickable gridlines are viable
     const tiles = board.group().id("tiles");
@@ -731,6 +729,9 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
             linejoin: "round",
         };
         for (const cell of mark.points) {
+            if (cell.row === undefined || cell.col === undefined) {
+                continue;
+            }
             const poly = polys[cell.row][cell.col];
             gridlines.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" "))
                         .fill("none")

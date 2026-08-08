@@ -229,7 +229,7 @@
             ]
         },
         "rowCol": {
-            "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.",
+            "description": "The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0. On spaced square boards (`tileSpacing` > 0), macro corner coordinates are ambiguous at tile boundaries; use `tileRow`, `tileCol`, and `corner` instead.",
             "type": "object",
             "properties": {
                 "row": {
@@ -239,11 +239,39 @@
                 "col": {
                     "type": "number",
                     "minimum": 0
+                },
+                "tileRow": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "tileCol": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "corner": {
+                    "type": "string",
+                    "enum": [
+                        "nw",
+                        "ne",
+                        "sw",
+                        "se"
+                    ]
                 }
             },
-            "required": [
-                "row",
-                "col"
+            "oneOf": [
+                {
+                    "required": [
+                        "row",
+                        "col"
+                    ]
+                },
+                {
+                    "required": [
+                        "tileRow",
+                        "tileCol",
+                        "corner"
+                    ]
+                }
             ],
             "additionalProperties": false
         },

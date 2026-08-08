@@ -1,7 +1,7 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
+import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
@@ -1864,6 +1864,67 @@ export abstract class RendererBase {
         return [gridx, gridy];
     }
 
+    private resolveSquareMarkerPoint(
+        point: SquarePoint,
+        gridExpanded: GridPoints,
+        polys: Poly[][] | undefined,
+    ): [number, number] {
+        if (isTileCornerPoint(point)) {
+            if (polys === undefined || this.json?.board === undefined || this.json.board === null) {
+                throw new Error("Tile-corner square board points require polygons.");
+            }
+            const board = this.json.board;
+            let tileWidth = 0;
+            let tileHeight = 0;
+            let tileSpacing = 0;
+            if ("tileWidth" in board && board.tileWidth !== undefined) {
+                tileWidth = board.tileWidth;
+            }
+            if ("tileHeight" in board && board.tileHeight !== undefined) {
+                tileHeight = board.tileHeight;
+            }
+            if ("tileSpacing" in board && board.tileSpacing !== undefined) {
+                tileSpacing = board.tileSpacing;
+            }
+            const width = ("width" in board && board.width !== undefined) ? board.width : 0;
+            const height = ("height" in board && board.height !== undefined) ? board.height : 0;
+
+            return resolveSquareBoardPoint(point, {
+                polys: polys as IPolyPolygon[][],
+                gridExpanded,
+                tileWidth,
+                tileHeight,
+                tileSpacing,
+                boardWidth: width,
+                boardHeight: height,
+                interpolate: (p) => this.interpolateFromGrid(gridExpanded, p),
+            });
+        }
+
+        if (point.row === undefined || point.col === undefined) {
+            throw new Error("Square board points require row/col or tileRow/tileCol/corner.");
+        }
+
+        // Macro row/col coordinates keep the legacy unspaced corner grid so existing
+        // content (e.g. label nudges that account for tile gaps) is unchanged.
+        const board = this.json?.board;
+        if (board === undefined || board === null) {
+            return this.interpolateFromGrid(gridExpanded, { row: point.row, col: point.col });
+        }
+        let tileWidth = 0;
+        let tileHeight = 0;
+        if ("tileWidth" in board && board.tileWidth !== undefined) {
+            tileWidth = board.tileWidth;
+        }
+        if ("tileHeight" in board && board.tileHeight !== undefined) {
+            tileHeight = board.tileHeight;
+        }
+        const width = ("width" in board && board.width !== undefined) ? board.width : 0;
+        const height = ("height" in board && board.height !== undefined) ? board.height : 0;
+        const legacyGrid = expandSquareGrid(height, width, this.cellsize, tileWidth, tileHeight, 0);
+        return this.interpolateFromGrid(legacyGrid, { row: point.row, col: point.col });
+    }
+
     /**
      * Markers are placed right after the board itself is generated, and so are obscured by placed pieces.
      *
@@ -1987,8 +2048,10 @@ export abstract class RendererBase {
                     }
                     const points: [number, number][] = [];
                     if ( ( (this.json.board.style.startsWith("squares")) || (this.json.board.style.startsWith("sowing")) || this.json.board.style === "pegboard") && (gridExpanded !== undefined) ) {
-                        for (const point of marker.points as ITarget[]) {
-                            points.push([gridExpanded[point.row][point.col].x, gridExpanded[point.row][point.col].y]);
+                        const ptList = marker.points as SquarePoint[];
+                        for (const point of ptList) {
+                            const [x, y] = this.resolveSquareMarkerPoint(point, gridExpanded, polys);
+                            points.push([x, y]);
                         }
                     } else {
                         for (const point of marker.points as ITarget[]) {
@@ -2107,18 +2170,14 @@ export abstract class RendererBase {
                     }
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
-                    const point1 = (marker.points as ITarget[])[0];
-                    const point2 = (marker.points as ITarget[])[1];
+                    const point1 = (marker.points as SquarePoint[])[0]!;
+                    const point2 = (marker.points as SquarePoint[])[1]!;
                     if ( (this.json.board.style.startsWith("squares") || this.json.board.style === "pegboard") && (gridExpanded !== undefined) && (! centered) ) {
-                        [x1, y1] = this.interpolateFromGrid(gridExpanded, point1);
-                        [x2, y2] = this.interpolateFromGrid(gridExpanded, point2);;
-                        // [x1, y1] = [gridExpanded[point1.row][point1.col].x, gridExpanded[point1.row][point1.col].y];
-                        // [x2, y2] = [gridExpanded[point2.row][point2.col].x, gridExpanded[point2.row][point2.col].y];
+                        [x1, y1] = this.resolveSquareMarkerPoint(point1, gridExpanded, polys);
+                        [x2, y2] = this.resolveSquareMarkerPoint(point2, gridExpanded, polys);
                     } else {
-                        [x1, y1] = this.interpolateFromGrid(grid, point1);
-                        [x2, y2] = this.interpolateFromGrid(grid, point2);;
-                        // [x1, y1] = [grid[point1.row][point1.col].x, grid[point1.row][point1.col].y];
-                        // [x2, y2] = [grid[point2.row][point2.col].x, grid[point2.row][point2.col].y];
+                        [x1, y1] = this.interpolateFromGrid(grid, { row: point1.row!, col: point1.col! });
+                        [x2, y2] = this.interpolateFromGrid(grid, { row: point2.row!, col: point2.col! });
                     }
 
                     if ("shorten" in marker && marker.shorten !== undefined && marker.shorten > 0) {
@@ -2127,7 +2186,9 @@ export abstract class RendererBase {
 
                     const line = svgGroup.line(x1, y1, x2, y2).stroke(stroke).addClass(`aprender-marker-${x2uid(cloned)}`);
                     if (clickable) {
-                        const id = `${point1.col},${point1.row}|${point2.col},${point2.row}`;
+                        const id = (point1.row !== undefined && point1.col !== undefined)
+                            ? `${point1.col},${point1.row}|${point2.col},${point2.row}`
+                            : `${point1.tileRow},${point1.tileCol},${point1.corner}|${point2.tileRow},${point2.tileCol},${point2.corner}`;
                         line.click((e: MouseEvent) => {
                             this.options.boardClick!(-1, -1, id);
                             e.stopPropagation();
@@ -2350,10 +2411,10 @@ export abstract class RendererBase {
 
                     let x1: number; let x2: number; let y1: number; let y2: number;
                     if ( (this.json.board.style.startsWith("squares") || this.json.board.style === "pegboard") && (gridExpanded !== undefined) ) {
-                        const point1 = (marker.points as ITarget[])[0];
-                        [x1, y1] = this.interpolateFromGrid(gridExpanded, point1);
-                        const point2 = (marker.points as ITarget[])[1];
-                        [x2, y2] = this.interpolateFromGrid(gridExpanded, point2);
+                        const point1 = (marker.points as SquarePoint[])[0]!;
+                        const point2 = (marker.points as SquarePoint[])[1]!;
+                        [x1, y1] = this.resolveSquareMarkerPoint(point1, gridExpanded, polys);
+                        [x2, y2] = this.resolveSquareMarkerPoint(point2, gridExpanded, polys);
                     } else {
                         const point1 = (marker.points as ITarget[])[0];
                         [x1, y1] = this.interpolateFromGrid(grid, point1);
@@ -2948,6 +3009,10 @@ export abstract class RendererBase {
                     }
                     const style = this.json.board.style;
                     if ( (style.startsWith("squares") || style === "pegboard") && (gridExpanded !== undefined) ) {
+                        if (!("row" in marker.cell) || !("col" in marker.cell)
+                            || marker.cell.row === undefined || marker.cell.col === undefined) {
+                            throw new Error("Fence markers require cell row/col coordinates.");
+                        }
                         const row = marker.cell.row;
                         const col = marker.cell.col;
                         let xFrom = 0; let yFrom = 0;
@@ -2989,6 +3054,10 @@ export abstract class RendererBase {
                         delete newclone.side;
                         svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
+                        if (!("row" in marker.cell) || !("col" in marker.cell)
+                            || marker.cell.row === undefined || marker.cell.col === undefined) {
+                            throw new Error("Fence markers require cell row/col coordinates.");
+                        }
                         const row = marker.cell.row;
                         const col = marker.cell.col;
                         const hex = hexGrid.getHex({col, row});

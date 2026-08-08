@@ -289,6 +289,19 @@ export type BoardStyles =
   | "dvgc-checkered"
   | "other";
 /**
+ * The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0. On spaced square boards (`tileSpacing` > 0), macro corner coordinates are ambiguous at tile boundaries; use `tileRow`, `tileCol`, and `corner` instead.
+ */
+export type RowCol = {
+  row?: number;
+  col?: number;
+  tileRow?: number;
+  tileCol?: number;
+  corner?: "nw" | "ne" | "sw" | "se";
+} & RowCol1;
+export type RowCol1 = {
+  [k: string]: unknown;
+};
+/**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
 export type BoardHomeworlds = {
@@ -897,13 +910,6 @@ export interface BoardReference {
   styles?: {
     [k: string]: ColourResolvable;
   };
-}
-/**
- * The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.
- */
-export interface RowCol {
-  row: number;
-  col: number;
 }
 export interface MarkerDots {
   /**
