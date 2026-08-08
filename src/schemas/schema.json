@@ -2820,12 +2820,69 @@
             },
             "minItems": 1
         },
+        "boardReference": {
+            "description": "Attaches a prebuilt reference chart beside or around the playfield. Artwork comes from the renderer reference registry or a legend glyph override (same `source` string). The renderer scales and positions the asset; optional `styles` colours named regions via `data-ref-fill` / `data-ref-stroke` slots in the SVG.",
+            "type": "object",
+            "properties": {
+                "layout": {
+                    "enum": [
+                        "sidebar",
+                        "annulus"
+                    ]
+                },
+                "source": {
+                    "description": "Registry id (e.g. `scribe-chart`) or legend key when overriding built-in artwork.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "position": {
+                    "description": "Sidebar layout only: which side of the playfield the reference appears on.",
+                    "enum": [
+                        "left",
+                        "right"
+                    ],
+                    "default": "left"
+                },
+                "gap": {
+                    "description": "Space between playfield and reference, in cellsize units.",
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.5
+                },
+                "rotateWithBoard": {
+                    "description": "When false, the reference stays fixed while the playfield rotates for seat orientation (e.g. Scribe margin). When true, reference rotates with the board (e.g. Circle of Life ring).",
+                    "type": "boolean",
+                    "default": true
+                },
+                "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "styles": {
+                    "description": "Optional map of reference slot ids to colours. Slots are declared in the artwork via `data-ref-fill` and `data-ref-stroke`. Styles are applied in declaration order; use bulk ids (`species` / `hexes` for all CoL species hexes, `glyphs` / `dots` for all Scribe dots, `grid` for chart gridlines, `labels` / `text` for chart names) then per-index overrides such as `species-0` or `glyph-3`.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/colourResolvable"
+                    }
+                }
+            },
+            "required": [
+                "layout",
+                "source"
+            ],
+            "additionalProperties": false
+        },
         "boardBasic": {
             "description": "One of the preset boards.",
             "type": "object",
             "properties": {
                 "style": {
                     "$ref": "#/$defs/boardStyles"
+                },
+                "reference": {
+                    "$ref": "#/$defs/boardReference"
                 },
                 "rotate": {
                     "description": "Allows the game itself to rotate the base board. This is added to whatever user-provided rotation is requested. Rotation is applied after the entire board is rendered, and then key elements are reoriented vertically.",

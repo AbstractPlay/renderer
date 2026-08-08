@@ -1,0 +1,24 @@
+{
+  "board": {
+    "style": "squares",
+    "width": 4,
+    "height": 4,
+    "reference": {
+      "layout": "sidebar",
+      "source": "custom-ref",
+      "position": "right",
+      "rotateWithBoard": true,
+      "styles": {
+        "glyph-1": 1
+      }
+    }
+  },
+  "legend": {
+    "custom-ref": [
+      { "name": "piece", "colour": 1, "scale": 0.6 },
+      { "name": "piece", "colour": 2, "scale": 0.4 }
+    ],
+    "X": { "name": "piece", "colour": 1 }
+  },
+  "pieces": "X---\n----\n----\n----"
+}

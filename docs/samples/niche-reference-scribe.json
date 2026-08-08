@@ -1,0 +1,30 @@
+{
+  "board": {
+    "style": "squares",
+    "width": 9,
+    "height": 9,
+    "tileWidth": 3,
+    "tileHeight": 3,
+    "tileSpacing": 1,
+    "reference": {
+      "layout": "sidebar",
+      "source": "scribe-chart",
+      "position": "left",
+      "rotateWithBoard": false,
+      "gap": 1,
+      "styles": {
+        "glyphs": "_context_strokes",
+        "glyph-0": 1,
+        "glyph-1": 2,
+        "grid": "_context_strokes",
+        "labels": "_context_labels",
+        "background": "_context_background"
+      }
+    }
+  },
+  "legend": {
+    "P": { "name": "piece", "colour": 1 },
+    "O": { "name": "piece", "colour": 2 }
+  },
+  "pieces": "---------\n---------\n---------\n---------\n---------\n---------\n---------\n---------\n---------"
+}

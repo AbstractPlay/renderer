@@ -1,0 +1,38 @@
+{
+  "board": {
+    "style": "hex-of-hex",
+    "minWidth": 5,
+    "maxWidth": 9,
+    "reference": {
+      "layout": "annulus",
+      "source": "circle-of-life-ring",
+      "rotateWithBoard": true,
+      "gap": 0.75,
+      "styles": {
+        "species": {
+          "func": "flatten",
+          "fg": "_context_fill",
+          "bg": "_context_background",
+          "opacity": 0.55
+        },
+        "species-0": 1,
+        "species-3": 2,
+        "species-6": 3,
+        "species-9": 4,
+        "arrows": "_context_strokes",
+        "background": "_context_background",
+        "ring": {
+          "func": "flatten",
+          "fg": "_context_fill",
+          "bg": "_context_background",
+          "opacity": 0.35
+        }
+      }
+    }
+  },
+  "legend": {
+    "A": { "name": "piece", "colour": 1 },
+    "B": { "name": "piece", "colour": 2 }
+  },
+  "pieces": "-----\n------\n---A---\n----B--\n------\n---A---\n------\n-----"
+}

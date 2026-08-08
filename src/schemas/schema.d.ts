@@ -663,6 +663,7 @@ export interface IsoFaceDecor1 {
  */
 export interface BoardBasic {
   style: BoardStyles;
+  reference?: BoardReference;
   /**
    * Allows the game itself to rotate the base board. This is added to whatever user-provided rotation is requested. Rotation is applied after the entire board is rendered, and then key elements are reoriented vertically.
    */
@@ -867,6 +868,35 @@ export interface BoardBasic {
     | MarkerFences
     | MarkerGlyph
   )[];
+}
+/**
+ * Attaches a prebuilt reference chart beside or around the playfield. Artwork comes from the renderer reference registry or a legend glyph override (same `source` string). The renderer scales and positions the asset; optional `styles` colours named regions via `data-ref-fill` / `data-ref-stroke` slots in the SVG.
+ */
+export interface BoardReference {
+  layout: "sidebar" | "annulus";
+  /**
+   * Registry id (e.g. `scribe-chart`) or legend key when overriding built-in artwork.
+   */
+  source: string;
+  /**
+   * Sidebar layout only: which side of the playfield the reference appears on.
+   */
+  position?: "left" | "right";
+  /**
+   * Space between playfield and reference, in cellsize units.
+   */
+  gap?: number;
+  /**
+   * When false, the reference stays fixed while the playfield rotates for seat orientation (e.g. Scribe margin). When true, reference rotates with the board (e.g. Circle of Life ring).
+   */
+  rotateWithBoard?: boolean;
+  opacity?: number;
+  /**
+   * Optional map of reference slot ids to colours. Slots are declared in the artwork via `data-ref-fill` and `data-ref-stroke`. Styles are applied in declaration order; use bulk ids (`species` / `hexes` for all CoL species hexes, `glyphs` / `dots` for all Scribe dots, `grid` for chart gridlines, `labels` / `text` for chart names) then per-index overrides such as `species-0` or `glyph-3`.
+   */
+  styles?: {
+    [k: string]: ColourResolvable;
+  };
 }
 /**
  * The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0.

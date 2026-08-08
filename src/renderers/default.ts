@@ -142,6 +142,8 @@ export class DefaultRenderer extends RendererBase {
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }
 
+        this.placeBoardReference(polys);
+
         // PIECES
         const board = this.rootSvg.findOne("#board") as SVGG;
         const group = board.group().id("pieces");

@@ -2,7 +2,7 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon } from "../grids/_base";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, ButtonBarButton, Colourfuncs, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand";
@@ -12,6 +12,18 @@ import { unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
 import { CompassDirection, edges2corners, getBoardFill } from "../boards";
 import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit";
+import {
+    computeAnnulusPlacement,
+    computeSidebarPlacement,
+    computePlayfieldMetrics,
+    defaultAnnulusAnchor,
+    defaultSidebarAnchor,
+    ensureTableau,
+    getRegistryReferenceArt,
+    referenceInnerMarkup,
+    referenceStyleSelectors,
+    registryReferenceDefId,
+} from "../references/helpers";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -576,6 +588,54 @@ export abstract class RendererBase {
         }
         got.find(`[${fillAttr}=true]`).each(function(this: SVGElement) { this.fill({color: fill, opacity}); });
         got.find(`[${strokeAttr}=true]`).each(function(this: SVGElement) { this.stroke({color: fill, opacity}); });
+    }
+
+    /**
+     * Applies theme context fills/strokes to reference artwork data-context-* slots.
+     */
+    protected applyReferenceContextStyles(root: Svg | SVGG | SVGSymbol): void {
+        const contextFill = this.options.colourContext.fill;
+        const contextStroke = this.options.colourContext.strokes;
+        const contextBackground = this.options.colourContext.background;
+        root.find("[data-context-fill=true]").each(function (this: SVGElement) {
+            this.fill(contextFill);
+        });
+        root.find("[data-context-background=true]").each(function (this: SVGElement) {
+            this.fill(contextBackground);
+        });
+        root.find("[data-context-stroke=true]").each(function (this: SVGElement) {
+            this.stroke(contextStroke);
+        });
+    }
+
+    /**
+     * Colours a named slot (`data-ref-fill` / `data-ref-stroke`) on board reference artwork.
+     */
+    protected applyReferenceSlotStyle(root: Svg | SVGG | SVGSymbol, slotId: string, colourVal: ColourResolvable): void {
+        const fill = this.resolveFill(colourVal as number | string | Gradient | Colourfuncs, "#000");
+        const { fill: fillSelector, stroke: strokeSelector } = referenceStyleSelectors(slotId);
+        if (this.isPatternSVGElement(fill)) {
+            root.find(fillSelector).each(function (this: SVGElement) {
+                this.fill(fill);
+            });
+            root.find(strokeSelector).each(function (this: SVGElement) {
+                // @ts-expect-error (poor SVGjs typing)
+                this.stroke(fill);
+            });
+            return;
+        }
+        if (typeof fill === "object") {
+            root.find(fillSelector).each(function (this: SVGElement) {
+                this.fill(fill);
+            });
+            return;
+        }
+        root.find(fillSelector).each(function (this: SVGElement) {
+            this.fill({ color: fill, opacity: 1 });
+        });
+        root.find(strokeSelector).each(function (this: SVGElement) {
+            this.stroke({ color: fill, opacity: 1 });
+        });
     }
 
     protected resolveMarkerFill(val: number | string | Gradient | Colourfuncs, opacity: number, def?: string): FillData | SVGGradient | SVGElement {
@@ -4081,6 +4141,141 @@ export abstract class RendererBase {
         return {x: bbox.cx, y: bbox.cy}
     }
 
+  protected legendGlyphsForReferenceKey(key: string): [Glyph, ...Glyph[]] | null {
+        if (this.json === undefined || this.json.legend === undefined) {
+            return null;
+        }
+        const entry = this.json.legend[key];
+        if (entry === undefined) {
+            return null;
+        }
+        if (typeof entry === "string") {
+            return [{ name: entry }];
+        }
+        if (!Array.isArray(entry)) {
+            return [entry];
+        }
+        if (entry.length === 0) {
+            return null;
+        }
+        if (Array.isArray(entry[0])) {
+            return null;
+        }
+        return entry as [Glyph, ...Glyph[]];
+    }
+
+    protected resolveReferenceArt(ref: BoardReference): {
+        defId: string;
+        svgContent?: string;
+        meta: import("../references/types").ResolvedReferenceArt;
+    } {
+        const position = ref.position ?? "left";
+        const legendGlyphs = this.legendGlyphsForReferenceKey(ref.source);
+        if (legendGlyphs !== null) {
+            if (this.rootSvg === undefined) {
+                throw new Error("Cannot resolve reference art before SVG is initialized.");
+            }
+            const defSvg = this.rootSvg.findOne("#" + ref.source) as Svg | null;
+            if (defSvg === null) {
+                throw new Error(`Legend reference "${ref.source}" was not loaded into defs.`);
+            }
+            const vb = defSvg.viewbox();
+            const viewBox = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
+            const anchor = ref.layout === "annulus"
+                ? defaultAnnulusAnchor(viewBox)
+                : defaultSidebarAnchor(position);
+            return { defId: ref.source, meta: { viewBox, anchor, fromLegend: true } };
+        }
+        const { svgContent, meta } = getRegistryReferenceArt(ref.source);
+        return { defId: registryReferenceDefId(ref.source), svgContent, meta };
+    }
+
+    protected ensureReferenceDef(resolved: {
+        defId: string;
+        svgContent?: string;
+        meta: import("../references/types").ResolvedReferenceArt;
+    }): Svg | SVGSymbol {
+        if (this.rootSvg === undefined) {
+            throw new Error("Cannot place board reference before SVG is initialized.");
+        }
+        const existing = this.rootSvg.findOne("#" + resolved.defId) as Svg | null;
+        if (existing !== null) {
+            return existing;
+        }
+        if (resolved.svgContent === undefined) {
+            throw new Error(`Reference artwork "${resolved.defId}" is missing from defs.`);
+        }
+        const { x, y, w, h } = resolved.meta.viewBox;
+        const symbol = this.rootSvg.defs().symbol().id(resolved.defId).viewbox(x, y, w, h);
+        symbol.svg(referenceInnerMarkup(resolved.svgContent));
+        return symbol;
+    }
+
+    protected applyReferenceStyles(root: Svg | SVGG | SVGSymbol, styles?: { [key: string]: ColourResolvable }): void {
+        if (styles === undefined) {
+            return;
+        }
+        this.applyReferenceContextStyles(root);
+        for (const slotId of Object.keys(styles)) {
+            this.applyReferenceSlotStyle(root, slotId, styles[slotId]);
+        }
+    }
+
+    /**
+     * Attaches optional board reference artwork (sidebar or annulus) around the playfield.
+     */
+    protected placeBoardReference(polys?: Poly[][]): void {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            return;
+        }
+        if (this.json.board === null || !("reference" in this.json.board) || this.json.board.reference === undefined) {
+            return;
+        }
+        const ref = this.json.board.reference;
+        if (ref.layout !== "sidebar" && ref.layout !== "annulus") {
+            throw new Error(`Unsupported board reference layout "${ref.layout as string}".`);
+        }
+
+        const metrics = computePlayfieldMetrics(this.rootSvg, this.cellsize, polys);
+        const resolved = this.resolveReferenceArt(ref);
+        const defSvg = this.ensureReferenceDef(resolved);
+        const rotateWithBoard = ref.rotateWithBoard ?? true;
+        const opacity = ref.opacity ?? 1;
+
+        let parent: Svg | SVGG;
+        if (rotateWithBoard) {
+            parent = this.rootSvg.findOne("#board") as SVGG;
+        } else {
+            parent = ensureTableau(this.rootSvg);
+        }
+
+        const existing = parent.findOne("#board-reference") as SVGG | null;
+        if (existing !== null) {
+            existing.remove();
+        }
+        const refRoot = parent.group().id("board-reference").attr("overflow", "visible");
+        if (opacity !== 1) {
+            refRoot.opacity(opacity);
+        }
+
+        this.applyReferenceStyles(defSvg, ref.styles);
+
+        const placement = ref.layout === "sidebar"
+            ? computeSidebarPlacement(resolved.meta, metrics, ref, this.cellsize)
+            : computeAnnulusPlacement(resolved.meta, metrics, ref, this.cellsize);
+
+        refRoot.use(defSvg).size(placement.width, placement.height).move(placement.x, placement.y);
+
+        if (rotateWithBoard) {
+            refRoot.back();
+        } else {
+            const board = parent.findOne("#board") as SVGG | null;
+            if (board !== null) {
+                refRoot.before(board);
+            }
+        }
+    }
+
     protected rotateBoard(opts?: {ignoreRotation?: boolean, ignoreLabels?: boolean}): SVGBox {
         let ignoreRotation = false;
         if (opts !== undefined && opts.ignoreRotation !== undefined) {
@@ -4094,6 +4289,7 @@ export abstract class RendererBase {
             throw new Error("Cannot rotate unless SVG is initialized and a board is present.");
         }
 
+        const tableau = this.rootSvg.findOne("#board-tableau") as SVGG|null;
         const board = this.rootSvg.findOne("#board") as SVGG|null;
         if (board === null) {
             throw new Error("Could not find the core board group to rotate.");
@@ -4102,11 +4298,27 @@ export abstract class RendererBase {
         if (ignoreRotation) {
             rotation = 0;
         }
-        const startingBox = board.bbox();
+
+        const unionLayoutBox = (): SVGBox => {
+            const boardBox = board.bbox();
+            const ref = (tableau ?? board).findOne("#board-reference") as SVGG | null;
+            if (ref === null) {
+                return boardBox;
+            }
+            const refBox = ref.rbox(this.rootSvg);
+            const x = Math.min(boardBox.x, refBox.x);
+            const y = Math.min(boardBox.y, refBox.y);
+            const x2 = Math.max(boardBox.x2, refBox.x2);
+            const y2 = Math.max(boardBox.y2, refBox.y2);
+            return new SVGBox(x, y, x2 - x, y2 - y);
+        };
+
+        const startingBox = unionLayoutBox();
         if (rotation === 0) {
             return startingBox;
         } else {
-            rotate(board, rotation, startingBox.cx, startingBox.cy);
+            const boardBox = board.bbox();
+            rotate(board, rotation, boardBox.cx, boardBox.cy);
             // reorient all labels
             if (!ignoreLabels) {
                 const labels = this.rootSvg.findOne("#labels") as SVGG|null;
@@ -4124,6 +4336,9 @@ export abstract class RendererBase {
 
             // must be rbox relative to the root instead of bbox to pass the
             // correct coordinates to the different `areas`
+            if (tableau !== null) {
+                return tableau.rbox(this.rootSvg);
+            }
             return board.rbox(this.rootSvg);
         }
     }

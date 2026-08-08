@@ -20,6 +20,19 @@ See the [schema reference](/renderer/schema-reference/) for the authoritative pr
 
 The board is drawn first. Styles include square grids, vertex boards, hex fields, sowing pits, circular boards, and many more. See [Boards](/renderer/boards/).
 
+### Board reference charts
+
+Some games attach a **prebuilt reference chart** beside or around the playfield (e.g. Scribe’s glyph table, Circle of Life’s food-web ring). Use the optional `board.reference` property:
+
+- `layout`: `"sidebar"` or `"annulus"`
+- `source`: built-in registry id (`scribe-chart`, `circle-of-life-ring`) or a **legend key** to override artwork
+- `styles`: optional map of slot ids → colours for regions marked `data-ref-fill` / `data-ref-stroke` in the SVG
+- `rotateWithBoard`: `false` keeps the chart fixed when the playfield rotates (sidebar charts); `true` rotates with the board (annulus rings)
+
+{% renderWidget "samples/niche-reference-scribe.json" %}
+
+{% renderWidget "samples/niche-reference-col.json" %}
+
 ## Pieces
 
 Usually a string grid (rows separated by `\n`) where each character maps to a `legend` entry that represents a piece on the board. Specialized renderers use arrays or structured objects instead. See [Engines](/renderer/engines/).
