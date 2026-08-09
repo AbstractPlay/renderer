@@ -299,6 +299,11 @@
                     "description": "This circular board is for the game Moon Squad and maps to a hexhex5 where the central cell is split into three. This render includes a halo, highlights the three central spaces, and places pieces on the top row of the equivalent hexhex5.",
                     "render": `{"board":{"style":"circular-moon","strokeWeight":0.5,"markers":[{"type":"halo","width":5,"segments":[{"colour":1},{"colour":2},{"colour":3}]},{"type":"flood","points":[{"row":4,"col":4}],"colour":1},{"type":"flood","points":[{"row":4,"col":5}],"colour":2},{"type":"flood","points":[{"row":4,"col":6}],"colour":3}]},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":"AAAAA"}`
                 },
+                "board-fractured-flat": {
+                    "name": "Boards: Fractured Flat",
+                    "description": "Hand-authored fractured polygon board. Rows are size tiers (triangles, quads, pentagons, hexagons); columns sort by centroid Y then X. Flood markers highlight one cell per tier.",
+                    "render": `{"board":{"style":"fractured-flat","strokeWeight":0.5,"markers":[{"type":"flood","colour":1,"points":[{"row":0,"col":0},{"row":0,"col":1}]},{"type":"flood","colour":2,"points":[{"row":1,"col":0}]},{"type":"flood","colour":3,"points":[{"row":2,"col":0},{"row":3,"col":0}]}]},"legend":{"A":{"name":"piece","colour":1},"B":{"name":"piece","colour":2}},"pieces":null}`
+                },
                 "boards-sowing-pips": {
                     "name": "Boards: Sowing (Pips)",
                     "description": "This is the pips view of a Bao board with different numbers of stacking stones. This renderer can accommodate up to 30 stones in a pit.",

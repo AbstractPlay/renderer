@@ -226,6 +226,12 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 {% renderWidget "samples/board-moon.json" %}
 
+### `fractured-flat`
+
+Hand-authored fractured polygon board (45 cells). Rows index **size tiers** (triangles, quads, pentagons, hexagons); columns sort by centroid Y then X within each tier. Row 0 has 24 triangles, row 1 has 15 quads, row 2 has 5 pentagons, row 3 has 1 hexagon.
+
+{% renderWidget "samples/board-fractured-flat.json" %}
+
 ## Sowing / Mancala
 
 ### `sowing`

@@ -1,0 +1,28 @@
+{
+  "board": {
+    "style": "fractured-flat",
+    "strokeWeight": 0.5,
+    "markers": [
+      {
+        "type": "flood",
+        "colour": 1,
+        "points": [{ "row": 0, "col": 0 }, { "row": 0, "col": 1 }]
+      },
+      {
+        "type": "flood",
+        "colour": 2,
+        "points": [{ "row": 1, "col": 0 }]
+      },
+      {
+        "type": "flood",
+        "colour": 3,
+        "points": [{ "row": 2, "col": 0 }, { "row": 3, "col": 0 }]
+      }
+    ]
+  },
+  "legend": {
+    "A": { "name": "piece", "colour": 1 },
+    "B": { "name": "piece", "colour": 2 }
+  },
+  "pieces": null
+}

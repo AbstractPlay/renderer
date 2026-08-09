@@ -4,7 +4,7 @@ import { APRenderRep } from "../schemas/schema";
 import { peripheralReferenceSides } from "../references/helpers";
 import { IRendererOptionsIn, RendererBase} from "./_base";
 import { usePieceAt } from "../common/plotting";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
 
 /**
  * This is the default renderer used for most games.
@@ -138,6 +138,10 @@ export class DefaultRenderer extends RendererBase {
             case "circular-moon":
                 this.cellsize = 15;
                 ({ grid: gridPoints, polys, boardFill } = moon(this));
+                break;
+            case "fractured-flat":
+                this.cellsize = 40;
+                ({ grid: gridPoints, polys, boardFill } = fracturedFlat(this));
                 break;
             default:
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);

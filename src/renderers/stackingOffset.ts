@@ -3,7 +3,7 @@ import { GridPoints, IPoint, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { centroid, projectPoint, rotatePoint, usePieceAt } from "../common/plotting";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowingRound, squares, squaresDiamonds, vertex, wheel } from "../boards";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowingRound, squares, squaresDiamonds, vertex, wheel } from "../boards";
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.
@@ -127,6 +127,10 @@ export class StackingOffsetRenderer extends RendererBase {
             case "circular-moon":
                 this.cellsize = 15;
                 ({ grid: gridPoints, polys, boardFill } = moon(this));
+                break;
+            case "fractured-flat":
+                this.cellsize = 40;
+                ({ grid: gridPoints, polys, boardFill } = fracturedFlat(this));
                 break;
             case "sowing-round":
                 ({ grid: gridPoints, boardFill } = sowingRound(this));

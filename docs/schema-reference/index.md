@@ -77,6 +77,7 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 | `circular-wheel` |
 | `circular-cobweb` |
 | `circular-moon` |
+| `fractured-flat` |
 | `sowing` |
 | `sowing-round` |
 | `conhex-dots` |

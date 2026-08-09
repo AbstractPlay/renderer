@@ -274,6 +274,7 @@ export type BoardStyles =
   | "circular-wheel"
   | "circular-cobweb"
   | "circular-moon"
+  | "fractured-flat"
   | "sowing"
   | "sowing-round"
   | "conhex-dots"

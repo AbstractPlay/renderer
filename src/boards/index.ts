@@ -14,6 +14,7 @@ export { hexOfHex } from "./hexOfHex";
 export { hexOfTri } from "./hexOfTri";
 export { hexOfTriF } from "./hexOfTriF";
 export { hexSlanted } from "./hexSlanted";
+export { fracturedFlat } from "./fracturedFlat";
 export { moon } from "./moon";
 export { onyx } from "./onyx";
 export { pentagonal } from "./pentagonal";
