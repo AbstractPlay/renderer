@@ -8,8 +8,8 @@
     "tileSpacing": 1,
     "reference": {
       "layout": "sidebar",
-      "source": "scribe-chart",
-      "position": "left",
+      "sides": ["left", "right"],
+      "source": ["scribe-chart-left", "scribe-chart-right"],
       "rotateWithBoard": false,
       "gap": 1,
       "styles": {

@@ -561,8 +561,8 @@
                 },
                 "niche-reference-scribe": {
                     "name": "Niche: Board reference (Scribe sidebar)",
-                    "description": "Prebuilt sidebar reference chart attached to a tiled 9×9 board. The chart uses registry asset `scribe-chart` and stays fixed while the playfield can rotate.",
-                    "render": `{"board":{"style":"squares","width":9,"height":9,"tileWidth":3,"tileHeight":3,"tileSpacing":1,"reference":{"layout":"sidebar","source":"scribe-chart","position":"left","rotateWithBoard":false,"gap":1,"styles":{"glyphs":"_context_strokes","glyph-0":1,"glyph-1":2,"background":"_context_background","grid":"_context_strokes","labels":"_context_labels"}}},"legend":{"P":{"name":"piece","colour":1},"O":{"name":"piece","colour":2}},"pieces":"---------\\n---------\\n---------\\n---------\\n---------\\n---------\\n---------\\n---------\\n---------"}`
+                    "description": "Split Scribe glyph charts on left and right margins of a tiled 9×9 board. Uses `scribe-chart-left` and `scribe-chart-right` registry assets; charts stay fixed while the playfield can rotate.",
+                    "render": `{"board":{"style":"squares","width":9,"height":9,"tileWidth":3,"tileHeight":3,"tileSpacing":1,"reference":{"layout":"sidebar","sides":["left","right"],"source":["scribe-chart-left","scribe-chart-right"],"rotateWithBoard":false,"gap":1,"styles":{"glyphs":"_context_strokes","glyph-0":1,"glyph-1":2,"background":"_context_background","grid":"_context_strokes","labels":"_context_labels"}}},"legend":{"P":{"name":"piece","colour":1},"O":{"name":"piece","colour":2}},"pieces":"---------\\n---------\\n---------\\n---------\\n---------\\n---------\\n---------\\n---------\\n---------"}`
                 },
                 "niche-reference-col": {
                     "name": "Niche: Board reference (Circle of Life annulus)",

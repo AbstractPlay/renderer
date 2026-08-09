@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 243" fill="none">
+  <rect width="70" height="243" data-ref-fill="background" fill="#faf8f4" stroke="none"/>
+  <g data-ref-stroke="grid" stroke="#bbb" stroke-width="0.6" vector-effect="non-scaling-stroke">
+    <path d="M 6.00 12.00 L 6.00 33.00 M 6.00 12.00 L 27.00 12.00 M 13.00 12.00 L 13.00 33.00 M 6.00 19.00 L 27.00 19.00 M 20.00 12.00 L 20.00 33.00 M 6.00 26.00 L 27.00 26.00 M 27.00 12.00 L 27.00 33.00 M 6.00 33.00 L 27.00 33.00"/>
+    <path d="M 6.00 37.00 L 6.00 58.00 M 6.00 37.00 L 27.00 37.00 M 13.00 37.00 L 13.00 58.00 M 6.00 44.00 L 27.00 44.00 M 20.00 37.00 L 20.00 58.00 M 6.00 51.00 L 27.00 51.00 M 27.00 37.00 L 27.00 58.00 M 6.00 58.00 L 27.00 58.00"/>
+    <path d="M 6.00 62.00 L 6.00 83.00 M 6.00 62.00 L 27.00 62.00 M 13.00 62.00 L 13.00 83.00 M 6.00 69.00 L 27.00 69.00 M 20.00 62.00 L 20.00 83.00 M 6.00 76.00 L 27.00 76.00 M 27.00 62.00 L 27.00 83.00 M 6.00 83.00 L 27.00 83.00"/>
+    <path d="M 6.00 87.00 L 6.00 108.00 M 6.00 87.00 L 27.00 87.00 M 13.00 87.00 L 13.00 108.00 M 6.00 94.00 L 27.00 94.00 M 20.00 87.00 L 20.00 108.00 M 6.00 101.00 L 27.00 101.00 M 27.00 87.00 L 27.00 108.00 M 6.00 108.00 L 27.00 108.00"/>
+    <path d="M 6.00 112.00 L 6.00 133.00 M 6.00 112.00 L 27.00 112.00 M 13.00 112.00 L 13.00 133.00 M 6.00 119.00 L 27.00 119.00 M 20.00 112.00 L 20.00 133.00 M 6.00 126.00 L 27.00 126.00 M 27.00 112.00 L 27.00 133.00 M 6.00 133.00 L 27.00 133.00"/>
+    <path d="M 6.00 137.00 L 6.00 158.00 M 6.00 137.00 L 27.00 137.00 M 13.00 137.00 L 13.00 158.00 M 6.00 144.00 L 27.00 144.00 M 20.00 137.00 L 20.00 158.00 M 6.00 151.00 L 27.00 151.00 M 27.00 137.00 L 27.00 158.00 M 6.00 158.00 L 27.00 158.00"/>
+    <path d="M 6.00 162.00 L 6.00 183.00 M 6.00 162.00 L 27.00 162.00 M 13.00 162.00 L 13.00 183.00 M 6.00 169.00 L 27.00 169.00 M 20.00 162.00 L 20.00 183.00 M 6.00 176.00 L 27.00 176.00 M 27.00 162.00 L 27.00 183.00 M 6.00 183.00 L 27.00 183.00"/>
+    <path d="M 6.00 187.00 L 6.00 208.00 M 6.00 187.00 L 27.00 187.00 M 13.00 187.00 L 13.00 208.00 M 6.00 194.00 L 27.00 194.00 M 20.00 187.00 L 20.00 208.00 M 6.00 201.00 L 27.00 201.00 M 27.00 187.00 L 27.00 208.00 M 6.00 208.00 L 27.00 208.00"/>
+    <path d="M 6.00 212.00 L 6.00 233.00 M 6.00 212.00 L 27.00 212.00 M 13.00 212.00 L 13.00 233.00 M 6.00 219.00 L 27.00 219.00 M 20.00 212.00 L 20.00 233.00 M 6.00 226.00 L 27.00 226.00 M 27.00 212.00 L 27.00 233.00 M 6.00 233.00 L 27.00 233.00"/>
+  </g>
+  <circle data-ref-fill="glyph-10" cx="23.50" cy="15.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-10" cx="9.50" cy="22.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-10" cx="16.50" cy="22.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-10" cx="23.50" cy="22.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-10" cx="9.50" cy="29.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-10" cx="23.50" cy="29.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="26.0" font-family="sans-serif" font-size="8.5" fill="#222">Chair</text>
+  <circle data-ref-fill="glyph-11" cx="23.50" cy="40.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-11" cx="9.50" cy="47.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-11" cx="23.50" cy="47.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-11" cx="9.50" cy="54.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-11" cx="16.50" cy="54.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-11" cx="23.50" cy="54.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="51.0" font-family="sans-serif" font-size="8.5" fill="#222">J</text>
+  <circle data-ref-fill="glyph-12" cx="16.50" cy="65.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-12" cx="23.50" cy="65.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-12" cx="9.50" cy="72.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-12" cx="23.50" cy="72.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-12" cx="9.50" cy="79.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-12" cx="16.50" cy="79.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-12" cx="23.50" cy="79.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="76.0" font-family="sans-serif" font-size="8.5" fill="#222">Earring</text>
+  <circle data-ref-fill="glyph-13" cx="16.50" cy="90.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-13" cx="9.50" cy="97.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-13" cx="16.50" cy="97.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-13" cx="23.50" cy="97.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-13" cx="9.50" cy="104.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-13" cx="16.50" cy="104.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-13" cx="23.50" cy="104.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="101.0" font-family="sans-serif" font-size="8.5" fill="#222">House</text>
+  <circle data-ref-fill="glyph-14" cx="9.50" cy="115.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-14" cx="23.50" cy="115.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-14" cx="9.50" cy="122.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-14" cx="16.50" cy="122.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-14" cx="23.50" cy="122.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-14" cx="9.50" cy="129.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-14" cx="23.50" cy="129.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="126.0" font-family="sans-serif" font-size="8.5" fill="#222">H</text>
+  <circle data-ref-fill="glyph-15" cx="9.50" cy="140.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-15" cx="23.50" cy="140.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-15" cx="9.50" cy="147.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-15" cx="23.50" cy="147.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-15" cx="9.50" cy="154.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-15" cx="16.50" cy="154.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-15" cx="23.50" cy="154.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="151.0" font-family="sans-serif" font-size="8.5" fill="#222">U</text>
+  <circle data-ref-fill="glyph-16" cx="9.50" cy="165.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-16" cx="16.50" cy="165.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-16" cx="23.50" cy="165.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-16" cx="9.50" cy="172.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-16" cx="16.50" cy="172.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-16" cx="9.50" cy="179.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-16" cx="16.50" cy="179.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-16" cx="23.50" cy="179.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="176.0" font-family="sans-serif" font-size="8.5" fill="#222">Ottoman</text>
+  <circle data-ref-fill="glyph-17" cx="9.50" cy="190.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-17" cx="16.50" cy="190.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-17" cx="23.50" cy="190.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-17" cx="9.50" cy="197.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-17" cx="23.50" cy="197.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-17" cx="9.50" cy="204.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-17" cx="16.50" cy="204.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-17" cx="23.50" cy="204.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="201.0" font-family="sans-serif" font-size="8.5" fill="#222">O</text>
+  <circle data-ref-fill="glyph-18" cx="9.50" cy="215.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="16.50" cy="215.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="23.50" cy="215.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="9.50" cy="222.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="16.50" cy="222.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="23.50" cy="222.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="9.50" cy="229.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="16.50" cy="229.50" r="2.15" fill="#111" stroke="none"/>
+  <circle data-ref-fill="glyph-18" cx="23.50" cy="229.50" r="2.15" fill="#111" stroke="none"/>
+  <text data-ref-fill="labels" x="32.0" y="226.0" font-family="sans-serif" font-size="8.5" fill="#222">9-block</text>
+</svg>

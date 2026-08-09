@@ -7,7 +7,7 @@ import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 import { getReferenceAsset, listReferenceAssets } from "../src/references/registry";
-import { playfieldHullFromPolys, computePlayfieldMetrics, computeAnnulusPlacement, referenceStyleSelectors } from "../src/references/helpers";
+import { playfieldHullFromPolys, computePlayfieldMetrics, computeAnnulusPlacement, computeSidebarPlacement, referenceStyleSelectors, resolveSourceForSide } from "../src/references/helpers";
 import { hexOfHex } from "../src/boards/hexOfHex";
 
 const schema = require("../src/schemas/schema.json");
@@ -77,6 +77,71 @@ const colFixture: APRenderRep = {
     pieces: "---\n----\n-----\n------\n-----\n----\n---",
 };
 
+const dualScribeFixture: APRenderRep = {
+    board: {
+        style: "squares",
+        width: 9,
+        height: 9,
+        tileWidth: 3,
+        tileHeight: 3,
+        reference: {
+            layout: "sidebar",
+            sides: ["left", "right"],
+            source: ["scribe-chart-left", "scribe-chart-right"],
+            rotateWithBoard: false,
+            gap: 0.5,
+        },
+    },
+    legend: {
+        P: { name: "piece", colour: 1 },
+        O: { name: "piece", colour: 2 },
+    },
+    pieces: "---------\n---------\n---------\n---------\n---------\n---------\n---------\n---------\n---------",
+};
+
+const topRefFixture: APRenderRep = {
+    board: {
+        style: "squares",
+        width: 4,
+        height: 4,
+        reference: {
+            layout: "sidebar",
+            sides: ["top"],
+            source: "custom-ref",
+            rotateWithBoard: true,
+            gap: 0.5,
+        },
+    },
+    legend: {
+        "custom-ref": { name: "piece", colour: 1, scale: 0.4 },
+        X: { name: "piece", colour: 1 },
+    },
+    pieces: "X---\n----\n----\n----",
+};
+
+const bottomRefFixture: APRenderRep = {
+    board: {
+        style: "squares",
+        width: 4,
+        height: 4,
+        reference: {
+            layout: "sidebar",
+            sides: ["bottom"],
+            source: "scribe-chart-left",
+            rotateWithBoard: false,
+            gap: 0.5,
+        },
+    },
+    areas: [{
+        type: "pieces",
+        label: "Stash",
+        pieces: ["A"],
+        width: 4,
+    }],
+    legend: { A: { name: "piece", colour: 1 } },
+    pieces: "----\n----\n----\n----",
+};
+
 const legendOverrideFixture: APRenderRep = {
     board: {
         style: "squares",
@@ -104,10 +169,16 @@ describe("board reference adornments", () => {
         const ajv = new Ajv();
         expect(ajv.validate(schema, scribeFixture)).to.equal(true);
         expect(ajv.validate(schema, colFixture)).to.equal(true);
+        expect(ajv.validate(schema, dualScribeFixture)).to.equal(true);
     });
 
     it("registers built-in reference assets", () => {
-        expect(listReferenceAssets()).to.include.members(["scribe-chart", "circle-of-life-ring"]);
+        expect(listReferenceAssets()).to.include.members([
+            "scribe-chart",
+            "scribe-chart-left",
+            "scribe-chart-right",
+            "circle-of-life-ring",
+        ]);
         expect(getReferenceAsset("scribe-chart")?.anchor.layout).to.equal("sidebar");
         expect(getReferenceAsset("circle-of-life-ring")?.anchor.layout).to.equal("annulus");
     });
@@ -291,5 +362,88 @@ describe("board reference adornments", () => {
         const draw = makeDraw();
         renderer.render(legendOverrideFixture, draw, baseOptions);
         expect(draw.findOne("#board-reference")).to.not.equal(null);
+    });
+
+    it("renders dual sidebar references with separate uses", () => {
+        const renderer = new DefaultRenderer();
+        const draw = makeDraw();
+        renderer.render(dualScribeFixture, draw, baseOptions);
+        const uses = draw.find("#board-reference use");
+        expect(uses.length).to.equal(2);
+        const board = draw.findOne("#board") as SVGG;
+        const gridlines = board.findOne("#gridlines") as SVGG;
+        const gridBox = gridlines.rbox(board);
+        const leftUse = uses[0] as SVGElement;
+        const rightUse = uses[1] as SVGElement;
+        const leftRight = (leftUse.x() as number) + (leftUse.width() as number);
+        const rightLeft = rightUse.x() as number;
+        expect(leftRight).to.be.lessThan(gridBox.x);
+        expect(rightLeft).to.be.greaterThan(gridBox.x2);
+    });
+
+    it("places top sidebar references above the playfield", () => {
+        const renderer = new DefaultRenderer();
+        const draw = makeDraw();
+        renderer.render(topRefFixture, draw, baseOptions);
+        const useEl = draw.findOne("#board-reference use") as SVGElement | null;
+        expect(useEl).to.not.equal(null);
+        const board = draw.findOne("#board") as SVGG;
+        const gridlines = board.findOne("#gridlines") as SVGG;
+        const gridBox = gridlines.rbox(board);
+        const refBottom = (useEl!.y() as number) + (useEl!.height() as number);
+        expect(refBottom).to.be.lessThan(gridBox.y);
+        const refWidth = useEl!.width() as number;
+        expect(refWidth).to.be.closeTo(gridBox.width, gridBox.width * 0.15);
+    });
+
+    it("places bottom sidebar references above areas", () => {
+        const renderer = new DefaultRenderer();
+        const draw = makeDraw();
+        renderer.render(bottomRefFixture, draw, baseOptions);
+        const useEl = draw.findOne("#board-reference use") as SVGElement | null;
+        expect(useEl).to.not.equal(null);
+        const refBottom = useEl!.rbox(draw).y2;
+        const area = draw.findOne("#_pieces0") as SVGElement | null;
+        expect(area).to.not.equal(null);
+        expect(refBottom).to.be.lessThan(area!.rbox(draw).y);
+    });
+
+    it("throws when source array length mismatches sides", () => {
+        expect(() => resolveSourceForSide({
+            layout: "sidebar",
+            sides: ["left", "right"],
+            source: ["only-one"],
+        }, "right")).to.throw(/source has 1 entries/);
+    });
+
+    it("split scribe assets are shorter than the full chart", () => {
+        const full = getReferenceAsset("scribe-chart")!;
+        const left = getReferenceAsset("scribe-chart-left")!;
+        const right = getReferenceAsset("scribe-chart-right")!;
+        expect(left.viewBox.h).to.be.lessThan(full.viewBox.h);
+        expect(right.viewBox.h).to.be.lessThan(full.viewBox.h);
+        expect(left.viewBox.h + right.viewBox.h).to.be.greaterThan(full.viewBox.h * 0.9);
+    });
+
+    it("computeSidebarPlacement supports top and bottom sides", () => {
+        const asset = getReferenceAsset("scribe-chart-left")!;
+        const metrics = { x: 10, y: 20, width: 200, height: 150 };
+        const ref = { layout: "sidebar" as const, source: "scribe-chart-left" };
+        const top = computeSidebarPlacement(
+            { viewBox: asset.viewBox, anchor: asset.anchor, fromLegend: false },
+            metrics,
+            ref,
+            50,
+            "top",
+        );
+        const bottom = computeSidebarPlacement(
+            { viewBox: asset.viewBox, anchor: asset.anchor, fromLegend: false },
+            { ...metrics, y2: metrics.y + metrics.height },
+            ref,
+            50,
+            "bottom",
+        );
+        expect(top.y + top.height).to.be.lessThan(metrics.y);
+        expect(bottom.y).to.be.greaterThan(metrics.y + metrics.height);
     });
 });

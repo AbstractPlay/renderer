@@ -288,6 +288,7 @@ export type BoardStyles =
   | "dvgc"
   | "dvgc-checkered"
   | "other";
+export type ReferenceSide = "left" | "right" | "top" | "bottom";
 /**
  * The renderer is not aware of game notation. Nodes must be specified by row and column, with the top row being 0 and the left column being 0. On spaced square boards (`tileSpacing` > 0), macro corner coordinates are ambiguous at tile boundaries; use `tileRow`, `tileCol`, and `corner` instead.
  */
@@ -888,11 +889,22 @@ export interface BoardBasic {
 export interface BoardReference {
   layout: "sidebar" | "annulus";
   /**
-   * Registry id (e.g. `scribe-chart`) or legend key when overriding built-in artwork.
+   * Registry id (e.g. `scribe-chart`) or legend key when overriding built-in artwork. A string applies to every side in `sides`; an array is paired by index with `sides`.
    */
-  source: string;
+  source: string | [string] | [string, string] | [string, string, string] | [string, string, string, string];
   /**
-   * Sidebar layout only: which side of the playfield the reference appears on.
+   * Sidebar layout only: which edges of the playfield the reference appears on. Any combination of 1–4 unique sides. When omitted, `position` is used (default `left`). Bottom sides are placed above `areas`.
+   *
+   * @minItems 1
+   * @maxItems 4
+   */
+  sides?:
+    | [ReferenceSide]
+    | [ReferenceSide, ReferenceSide]
+    | [ReferenceSide, ReferenceSide, ReferenceSide]
+    | [ReferenceSide, ReferenceSide, ReferenceSide, ReferenceSide];
+  /**
+   * Legacy sidebar placement when `sides` is omitted. Equivalent to `sides: [position]`.
    */
   position?: "left" | "right";
   /**

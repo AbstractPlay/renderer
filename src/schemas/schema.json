@@ -2848,6 +2848,15 @@
             },
             "minItems": 1
         },
+        "referenceSide": {
+            "type": "string",
+            "enum": [
+                "left",
+                "right",
+                "top",
+                "bottom"
+            ]
+        },
         "boardReference": {
             "description": "Attaches a prebuilt reference chart beside or around the playfield. Artwork comes from the renderer reference registry or a legend glyph override (same `source` string). The renderer scales and positions the asset; optional `styles` colours named regions via `data-ref-fill` / `data-ref-stroke` slots in the SVG.",
             "type": "object",
@@ -2859,12 +2868,35 @@
                     ]
                 },
                 "source": {
-                    "description": "Registry id (e.g. `scribe-chart`) or legend key when overriding built-in artwork.",
-                    "type": "string",
-                    "minLength": 1
+                    "description": "Registry id (e.g. `scribe-chart`) or legend key when overriding built-in artwork. A string applies to every side in `sides`; an array is paired by index with `sides`.",
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "minItems": 1,
+                            "maxItems": 4
+                        }
+                    ]
+                },
+                "sides": {
+                    "description": "Sidebar layout only: which edges of the playfield the reference appears on. Any combination of 1–4 unique sides. When omitted, `position` is used (default `left`). Bottom sides are placed above `areas`.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/referenceSide"
+                    },
+                    "minItems": 1,
+                    "maxItems": 4,
+                    "uniqueItems": true
                 },
                 "position": {
-                    "description": "Sidebar layout only: which side of the playfield the reference appears on.",
+                    "description": "Legacy sidebar placement when `sides` is omitted. Equivalent to `sides: [position]`.",
                     "enum": [
                         "left",
                         "right"

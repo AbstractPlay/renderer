@@ -21,8 +21,14 @@ import {
     ensureTableau,
     getRegistryReferenceArt,
     referenceInnerMarkup,
+    referenceSourceString,
     referenceStyleSelectors,
     registryReferenceDefId,
+    resolveReferenceSides,
+    resolveSourceForSide,
+    sidebarLayoutMetricsInParent,
+    unionBoardReferenceBox,
+    type ReferenceSide,
 } from "../references/helpers";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
@@ -4233,30 +4239,29 @@ export abstract class RendererBase {
         return entry as [Glyph, ...Glyph[]];
     }
 
-    protected resolveReferenceArt(ref: BoardReference): {
+    protected resolveReferenceArt(ref: BoardReference, side: ReferenceSide, sourceId: string): {
         defId: string;
         svgContent?: string;
         meta: import("../references/types").ResolvedReferenceArt;
     } {
-        const position = ref.position ?? "left";
-        const legendGlyphs = this.legendGlyphsForReferenceKey(ref.source);
+        const legendGlyphs = this.legendGlyphsForReferenceKey(sourceId);
         if (legendGlyphs !== null) {
             if (this.rootSvg === undefined) {
                 throw new Error("Cannot resolve reference art before SVG is initialized.");
             }
-            const defSvg = this.rootSvg.findOne("#" + ref.source) as Svg | null;
+            const defSvg = this.rootSvg.findOne("#" + sourceId) as Svg | null;
             if (defSvg === null) {
-                throw new Error(`Legend reference "${ref.source}" was not loaded into defs.`);
+                throw new Error(`Legend reference "${sourceId}" was not loaded into defs.`);
             }
             const vb = defSvg.viewbox();
             const viewBox = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
             const anchor = ref.layout === "annulus"
                 ? defaultAnnulusAnchor(viewBox)
-                : defaultSidebarAnchor(position);
-            return { defId: ref.source, meta: { viewBox, anchor, fromLegend: true } };
+                : defaultSidebarAnchor(side);
+            return { defId: sourceId, meta: { viewBox, anchor, fromLegend: true } };
         }
-        const { svgContent, meta } = getRegistryReferenceArt(ref.source);
-        return { defId: registryReferenceDefId(ref.source), svgContent, meta };
+        const { svgContent, meta } = getRegistryReferenceArt(sourceId);
+        return { defId: registryReferenceDefId(sourceId), svgContent, meta };
     }
 
     protected ensureReferenceDef(resolved: {
@@ -4292,22 +4297,30 @@ export abstract class RendererBase {
 
     /**
      * Attaches optional board reference artwork (sidebar or annulus) around the playfield.
+     * Sidebar bottom sides are deferred to a second call after rotateBoard (pass layoutBox).
      */
-    protected placeBoardReference(polys?: Poly[][]): void {
+    protected placeBoardReference(
+        polys?: Poly[][],
+        opts?: { sides?: ReferenceSide[]; layoutBox?: SVGBox },
+    ): SVGBox | undefined {
         if (this.json === undefined || this.rootSvg === undefined) {
-            return;
+            return undefined;
         }
         if (this.json.board === null || !("reference" in this.json.board) || this.json.board.reference === undefined) {
-            return;
+            return undefined;
         }
         const ref = this.json.board.reference;
         if (ref.layout !== "sidebar" && ref.layout !== "annulus") {
             throw new Error(`Unsupported board reference layout "${ref.layout as string}".`);
         }
 
-        const metrics = computePlayfieldMetrics(this.rootSvg, this.cellsize, polys);
-        const resolved = this.resolveReferenceArt(ref);
-        const defSvg = this.ensureReferenceDef(resolved);
+        const allSides = resolveReferenceSides(ref);
+        const requestedSides = opts?.sides ?? allSides;
+        const sidesToPlace = requestedSides.filter((side) => allSides.includes(side));
+        if (sidesToPlace.length === 0) {
+            return undefined;
+        }
+
         const rotateWithBoard = ref.rotateWithBoard ?? true;
         const opacity = ref.opacity ?? 1;
 
@@ -4318,31 +4331,78 @@ export abstract class RendererBase {
             parent = ensureTableau(this.rootSvg);
         }
 
-        const existing = parent.findOne("#board-reference") as SVGG | null;
-        if (existing !== null) {
-            existing.remove();
-        }
-        const refRoot = parent.group().id("board-reference").attr("overflow", "visible");
-        if (opacity !== 1) {
-            refRoot.opacity(opacity);
-        }
-
-        this.applyReferenceStyles(defSvg, ref.styles);
-
-        const placement = ref.layout === "sidebar"
-            ? computeSidebarPlacement(resolved.meta, metrics, ref, this.cellsize)
-            : computeAnnulusPlacement(resolved.meta, metrics, ref, this.cellsize);
-
-        refRoot.use(defSvg).size(placement.width, placement.height).move(placement.x, placement.y);
-
-        if (rotateWithBoard) {
-            refRoot.back();
-        } else {
-            const board = parent.findOne("#board") as SVGG | null;
-            if (board !== null) {
-                refRoot.before(board);
+        const isBottomPass = sidesToPlace.every((side) => side === "bottom");
+        let refRoot = parent.findOne("#board-reference") as SVGG | null;
+        if (!isBottomPass) {
+            if (refRoot !== null) {
+                refRoot.remove();
+            }
+            refRoot = parent.group().id("board-reference").attr("overflow", "visible");
+            if (opacity !== 1) {
+                refRoot.opacity(opacity);
+            }
+            if (rotateWithBoard) {
+                refRoot.back();
+            } else {
+                const board = parent.findOne("#board") as SVGG | null;
+                if (board !== null) {
+                    refRoot.before(board);
+                }
+            }
+        } else if (refRoot === null) {
+            refRoot = parent.group().id("board-reference").attr("overflow", "visible");
+            if (opacity !== 1) {
+                refRoot.opacity(opacity);
+            }
+            if (rotateWithBoard) {
+                refRoot.back();
+            } else {
+                const board = parent.findOne("#board") as SVGG | null;
+                if (board !== null) {
+                    refRoot.before(board);
+                }
             }
         }
+
+        if (ref.layout === "annulus") {
+            const sourceId = referenceSourceString(ref);
+            const metrics = computePlayfieldMetrics(this.rootSvg, this.cellsize, polys);
+            const resolved = this.resolveReferenceArt(ref, "left", sourceId);
+            const defSvg = this.ensureReferenceDef(resolved);
+            this.applyReferenceStyles(defSvg, ref.styles);
+            const placement = computeAnnulusPlacement(resolved.meta, metrics, ref, this.cellsize);
+            refRoot!.use(defSvg).size(placement.width, placement.height).move(placement.x, placement.y);
+            return undefined;
+        }
+
+        const playfieldMetrics = computePlayfieldMetrics(this.rootSvg, this.cellsize, polys);
+        const board = this.rootSvg.findOne("#board") as SVGG;
+        const bottomLayoutMetrics = isBottomPass && opts?.layoutBox !== undefined
+            ? sidebarLayoutMetricsInParent(parent as SVGG, board, refRoot)
+            : undefined;
+
+        for (const side of sidesToPlace) {
+            const sourceId = resolveSourceForSide(ref, side);
+            const resolved = this.resolveReferenceArt(ref, side, sourceId);
+            const defSvg = this.ensureReferenceDef(resolved);
+            this.applyReferenceStyles(defSvg, ref.styles);
+            const sideMetrics = side === "bottom" && bottomLayoutMetrics !== undefined
+                ? bottomLayoutMetrics
+                : playfieldMetrics;
+            const placement = computeSidebarPlacement(
+                resolved.meta,
+                sideMetrics,
+                ref,
+                this.cellsize,
+                side,
+            );
+            refRoot!.use(defSvg).size(placement.width, placement.height).move(placement.x, placement.y);
+        }
+
+        if (isBottomPass && opts?.layoutBox !== undefined) {
+            return unionBoardReferenceBox(this.rootSvg, opts.layoutBox);
+        }
+        return undefined;
     }
 
     protected rotateBoard(opts?: {ignoreRotation?: boolean, ignoreLabels?: boolean}): SVGBox {

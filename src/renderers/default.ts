@@ -1,6 +1,7 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
+import { peripheralReferenceSides } from "../references/helpers";
 import { IRendererOptionsIn, RendererBase} from "./_base";
 import { usePieceAt } from "../common/plotting";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
@@ -142,7 +143,17 @@ export class DefaultRenderer extends RendererBase {
                 throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
         }
 
-        this.placeBoardReference(polys);
+        if (this.json.board !== null && "reference" in this.json.board && this.json.board.reference !== undefined) {
+            const ref = this.json.board.reference;
+            if (ref.layout === "sidebar") {
+                const peripheral = peripheralReferenceSides(ref);
+                if (peripheral.length > 0) {
+                    this.placeBoardReference(polys, { sides: peripheral });
+                }
+            } else {
+                this.placeBoardReference(polys);
+            }
+        }
 
         // PIECES
         const board = this.rootSvg.findOne("#board") as SVGG;
@@ -264,21 +275,23 @@ export class DefaultRenderer extends RendererBase {
         }
 
         const box = this.rotateBoard();
+        const bottomRefBox = this.placeBoardReference(polys, { sides: ["bottom"], layoutBox: box });
+        const layoutBox = bottomRefBox ?? box;
 
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(layoutBox);
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(layoutBox);
 
         // key
-        this.placeKey(box);
+        this.placeKey(layoutBox);
 
         // scrollBar
-        this.placeScroll(box);
+        this.placeScroll(layoutBox);
 
         // compassRose
-        this.placeCompass(box);
+        this.placeCompass(layoutBox);
 
         if (!backfilled) {
             this.backFill(boardFill);

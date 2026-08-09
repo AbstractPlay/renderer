@@ -1,5 +1,19 @@
-import { circleOfLifeRingSvg, scribeChartSvg } from "./assets/content";
+import { circleOfLifeRingSvg, scribeChartLeftSvg, scribeChartRightSvg, scribeChartSvg } from "./assets/content";
 import type { ReferenceAsset } from "./types";
+
+function scribeStyleSlots(glyphCount: number): ReferenceAsset["styleSlots"] {
+    return {
+        background: { role: "fill" },
+        grid: { role: "stroke" },
+        labels: { role: "fill" },
+        text: { role: "fill" },
+        glyphs: { role: "fill" },
+        dots: { role: "fill" },
+        ...Object.fromEntries(
+            Array.from({ length: glyphCount }, (_, i) => [`glyph-${i}`, { role: "fill" as const }]),
+        ),
+    };
+}
 
 function parseViewBox(svg: string): { x: number; y: number; w: number; h: number } {
     const match = svg.match(/viewBox=["']([^"']+)["']/i);
@@ -24,16 +38,22 @@ register({
     id: "scribe-chart",
     svg: scribeChartSvg,
     anchor: { layout: "sidebar", attach: "right" },
+    styleSlots: scribeStyleSlots(19),
+});
+
+register({
+    id: "scribe-chart-left",
+    svg: scribeChartLeftSvg,
+    anchor: { layout: "sidebar", attach: "right" },
+    styleSlots: scribeStyleSlots(10),
+});
+
+register({
+    id: "scribe-chart-right",
+    svg: scribeChartRightSvg,
+    anchor: { layout: "sidebar", attach: "left" },
     styleSlots: {
-        background: { role: "fill" },
-        grid: { role: "stroke" },
-        labels: { role: "fill" },
-        text: { role: "fill" },
-        glyphs: { role: "fill" },
-        dots: { role: "fill" },
-        ...Object.fromEntries(
-            Array.from({ length: 19 }, (_, i) => [`glyph-${i}`, { role: "fill" as const }]),
-        ),
+        ...scribeStyleSlots(19),
     },
 });
 

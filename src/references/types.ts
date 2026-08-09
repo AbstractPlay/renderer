@@ -1,9 +1,11 @@
 import type { ColourResolvable } from "../schemas/schema";
 
+export type ReferenceSide = "left" | "right" | "top" | "bottom";
+
 export type SidebarAnchor = {
     layout: "sidebar";
     /** Edge of the artwork that attaches to the playfield. */
-    attach: "left" | "right";
+    attach: ReferenceSide;
 };
 
 export type AnnulusAnchor = {

@@ -25,7 +25,8 @@ The board is drawn first. Styles include square grids, vertex boards, hex fields
 Some games attach a **prebuilt reference chart** beside or around the playfield (e.g. Scribe’s glyph table, Circle of Life’s food-web ring). Use the optional `board.reference` property:
 
 - `layout`: `"sidebar"` or `"annulus"`
-- `source`: built-in registry id (`scribe-chart`, `circle-of-life-ring`) or a **legend key** to override artwork
+- `source`: built-in registry id (`scribe-chart`, `scribe-chart-left`, `scribe-chart-right`, `circle-of-life-ring`) or a **legend key** to override artwork. A string applies to every side in `sides`; an array is paired by index with `sides`.
+- `sides`: sidebar only — any combination of `"left"`, `"right"`, `"top"`, and `"bottom"` (1–4 unique sides). Bottom charts are placed above `areas`. Legacy `position` is equivalent to a single-entry `sides` array.
 - `styles`: optional map of slot ids → colours for regions marked `data-ref-fill` / `data-ref-stroke` in the SVG
 - `rotateWithBoard`: `false` keeps the chart fixed when the playfield rotates (sidebar charts); `true` rotates with the board (annulus rings)
 

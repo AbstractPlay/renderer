@@ -1,8 +1,10 @@
-import { G as SVGG, Svg } from "@svgdotjs/svg.js";
+import { G as SVGG, Svg, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Poly } from "../grids/_base";
 import { BoardReference } from "../schemas/schema";
 import { getReferenceAsset } from "./registry";
-import type { AnnulusAnchor, PlayfieldMetrics, ReferencePlacement, ResolvedReferenceArt, SidebarAnchor } from "./types";
+import type { AnnulusAnchor, PlayfieldMetrics, ReferencePlacement, ReferenceSide, ResolvedReferenceArt, SidebarAnchor } from "./types";
+
+export type { ReferenceSide } from "./types";
 
 function collectPolyPoints(poly: Poly): { x: number; y: number }[] {
     if (poly.type === "circle") {
@@ -50,12 +52,65 @@ export function defaultAnnulusAnchor(viewBox: { w: number; h: number }): Annulus
     };
 }
 
-export function defaultSidebarAnchor(position: "left" | "right"): SidebarAnchor {
+export function defaultSidebarAnchor(side: ReferenceSide): SidebarAnchor {
+    const attach: Record<ReferenceSide, ReferenceSide> = {
+        left: "right",
+        right: "left",
+        top: "bottom",
+        bottom: "top",
+    };
     return {
         layout: "sidebar",
-        attach: position === "left" ? "right" : "left",
+        attach: attach[side],
     };
 }
+
+export function resolveReferenceSides(ref: BoardReference): ReferenceSide[] {
+    if (ref.sides !== undefined && ref.sides.length > 0) {
+        return ref.sides;
+    }
+    const position = ref.position ?? "left";
+    return [position];
+}
+
+export function peripheralReferenceSides(ref: BoardReference): ReferenceSide[] {
+    return resolveReferenceSides(ref).filter((side) => side !== "bottom");
+}
+
+export function resolveSourceForSide(ref: BoardReference, side: ReferenceSide): string {
+    const allSides = resolveReferenceSides(ref);
+    const sideIndex = allSides.indexOf(side);
+    if (sideIndex < 0) {
+        throw new Error(`board.reference does not include side "${side}".`);
+    }
+    if (typeof ref.source === "string") {
+        return ref.source;
+    }
+    if (ref.source.length !== allSides.length) {
+        throw new Error(
+            `board.reference.source has ${ref.source.length} entries but sides has ${allSides.length}.`,
+        );
+    }
+    return ref.source[sideIndex];
+}
+
+export function referenceSourceString(ref: BoardReference): string {
+    if (typeof ref.source === "string") {
+        return ref.source;
+    }
+    if (ref.source.length !== 1) {
+        throw new Error("Annulus layout requires a single reference source.");
+    }
+    return ref.source[0];
+}
+
+export type SidebarPlacementMetrics = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    y2?: number;
+};
 
 export function playfieldExtentFromPolys(
     polys: Poly[][],
@@ -151,24 +206,32 @@ export function ensureTableau(rootSvg: Svg): SVGG {
 
 export function computeSidebarPlacement(
     meta: ResolvedReferenceArt,
-    metrics: PlayfieldMetrics,
+    metrics: SidebarPlacementMetrics,
     ref: BoardReference,
     cellsize: number,
+    side: ReferenceSide,
 ): ReferencePlacement {
-    const position = ref.position ?? "left";
     const gap = (ref.gap ?? 0.5) * cellsize;
     const { w: vw, h: vh } = meta.viewBox;
-    const scale = metrics.height / vh;
+    if (side === "left" || side === "right") {
+        const scale = metrics.height / vh;
+        const width = vw * scale;
+        const height = vh * scale;
+        const y = metrics.y + (metrics.height - height) / 2;
+        const x = side === "left"
+            ? metrics.x - gap - width
+            : metrics.x + metrics.width + gap;
+        return { x, y, width, height };
+    }
+    const scale = metrics.width / vw;
     const width = vw * scale;
     const height = vh * scale;
-    const y = metrics.y + (metrics.height - height) / 2;
-    let x: number;
-    if (position === "left") {
-        x = metrics.x - gap - width;
-    } else {
-        x = metrics.x + metrics.width + gap;
+    const x = metrics.x + (metrics.width - width) / 2;
+    if (side === "top") {
+        return { x, y: metrics.y - gap - height, width, height };
     }
-    return { x, y, width, height };
+    const bottomEdge = metrics.y2 ?? (metrics.y + metrics.height);
+    return { x, y: bottomEdge + gap, width, height };
 }
 
 export function computeAnnulusPlacement(
@@ -190,6 +253,29 @@ export function computeAnnulusPlacement(
     return { x, y, width, height };
 }
 
+export function sidebarLayoutMetricsInParent(
+    parent: SVGG,
+    board: SVGG,
+    refRoot: SVGG | null,
+): SidebarPlacementMetrics {
+    const boardBox = board.rbox(parent);
+    if (refRoot === null || refRoot.children().length === 0) {
+        return {
+            x: boardBox.x,
+            y: boardBox.y,
+            width: boardBox.width,
+            height: boardBox.height,
+            y2: boardBox.y2,
+        };
+    }
+    const refBox = refRoot.rbox(parent);
+    const x = Math.min(boardBox.x, refBox.x);
+    const y = Math.min(boardBox.y, refBox.y);
+    const x2 = Math.max(boardBox.x2, refBox.x2);
+    const y2 = Math.max(boardBox.y2, refBox.y2);
+    return { x, y, width: x2 - x, height: y2 - y, y2 };
+}
+
 export function registryReferenceDefId(source: string): string {
     return `_board-ref-${source}`;
 }
@@ -197,6 +283,22 @@ export function registryReferenceDefId(source: string): string {
 export function referenceInnerMarkup(svg: string): string {
     const match = svg.match(/<svg\b[^>]*>([\s\S]*)<\/svg>/i);
     return match !== null ? match[1] : svg;
+}
+
+export function unionBoardReferenceBox(rootSvg: Svg, layoutBox: SVGBox): SVGBox {
+    const board = rootSvg.findOne("#board") as SVGG | null;
+    const tableau = rootSvg.findOne("#board-tableau") as SVGG | null;
+    const refParent = tableau ?? board;
+    const ref = refParent?.findOne("#board-reference") as SVGG | null;
+    if (ref === null) {
+        return layoutBox;
+    }
+    const refBox = ref.rbox(rootSvg);
+    const x = Math.min(layoutBox.x, refBox.x);
+    const y = Math.min(layoutBox.y, refBox.y);
+    const x2 = Math.max(layoutBox.x2, refBox.x2);
+    const y2 = Math.max(layoutBox.y2, refBox.y2);
+    return new SVGBox(x, y, x2 - x, y2 - y);
 }
 
 /** CSS selectors for a reference style slot id (supports bulk ids like `species` and `glyphs`). */
