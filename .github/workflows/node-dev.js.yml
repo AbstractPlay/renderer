@@ -25,6 +25,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         ref: "develop"
+        fetch-depth: 0
     - name: Use Node.js 18.x
       uses: actions/setup-node@v3
       with:
@@ -51,8 +52,9 @@ jobs:
     - name: Trigger docs rebuild
       if: github.event_name == 'push'
       run: |
+        set -o pipefail
         if git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -q '^docs/'; then
-          curl -L \
+          curl -f -L \
           -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.PAT_WORKFLOWS }}" \
