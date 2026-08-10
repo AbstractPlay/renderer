@@ -1736,6 +1736,94 @@
             ],
             "additionalProperties": false
         },
+        "boardPieces": {
+            "description": "Piece placement for a gridded board: string rows, comma-delimited rows, or nested arrays. Used by the top-level `pieces` property and by `track` areas.",
+            "anyOf": [
+                {
+                    "description": "If the board is completely empty.",
+                    "type": "null"
+                },
+                {
+                    "description": "One character per cell. Commas and whitespace are not permitted. Use a newline (\\n) to separate rows (the first row is the far row). Hyphens and underscores are reserved for representing blank spaces. Hyphens represent a single blank space. A line containing only an underscore will be interpreted as meaning the entire row is empty. (This only works for symmetrical boards. The row will be the width of the `board.width` property.)",
+                    "type": "string",
+                    "pattern": "^[^,\\r\\t\\f ]+$"
+                },
+                {
+                    "description": "Comma-delimited string, allowing for multiple characters per cell. How multiple characters are handled depends on the renderer. The default renderer just assumes the character string matches a legend. Other renderers may assume the pieces are stacking (multiple single-character pieces stacked on top of each other). Use newlines to delimit rows (the first row is the far row). No other whitespace is permitted. Hyphens are *not* reserved here. Just put nothing between commas to indicate an empty cell. Underscores *are* still reserved, though. A line containing only an underscore will be interpreted as meaning the entire row is empty. (This only works for symmetrical boards. The row will be the width of the `board.width` property.)",
+                    "type": "string",
+                    "pattern": "^[^\\r\\t\\f ]+$"
+                },
+                {
+                    "description": "Nested arrays. This level is the row (0 index being the top row).",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "description": "Each item here represents a specific cell from left to right in the row (0 index being left most)",
+                        "type": "array",
+                        "minItems": 0,
+                        "items": {
+                            "description": "Each item here represents a specific cell from left to right in the row (0 index being left most). The default renderer layers the glyphs on top of each other in the order given. Other renderers may treat them as stacked in a more traditional sense (0 index being the bottom).",
+                            "type": "array",
+                            "minItems": 0,
+                            "items": {
+                                "description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend. Leaving an entire row empty will result in the renderer using the `board.width` property. Use an empty array to represent an empty cell. The `isometric` renderer also accepts `{glyph, yaw}` objects for oriented multi-face cubes.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "$ref": "#/$defs/isoStackPiece"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "areaTrack": {
+            "description": "A read-only mini-board for score tracks and similar peripheral grids. Accepts any `boardBasic` geometry and top-level-style `pieces` placement. Uses the global `legend` (no per-area legend). Does not rotate with the main board and is not clickable in the default renderer.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "track"
+                    ]
+                },
+                "board": {
+                    "$ref": "#/$defs/boardBasic"
+                },
+                "pieces": {
+                    "$ref": "#/$defs/boardPieces"
+                },
+                "position": {
+                    "description": "Which side of the board the track appears on. Multiple tracks on the same side stack outward in `areas` declaration order.",
+                    "$ref": "#/$defs/referenceSide",
+                    "default": "bottom"
+                },
+                "labels": {
+                    "description": "When true, row and column labels are drawn on the embedded track board. Defaults to false.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "width": {
+                    "description": "Display size in main-board cell units, applied along the axis perpendicular to the track edge. For `top` and `bottom`, this is the display width (defaults to the main board width). For `left` and `right`, this is the display height (defaults to the main board height). The track board is scaled uniformly to fit.",
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "annotations": {
+                    "description": "Annotations scoped to this track's grid coordinates.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/annotationBasic"
+                    }
+                }
+            },
+            "required": [
+                "type",
+                "board"
+            ],
+            "additionalProperties": false
+        },
         "areaButtonBar": {
             "description": "Used to create a button bar for clicking.",
             "type": "object",
@@ -3652,44 +3740,7 @@
             "description": "Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).",
             "anyOf": [
                 {
-                    "description": "If the board is completely empty.",
-                    "type": "null"
-                },
-                {
-                    "description": "One character per cell. Commas and whitespace are not permitted. Use a newline (\\n) to separate rows (the first row is the far row). Hyphens and underscores are reserved for representing blank spaces. Hyphens represent a single blank space. A line containing only an underscore will be interpreted as meaning the entire row is empty. (This only works for symmetrical boards. The row will be the width of the `board.width` property.)",
-                    "type": "string",
-                    "pattern": "^[^,\\r\\t\\f ]+$"
-                },
-                {
-                    "description": "Comma-delimited string, allowing for multiple characters per cell. How multiple characters are handled depends on the renderer. The default renderer just assumes the character string matches a legend. Other renderers may assume the pieces are stacking (multiple single-character pieces stacked on top of each other). Use newlines to delimit rows (the first row is the far row). No other whitespace is permitted. Hyphens are *not* reserved here. Just put nothing between commas to indicate an empty cell. Underscores *are* still reserved, though. A line containing only an underscore will be interpreted as meaning the entire row is empty. (This only works for symmetrical boards. The row will be the width of the `board.width` property.)",
-                    "type": "string",
-                    "pattern": "^[^\\r\\t\\f ]+$"
-                },
-                {
-                    "description": "Nested arrays. This level is the row (0 index being the top row).",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "description": "Each item here represents a specific cell from left to right in the row (0 index being left most)",
-                        "type": "array",
-                        "minItems": 0,
-                        "items": {
-                            "description": "Each item here represents a specific cell from left to right in the row (0 index being left most). The default renderer layers the glyphs on top of each other in the order given. Other renderers may treat them as stacked in a more traditional sense (0 index being the bottom).",
-                            "type": "array",
-                            "minItems": 0,
-                            "items": {
-                                "description": "Use as many characters as you want. This is the only way to insert whitespace. How multiple characters are handled depends on the renderer. The default renderer just tries to match the string to the legend. Leaving an entire row empty will result in the renderer using the `board.width` property. Use an empty array to represent an empty cell. The `isometric` renderer also accepts `{glyph, yaw}` objects for oriented multi-face cubes.",
-                                "anyOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "$ref": "#/$defs/isoStackPiece"
-                                    }
-                                ]
-                            }
-                        }
-                    }
+                    "$ref": "#/$defs/boardPieces"
                 },
                 {
                     "$ref": "#/$defs/piecesHomeworlds"
@@ -3751,6 +3802,9 @@
                     },
                     {
                         "$ref": "#/$defs/areaKey"
+                    },
+                    {
+                        "$ref": "#/$defs/areaTrack"
                     }
                 ]
             }

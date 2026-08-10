@@ -139,7 +139,9 @@ export function computePlayfieldMetrics(
     cellsize: number,
     polys?: Poly[][],
 ): PlayfieldMetrics {
-    const board = rootSvg.findOne("#board") as SVGG | null;
+    const tableau = rootSvg.findOne("#board-tableau") as SVGG | null;
+    const board = (tableau !== null ? tableau.findOne("#board") : null) as SVGG | null
+        ?? (rootSvg.findOne("#board") as SVGG | null);
     if (board === null) {
         throw new Error("Could not find #board when placing board reference.");
     }

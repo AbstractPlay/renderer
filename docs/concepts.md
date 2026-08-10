@@ -46,6 +46,16 @@ Maps short keys to glyph definitions — simple names, composite arrays, gradien
 
 Specialized sections, usually below the board, to provide additional information: piece stashes, button bars, Homeworlds stashes, polyomino holding areas, and more.
 
+### `track` area
+
+A read-only mini-board for score tracks and similar peripheral grids. Each track accepts any valid `boardBasic` declaration plus a top-level-style `pieces` grid (string rows, comma rows, or nested arrays). Tracks use the global `legend` only — there is no per-area `legend`. Row/column labels are off by default (`labels: true` to show them). Tracks do not rotate with the main board and are not clickable in the default renderer.
+
+- `position`: `"left"`, `"right"`, `"top"`, or `"bottom"` (default `"bottom"`).
+- `width`: optional display size in **main-board** cell units (distinct from `board.width` / `board.height`, which set the track grid geometry). For `top` and `bottom`, this is the display width (defaults to main board width). For `left` and `right`, this is the display height (defaults to main board height). The track is scaled uniformly to fit.
+- When the display size matches the playfield along that axis, the track is aligned to the playfield edge (`top`/`left`); otherwise it is centered on that axis.
+- Multiple tracks on the same side stack outward in `areas` declaration order.
+- `annotations`: optional array of standard board annotations scoped to the track grid.
+
 ### Domino tiles in a `pieces` area
 
 Domino pairing is **area-only**. Board placement continues to use separate half legends in adjacent cells (see [Glyphs — domino-style blocks](/renderer/glyphs/#isometric-face-overlays)).

@@ -321,6 +321,10 @@ export type BoardHomeworlds = {
   stars: string[];
 }[];
 /**
+ * Piece placement for a gridded board: string rows, comma-delimited rows, or nested arrays. Used by the top-level `pieces` property and by `track` areas.
+ */
+export type BoardPieces = null | string | [(string | IsoStackPiece)[][], ...(string | IsoStackPiece)[][][]];
+/**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. This property describes the pieces in each system. The order the systems are declared must be the same as how they are declared in the `board` property. That means the arrays must also be the same length. Empty arrays are allowed because sometimes you need to display an empty home system in the middle of a turn.
  */
 export type PiecesHomeworlds = string[][];
@@ -479,15 +483,7 @@ export interface APRenderRep {
   /**
    * Describes what pieces are where. For the `entropy` renderer, the pieces should be laid out on a grid 14 cells wide, which the renderer will break up into the two different boards. For cobweb boards, the center space is the final row, by itself. And for the `sowing` boards, the end pits (if present) should also appear on a row by themselves, west first (left), then east (right).
    */
-  pieces:
-    | null
-    | string
-    | [(string | IsoStackPiece)[][], ...(string | IsoStackPiece)[][][]]
-    | PiecesHomeworlds
-    | PiecesTree
-    | Freepiece[]
-    | Multipiece[]
-    | Polypiece[];
+  pieces: BoardPieces | PiecesHomeworlds | PiecesTree | Freepiece[] | Multipiece[] | Polypiece[];
   /**
    * Areas are renderer-specific elements that are used and rendered in various ways.
    */
@@ -502,6 +498,7 @@ export interface APRenderRep {
     | AreaScrollBar
     | AreaCompassRose
     | AreaKey
+    | AreaTrack
   )[];
   /**
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
@@ -1799,6 +1796,30 @@ export interface AreaKey {
    * By default, `key` entries have a click handler attached. Set this to `false` to disable that.
    */
   clickable?: boolean;
+}
+/**
+ * A read-only mini-board for score tracks and similar peripheral grids. Accepts any `boardBasic` geometry and top-level-style `pieces` placement. Uses the global `legend` (no per-area legend). Does not rotate with the main board and is not clickable in the default renderer.
+ */
+export interface AreaTrack {
+  type: "track";
+  board: BoardBasic;
+  pieces?: BoardPieces;
+  /**
+   * Which side of the board the track appears on. Multiple tracks on the same side stack outward in `areas` declaration order.
+   */
+  position?: "left" | "right" | "top" | "bottom";
+  /**
+   * When true, row and column labels are drawn on the embedded track board. Defaults to false.
+   */
+  labels?: boolean;
+  /**
+   * Display size in main-board cell units, applied along the axis perpendicular to the track edge. For `top` and `bottom`, this is the display width (defaults to the main board width). For `left` and `right`, this is the display height (defaults to the main board height). The track board is scaled uniformly to fit.
+   */
+  width?: number;
+  /**
+   * Annotations scoped to this track's grid coordinates.
+   */
+  annotations?: AnnotationBasic[];
 }
 /**
  * These are pulled into the definitions section to make referencing them easier in the game code.

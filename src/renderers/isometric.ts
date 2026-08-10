@@ -731,14 +731,16 @@ export class IsometricRenderer extends RendererBase {
 
         const box = board.rbox(this.rootSvg);
 
+        const layoutBox = this.placeTrackAreas(box);
+
         // `pieces` area, if present
-        this.piecesArea(box, {padding: 0});
+        this.piecesArea(layoutBox, {padding: 0});
 
         // button bar
-        this.placeButtonBar(box, undefined, {padding: 0});
+        this.placeButtonBar(layoutBox, undefined, {padding: 0});
 
         // key
-        this.placeKey(box, undefined, {padding: 0});
+        this.placeKey(layoutBox, undefined, {padding: 0});
 
         if (!backfilled) {
             this.backFill(boardFill);

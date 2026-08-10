@@ -2,7 +2,7 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
 import { sheets } from "../sheets";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand";
@@ -10,7 +10,8 @@ import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
-import { CompassDirection, edges2corners, getBoardFill } from "../boards";
+import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
 import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit";
 import {
     computeAnnulusPlacement,
@@ -1163,24 +1164,39 @@ export abstract class RendererBase {
      *
      * @param grid - A map of row/column locations to x,y coordinates
      */
-    public annotateBoard(grid: GridPoints, polys?: (Poly|null)[][]) {
+    public annotateBoard(grid: GridPoints, polys?: (Poly|null)[][], opts?: {
+        annotations?: AnnotationBasic[];
+        notesParent?: SVGG;
+        show?: boolean;
+    }) {
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
         }
+        const show = opts?.show ?? this.options.showAnnotations;
+        if (!show) {
+            return;
+        }
+        const annotations = opts?.annotations ?? this.json.annotations;
+        if (annotations === undefined) {
+            return;
+        }
         type Shape = "square"|"circle"|"hexf"|"hexp";
 
-        if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
+        let notes: SVGG;
+        if (opts?.notesParent !== undefined) {
+            notes = opts.notesParent.group().id("annotations");
+        } else {
             const board = this.rootSvg.findOne("#board") as SVGG|null;
-            let notes: SVGG;
             if (board !== null) {
                 notes = board.group().id("annotations");
             } else {
                 notes = this.rootSvg.group().id("annotations");
             }
-            const rIncrement = this.cellsize / 2;
-            let radius = rIncrement;
-            let direction = 1;
-            for (const note of this.json.annotations as (AnnotationBasic|AnnotationSowing)[]) {
+        }
+        const rIncrement = this.cellsize / 2;
+        let radius = rIncrement;
+        let direction = 1;
+        for (const note of annotations as (AnnotationBasic|AnnotationSowing)[]) {
                 if ( (! ("type" in note)) || (note.type === undefined) ) {
                     throw new Error("Invalid annotation format found.");
                 }
@@ -1854,7 +1870,6 @@ export abstract class RendererBase {
                     throw new Error(`The requested annotation (${ note.type as string }) is not supported.`);
                 }
             }
-        }
     }
 
     private interpolateFromGrid(grid: GridPoints, point: ITarget) : [number, number] {
@@ -3189,6 +3204,391 @@ export abstract class RendererBase {
     protected coords2algebraicHex(columnLabels: string[]|undefined, x: number, y: number, height: number): string {
         const [label] = this.getLabels(columnLabels, height - y - 1, 1);
         return label + (x + 1).toString();
+    }
+
+    /**
+     * Dispatch board style rendering for the current `json.board` into `rootSvg` (or a nested SVG when embedding).
+     */
+    protected dispatchBoardRender(targetSvg?: Svg): BoardReturn {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Invalid object state.");
+        }
+        if (this.json.board === null || !("style" in this.json.board) || this.json.board.style === undefined) {
+            throw new Error("Board style required for dispatchBoardRender.");
+        }
+        const savedRoot = this.rootSvg;
+        if (targetSvg !== undefined) {
+            this.rootSvg = targetSvg;
+        }
+        const savedCellsize = this.cellsize;
+        let gridPoints: GridPoints;
+        let polys: Poly[][] | undefined;
+        let boardFill: Poly | undefined;
+        try {
+            switch (this.json.board.style) {
+                case "squares-beveled":
+                case "squares-checkered":
+                case "squares":
+                case "pegboard":
+                    ({ grid: gridPoints, polys, boardFill } = squares(this));
+                    break;
+                case "squares-diamonds":
+                    ({ grid: gridPoints, polys, boardFill } = squaresDiamonds(this));
+                    break;
+                case "squares-stacked":
+                    ({ grid: gridPoints, boardFill } = squaresStacked(this));
+                    break;
+                case "vertex":
+                case "vertex-cross":
+                case "vertex-fanorona":
+                    ({ grid: gridPoints, boardFill } = vertex(this));
+                    break;
+                case "snubsquare":
+                    ({ grid: gridPoints, boardFill } = snubSquare(this));
+                    break;
+                case "onyx":
+                    ({ grid: gridPoints, boardFill } = onyx(this));
+                    break;
+                case "snubsquare-cells":
+                    ({ grid: gridPoints, polys, boardFill } = snubSquareCells(this));
+                    break;
+                case "pentagonal":
+                case "pentagonal-bluestone":
+                    ({ grid: gridPoints, boardFill } = pentagonal(this));
+                    break;
+                case "bent-tri":
+                    ({ grid: gridPoints, boardFill } = bentTri(this));
+                    break;
+                case "star":
+                    ({ grid: gridPoints, boardFill } = star(this));
+                    break;
+                case "hex-of-hex":
+                    ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));
+                    break;
+                case "hex-of-tri":
+                    ({ grid: gridPoints, boardFill } = hexOfTri(this));
+                    break;
+                case "hex-of-tri-f":
+                    ({ grid: gridPoints, polys, boardFill } = hexOfTriF(this));
+                    break;
+                case "hex-of-cir":
+                    ({ grid: gridPoints, polys, boardFill } = hexOfCir(this));
+                    break;
+                case "rect-of-tri":
+                    ({ grid: gridPoints, boardFill } = rectOfTri(this));
+                    break;
+                case "hex-slanted":
+                    ({ grid: gridPoints, polys, boardFill } = hexSlanted(this));
+                    break;
+                case "hex-odd-p":
+                case "hex-even-p":
+                case "hex-odd-f":
+                case "hex-even-f":
+                    ({ grid: gridPoints, polys, boardFill } = rectOfHex(this));
+                    break;
+                case "triangles-stacked": {
+                    ({ grid: gridPoints, polys, boardFill } = stackingTriangles(this));
+                    break;
+                }
+                case "circular-cobweb":
+                    ({ grid: gridPoints, polys, boardFill } = cobweb(this));
+                    break;
+                case "circular-wheel":
+                    ({ grid: gridPoints, polys, boardFill } = wheel(this));
+                    break;
+                case "sowing":
+                    ({ grid: gridPoints, boardFill } = sowing(this));
+                    break;
+                case "conhex-cells":
+                    ({ grid: gridPoints, polys, boardFill } = conhex(this));
+                    break;
+                case "cairo-collinear":
+                    ({ grid: gridPoints, polys, boardFill } = cairoCollinear(this));
+                    break;
+                case "cairo-catalan":
+                    ({ grid: gridPoints, polys, boardFill } = cairoCatalan(this));
+                    break;
+                case "conical-hex":
+                case "conical-hex-narrow":
+                    ({ grid: gridPoints, polys, boardFill } = conicalHex(this));
+                    break;
+                case "pyramid-hex":
+                    ({ grid: gridPoints, polys, boardFill } = pyramidHex(this));
+                    break;
+                case "dvgc":
+                case "dvgc-checkered":
+                    ({ grid: gridPoints, polys, boardFill } = dvgc(this));
+                    break;
+                case "circular-moon":
+                    this.cellsize = 15;
+                    ({ grid: gridPoints, polys, boardFill } = moon(this));
+                    break;
+                case "fractured-flat":
+                    this.cellsize = 40;
+                    ({ grid: gridPoints, polys, boardFill } = fracturedFlat(this));
+                    break;
+                default:
+                    throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
+            }
+            return { grid: gridPoints, polys, boardFill };
+        } finally {
+            this.rootSvg = savedRoot;
+            // Embedded boards (tracks) must restore cellsize; main-board styles like
+            // circular-moon and fractured-flat adjust cellsize for the whole render.
+            if (targetSvg !== undefined) {
+                this.cellsize = savedCellsize;
+            }
+        }
+    }
+
+    protected parseBoardPieces(
+        pieces: APRenderRep["pieces"] | NonNullable<AreaTrack["pieces"]>,
+        boardWidth: number,
+    ): string[][][] {
+        if (pieces === null) {
+            return [];
+        }
+        if (typeof pieces === "string") {
+            const parsed: string[][][] = [];
+            if (pieces.indexOf(",") >= 0) {
+                for (const row of pieces.split("\n")) {
+                    let node: string[][];
+                    if (row === "_") {
+                        node = new Array(boardWidth).fill([]) as string[][];
+                    } else {
+                        let cells = row.split(",");
+                        cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
+                        node = cells.map((x) => [x]);
+                    }
+                    parsed.push(node);
+                }
+            } else {
+                for (const row of pieces.split("\n")) {
+                    let node: string[][];
+                    if (row === "_") {
+                        node = new Array(boardWidth).fill([]) as string[][];
+                    } else {
+                        const cells = row.split("");
+                        node = cells.map((x) => [x]);
+                    }
+                    parsed.push(node);
+                }
+            }
+            return parsed;
+        }
+        if ( (pieces instanceof Array) && (pieces[0] instanceof Array) && (pieces[0][0] instanceof Array) ) {
+            return pieces as string[][][];
+        }
+        throw new Error("Unrecognized `pieces` property.");
+    }
+
+    protected placeBoardGridPieces(
+        gridPoints: GridPoints,
+        pieces: string[][][],
+        group: SVGG,
+        boardStyle: string,
+        polys?: Poly[][],
+        opts?: { clickable?: boolean },
+    ): void {
+        if (this.rootSvg === undefined) {
+            throw new Error("Invalid object state.");
+        }
+        const clickable = opts?.clickable ?? (
+            this.options.boardClick !== undefined
+            && (this.json?.options === undefined || !this.json.options.includes("no-piece-click"))
+        );
+        for (let row = 0; row < pieces.length; row++) {
+            for (let col = 0; col < pieces[row].length; col++) {
+                for (const key of pieces[row][col]) {
+                    if ( (key !== null) && (key !== "-") ) {
+                        let point: IPoint|undefined;
+                        if (row >= gridPoints.length || col >= gridPoints[row].length) {
+                            if (boardStyle === "squares-stacked") {
+                                point = this.getStackedPoint(gridPoints, col, row);
+                                if (point === undefined) {
+                                    continue;
+                                }
+                            } else if (boardStyle === "triangles-stacked" && polys !== undefined) {
+                                point = this.getTriStackedPoint(gridPoints, col, row, polys);
+                                if (point === undefined) {
+                                    continue;
+                                }
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            point = gridPoints[row][col];
+                        }
+                        const piece = this.rootSvg.findOne("#" + key) as Svg;
+                        if ( (piece === null) || (piece === undefined) ) {
+                            throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+                        }
+                        const factor = 0.85;
+                        const use = usePieceAt({svg: group, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: factor});
+                        if (clickable && boardStyle !== "squares-stacked") {
+                            use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
+                        } else {
+                            use.attr({"pointer-events": "none"});
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected buildTrack(areaIndex: number, track: AreaTrack): Svg {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Invalid object state.");
+        }
+        const mainRoot = this.rootSvg;
+        const nested = mainRoot.defs().nested().id(`_track_${areaIndex}`);
+        const savedBoard = this.json.board;
+        const savedOptions = this.json.options;
+        const savedBoardClick = this.options.boardClick;
+        const savedCellsize = this.cellsize;
+        this.json.board = track.board;
+        if (track.labels !== true) {
+            const opts = savedOptions !== undefined ? [...savedOptions] : [];
+            if (!opts.includes("hide-labels")) {
+                opts.push("hide-labels");
+            }
+            this.json.options = opts;
+        }
+        this.options.boardClick = undefined;
+        let gridPoints: GridPoints;
+        let polys: Poly[][] | undefined;
+        try {
+            ({ grid: gridPoints, polys } = this.dispatchBoardRender(nested));
+        } finally {
+            this.json.board = savedBoard;
+            this.json.options = savedOptions;
+            this.options.boardClick = savedBoardClick;
+            this.cellsize = savedCellsize;
+        }
+        const trackBoard = nested.findOne("#board") as SVGG|null;
+        if (trackBoard === null) {
+            throw new Error("Track board group was not created.");
+        }
+        const group = trackBoard.group().id("pieces");
+        if (track.pieces !== undefined && track.pieces !== null) {
+            const boardWidth = ("width" in track.board && track.board.width !== undefined) ? track.board.width : 0;
+            const pieces = this.parseBoardPieces(track.pieces, boardWidth);
+            this.placeBoardGridPieces(gridPoints, pieces, group, track.board.style, polys, { clickable: false });
+        }
+        if (track.annotations !== undefined && track.annotations.length > 0) {
+            this.annotateBoard(gridPoints, polys, {
+                annotations: track.annotations,
+                notesParent: trackBoard,
+            });
+        }
+        const boardBbox = trackBoard.bbox();
+        nested.viewbox(boardBbox.x, boardBbox.y, boardBbox.width, boardBbox.height);
+        return nested;
+    }
+
+    /**
+     * Place `track` areas in declaration order. Tracks do not rotate with the main board.
+     */
+    protected placeTrackAreas(box: SVGBox): SVGBox {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Invalid object state.");
+        }
+        if (this.json.areas === undefined || this.json.areas.length === 0) {
+            return box;
+        }
+        const tracks: { area: AreaTrack; index: number }[] = [];
+        for (let i = 0; i < this.json.areas.length; i++) {
+            const area = this.json.areas[i];
+            if (area.type === "track") {
+                tracks.push({ area, index: i });
+            }
+        }
+        if (tracks.length === 0) {
+            return box;
+        }
+        const playfield = computePlayfieldMetrics(this.rootSvg, this.cellsize);
+        const mainWidthCells = (this.json.board !== null && "width" in this.json.board && this.json.board.width !== undefined)
+            ? this.json.board.width
+            : Math.round(playfield.width / this.cellsize);
+        const mainHeightCells = (this.json.board !== null && "height" in this.json.board && this.json.board.height !== undefined)
+            ? this.json.board.height
+            : Math.round(playfield.height / this.cellsize);
+        const padding = this.cellsize;
+        const offsets = { top: 0, bottom: 0, left: 0, right: 0 };
+        let minX = box.x;
+        let minY = box.y;
+        let maxX = box.x2;
+        let maxY = box.y2;
+        const tableau = ensureTableau(this.rootSvg);
+        for (const { area, index } of tracks) {
+            const nested = this.buildTrack(index, area);
+            const naturalW = nested.viewbox().w;
+            const naturalH = nested.viewbox().h;
+            const pos = area.position ?? "bottom";
+            let displayW = naturalW;
+            let displayH = naturalH;
+            if (pos === "left" || pos === "right") {
+                const targetHeightCells = area.width ?? mainHeightCells;
+                const targetHeightPx = targetHeightCells * this.cellsize;
+                displayH = targetHeightPx;
+                displayW = naturalW * (targetHeightPx / naturalH);
+            } else {
+                const targetWidthCells = area.width ?? mainWidthCells;
+                const targetWidthPx = targetWidthCells * this.cellsize;
+                displayW = targetWidthPx;
+                displayH = naturalH * (targetWidthPx / naturalW);
+            }
+            let x = 0;
+            let y = 0;
+            const alignTrackX = (targetWidthPx: number): number => {
+                if (targetWidthPx === playfield.width) {
+                    return playfield.x;
+                }
+                return playfield.x + (playfield.width - displayW) / 2;
+            };
+            const alignTrackY = (targetHeightPx: number): number => {
+                if (targetHeightPx === playfield.height) {
+                    return playfield.y;
+                }
+                return playfield.y + (playfield.height - displayH) / 2;
+            };
+            switch (pos) {
+                case "bottom": {
+                    const targetWidthPx = (area.width ?? mainWidthCells) * this.cellsize;
+                    x = alignTrackX(targetWidthPx);
+                    y = playfield.y + playfield.height + padding + offsets.bottom;
+                    offsets.bottom += displayH + padding;
+                    break;
+                }
+                case "top": {
+                    const targetWidthPx = (area.width ?? mainWidthCells) * this.cellsize;
+                    x = alignTrackX(targetWidthPx);
+                    y = playfield.y - padding - displayH - offsets.top;
+                    offsets.top += displayH + padding;
+                    break;
+                }
+                case "left": {
+                    const targetHeightPx = (area.width ?? mainHeightCells) * this.cellsize;
+                    x = playfield.x - padding - displayW - offsets.left;
+                    y = alignTrackY(targetHeightPx);
+                    offsets.left += displayW + padding;
+                    break;
+                }
+                case "right": {
+                    const targetHeightPx = (area.width ?? mainHeightCells) * this.cellsize;
+                    x = playfield.x + playfield.width + padding + offsets.right;
+                    y = alignTrackY(targetHeightPx);
+                    offsets.right += displayW + padding;
+                    break;
+                }
+            }
+            tableau.use(nested).size(displayW, displayH).move(x, y);
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x + displayW);
+            maxY = Math.max(maxY, y + displayH);
+        }
+        return new SVGBox(minX, minY, maxX - minX, maxY - minY);
     }
 
     /**

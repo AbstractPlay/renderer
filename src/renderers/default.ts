@@ -1,10 +1,9 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/_base";
+import { IPolyPolygon } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { peripheralReferenceSides } from "../references/helpers";
 import { IRendererOptionsIn, RendererBase} from "./_base";
 import { usePieceAt } from "../common/plotting";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
 
 /**
  * This is the default renderer used for most games.
@@ -31,121 +30,10 @@ export class DefaultRenderer extends RendererBase {
         // Load all the pieces in the legend (have to do this first so the glyphs are available for marking the board)
         this.loadLegend();
 
-        let gridPoints: GridPoints;
-        let pcGrid: GridPoints|undefined;
-        let polys: Poly[][]|undefined;
-        let boardFill: Poly|undefined;
         if (! ("style" in this.json.board)) {
             throw new Error(`This 'board' schema cannot be handled by the '${ DefaultRenderer.rendererName }' renderer.`);
         }
-        switch (this.json.board.style) {
-            case "squares-beveled":
-            case "squares-checkered":
-            case "squares":
-            case "pegboard":
-                ({ grid: gridPoints, polys, boardFill } = squares(this));
-                break;
-            case "squares-diamonds":
-                ({ grid: gridPoints, polys, boardFill } = squaresDiamonds(this));
-                break;
-            case "squares-stacked":
-                ({ grid: gridPoints, boardFill } = squaresStacked(this));
-                break;
-            case "vertex":
-            case "vertex-cross":
-            case "vertex-fanorona":
-                ({ grid: gridPoints, boardFill } = vertex(this));
-                break;
-            case "snubsquare":
-                ({ grid: gridPoints, boardFill } = snubSquare(this));
-                break;
-            case "onyx":
-                ({ grid: gridPoints, boardFill } = onyx(this));
-                break;
-            case "snubsquare-cells":
-                ({ grid: gridPoints, polys, boardFill } = snubSquareCells(this));
-                break;
-            case "pentagonal":
-            case "pentagonal-bluestone":
-                ({ grid: gridPoints, boardFill } = pentagonal(this));
-                break;
-            case "bent-tri":
-                ({ grid: gridPoints, boardFill } = bentTri(this));
-                break;
-            case "star":
-                ({ grid: gridPoints, boardFill } = star(this));
-                break;
-            case "hex-of-hex":
-                ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));
-                break;
-            case "hex-of-tri":
-                ({ grid: gridPoints, boardFill } = hexOfTri(this));
-                break;
-            case "hex-of-tri-f":
-                ({ grid: gridPoints, polys, boardFill } = hexOfTriF(this));
-                break;
-            case "hex-of-cir":
-                ({ grid: gridPoints, polys, boardFill } = hexOfCir(this));
-                break;
-            case "rect-of-tri":
-                ({ grid: gridPoints, boardFill } = rectOfTri(this));
-                break;
-            // case "rect-of-tri-f":
-            //     [gridPoints, polys] = rectOfTriF();
-            //     break;
-            case "hex-slanted":
-                ({ grid: gridPoints, polys, boardFill } = hexSlanted(this));
-                break;
-            case "hex-odd-p":
-            case "hex-even-p":
-            case "hex-odd-f":
-            case "hex-even-f":
-                ({ grid: gridPoints, polys, boardFill } = rectOfHex(this));
-                break;
-            case "triangles-stacked": {
-                ({ grid: gridPoints, polys, boardFill } = stackingTriangles(this));
-                break;
-            }
-            case "circular-cobweb":
-                ({ grid: gridPoints, polys, boardFill } = cobweb(this));
-                break;
-            case "circular-wheel":
-                ({ grid: gridPoints, polys, boardFill } = wheel(this));
-                break;
-            case "sowing":
-                ({ grid: gridPoints, boardFill } = sowing(this));
-                break;
-            case "conhex-cells":
-                ({ grid: gridPoints, polys, boardFill } = conhex(this));
-                break;
-            case "cairo-collinear":
-                ({ grid: gridPoints, polys, boardFill } = cairoCollinear(this));
-                break;
-            case "cairo-catalan":
-                ({ grid: gridPoints, polys, boardFill } = cairoCatalan(this));
-                break;
-            case "conical-hex":
-            case "conical-hex-narrow":
-                ({ grid: gridPoints, polys, boardFill } = conicalHex(this));
-                break;
-            case "pyramid-hex":
-                ({ grid: gridPoints, polys, boardFill } = pyramidHex(this));
-                break;
-            case "dvgc":
-            case "dvgc-checkered":
-                ({ grid: gridPoints, polys, boardFill } = dvgc(this));
-                break;
-            case "circular-moon":
-                this.cellsize = 15;
-                ({ grid: gridPoints, polys, boardFill } = moon(this));
-                break;
-            case "fractured-flat":
-                this.cellsize = 40;
-                ({ grid: gridPoints, polys, boardFill } = fracturedFlat(this));
-                break;
-            default:
-                throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
-        }
+        const { grid: gridPoints, polys, boardFill } = this.dispatchBoardRender();
 
         if (this.json.board !== null && "reference" in this.json.board && this.json.board.reference !== undefined) {
             const ref = this.json.board.reference;
@@ -163,96 +51,11 @@ export class DefaultRenderer extends RendererBase {
         const board = this.rootSvg.findOne("#board") as SVGG;
         const group = board.group().id("pieces");
         if (this.json.pieces !== null) {
-            // Generate pieces array
-            let pieces: string[][][] = [];
-
-            if (typeof this.json.pieces === "string") {
-                // Does it contain commas
-                if (this.json.pieces.indexOf(",") >= 0) {
-                    for (const row of this.json.pieces.split("\n")) {
-                        let node: string[][];
-                        if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]) as string[][];
-                        } else {
-                            let cells = row.split(",");
-                            cells = cells.map((x) => { if (x === "") {return "-"; } else {return x; } });
-                            node = cells.map((x) => [x]);
-                        }
-                        pieces.push(node);
-                    }
-                } else {
-                    for (const row of this.json.pieces.split("\n")) {
-                        let node: string[][];
-                        if (row === "_") {
-                            node = new Array(this.json.board.width).fill([]) as string[][];
-                        } else {
-                            const cells = row.split("");
-                            node = cells.map((x) => [x]);
-                        }
-                        pieces.push(node);
-                    }
-                }
-            } else if ( (this.json.pieces instanceof Array) && (this.json.pieces[0] instanceof Array) && (this.json.pieces[0][0] instanceof Array) ) {
-                pieces = this.json.pieces as string[][][];
-            } else {
-                throw new Error("Unrecognized `pieces` property.");
-            }
-
-            // Place the pieces according to the grid
-            for (let row = 0; row < pieces.length; row++) {
-                for (let col = 0; col < pieces[row].length; col++) {
-                    for (const key of pieces[row][col]) {
-                        if ( (key !== null) && (key !== "-") ) {
-                            let point: IPoint|undefined;
-                            // first check if pcGrid was provided
-                            if (pcGrid !== undefined) {
-                                point = pcGrid[row][col];
-                            } else {
-                                // handle pieces beyond the grid boundaries
-                                if (row >= gridPoints.length || col >= gridPoints[row].length) {
-                                    if (this.json.board.style === "squares-stacked") {
-                                        point = this.getStackedPoint(gridPoints, col, row);
-                                        if (point === undefined) {
-                                            continue;
-                                        }
-                                    } else if (this.json.board.style === "triangles-stacked" && polys !== undefined) {
-                                        point = this.getTriStackedPoint(gridPoints, col, row, polys);
-                                        if (point === undefined) {
-                                            continue;
-                                        }
-                                    } else {
-                                        continue;
-                                    }
-                                } else {
-                                    point = gridPoints[row][col];
-                                }
-                                // if (point === undefined) {
-                                //     continue;
-                                // }
-                            }
-
-                            const piece = this.rootSvg.findOne("#" + key) as Svg;
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
-                            }
-                            const factor = 0.85;
-                            const use = usePieceAt({svg: group, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: factor});
-                            // if (options.rotate && this.json.options && this.json.options.includes('rotate-pieces'))
-                            //     rotate(use, options.rotate, point.x, point.y);
-                            if ( (this.options.boardClick !== undefined) && ( (this.json.options === undefined) || (! this.json.options.includes("no-piece-click")) ) ) {
-                                // if ( ( (this.json.board.tileSpacing !== undefined) && (this.json.board.tileSpacing > 0) ) || ( (! this.json.board.style.startsWith("squares")) && (! this.json.board.style.startsWith("vertex")) ) ) {
-                                if (this.json.board.style !== "squares-stacked") {
-                                    use.click((e : Event) => {this.options.boardClick!(row, col, key); e.stopPropagation(); });
-                                } else {
-                                    use.attr({"pointer-events": "none"});
-                                }
-                            } else {
-                                use.attr({"pointer-events": "none"});
-                            }
-                        }
-                    }
-                }
-            }
+            const boardWidth = ("width" in this.json.board && this.json.board.width !== undefined)
+                ? this.json.board.width
+                : 0;
+            const pieces = this.parseBoardPieces(this.json.pieces, boardWidth);
+            this.placeBoardGridPieces(gridPoints, pieces, group, this.json.board.style, polys);
         }
 
         // annotations
@@ -280,7 +83,9 @@ export class DefaultRenderer extends RendererBase {
 
         const box = this.rotateBoard();
         const bottomRefBox = this.placeBoardReference(polys, { sides: ["bottom"], layoutBox: box });
-        const layoutBox = bottomRefBox ?? box;
+        let layoutBox = bottomRefBox ?? box;
+
+        layoutBox = this.placeTrackAreas(layoutBox);
 
         // `pieces` area, if present
         this.piecesArea(layoutBox);

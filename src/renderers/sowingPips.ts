@@ -185,14 +185,16 @@ export class SowingPipsRenderer extends RendererBase {
 
         const box = this.rotateBoard();
 
+        const layoutBox = this.placeTrackAreas(box);
+
         // `pieces` area, if present
-        this.piecesArea(box);
+        this.piecesArea(layoutBox);
 
         // button bar
-        this.placeButtonBar(box);
+        this.placeButtonBar(layoutBox);
 
         // key
-        this.placeKey(box);
+        this.placeKey(layoutBox);
 
         if (!backfilled){
             this.backFill(boardFill);
