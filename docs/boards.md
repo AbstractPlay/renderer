@@ -228,9 +228,13 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `fractured-flat`
 
-Hand-authored fractured polygon board (45 cells). Rows index **size tiers** (triangles, quads, pentagons, hexagons); columns sort by centroid Y then X within each tier. Row 0 has 24 triangles, row 1 has 15 quads, row 2 has 5 pentagons, row 3 has 1 hexagon.
+Hand-authored fractured polygon board (45 cells). **Rows** are size tiers (triangles, quads, pentagons, hexagons). **Columns** sweep **clockwise from north** around the board center: each cell is ordered by the bearing of its first corner encountered by that sweep (minimum vertex bearing). Row 0 has 24 triangles, row 1 has 15 quads, row 2 has 5 pentagons, row 3 has 1 hexagon.
+
+Index labels use a **tier letter** and **1-based column** (`A1` = row 0 col 0, `B1` = row 1 col 0, etc.).
 
 {% renderWidget "samples/board-fractured-flat.json" %}
+
+{% renderWidget "samples/board-fractured-flat-index.json" %}
 
 ## Sowing / Mancala
 

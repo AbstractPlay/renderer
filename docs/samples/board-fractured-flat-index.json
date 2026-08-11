@@ -1,0 +1,189 @@
+{
+  "board": {
+    "style": "fractured-flat",
+    "strokeWeight": 0.5
+  },
+  "legend": {
+    "A1": {
+      "text": "A1",
+      "colour": "#000"
+    },
+    "A2": {
+      "text": "A2",
+      "colour": "#000"
+    },
+    "A3": {
+      "text": "A3",
+      "colour": "#000"
+    },
+    "A4": {
+      "text": "A4",
+      "colour": "#000"
+    },
+    "A5": {
+      "text": "A5",
+      "colour": "#000"
+    },
+    "A6": {
+      "text": "A6",
+      "colour": "#000"
+    },
+    "A7": {
+      "text": "A7",
+      "colour": "#000"
+    },
+    "A8": {
+      "text": "A8",
+      "colour": "#000"
+    },
+    "A9": {
+      "text": "A9",
+      "colour": "#000"
+    },
+    "A10": {
+      "text": "A10",
+      "colour": "#000"
+    },
+    "A11": {
+      "text": "A11",
+      "colour": "#000"
+    },
+    "A12": {
+      "text": "A12",
+      "colour": "#000"
+    },
+    "A13": {
+      "text": "A13",
+      "colour": "#000"
+    },
+    "A14": {
+      "text": "A14",
+      "colour": "#000"
+    },
+    "A15": {
+      "text": "A15",
+      "colour": "#000"
+    },
+    "A16": {
+      "text": "A16",
+      "colour": "#000"
+    },
+    "A17": {
+      "text": "A17",
+      "colour": "#000"
+    },
+    "A18": {
+      "text": "A18",
+      "colour": "#000"
+    },
+    "A19": {
+      "text": "A19",
+      "colour": "#000"
+    },
+    "A20": {
+      "text": "A20",
+      "colour": "#000"
+    },
+    "A21": {
+      "text": "A21",
+      "colour": "#000"
+    },
+    "A22": {
+      "text": "A22",
+      "colour": "#000"
+    },
+    "A23": {
+      "text": "A23",
+      "colour": "#000"
+    },
+    "A24": {
+      "text": "A24",
+      "colour": "#000"
+    },
+    "B1": {
+      "text": "B1",
+      "colour": "#000"
+    },
+    "B2": {
+      "text": "B2",
+      "colour": "#000"
+    },
+    "B3": {
+      "text": "B3",
+      "colour": "#000"
+    },
+    "B4": {
+      "text": "B4",
+      "colour": "#000"
+    },
+    "B5": {
+      "text": "B5",
+      "colour": "#000"
+    },
+    "B6": {
+      "text": "B6",
+      "colour": "#000"
+    },
+    "B7": {
+      "text": "B7",
+      "colour": "#000"
+    },
+    "B8": {
+      "text": "B8",
+      "colour": "#000"
+    },
+    "B9": {
+      "text": "B9",
+      "colour": "#000"
+    },
+    "B10": {
+      "text": "B10",
+      "colour": "#000"
+    },
+    "B11": {
+      "text": "B11",
+      "colour": "#000"
+    },
+    "B12": {
+      "text": "B12",
+      "colour": "#000"
+    },
+    "B13": {
+      "text": "B13",
+      "colour": "#000"
+    },
+    "B14": {
+      "text": "B14",
+      "colour": "#000"
+    },
+    "B15": {
+      "text": "B15",
+      "colour": "#000"
+    },
+    "C1": {
+      "text": "C1",
+      "colour": "#000"
+    },
+    "C2": {
+      "text": "C2",
+      "colour": "#000"
+    },
+    "C3": {
+      "text": "C3",
+      "colour": "#000"
+    },
+    "C4": {
+      "text": "C4",
+      "colour": "#000"
+    },
+    "C5": {
+      "text": "C5",
+      "colour": "#000"
+    },
+    "D1": {
+      "text": "D1",
+      "colour": "#000"
+    }
+  },
+  "pieces": "A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15,A16,A17,A18,A19,A20,A21,A22,A23,A24\nB1,B2,B3,B4,B5,B6,B7,B8,B9,B10,B11,B12,B13,B14,B15\nC1,C2,C3,C4,C5\nD1"
+}
