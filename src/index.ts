@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import { NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import Ajv, {DefinedError as AJVError} from "ajv";
 import { renderers } from "./renderers";
 import { sheets } from "./sheets";
@@ -187,6 +187,45 @@ export const renderglyph = (glyphid: string, colour: number | string | Colourfun
  * @returns A valid SVG.js Svg object
  * @beta
  */
+const MOZILLA_VIEWBOX_PAD = 2;
+
+type LayoutBox = { x: number; y: number; x2: number; y2: number };
+
+const unionLayoutExtents = (a: LayoutBox, b: { x: number; y: number; x2?: number; y2?: number; width?: number; height?: number }): LayoutBox => {
+    const bx2 = b.x2 ?? (b.x + (b.width ?? 0));
+    const by2 = b.y2 ?? (b.y + (b.height ?? 0));
+    return {
+        x: Math.min(a.x, b.x),
+        y: Math.min(a.y, b.y),
+        x2: Math.max(a.x2, bx2),
+        y2: Math.max(a.y2, by2),
+    };
+};
+
+/** Union root bbox with #board-tableau and track <use> instances for auto viewBox. */
+const unionLayoutBBox = (draw: Svg): { x: number; y: number; width: number; height: number } => {
+    const rootBox = draw.bbox();
+    let union: LayoutBox = { x: rootBox.x, y: rootBox.y, x2: rootBox.x2, y2: rootBox.y2 };
+
+    const tableau = draw.findOne("#board-tableau") as SVGG | null;
+    if (tableau !== null) {
+        union = unionLayoutExtents(union, tableau.rbox(draw));
+    }
+
+    const trackUses = draw.find('[href*="_track_"]') as unknown as SVGElement[];
+    for (const use of trackUses) {
+        const x = Number(use.x());
+        const y = Number(use.y());
+        const w = Number(use.width());
+        const h = Number(use.height());
+        if (w > 0 && h > 0) {
+            union = unionLayoutExtents(union, { x, y, width: w, height: h });
+        }
+    }
+
+    return { x: union.x, y: union.y, width: union.x2 - union.x, height: union.y2 - union.y };
+};
+
 export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     // Validate the JSON
     if (! validate(json)) {
@@ -254,8 +293,9 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
         && draw.viewbox().h === 0  // Only set it here if the renderer didn't set it
         ) {
         // Important: Mozilla browsers include stroke widths where other browsers do not.
-        const box = draw.bbox();
-        draw.viewbox(box.x - 2, box.y - 2, box.width + 4, box.height + 4);
+        const box = unionLayoutBBox(draw);
+        const pad = MOZILLA_VIEWBOX_PAD;
+        draw.viewbox(box.x - pad, box.y - pad, box.width + (pad * 2), box.height + (pad * 2));
     }
     return draw;
 }

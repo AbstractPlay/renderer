@@ -7,6 +7,7 @@ import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 import { computePlayfieldMetrics } from "../src/references/helpers";
+import { render as renderBoard } from "../src/index";
 
 const schema = require("../src/schemas/schema.json");
 const { createSVGWindow } = require("svgdom");
@@ -105,6 +106,31 @@ const dualBottomTracksFixture: APRenderRep = {
     ],
 };
 
+const fracturedFlatBottomTrackFixture: APRenderRep = {
+    board: { style: "fractured-flat", strokeWeight: 0.5 },
+    legend: {
+        S: { name: "cube", colour: 1 },
+        N6: { name: "piecepack-number-6" },
+        N5: { name: "piecepack-number-5" },
+        N4: { name: "piecepack-number-4" },
+        N3: { name: "piecepack-number-3" },
+        N2: { name: "piecepack-number-2" },
+        N1: { name: "piecepack-number-1" },
+    },
+    pieces: "-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-,-,-,-,-,-,-,-\n-,-,-,-,-\n-",
+    areas: [
+        {
+            type: "track",
+            position: "bottom",
+            board: { style: "squares", width: 13, height: 1 },
+            pieces: "N6,N5,N4,N3,N2,N1,S,N1,N2,N3,N4,N5,N6",
+        },
+    ],
+};
+
+const FRACTURED_FLAT_CELL_SIZE = 40;
+const VIEWBOX_PAD = 2;
+
 const findTrackUse = (draw: Svg): SVGElement => {
     const uses = draw.find('[href*="_track_"]') as unknown as SVGElement[];
     expect(uses.length).to.be.greaterThan(0);
@@ -116,6 +142,23 @@ const render = (json: APRenderRep, opts?: Partial<IRendererOptionsIn>): Svg => {
     const renderer = new DefaultRenderer();
     renderer.render(json, draw, { ...baseOptions, ...opts });
     return draw;
+};
+
+const renderWithViewbox = (json: APRenderRep, opts?: Partial<IRendererOptionsIn>): Svg => {
+    const draw = makeDraw();
+    return renderBoard(json, { target: draw, ...baseOptions, ...opts });
+};
+
+const expectViewboxIncludesTrack = (draw: Svg, trackUse: SVGElement, pad = VIEWBOX_PAD): void => {
+    const vb = draw.viewbox();
+    const trackX = trackUse.x() as number;
+    const trackY = trackUse.y() as number;
+    const trackW = trackUse.width() as number;
+    const trackH = trackUse.height() as number;
+    expect(vb.x).to.be.at.most(trackX - pad + 0.5);
+    expect(vb.y).to.be.at.most(trackY - pad + 0.5);
+    expect(vb.x + vb.w).to.be.at.least(trackX + trackW + pad - 0.5);
+    expect(vb.y + vb.h).to.be.at.least(trackY + trackH + pad - 0.5);
 };
 
 describe("track area", () => {
@@ -264,5 +307,48 @@ describe("track area", () => {
         const y = trackUse.y() as number;
         expect(displayH).to.be.closeTo(6 * CELL_SIZE, 0.5);
         expect(y).to.be.closeTo(playfield.y + (playfield.height - displayH) / 2, 0.5);
+    });
+
+    it("sets root viewBox to include top track via render()", () => {
+        const draw = renderWithViewbox(checkeredTopTrackFixture);
+        const trackUse = findTrackUse(draw);
+        expectViewboxIncludesTrack(draw, trackUse);
+    });
+
+    it("gives track defs a non-zero viewBox and use height (Firefox)", () => {
+        const draw = renderWithViewbox(fracturedFlatBottomTrackFixture, {
+            sheets: ["core", "piecepack"],
+        });
+        const trackDef = draw.findOne("#_track_0") as Svg | null;
+        expect(trackDef).to.not.equal(null);
+        const vb = trackDef!.viewbox();
+        expect(vb.w).to.be.greaterThan(0);
+        expect(vb.h).to.be.greaterThan(0);
+        const trackUse = findTrackUse(draw);
+        expect(trackUse.height() as number).to.be.greaterThan(0);
+    });
+
+    it("sets root viewBox to include stacked bottom tracks via render()", () => {
+        const draw = renderWithViewbox(dualBottomTracksFixture);
+        const uses = draw.find('[href*="_track_"]') as unknown as SVGElement[];
+        expect(uses.length).to.equal(2);
+        for (const trackUse of uses) {
+            expectViewboxIncludesTrack(draw, trackUse);
+        }
+    });
+
+    it("places fractured-flat bottom score track below playfield with viewBox coverage", () => {
+        const draw = renderWithViewbox(fracturedFlatBottomTrackFixture, {
+            sheets: ["core", "piecepack"],
+        });
+        const tableau = draw.findOne("#board-tableau") as SVGG | null;
+        expect(tableau).to.not.equal(null);
+        expect(tableau!.findOne('[href*="_track_"]')).to.not.equal(null);
+
+        const playfield = computePlayfieldMetrics(draw, FRACTURED_FLAT_CELL_SIZE);
+        const trackUse = findTrackUse(draw);
+        const trackY = trackUse.y() as number;
+        expect(trackY).to.be.greaterThan(playfield.y + playfield.height);
+        expectViewboxIncludesTrack(draw, trackUse);
     });
 });

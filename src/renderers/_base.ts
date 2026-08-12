@@ -17,6 +17,7 @@ import {
     computeAnnulusPlacement,
     computeSidebarPlacement,
     computePlayfieldMetrics,
+    playfieldExtentFromPolys,
     defaultAnnulusAnchor,
     defaultSidebarAnchor,
     ensureTableau,
@@ -273,6 +274,8 @@ export abstract class RendererBase {
     public options: IRendererOptionsOut
     public json?: APRenderRep;
     public rootSvg?: Svg;
+    /** Main-board polygon grid from the last top-level `dispatchBoardRender` call. */
+    protected mainBoardPolys?: Poly[][];
 
     /**
      * Creates an instance of RendererBase. A name must be provided. Also sets the default options.
@@ -3330,6 +3333,9 @@ export abstract class RendererBase {
                 default:
                     throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);
             }
+            if (targetSvg === undefined) {
+                this.mainBoardPolys = polys;
+            }
             return { grid: gridPoints, polys, boardFill };
         } finally {
             this.rootSvg = savedRoot;
@@ -3481,9 +3487,38 @@ export abstract class RendererBase {
                 notesParent: trackBoard,
             });
         }
-        const boardBbox = trackBoard.bbox();
-        nested.viewbox(boardBbox.x, boardBbox.y, boardBbox.width, boardBbox.height);
+        const viewbox = this.trackBoardViewbox(trackBoard, gridPoints, polys, savedCellsize);
+        nested.viewbox(viewbox.x, viewbox.y, viewbox.width, viewbox.height);
         return nested;
+    }
+
+    /**
+     * Track boards live in `defs`; Firefox often returns an empty `bbox()` there.
+     * Compute the viewBox from geometry like `buildKey` / `buildButtonBar` do.
+     */
+    protected trackBoardViewbox(
+        trackBoard: SVGG,
+        gridPoints: GridPoints,
+        polys: Poly[][] | undefined,
+        cellsize: number,
+    ): { x: number; y: number; width: number; height: number } {
+        const polyExtent = polys !== undefined && polys.length > 0
+            ? playfieldExtentFromPolys(polys)
+            : null;
+        if (polyExtent !== null && polyExtent.width > 0 && polyExtent.height > 0) {
+            return polyExtent;
+        }
+        const boardBbox = trackBoard.bbox();
+        if (boardBbox.width > 0 && boardBbox.height > 0) {
+            return { x: boardBbox.x, y: boardBbox.y, width: boardBbox.width, height: boardBbox.height };
+        }
+        const flat = gridPoints.flat();
+        const half = cellsize / 2;
+        const minX = Math.min(...flat.map((p) => p.x)) - half;
+        const maxX = Math.max(...flat.map((p) => p.x)) + half;
+        const minY = Math.min(...flat.map((p) => p.y)) - half;
+        const maxY = Math.max(...flat.map((p) => p.y)) + half;
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
     }
 
     /**
@@ -3506,7 +3541,7 @@ export abstract class RendererBase {
         if (tracks.length === 0) {
             return box;
         }
-        const playfield = computePlayfieldMetrics(this.rootSvg, this.cellsize);
+        const playfield = computePlayfieldMetrics(this.rootSvg, this.cellsize, this.mainBoardPolys);
         const mainWidthCells = (this.json.board !== null && "width" in this.json.board && this.json.board.width !== undefined)
             ? this.json.board.width
             : Math.round(playfield.width / this.cellsize);
