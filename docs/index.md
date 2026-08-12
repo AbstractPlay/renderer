@@ -15,6 +15,7 @@ The Abstract Play renderer turns a JSON **render representation** into SVG board
 - [Markers](/renderer/markers/) — board decorations under pieces
 - [Annotations](/renderer/annotations/) — move highlights
 - [Engines](/renderer/engines/) — specialized renderers
+- [Playground samples](/renderer/playground-samples/) — snippet catalog, browser tests, how to add examples
 - [Schema reference](/renderer/schema-reference/) — full enum/property listing
 
 ## Full playground

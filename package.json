@@ -32,6 +32,9 @@
         "build-bundle": "webpack --config webpack.npm.config.js",
         "test:bundle": "mocha -r ts-node/register test/bundle-exports.test.ts",
         "test": "mocha -r ts-node/register test/**/*.test.ts",
+        "test:browser": "node bin/sync-playground-samples.mjs && npm run dist-dev && shx cp dist/APRender.min.js test/browser/ && playwright test",
+        "test:browser:install": "playwright install --with-deps chromium firefox webkit",
+        "sync-playground-samples": "node bin/sync-playground-samples.mjs",
         "contact-sheet": "ts-node bin/contact-export.ts",
         "lint": "npx eslint .",
         "dist-dev": "rimraf dist && webpack",
@@ -39,8 +42,8 @@
         "json2ts": "npx json2ts -i src/schemas/schema.json -o src/schemas/schema.d.ts",
         "full-dev": "npm run test && npm run build && npm run dist-dev && npm run deploy",
         "full-prod": "npm run test && npm run build && npm run dist-prod && npm run deploy",
-        "deploy": "shx cp ./test/playground.html ./test/playground.js ./dist && npx serverless client deploy --no-confirm && aws s3 cp ./dist/APRender.min.js s3://gameslib.dev.abstractplay.com --profile AbstractPlayDev --cache-control no-cache",
-        "deploy:ci": "shx cp ./test/playground.html ./test/playground.js ./dist && npx serverless client deploy --no-confirm && aws s3 cp ./dist/APRender.min.js s3://gameslib.dev.abstractplay.com --cache-control no-cache"
+        "deploy": "node bin/sync-playground-samples.mjs && shx cp ./test/playground.html ./test/playground.js ./test/playground-samples.js ./dist && npx serverless client deploy --no-confirm && aws s3 cp ./dist/APRender.min.js s3://gameslib.dev.abstractplay.com --profile AbstractPlayDev --cache-control no-cache",
+        "deploy:ci": "node bin/sync-playground-samples.mjs && shx cp ./test/playground.html ./test/playground.js ./test/playground-samples.js ./dist && npx serverless client deploy --no-confirm && aws s3 cp ./dist/APRender.min.js s3://gameslib.dev.abstractplay.com --cache-control no-cache"
     },
     "author": "Aaron Dalton <aaron@daltons.ca> (https://www.perlkonig.com)",
     "license": "MIT",
@@ -65,6 +68,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.26.0",
+        "@playwright/test": "^1.51.0",
         "@resvg/resvg-js": "^2.6.2",
         "@types/chai": "^4.3.4",
         "@types/color-convert": "^2.0.3",

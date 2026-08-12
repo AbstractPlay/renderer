@@ -33,6 +33,8 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm test
+    - run: npx playwright install --with-deps chromium firefox webkit
+    - run: npm run test:browser
     - name: Verify contact sheet is up to date
       run: |
         npm run contact-sheet
