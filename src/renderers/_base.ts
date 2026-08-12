@@ -3092,7 +3092,7 @@ export abstract class RendererBase {
                         delete newclone.cell;
                         // @ts-expect-error (only used to gnerate UUID)
                         delete newclone.side;
-                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
+                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke).attr({ 'pointer-events': 'none' });
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
                         if (!("row" in marker.cell) || !("col" in marker.cell)
                             || marker.cell.row === undefined || marker.cell.col === undefined) {
@@ -3109,7 +3109,7 @@ export abstract class RendererBase {
                                 const [idx1, idx2] = edge.corners;
                                 const {x: xFrom, y: yFrom} = hex.corners[idx1];
                                 const {x: xTo, y: yTo} = hex.corners[idx2];
-                                targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke(stroke);
+                                targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke(stroke).attr({ 'pointer-events': 'none' });
                             }
                         }
                     }

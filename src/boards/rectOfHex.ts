@@ -1,5 +1,5 @@
 import { centroid } from "../common/plotting";
-import { BoardReturn, createCellsLayers, edges2corners, ensureBoardMarkerLayers, getBoardFill, pts2id } from ".";
+import { BoardReturn, createCellsLayers, edges2corners, getBoardFill, pts2id } from ".";
 import { GridPoints, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
@@ -56,7 +56,7 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
     });
     const grid = new Grid(myHex, rectangle({width, height}));
     const board = ctx.rootSvg.group().id("board");
-    const boardLayers = ensureBoardMarkerLayers(board);
+    const cellLayers = createCellsLayers(board, "cells");
     const gridPoints: GridPoints = [];
     // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
     const polys: IPolyPolygon[][] = [];
@@ -116,12 +116,11 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
             }
         }
         const { x, y } = hex;
-        boardLayers.fill.use(filledSymbolPoly).size(cellsize, cellsize).translate(x, y);
+        cellLayers.fill.use(filledSymbolPoly).size(cellsize, cellsize).translate(x, y);
     }
 
-    ctx.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
+    ctx.markBoard({svgGroup: cellLayers.root, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
-    const cellLayers = createCellsLayers(board, "cells");
     const labels = board.group().id("labels");
     let labelStyle: "internal"|"external" = "internal";
     if ("labelStyle" in ctx.json.board && ctx.json.board.labelStyle !== undefined && ctx.json.board.labelStyle !== null) {
@@ -306,7 +305,6 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
     }
 
     if (clickEdges) {
-        const gEdges = board.group().id("edges").insertBefore(labels);
         for (const hex of grid) {
             // add clickable edges
             // don't draw "blocked" hexes
@@ -326,13 +324,13 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
                     continue;
                 }
                 seenEdges.add(vid);
-                const edgeLine = gEdges.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
+                const edgeLine = cellLayers.strokes.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
                 edgeLine.click(() => ctx.options.boardClick!(hex.row, hex.col, edge.dir));
             }
         }
     }
 
-    ctx.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
+    ctx.markBoard({svgGroup: cellLayers.root, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
     return {grid: gridPoints, polys};
 }
