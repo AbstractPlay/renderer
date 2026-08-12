@@ -3,7 +3,7 @@ import { GridPoints, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import tinycolor from "tinycolor2";
 import { centroid } from "../common/plotting";
-import { BoardReturn } from ".";
+import { BoardReturn, createCellsLayers } from ".";
 
 export const dvgc = (ctx: RendererBase): BoardReturn => {
     if ( ctx.json === undefined || ctx.json === null || ctx.rootSvg === undefined ) {
@@ -323,13 +323,14 @@ export const dvgc = (ctx: RendererBase): BoardReturn => {
 
     // now render the board
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("cells");
+    const cellLayers = createCellsLayers(board, "cells");
+    const gridlines = cellLayers.root;
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
     for (let iRow = 0; iRow < polys.length; iRow++) {
         for (let iCol = 0; iCol < polys[iRow].length; iCol++) {
-            const c = gridlines.polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+            const c = cellLayers.strokes.polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
                                 .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});
 
             // fill cells appropriately

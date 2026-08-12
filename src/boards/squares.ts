@@ -4,7 +4,7 @@ import { RendererBase } from "../renderers/_base";
 import { rotatePoint, shortenLine } from "../common/plotting";
 import tinycolor from "tinycolor2";
 import { MarkerOutline } from "../schemas/schema";
-import { BoardReturn, CompassDirection, getBoardFill, IBuffer } from ".";
+import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from ".";
 
 export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -93,7 +93,8 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
 
     // define "tiles" earlier so clickable gridlines are viable
     const tiles = board.group().id("tiles");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     // boardFill needs to come before first markers
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -676,7 +677,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                     ];
                     // have to close the poly
                     pts.push(pts[0]);
-                    gridlines.polyline(pts.map(pt => [pt.x, pt.y]).flat())
+                    layers.strokes.polyline(pts.map(pt => [pt.x, pt.y]).flat())
                                 .fill("none")
                                 .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                 }
@@ -692,7 +693,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                 for (let row = 0; row < height-1; row++) {
                     if ((row+1) % tiley === 0) {
                         const y = grid[row][0].y + (cellsize / 2);
-                        gridlines.line(xLeft, y, xRight, y).stroke({width: baseStroke * tileMult, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(xLeft, y, xRight, y).stroke({width: baseStroke * tileMult, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
             }
@@ -703,7 +704,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                 for (let col = 0; col < width-1; col++) {
                     if ((col+1) % tilex === 0) {
                         const x = grid[0][col].x + (cellsize / 2);
-                        gridlines.line(x, yTop, x, yBottom).stroke({width: baseStroke * tileMult, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x, yTop, x, yBottom).stroke({width: baseStroke * tileMult, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
             }
@@ -733,7 +734,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                 continue;
             }
             const poly = polys[cell.row][cell.col];
-            gridlines.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" "))
+            layers.strokes.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" "))
                         .fill("none")
                         .stroke(stroke)
                         .attr({ 'pointer-events': 'none' });

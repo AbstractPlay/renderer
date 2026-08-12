@@ -2,7 +2,7 @@ import { Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import { cairo, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { BoardBasic } from "../schemas/schema";
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 
 export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -40,7 +40,8 @@ export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
     // Get a grid of points
     const grid = cairo({gridWidth: width, gridHeight: height, cellSize: cellsize, cairoStart: startOrientation});
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("pentagons");
+    const layers = createGridlineLayers(board, "pentagons");
+    const gridlines = layers.root;
 
     /*
         Pentagon points (N-facing):
@@ -216,7 +217,7 @@ export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
                 if (blocked !== undefined && blocked.find(p => p.col === col && p.row === iRow) !== undefined) {
                     continue;
                 }
-                gridlines.use(sym).size(w, h).center(pt.x, pt.y);
+                layers.fill.use(sym).size(w, h).center(pt.x, pt.y);
             }
             if (orientation === "H") {
                 orientation = "V";
@@ -280,7 +281,7 @@ export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
                 if (blocked !== undefined && blocked.find(p => p.col === col && p.row === iRow) !== undefined) {
                     continue;
                 }
-                const c = gridlines.use(sym).size(w, h).center(pt.x, pt.y);
+                const c = layers.strokes.use(sym).size(w, h).center(pt.x, pt.y);
                 if (ctx.options.boardClick !== undefined) {
                     c.click(() => ctx.options.boardClick!(iRow, col, ""));
                 }

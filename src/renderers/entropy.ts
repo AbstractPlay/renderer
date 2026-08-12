@@ -1,4 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
+import { createGridlineLayers, getBoardFill } from "../boards";
 import { rectOfRects } from "../grids";
 import { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
@@ -63,11 +64,22 @@ export class EntropyRenderer extends RendererBase {
             baseStroke = this.json.board.strokeWeight;
         }
         if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.json.board.strokeColour;
+            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
         }
         if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
             baseOpacity = this.json.board.strokeOpacity;
         }
+        const labelColour = this.options.colourContext.labels;
+        const labelOpacity = 1;
+
+        const backFillDef = ("backFill" in this.json.board)
+            && this.json.board.backFill !== undefined
+            && this.json.board.backFill !== null
+            ? this.json.board.backFill as { type?: "full" | "board" }
+            : undefined;
+        const backFillIsFull = backFillDef?.type === "full";
+        const [cellFill, cellOpacity] = getBoardFill(this, this.options.colourContext.background);
+        const drawBoardFills = !backFillIsFull && cellFill !== undefined;
 
         const width = size;
         const height = size;
@@ -101,6 +113,18 @@ export class EntropyRenderer extends RendererBase {
             }
 
             const board = this.rootSvg.group().id(boardid);
+            const layers = createGridlineLayers(board);
+
+            if (drawBoardFills) {
+                const x0 = grid[0][0].x - (cellsize / 2);
+                const y0 = grid[0][0].y - (cellsize / 2);
+                const fillW = grid[0][width - 1].x + (cellsize / 2) - x0;
+                const fillH = grid[height - 1][0].y + (cellsize / 2) - y0;
+                layers.fill.rect(fillW, fillH)
+                    .move(x0, y0)
+                    .fill({color: cellFill ?? this.options.colourContext.background, opacity: cellOpacity})
+                    .stroke("none");
+            }
 
             // Add board labels
             const labels = board.group().id("labels");
@@ -109,10 +133,10 @@ export class EntropyRenderer extends RendererBase {
             for (let col = 0; col < width; col++) {
                 const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
                 const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
-                labels.text(colLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointBottom.x, pointBottom.y);
+                labels.text(colLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
                 // Skip top labels for board two if vertical
                 if ( (grid !== grid2) || (this.json.board.orientation !== "vertical") ) {
-                    labels.text(colLabels[col]).fill(baseColour).opacity(baseOpacity).center(pointTop.x, pointTop.y);
+                    labels.text(colLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
                 }
             }
 
@@ -120,34 +144,34 @@ export class EntropyRenderer extends RendererBase {
             for (let row = 0; row < height; row++) {
                 const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
                 const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
-                labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointR.x, pointR.y);
+                labels.text(`${height - row}`).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
                 // Skip left-hand labels for board two if horizontal
                 if ( (grid !== grid2) || (this.json.board.orientation !== "horizontal") ) {
-                    labels.text(`${height - row}`).fill(baseColour).opacity(baseOpacity).center(pointL.x, pointL.y);
+                    labels.text(`${height - row}`).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
                 }
             }
 
             // Titles
-            const title = labels.text(boardlabel).fill(baseColour).opacity(baseOpacity).font({weight: "bold"}).center(titlePoint.x, titlePoint.y);
+            const title = labels.text(boardlabel).fill(labelColour).opacity(labelOpacity).font({weight: "bold"}).center(titlePoint.x, titlePoint.y);
             if (this.json.board.orientation === "vertical") {
                 title.rotate(-90, titlePoint.x, titlePoint.y);
             }
 
             // Draw grid lines
-            const gridlines = this.rootSvg.group().id("gridlines");
+            const strokeAttrs = {width: baseStroke, color: baseColour, opacity: baseOpacity};
             // Horizontal, top of each row, then bottom line after loop
             for (let row = 0; row < height; row++) {
                 const x1 = grid[row][0].x - (cellsize / 2);
                 const y1 = grid[row][0].y - (cellsize / 2);
                 const x2 = grid[row][width - 1].x + (cellsize / 2);
                 const y2 = grid[row][width - 1].y - (cellsize / 2);
-                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                layers.strokes.line(x1, y1, x2, y2).stroke(strokeAttrs);
             }
             let lastx1 = grid[height - 1][0].x - (cellsize / 2);
             let lasty1 = grid[height - 1][0].y + (cellsize / 2);
             let lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
             let lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-            gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+            layers.strokes.line(lastx1, lasty1, lastx2, lasty2).stroke(strokeAttrs);
 
             // Vertical, left of each column, then right line after loop
             for (let col = 0; col < width; col++) {
@@ -155,13 +179,13 @@ export class EntropyRenderer extends RendererBase {
                 const y1 = grid[0][col].y - (cellsize / 2);
                 const x2 = grid[height - 1][col].x - (cellsize / 2);
                 const y2 = grid[height - 1][col].y + (cellsize / 2);
-                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                layers.strokes.line(x1, y1, x2, y2).stroke(strokeAttrs);
             }
             lastx1 = grid[0][width - 1].x + (cellsize / 2);
             lasty1 = grid[0][width - 1].y - (cellsize / 2);
             lastx2 = grid[height - 1][width - 1].x + (cellsize / 2);
             lasty2 = grid[height - 1][width - 1].y + (cellsize / 2);
-            gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+            layers.strokes.line(lastx1, lasty1, lastx2, lasty2).stroke(strokeAttrs);
         }
 
         // PIECES
@@ -240,19 +264,33 @@ export class EntropyRenderer extends RendererBase {
             }
         }
 
-        // Occlude a board if requested
+        // Occlude a board if requested (after pieces so the veil covers tokens too)
         if (occlude1) {
             const topleft: IPoint = {x: grid1[0][0].x - (cellsize / 2), y: grid1[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid1[size - 1][size - 1].x + (cellsize / 2), y: grid1[size - 1][size - 1].y + (cellsize / 2)};
-            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.25);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y)
+                .move(topleft.x, topleft.y)
+                .fill("black")
+                .opacity(.25)
+                .addClass("aprender-occlusion")
+                .attr({ "pointer-events": "none" });
         }
         if (occlude2) {
             const topleft: IPoint = {x: grid2[0][0].x - (cellsize / 2), y: grid2[0][0].y - (cellsize / 2)};
             const botright: IPoint = {x: grid2[size - 1][size - 1].x + (cellsize / 2), y: grid2[size - 1][size - 1].y + (cellsize / 2)};
-            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y).move(topleft.x, topleft.y).fill("black").opacity(.25);
+            this.rootSvg.rect(botright.x - topleft.x, botright.y - topleft.y)
+                .move(topleft.x, topleft.y)
+                .fill("black")
+                .opacity(.25)
+                .addClass("aprender-occlusion")
+                .attr({ "pointer-events": "none" });
         }
 
         // Finally, annotations
+        if (backFillIsFull) {
+            this.backFill();
+        }
+
         if (this.options.showAnnotations) {
             const gridPoints: IPoint[][] = [...grid1];
             for (let i = 0; i < grid1.length; i++) {

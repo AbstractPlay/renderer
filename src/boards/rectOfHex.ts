@@ -1,5 +1,5 @@
 import { centroid } from "../common/plotting";
-import { BoardReturn, edges2corners, getBoardFill, pts2id } from ".";
+import { BoardReturn, createCellsLayers, edges2corners, ensureBoardMarkerLayers, getBoardFill, pts2id } from ".";
 import { GridPoints, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
@@ -56,6 +56,7 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
     });
     const grid = new Grid(myHex, rectangle({width, height}));
     const board = ctx.rootSvg.group().id("board");
+    const boardLayers = ensureBoardMarkerLayers(board);
     const gridPoints: GridPoints = [];
     // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
     const polys: IPolyPolygon[][] = [];
@@ -115,12 +116,12 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
             }
         }
         const { x, y } = hex;
-        board.use(filledSymbolPoly).size(cellsize, cellsize).translate(x, y);
+        boardLayers.fill.use(filledSymbolPoly).size(cellsize, cellsize).translate(x, y);
     }
 
     ctx.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
-    const cells = board.group().id("cells");
+    const cellLayers = createCellsLayers(board, "cells");
     const labels = board.group().id("labels");
     let labelStyle: "internal"|"external" = "internal";
     if ("labelStyle" in ctx.json.board && ctx.json.board.labelStyle !== undefined && ctx.json.board.labelStyle !== null) {
@@ -176,7 +177,7 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
             }
         }
         const { x, y } = hex;
-        const used = cells.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
+        const used = cellLayers.strokes.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
         if ( ( (! ctx.json.options) || (! ctx.json.options.includes("hide-labels") ) ) && (labelStyle === "internal") ) {
             let label: string;
             if (labelGrid === undefined) {

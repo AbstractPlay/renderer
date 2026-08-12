@@ -951,7 +951,7 @@ export interface MarkerShading {
    */
   type: "shading";
   /**
-   * If true, the shading will be done below the grid lines.
+   * If true, drawn above the board fill (`colourContext.board` / `backFill`) but below grid strokes.
    */
   belowGrid?: boolean;
   /**
@@ -975,7 +975,7 @@ export interface MarkerFlood {
    */
   type: "flood";
   /**
-   * If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.
+   * If true, drawn above the board fill (`colourContext.board` / `backFill`) but below grid strokes. If a filled `halo` marker is present, that must appear before the flood fills.
    */
   belowGrid?: boolean;
   /**

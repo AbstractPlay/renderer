@@ -2,7 +2,7 @@ import { Element as SVGElement } from "@svgdotjs/svg.js";
 import { IPoint, rectOfRects } from "../grids";
 import { MarkerOutline } from "../schemas/schema";
 import { RendererBase } from "../renderers/_base";
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 
 export const sowing = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -62,7 +62,14 @@ export const sowing = (ctx: RendererBase): BoardReturn => {
         grid.push(lst);
     }
 
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
+
+    const [cellFill, cellOpacity] = getBoardFill(ctx, ctx.options.colourContext.background);
+    layers.fill.rect(width * cellsize, height * cellsize)
+        .move(0 - (cellsize / 2), 0 - (cellsize / 2))
+        .fill({color: cellFill, opacity: cellOpacity});
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
 
     const shrinkage = 0.75;
@@ -255,10 +262,9 @@ export const sowing = (ctx: RendererBase): BoardReturn => {
 
     // Draw exterior grid lines
     // Draw square around entire board
-    const [cellFill, cellOpacity] = getBoardFill(ctx, ctx.options.colourContext.background);
-    gridlines.rect(width * cellsize, height * cellsize)
+    layers.strokes.rect(width * cellsize, height * cellsize)
         .move(0 - (cellsize / 2), 0 - (cellsize / 2))
-        .fill({color: cellFill, opacity: cellOpacity})
+        .fill({color: cellFill, opacity: 0})
         .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
     // if even number of rows, draw line between the halves
     if (height % 2 === 0) {
@@ -266,7 +272,7 @@ export const sowing = (ctx: RendererBase): BoardReturn => {
         const y1 = x1 + ((height * cellsize) / 2);
         const x2 = x1 + (width * cellsize);
         const y2 = y1;
-        gridlines.line(x1, y1, x2, y2)
+        layers.strokes.line(x1, y1, x2, y2)
             .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
     }
 

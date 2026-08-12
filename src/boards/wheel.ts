@@ -3,7 +3,7 @@ import { IPolyPath, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { ptDistance, rotatePoint } from "../common/plotting";
 import { IWheelArgs, wheelLabels, wheelPolys, wheel as wheelGrid } from "../grids/wheel";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 
 // skipping backFill for this style right now; it's not even in use
 
@@ -45,7 +45,8 @@ export const wheel = (ctx: RendererBase): BoardReturn => {
     // interlace empty rows so that poly coordinates line up
     const polys: (IPolyPolygon | IPolyPath)[][] = wheelPolys(args).reduce((prev, curr) => [...prev, curr, []], [[]] as (IPolyPolygon | IPolyPath)[][])
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys});
 
@@ -77,10 +78,10 @@ export const wheel = (ctx: RendererBase): BoardReturn => {
     for (const cell of polys.flat()) {
         switch (cell.type) {
             case "poly":
-                gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                layers.strokes.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
                 break;
             case "path":
-                gridlines.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                layers.strokes.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
                 break;
         }
     }

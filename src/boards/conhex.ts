@@ -1,4 +1,4 @@
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 import { matrixRectRotN90 } from "../common/plotting";
 import { GridPoints, IPoint, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
@@ -72,7 +72,6 @@ export const conhex = (ctx: RendererBase): BoardReturn => {
     let gridExpanded = rectOfRects({gridHeight: boardsize + 1, gridWidth: boardsize + 1, cellSize: cellsize});
     gridExpanded = gridExpanded.map((row) => row.map((cell) => ({x: cell.x - (cellsize / 2), y: cell.y - (cellsize / 2)} as IPoint)));
 
-    const gridlines = board.group().id("gridlines");
     const cells = getConhexCells(boardsize, cellsize);
 
     // draw any boardFill before the first markers
@@ -93,6 +92,9 @@ export const conhex = (ctx: RendererBase): BoardReturn => {
         }
     }
 
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded, polys: cells});
 
     // no board labels
@@ -106,7 +108,7 @@ export const conhex = (ctx: RendererBase): BoardReturn => {
                 continue;
             }
             const poly = cells[row][col];
-            const p = board.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).fill({color: "white", opacity: 0});
+            const p = layers.strokes.polygon(poly.points.map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).fill({color: "white", opacity: 0});
             if (ctx.options.boardClick !== undefined) {
                 p.click(() => ctx.options.boardClick!(row, col, "cell"))
             }

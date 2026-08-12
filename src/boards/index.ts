@@ -1,3 +1,4 @@
+import { G as SVGG } from "@svgdotjs/svg.js";
 import { RendererBase } from "../renderers/_base";
 import { GridPoints, Poly } from "../grids";
 import { Colourfuncs, Colourstrings, PositiveInteger } from "../schemas/schema";
@@ -41,6 +42,53 @@ export type BoardReturn = {
     polys?: Poly[][];
     boardFill?: Poly;
 };
+
+export interface GridlineLayers {
+    root: SVGG;
+    fill: SVGG;
+    below: SVGG;
+    strokes: SVGG;
+    markers: SVGG;
+}
+
+export function createGridlineLayers(parent: SVGG, id = "gridlines"): GridlineLayers {
+    const root = parent.group().id(id);
+    return {
+        root,
+        fill: root.group().id(`${id}-fill`),
+        below: root.group().id(`${id}-below`),
+        strokes: root.group().id(`${id}-strokes`),
+        markers: root.group().id(`${id}-markers`),
+    };
+}
+
+/** Alias for boards that use a `#cells` group instead of `#gridlines`. */
+export const createCellsLayers = createGridlineLayers;
+
+/** Add marker sublayers to an existing group (e.g. `#board`) used as the markBoard target. */
+export function ensureBoardMarkerLayers(root: SVGG): GridlineLayers {
+    const id = root.id();
+    if (!id) {
+        throw new Error("Group must have an id for marker layers");
+    }
+    const below = root.findOne(`#${id}-below`) as SVGG | undefined;
+    if (below) {
+        return {
+            root,
+            fill: root.findOne(`#${id}-fill`) as SVGG,
+            below,
+            strokes: root.findOne(`#${id}-strokes`) as SVGG,
+            markers: root.findOne(`#${id}-markers`) as SVGG,
+        };
+    }
+    return {
+        root,
+        fill: root.group().id(`${id}-fill`),
+        below: root.group().id(`${id}-below`),
+        strokes: root.group().id(`${id}-strokes`),
+        markers: root.group().id(`${id}-markers`),
+    };
+}
 
 /**
  * An internal interface used when rendering board buffers.

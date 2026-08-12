@@ -3,7 +3,7 @@ import { RendererBase } from "../renderers/_base";
 import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
 import { starBoard, starFrequencyFromWidth } from "../common/star";
 import { Star, StarNodeData } from "../graphs";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 
 export const star = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -44,7 +44,8 @@ export const star = (ctx: RendererBase): BoardReturn => {
     const graph = new Star(topo);
     const board = ctx.rootSvg.group().id("board");
 
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -63,7 +64,7 @@ export const star = (ctx: RendererBase): BoardReturn => {
         const y1 = (entry.sourceAttributes as StarNodeData).y;
         const x2 = (entry.targetAttributes as StarNodeData).x;
         const y2 = (entry.targetAttributes as StarNodeData).y;
-        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
     }
 
     if (ctx.options.boardClick !== undefined) {

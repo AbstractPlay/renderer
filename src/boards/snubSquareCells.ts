@@ -2,7 +2,7 @@ import { BoardBasic } from "../schemas/schema";
 import { centroid } from "../common/plotting";
 import { IPolyPolygon, snubsquare, SnubStart } from "../grids";
 import { RendererBase } from "../renderers/_base";
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 
 export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -155,7 +155,8 @@ export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
 
     // Start building the SVG
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     // boardFill before first markers
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -170,7 +171,7 @@ export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
             const isBlocked = blocked?.find(e => e.row === row && e.col === col) !== undefined;
             if (!isBlocked) {
                 const poly = polys[row][col];
-                gridlines.polygon([...poly.points, poly.points[0]].map(pt => `${pt.x},${pt.y}`).join(" ")).stroke("none").fill({color: cellFill, opacity: cellOpacity});
+                layers.fill.polygon([...poly.points, poly.points[0]].map(pt => `${pt.x},${pt.y}`).join(" ")).stroke("none").fill({color: cellFill, opacity: cellOpacity});
             }
         }
     }
@@ -209,7 +210,7 @@ export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
             const isBlocked = blocked?.find(e => e.row === row && e.col === col) !== undefined;
             if (!isBlocked) {
                 const poly = polys[row][col];
-                const instance = gridlines.polygon([...poly.points, poly.points[0]].map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).fill({color: "white", opacity: 0});
+                const instance = layers.strokes.polygon([...poly.points, poly.points[0]].map(pt => `${pt.x},${pt.y}`).join(" ")).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).fill({color: "white", opacity: 0});
                 if (ctx.options.boardClick !== undefined) {
                     instance.click(() => ctx.options.boardClick!(row, col, ""))
                 }

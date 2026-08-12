@@ -3,7 +3,7 @@ import { GridPoints, IPoint, Poly } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { centroid } from "../common/plotting";
 import { hexOfTri as hexOfTriGrid } from "../grids";
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 
 export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -112,7 +112,8 @@ export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
     }
 
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     // boardFill before first markers
     // load blocked nodes
@@ -133,13 +134,13 @@ export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
             const cell = slice[x];
             switch (cell.type) {
                 case "circle":
-                    gridlines.circle(cell.r * 2).fill({color: cellFill, opacity: cellOpacity}).stroke("none").center(cell.cx, cell.cy);
+                    layers.fill.circle(cell.r * 2).fill({color: cellFill, opacity: cellOpacity}).stroke("none").center(cell.cx, cell.cy);
                     break;
                 case "poly":
-                    gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: cellFill, opacity: cellOpacity}).stroke("none");
+                    layers.fill.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: cellFill, opacity: cellOpacity}).stroke("none");
                     break;
                 case "path":
-                    gridlines.path(cell.path).fill({color: cellFill, opacity: cellOpacity}).stroke("none");
+                    layers.fill.path(cell.path).fill({color: cellFill, opacity: cellOpacity}).stroke("none");
                     break;
             }
         }
@@ -200,13 +201,13 @@ export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
             let ele: SVGElement;
             switch (cell.type) {
                 case "circle":
-                    ele = gridlines.circle(cell.r * 2).fill({color: "white", opacity: 0}).stroke(strokeAttrs).center(cell.cx, cell.cy);
+                    ele = layers.strokes.circle(cell.r * 2).fill({color: "white", opacity: 0}).stroke(strokeAttrs).center(cell.cx, cell.cy);
                     break;
                 case "poly":
-                    ele = gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                    ele = layers.strokes.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
                     break;
                 case "path":
-                    ele = gridlines.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                    ele = layers.strokes.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
                     break;
             }
             if (ctx.options.boardClick !== undefined) {

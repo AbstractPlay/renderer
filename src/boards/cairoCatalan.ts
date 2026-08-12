@@ -1,4 +1,4 @@
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 import { centroid } from "../common/plotting";
 import { GridPoints, IPoint, IPolyPolygon, snubsquare } from "../grids";
 import { RendererBase } from "../renderers/_base";
@@ -91,7 +91,8 @@ export const cairoCatalan = (ctx: RendererBase): BoardReturn => {
 
     // now render the board
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("pentagons");
+    const layers = createGridlineLayers(board, "pentagons");
+    const gridlines = layers.root;
 
     // do boardFill before markers
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -108,7 +109,7 @@ export const cairoCatalan = (ctx: RendererBase): BoardReturn => {
                     continue;
                 }
             }
-            gridlines
+            layers.fill
                 .polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
                 .fill({color: hexFill, opacity: hexOpacity}).addClass("aprender-backfill-board")
                 .stroke("none");
@@ -181,7 +182,7 @@ export const cairoCatalan = (ctx: RendererBase): BoardReturn => {
                     continue;
                 }
             }
-            const c = gridlines.polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
+            const c = layers.strokes.polygon(polys[iRow][iCol].points.map(pt => `${pt.x},${pt.y}`).join(" "))
                                 .fill({color: "white", opacity: 0}).id("pentagon-symbol-poly-OO")
                                 .stroke({color: baseColour, opacity: baseOpacity, width: baseStroke, linecap: "round", linejoin: "round"});;
             if (ctx.options.boardClick !== undefined) {

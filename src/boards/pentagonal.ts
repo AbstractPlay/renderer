@@ -3,7 +3,7 @@ import { RendererBase } from "../renderers/_base";
 import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
 import { pentagonalBoard } from "../common/pentagons";
 import { Pentagonal, PentagonalNodeData } from "../graphs";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 
 export const pentagonal = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -71,7 +71,8 @@ export const pentagonal = (ctx: RendererBase): BoardReturn => {
         }
     }
 
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
     // Add board labels (skipping for now)
@@ -150,7 +151,7 @@ export const pentagonal = (ctx: RendererBase): BoardReturn => {
         const y1 = (entry.sourceAttributes as PentagonalNodeData).y;
         const x2 = (entry.targetAttributes as PentagonalNodeData).x;
         const y2 = (entry.targetAttributes as PentagonalNodeData).y;
-        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
     }
 
     if (ctx.options.boardClick !== undefined) {

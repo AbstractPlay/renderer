@@ -1,5 +1,5 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
-import { BoardReturn, CompassDirection, IBuffer } from ".";
+import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from ".";
 import { hexOfTri, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
@@ -67,7 +67,8 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
 
     // have to define tiles early for clickable markers to work
     const tiles = board.group().id("tiles");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
     // create buffer zone first if requested
@@ -506,7 +507,7 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
                     const y1 = curr.y;
                     const x2 = prev.x;
                     const y2 = prev.y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                 }
             }
 
@@ -525,7 +526,7 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
                             const y1 = curr.y;
                             const x2 = prev.x;
                             const y2 = prev.y;
-                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                            layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                         }
                     }
                     // above and to the left good for all but the first
@@ -538,7 +539,7 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
                             const y1 = curr.y;
                             const x2 = prev.x;
                             const y2 = prev.y;
-                            gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                            layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                         }
                     }
                     // two above if outer point and possible
@@ -553,7 +554,7 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
                                 const y1 = curr.y;
                                 const x2 = prev.x;
                                 const y2 = prev.y;
-                                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                                layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                             }
                         }
                     }
@@ -569,7 +570,7 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                     // above and to the right always possible
                     // skip if blocked
@@ -580,7 +581,7 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
             }

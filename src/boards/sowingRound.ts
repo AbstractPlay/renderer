@@ -2,7 +2,7 @@ import { Element as SVGElement } from "@svgdotjs/svg.js";
 import { IPolyCircle, mancalaRound } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { MarkerOutline } from "../schemas/schema";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 
 export const sowingRound = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -42,7 +42,8 @@ export const sowingRound = (ctx: RendererBase): BoardReturn => {
     const grid = mancalaRound({gridHeight: height, gridWidth: width, cellWidth: cellsize, cellHeight: cellsize * 1.5});
     const board = ctx.rootSvg.group().id("board");
 
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
     // Add board labels

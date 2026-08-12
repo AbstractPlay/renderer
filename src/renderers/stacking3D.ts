@@ -1,6 +1,7 @@
 import { GridPoints } from "../grids/_base";
 import { AnnotationBasic, APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
+import { createGridlineLayers, getBoardFill } from "../boards";
 import { rectOfRects } from "../grids";
 import { Svg, StrokeData, G as SVGG } from "@svgdotjs/svg.js";
 import { usePieceAt } from "../common/plotting";
@@ -175,6 +176,31 @@ export class Stacking3DRenderer extends RendererBase {
         // Get a grid of points
         const grid = rectOfRects({gridHeight: height, gridWidth: width, cellSize: cellsize, tileHeight: tiley, tileWidth: tilex, tileSpacing: tileSpace});
         const board = this.rootSvg.group().id("board");
+        const layers = createGridlineLayers(board);
+
+        const backFillDef = ("backFill" in this.json.board)
+            && this.json.board.backFill !== undefined
+            && this.json.board.backFill !== null
+            ? this.json.board.backFill as { type?: "full" | "board" }
+            : undefined;
+        const backFillIsFull = backFillDef?.type === "full";
+        const [cellFill, cellOpacity] = getBoardFill(this, this.options.colourContext.background);
+        if (!backFillIsFull && cellFill !== undefined) {
+            const half = cellsize / 2;
+            const corners = [
+                { x: grid[0][0].x - half, y: grid[0][0].y - half },
+                { x: grid[0][width - 1].x + half, y: grid[0][0].y - half },
+                { x: grid[height - 1][width - 1].x + half, y: grid[height - 1][width - 1].y + half },
+                { x: grid[height - 1][0].x - half, y: grid[height - 1][0].y + half },
+            ];
+            const projected = corners.map((c) => {
+                const [px, py] = this.project(c.x, c.y);
+                return `${px},${py}`;
+            }).join(" ");
+            layers.fill.polygon(projected)
+                .fill({color: cellFill ?? this.options.colourContext.background, opacity: cellOpacity})
+                .stroke("none");
+        }
 
         // Add board labels
         if ( (! this.json.options) || (! this.json.options.includes("hide-labels") ) ) {
@@ -202,8 +228,7 @@ export class Stacking3DRenderer extends RendererBase {
         }
 
         // Draw grid lines
-        const gridlines = board.group().id("gridlines");
-
+        const gridlines = layers.strokes;
         // Horizontal, top of each row, then bottom line after loop
         let numcols = 1;
         if (tilex > 0) {
@@ -655,6 +680,15 @@ export class Stacking3DRenderer extends RendererBase {
 
             // `pieces` area, if present
             this.piecesArea(board.rbox(this.rootSvg));
+        }
+
+        const backFillDef = ("backFill" in this.json.board)
+            && this.json.board.backFill !== undefined
+            && this.json.board.backFill !== null
+            ? this.json.board.backFill as { type?: "full" | "board" }
+            : undefined;
+        if (backFillDef?.type === "full") {
+            this.backFill();
         }
     }
 }

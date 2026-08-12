@@ -2137,7 +2137,7 @@
                     ]
                 },
                 "belowGrid": {
-                    "description": "If true, the shading will be done below the grid lines.",
+                    "description": "If true, drawn above the board fill (`colourContext.board` / `backFill`) but below grid strokes.",
                     "type": "boolean"
                 },
                 "points": {
@@ -2181,7 +2181,7 @@
                     ]
                 },
                 "belowGrid": {
-                    "description": "If true, places the flood fill before the gridlines. If a filled `halo` marker is present, that must appear before the flood fills.",
+                    "description": "If true, drawn above the board fill (`colourContext.board` / `backFill`) but below grid strokes. If a filled `halo` marker is present, that must appear before the flood fills.",
                     "type": "boolean",
                     "default": true
                 },

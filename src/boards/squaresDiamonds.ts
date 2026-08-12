@@ -1,4 +1,4 @@
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 import { centroid } from "../common/plotting";
 import { GridPoints, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
@@ -138,7 +138,8 @@ export const squaresDiamonds = (ctx: RendererBase): BoardReturn => {
 
     // have to define tiles early for clickable markers to work
     // const tiles = board.group().id("tiles");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     // boardFill before first markers
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -152,7 +153,7 @@ export const squaresDiamonds = (ctx: RendererBase): BoardReturn => {
             const isBlocked = blocked?.find(entry => entry.row === row && entry.col === col) !== undefined;
             if (isBlocked) { continue; }
             const poly = polys[row][col];
-            gridlines.polygon(poly.points.map(({ x, y }) => `${x},${y}`).join(" "))
+            layers.fill.polygon(poly.points.map(({ x, y }) => `${x},${y}`).join(" "))
                      .stroke("none")
                      .fill({color: cellFill, opacity: cellOpacity});
         }
@@ -224,7 +225,7 @@ export const squaresDiamonds = (ctx: RendererBase): BoardReturn => {
             const isBlocked = blocked?.find(entry => entry.row === row && entry.col === col) !== undefined;
             if (isBlocked) { continue; }
             const poly = polys[row][col];
-            const cell = gridlines.polygon(poly.points.map(({ x, y }) => `${x},${y}`).join(" "))
+            const cell = layers.strokes.polygon(poly.points.map(({ x, y }) => `${x},${y}`).join(" "))
                                     .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity})
                                     .fill({color: "white", opacity: 0});
             if (ctx.options.boardClick !== undefined) {

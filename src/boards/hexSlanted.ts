@@ -1,7 +1,7 @@
 import { BoardBasic } from "../schemas/schema";
 import { IPoint, IPolyPolygon, hexSlanted as hexSlantedGrid} from "../grids";
 import { RendererBase } from "../renderers/_base";
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 
 export const hexSlanted = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -33,7 +33,8 @@ export const hexSlanted = (ctx: RendererBase): BoardReturn => {
     // Get a grid of points
     const grid = hexSlantedGrid({gridWidth, gridHeight, cellSize: cellsize});
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("hexes");
+    const layers = createGridlineLayers(board, "hexes");
+    const gridlines = layers.root;
 
     // build polys
     const triWidth = 50 / 2;
@@ -80,7 +81,7 @@ export const hexSlanted = (ctx: RendererBase): BoardReturn => {
                     continue;
                 }
             }
-            gridlines.use(hexFilled).size(cellsize, cellsize).center(p.x, p.y);
+            layers.fill.use(hexFilled).size(cellsize, cellsize).center(p.x, p.y);
         }
     }
 
@@ -173,7 +174,7 @@ export const hexSlanted = (ctx: RendererBase): BoardReturn => {
                     continue;
                 }
             }
-            const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
+            const c = layers.strokes.use(hex).size(cellsize, cellsize).center(p.x, p.y);
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }

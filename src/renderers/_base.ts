@@ -1986,6 +1986,22 @@ export abstract class RendererBase {
             throw new Error("Object in an invalid state!");
         }
 
+        const rootId = svgGroup.id();
+        let targetGroup: SVGG = svgGroup;
+        if (rootId) {
+            if (preGridLines) {
+                const below = svgGroup.findOne(`#${rootId}-below`) as SVGG | undefined;
+                if (below) {
+                    targetGroup = below;
+                }
+            } else {
+                const markers = svgGroup.findOne(`#${rootId}-markers`) as SVGG | undefined;
+                if (markers) {
+                    targetGroup = markers;
+                }
+            }
+        }
+
         if ( ("board" in this.json) && (this.json.board !== undefined) && ("markers" in this.json.board!) && (this.json.board.markers !== undefined) && (Array.isArray(this.json.board.markers)) && (this.json.board.markers.length > 0) ) {
             if ( (! ("style" in this.json.board)) || (this.json.board.style === undefined) ) {
                 throw new Error("This `markBoard` function only works with renderers that include a `style` property.");
@@ -2052,7 +2068,7 @@ export abstract class RendererBase {
                         // const pt = grid[p[0]][p[1]];
                         // these exceptions are due to poor SVGjs typing
 
-                        svgGroup.circle(this.cellsize * diameter)
+                        targetGroup.circle(this.cellsize * diameter)
                             // @ts-expect-error (poor SVGjs typing)
                             .fill(colour)
                             .opacity(opacity)
@@ -2084,7 +2100,7 @@ export abstract class RendererBase {
                     }
                     const ptstr = points.map((p) => p.join(",")).join(" ");
                     // @ts-expect-error (poor SVGjs typing)
-                    svgGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
+                    targetGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
                     if (polys === undefined) {
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
@@ -2142,15 +2158,15 @@ export abstract class RendererBase {
                         switch (cell.type) {
                             case "circle":
                                 // @ts-expect-error (poor SVGjs typing)
-                                floodEle = svgGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill(fill).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
+                                floodEle = targetGroup.circle(cell.r * 2).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke}).fill(fill).center(cell.cx, cell.cy).attr({ 'pointer-events': 'none' });
                                 break;
                             case "poly":
                                 // @ts-expect-error (poor SVGjs typing)
-                                floodEle = svgGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
+                                floodEle = targetGroup.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
                             case "path":
                                 // @ts-expect-error (poor SVGjs typing)
-                                floodEle = svgGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
+                                floodEle = targetGroup.path(cell.path).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({color: "none", width: baseStroke, linecap: "round", linejoin: "round"}).fill(fill).attr({ 'pointer-events': 'none' });
                                 break;
                         }
                         if (marker.pulse !== undefined && floodEle !== undefined) {
@@ -2208,7 +2224,7 @@ export abstract class RendererBase {
                         [x1, y1, x2, y2] = shortenLine(x1, y1, x2, y2, marker.shorten);
                     }
 
-                    const line = svgGroup.line(x1, y1, x2, y2).stroke(stroke).addClass(`aprender-marker-${x2uid(cloned)}`);
+                    const line = targetGroup.line(x1, y1, x2, y2).stroke(stroke).addClass(`aprender-marker-${x2uid(cloned)}`);
                     if (clickable) {
                         const id = (point1.row !== undefined && point1.col !== undefined)
                             ? `${point1.col},${point1.row}|${point2.col},${point2.row}`
@@ -2362,9 +2378,9 @@ export abstract class RendererBase {
                             }
                             if (fill !== undefined) {
                                 if (this.json.board.style.startsWith("circular")) {
-                                    svgGroup.circle(rx * 2).fill(fill).center(cx,cy);
+                                    targetGroup.circle(rx * 2).fill(fill).center(cx,cy);
                                 } else {
-                                    svgGroup.ellipse(rx * 2, ry * 2).fill(fill).center(cx,cy);
+                                    targetGroup.ellipse(rx * 2, ry * 2).fill(fill).center(cx,cy);
                                 }
                             }
                         } else {
@@ -2404,9 +2420,9 @@ export abstract class RendererBase {
                                 // if there's only one segment, draw a full circle/ellipse
                                 if (phi === 360) {
                                     if (this.json.board.style.startsWith("circular")) {
-                                        svgGroup.circle(rx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                        targetGroup.circle(rx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
                                     } else {
-                                        svgGroup.ellipse(rx * 2, ry * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                        targetGroup.ellipse(rx * 2, ry * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
                                     }
                                 }
                                 // otherwise, draw an arc
@@ -2422,7 +2438,7 @@ export abstract class RendererBase {
                                         [xleft, yleft] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * i));
                                         [xright, yright] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * (i+1)));
                                     }
-                                    svgGroup.path(`M${xleft},${yleft} A ${rx} ${ry} 0 0 1 ${xright},${yright}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
+                                    targetGroup.path(`M${xleft},${yleft} A ${rx} ${ry} 0 0 1 ${xright},${yright}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
                                 }
                             }
                         }
@@ -2457,7 +2473,7 @@ export abstract class RendererBase {
                         font = `font-size: ${marker.size }px;`;
                     }
                     font += marker.font ?? '';
-                    const text = svgGroup.text((add) => {
+                    const text = targetGroup.text((add) => {
                             add.tspan(marker.label ).attr('style', font).attr("dy", "0.55em");
                         })
                         .addClass(`aprender-marker-${x2uid(cloned)}`)
@@ -2504,7 +2520,7 @@ export abstract class RendererBase {
                                 yTo = grid[grid.length - 1][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                     } else if ( ( (style.startsWith("squares")) || (style === "sowing") || style === "pegboard" ) && (gridExpanded !== undefined) ) {
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
@@ -2534,7 +2550,7 @@ export abstract class RendererBase {
                                 yTo = gridExpanded[gridExpanded.length - 1][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                     } else if (style === "squares-diamonds") {
                         const xMin = Math.min(...grid.flat().flat().map(pt => pt.x));
                         const yMin = Math.min(...grid.flat().flat().map(pt => pt.y));
@@ -2572,7 +2588,7 @@ export abstract class RendererBase {
                                 yTo = yMax + buffer;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                     } else if (style === "hex-of-tri") {
                         const midrow = Math.floor(grid.length / 2);
                         let xFrom = 0; let yFrom = 0;
@@ -2615,7 +2631,7 @@ export abstract class RendererBase {
                                 yTo = grid[0][0].y;
                                 break;
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                     } else if ( (style === "hex-of-hex") && (polys !== undefined) ) {
                         /*
                          * Polys is populated.
@@ -2701,7 +2717,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            targetGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if ( (style === "hex-slanted") && (polys !== undefined) ) {
                         /*
@@ -2778,7 +2794,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            targetGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if (style === "cairo-catalan" && polys !== undefined) {
                         const lines: [number,number,number,number][] = [];
@@ -2875,7 +2891,7 @@ export abstract class RendererBase {
                             }
                         }
                         for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            targetGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if (style === "cairo-collinear" && polys !== undefined) {
                         const lines: [number,number,number,number][] = [];
@@ -2953,7 +2969,7 @@ export abstract class RendererBase {
                         }
 
                         for (const line of lines) {
-                            svgGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                            targetGroup.line(...line).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                         }
                     } else if (style === "dvgc") {
                         let xFrom = 0; let yFrom = 0;
@@ -2974,7 +2990,7 @@ export abstract class RendererBase {
                             default:
                                 throw new Error(`The dvgc board can only mark N and S edges.`);
                         }
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
+                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
                     } else if (style === "snubsquare" || style === "onyx") {
                         let realgrid = grid;
                         if (style === "onyx") {
@@ -2994,7 +3010,7 @@ export abstract class RendererBase {
                             case "E":
                                 pts.push(...realgrid.map(row => row[row.length - 1]))
                         }
-                        svgGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
+                        targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
                     } else if (style === "snubsquare-cells" && opts.gridExpanded !== undefined) {
                         const realgrid = opts.gridExpanded;
                         const pts: IPoint[] = [];
@@ -3011,7 +3027,7 @@ export abstract class RendererBase {
                             case "E":
                                 pts.push(...realgrid.map(row => row[row.length - 1]))
                         }
-                        svgGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
+                        targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
                     }
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;
@@ -3076,7 +3092,7 @@ export abstract class RendererBase {
                         delete newclone.cell;
                         // @ts-expect-error (only used to gnerate UUID)
                         delete newclone.side;
-                        svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
+                        targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(newclone)}`).stroke(stroke);
                     } else if ( (hexGrid !== undefined) && (hexWidth !== undefined) && (hexHeight !== undefined) && ( (style.startsWith("hex-odd")) || (style.startsWith("hex-even")) ) ) {
                         if (!("row" in marker.cell) || !("col" in marker.cell)
                             || marker.cell.row === undefined || marker.cell.col === undefined) {
@@ -3093,7 +3109,7 @@ export abstract class RendererBase {
                                 const [idx1, idx2] = edge.corners;
                                 const {x: xFrom, y: yFrom} = hex.corners[idx1];
                                 const {x: xTo, y: yTo} = hex.corners[idx2];
-                                svgGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke(stroke);
+                                targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke(stroke);
                             }
                         }
                     }
@@ -3105,7 +3121,7 @@ export abstract class RendererBase {
                     }
                     for (const pt of marker.points as ITarget[]) {
                         const point = grid[pt.row][pt.col];
-                        const use = usePieceAt({svg: svgGroup, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: 1});
+                        const use = usePieceAt({svg: targetGroup, piece, cellsize: this.cellsize, x: point.x, y: point.y, scalingFactor: 1});
                         use.attr({ 'pointer-events': 'none' });
                         // if (this.options.rotate && this.json.options && this.json.options.includes('rotate-pieces')) {
                         //     rotate(use, this.options.rotate, point.x, point.y);

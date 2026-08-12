@@ -1,7 +1,7 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
 import { IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
-import { BoardReturn, CompassDirection, IBuffer } from ".";
+import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from ".";
 import { rotatePoint, shortenLine } from "../common/plotting";
 import { Graph, SquareFanoronaGraph, SquareGraph, SquareOrthGraph } from "../graphs";
 import { calcStarPoints } from "../common/starPoints";
@@ -60,7 +60,8 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
 
     // have to define tiles early for clickable markers to work
     const tiles = board.group().id("tiles");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
     // create buffer zone first if requested
@@ -519,7 +520,7 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
                     const y1 = grid[row][idxX].y;
                     const x2 = grid[row][idxX+1].x;
                     const y2 = grid[row][idxX+1].y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                    layers.strokes.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                 }
             }
         }
@@ -562,7 +563,7 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
                     const y1 = grid[idxY][col].y;
                     const x2 = grid[idxY+1][col].x;
                     const y2 = grid[idxY+1][col].y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                    layers.strokes.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                 }
             }
         }
@@ -591,14 +592,14 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
                         if (col < colLast) {
                             if (graph.sharesEdge([col, row], [col+1, row-1])) {
                                 const next = grid[row - 1][col + 1];
-                                gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                layers.strokes.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                             }
                         }
                         // if not first column, do previous
                         if (col > colFirst) {
                             if (graph.sharesEdge([col, row], [col-1, row-1])) {
                                 const prev = grid[row - 1][col - 1];
-                                gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                layers.strokes.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                             }
                         }
                     }
@@ -628,14 +629,14 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
                             if (col < colLast) {
                                 if (graph.sharesEdge([col, row], [col+1, row+1])) {
                                     const next = grid[row + 1][col + 1];
-                                    gridlines.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                    layers.strokes.line(curr.x, curr.y, next.x, next.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                                 }
                             }
                             // if not first column, do previous
                             if (col > colFirst) {
                                 if (graph.sharesEdge([col, row], [col-1, row+1])) {
                                     const prev = grid[row + 1][col - 1];
-                                    gridlines.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+                                    layers.strokes.line(curr.x, curr.y, prev.x, prev.y).stroke({width: baseStroke / 2, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
                                 }
                             }
                         }
@@ -700,7 +701,7 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
         const pts = calcStarPoints(width);
         pts.forEach((p) => {
             const pt = grid[p[0]][p[1]];
-            gridlines.circle(baseStroke * 7.5)
+            layers.strokes.circle(baseStroke * 7.5)
                 .attr({ 'pointer-events': 'none' })
                 .fill(baseColour)
                 .opacity(baseOpacity)
@@ -710,7 +711,7 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
         // add ghost points
         const total = Math.ceil(width / 6)**2;
         for (let i = 0; i < total - pts.length; i++) {
-            gridlines.circle(baseStroke * 7.5)
+            layers.strokes.circle(baseStroke * 7.5)
                 .id(`aprender-ghost-star-${i+1}`)
                 .attr({ 'pointer-events': 'none' })
                 .fill(baseColour)

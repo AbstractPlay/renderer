@@ -1,7 +1,7 @@
 import { IPolyPolygon, snubsquare, SnubStart } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { rotatePoint } from "../common/plotting";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 
 export const snubSquare = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -36,7 +36,8 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
     // Get a grid of points
     const grid = snubsquare({gridHeight: height, gridWidth: width, cellSize: cellsize, snubStart});
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
@@ -115,7 +116,7 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
                 const y1 = curr.y;
                 const x2 = prev.x;
                 const y2 = prev.y;
-                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
             }
 
             if (row > 0) {
@@ -125,7 +126,7 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
                 let y1 = curr.y;
                 let x2 = prev.x;
                 let y2 = prev.y;
-                gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                 if (snubStart === "S") {
                     // even row, odd columns connect as well to previous-above cell
                     if ( ( (row % 2) === 0) && ( (col % 2) !== 0) ) {
@@ -134,7 +135,7 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
                         y1 = curr.y;
                         x2 = prev.x;
                         y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     // odd row, odd columns connect as well to previous-next cell
                     } else if ( ((row % 2) !== 0) && ((col % 2) !== 0) && (col < (width - 1)) ) {
                         prev = grid[row - 1][col + 1];
@@ -142,7 +143,7 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
                         y1 = curr.y;
                         x2 = prev.x;
                         y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 } else {
                     // even row, even columns > 0 connect as well to previous-above cell
@@ -152,7 +153,7 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
                         y1 = curr.y;
                         x2 = prev.x;
                         y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     // odd row, even columns connect as well to previous-next cell
                     } else if ( ((row % 2) !== 0) && ((col % 2) === 0) && (col < (width - 1)) ) {
                         prev = grid[row - 1][col + 1];
@@ -160,7 +161,7 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
                         y1 = curr.y;
                         x2 = prev.x;
                         y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
             }

@@ -1,4 +1,4 @@
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 import { IPolyCircle, hexOfCir as hexOfCirGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
@@ -43,7 +43,8 @@ export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
     // Get a grid of points
     const grid = hexOfCirGrid({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("circles");
+    const layers = createGridlineLayers(board, "circles");
+    const gridlines = layers.root;
 
     // build polys
     const polys: IPolyCircle[][] = [];
@@ -69,7 +70,7 @@ export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
         const row = grid[iRow];
         for (let iCol = 0; iCol < row.length; iCol++) {
             const p = row[iCol];
-            gridlines.use(circleFilled).size(cellsize, cellsize).center(p.x, p.y);
+            layers.fill.use(circleFilled).size(cellsize, cellsize).center(p.x, p.y);
         }
     }
 
@@ -122,7 +123,7 @@ export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
         const row = grid[iRow];
         for (let iCol = 0; iCol < row.length; iCol++) {
             const p = row[iCol];
-            const c = gridlines.use(circle).size(cellsize, cellsize).center(p.x, p.y);
+            const c = layers.strokes.use(circle).size(cellsize, cellsize).center(p.x, p.y);
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }

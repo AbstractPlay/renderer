@@ -1,4 +1,4 @@
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 import { genPyramidHexPolys, pyramidHex as pyramidHexGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
@@ -35,7 +35,8 @@ export const pyramidHex = (ctx: RendererBase): BoardReturn => {
     const grid = pyramidHexGrid({gridWidthMin: gridWidth});
     const polys = genPyramidHexPolys({size: gridWidth, scale: cellsize})
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("hexes");
+    const layers = createGridlineLayers(board, "hexes");
+    const gridlines = layers.root;
 
     // boardFill before first markers
     const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
@@ -43,7 +44,7 @@ export const pyramidHex = (ctx: RendererBase): BoardReturn => {
         const row = polys[iRow];
         for (let iCol = 0; iCol < row.length; iCol++) {
             const p = row[iCol];
-            gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+            layers.fill.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
         }
     }
 
@@ -56,7 +57,7 @@ export const pyramidHex = (ctx: RendererBase): BoardReturn => {
         const row = polys[iRow];
         for (let iCol = 0; iCol < row.length; iCol++) {
             const p = row[iCol];
-            const c = gridlines.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({color: "white", opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
+            const c = layers.strokes.polygon(p.points.map(ip => [ip.x, ip.y]).flat()).fill({color: "white", opacity: 0}).stroke({color: baseColour, width: baseStroke, opacity: baseOpacity});
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }

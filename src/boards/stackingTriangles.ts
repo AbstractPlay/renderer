@@ -1,5 +1,5 @@
 import { centroid } from "../common/plotting";
-import { BoardReturn, edges2corners, pts2id } from ".";
+import { BoardReturn, createGridlineLayers, edges2corners, pts2id } from ".";
 import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { defineHex, Grid, HexOffset, Orientation, rectangle } from "honeycomb-grid";
@@ -60,6 +60,7 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
     });
     const grid = new Grid(myHex, rectangle({width, height}));
     const board = ctx.rootSvg.group().id("board");
+    const layers = createGridlineLayers(board);
     const gridPoints: GridPoints = [];
     // const {x: cx, y: cy} = grid.getHex({col: 0, row: 0})!.center;
     const polys: Poly[][] = [];
@@ -83,7 +84,7 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
         polys.push(rowPolys);
     }
 
-    ctx.markBoard({svgGroup: board, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
+    ctx.markBoard({svgGroup: layers.root, preGridLines: true, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
     const corners = grid.getHex({col: 0, row: 0})!.corners;
     const vbx = Math.min(...corners.map(pt => pt.x));
@@ -134,7 +135,7 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
             }
         }
         const { x, y } = hex;
-        const used = board.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
+        const used = layers.strokes.use(symbolPoly).size(cellsize, cellsize).translate(x, y);
         if (ctx.options.boardClick !== undefined) {
             used.click(() => ctx.options.boardClick!(hex.row, hex.col, ""));
         }
@@ -241,13 +242,13 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
                     continue;
                 }
                 seenEdges.add(vid);
-                const edgeLine = board.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
+                const edgeLine = layers.strokes.line(x1, y1, x2, y2).stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" }).translate(x,y);
                 edgeLine.click(() => ctx.options.boardClick!(hex.row, hex.col, edge.dir));
             }
         }
     }
 
-    ctx.markBoard({svgGroup: board, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
+    ctx.markBoard({svgGroup: layers.root, preGridLines: false, grid: gridPoints, hexGrid: grid, hexWidth: width, hexHeight: height, polys});
 
     return {grid: gridPoints, polys};
 }

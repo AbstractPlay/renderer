@@ -1,7 +1,7 @@
 import { IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { hexOfTri as hexOfTriGrid } from "../grids";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 import { offsetPolygon } from "../common/plotting";
 
 export const hexOfTri = (ctx: RendererBase): BoardReturn => {
@@ -45,7 +45,8 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     // Get a grid of points
     const grid = hexOfTriGrid({gridWidthMin: minWidth, gridWidthMax: maxWidth, cellSize: cellsize, half, alternating});
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
@@ -118,7 +119,7 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
                     const y1 = curr.y;
                     const x2 = prev.x;
                     const y2 = prev.y;
-                    gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                 }
             }
 
@@ -133,7 +134,7 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
                 // up to and including the midline, connect to the above-previous cell if there is one
@@ -145,7 +146,7 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
                 // after the midline, connect to the above-next cell instead
@@ -157,7 +158,7 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
                         const y1 = curr.y;
                         const x2 = prev.x;
                         const y2 = prev.y;
-                        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
                     }
                 }
             }

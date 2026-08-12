@@ -1,4 +1,4 @@
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 import { IPoint, IPolyPolygon, hexOfHex as hexOfHexGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
 
@@ -70,7 +70,8 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
     }
 
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("hexes");
+    const layers = createGridlineLayers(board, "hexes");
+    const gridlines = layers.root;
 
     // boardFill before first markers
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -90,7 +91,7 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
             if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
                 continue;
             }
-            gridlines.use(hexFilled).size(cellsize, cellsize).center(p.x, p.y);
+            layers.fill.use(hexFilled).size(cellsize, cellsize).center(p.x, p.y);
         }
     }
 
@@ -164,7 +165,7 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
             if ( (blocked !== undefined) && (blocked.find(({col: x, row: y}) => x === iCol && y === iRow) !== undefined) ) {
                 continue;
             }
-            const c = gridlines.use(hex).size(cellsize, cellsize).center(p.x, p.y);
+            const c = layers.strokes.use(hex).size(cellsize, cellsize).center(p.x, p.y);
             if (ctx.options.boardClick !== undefined) {
                 c.click(() => ctx.options.boardClick!(iRow, iCol, ""));
             }

@@ -1,7 +1,7 @@
 import { IPoint, IPolyPolygon, rectOfRects } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { rotatePoint } from "../common/plotting";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 
 export const squaresStacked = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -44,7 +44,8 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
 
     // define "tiles" earlier so clickable gridlines are viable
     const tiles = board.group().id("tiles");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, gridExpanded});
 
     // Add board labels
@@ -160,7 +161,7 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
             const y1 = grid[row][idxLeft].y - (cellsize / 2);
             const x2 = grid[row][idxRight].x + (cellsize / 2);
             const y2 = grid[row][idxRight].y - (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
+            layers.strokes.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
         }
 
         if (row === height - 1) {
@@ -168,7 +169,7 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
             const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
             const lastx2 = grid[row][idxRight].x + (cellsize / 2);
             const lasty2 = grid[row][idxRight].y + (cellsize / 2);
-            gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
+            layers.strokes.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
         }
     }
 
@@ -188,7 +189,7 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
             const y1 = grid[idxTop][col].y - (cellsize / 2);
             const x2 = grid[idxBottom][col].x - (cellsize / 2);
             const y2 = grid[idxBottom][col].y + (cellsize / 2);
-            gridlines.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
+            layers.strokes.line(x1, y1, x2, y2).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
         }
 
         if (col === width - 1) {
@@ -196,7 +197,7 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
             const lasty1 = grid[idxTop][col].y - (cellsize / 2);
             const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
             const lasty2 = grid[idxBottom][col].y + (cellsize / 2);
-            gridlines.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
+            layers.strokes.line(lastx1, lasty1, lastx2, lasty2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity * 0.15, linecap: "round", linejoin: "round"});
         }
     }
 

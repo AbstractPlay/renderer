@@ -1,9 +1,9 @@
 import { IPolyPolygon, bentTri as bentTriGrid } from "../grids";
 import { RendererBase } from "../renderers/_base";
-import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
+import { calcBearing, centroid, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
 import { bentTriBoard } from "../common/bentTri";
 import { BentTri, BentTriNodeData } from "../graphs";
-import { BoardReturn } from ".";
+import { BoardReturn, createGridlineLayers } from ".";
 
 export const bentTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -44,7 +44,8 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
     const graph = new BentTri(topo, positions);
     const board = ctx.rootSvg.group().id("board");
 
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
     type Blocked = [{row: number;col: number;},...{row: number;col: number;}[]];
@@ -66,7 +67,7 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
         const y1 = (entry.sourceAttributes as BentTriNodeData).y;
         const x2 = (entry.targetAttributes as BentTriNodeData).x;
         const y2 = (entry.targetAttributes as BentTriNodeData).y;
-        gridlines.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
     }
 
     if (ctx.options.boardClick !== undefined) {
@@ -100,8 +101,9 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    const centre = grid[0][0];
-    const outer = [...grid[grid.length - 1]];
+    // Grid rows run outside-in (row 0 = perimeter, last row = hub), same as star.
+    const centre = centroid(grid[grid.length - 1]!) ?? grid[grid.length - 1]![0]!;
+    const outer = [...grid[0]!];
     const boardFill: IPolyPolygon = {
         type: "poly",
         points: outer.map(p => {

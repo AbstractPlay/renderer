@@ -2,7 +2,7 @@ import { StrokeData } from "@svgdotjs/svg.js";
 import { GridPoints, IPoint, IPolyPolygon } from "../grids";
 import { RendererBase } from "../renderers/_base";
 import { calcBearing, centroid } from "../common/plotting";
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 
 const FRACTURED_FLAT_PADDING = 8;
 
@@ -140,14 +140,15 @@ export const fracturedFlat = (ctx: RendererBase): BoardReturn => {
     const polys = prepareFracturedFlatPolys();
     const grid: GridPoints = polys.map((row) => row.map((cell) => centroid(cell.points)!));
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
     for (let y = 0; y < polys.length; y++) {
         const row = polys[y];
         for (let x = 0; x < row.length; x++) {
             const cell = row[x];
-            gridlines.polygon(cell.points.map((pt) => `${pt.x},${pt.y}`).join(" ")).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+            layers.fill.polygon(cell.points.map((pt) => `${pt.x},${pt.y}`).join(" ")).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
         }
     }
 
@@ -157,7 +158,7 @@ export const fracturedFlat = (ctx: RendererBase): BoardReturn => {
         const row = polys[y];
         for (let x = 0; x < row.length; x++) {
             const cell = row[x];
-            const ele = gridlines.polygon(cell.points.map((pt) => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+            const ele = layers.strokes.polygon(cell.points.map((pt) => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
             if (ctx.options.boardClick !== undefined) {
                 ele.click(() => ctx.options.boardClick!(y, x, ""));
             }

@@ -1,7 +1,7 @@
 import { Element as SVGElement, StrokeData } from "@svgdotjs/svg.js";
 import { RendererBase } from "../renderers/_base";
 import { ICobwebArgs, cobweb as cobwebGrid, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { BoardReturn, getBoardFill } from ".";
+import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
 
 export const cobweb = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -43,7 +43,8 @@ export const cobweb = (ctx: RendererBase): BoardReturn => {
     const grid = cobwebGrid(args);
     const polys = cobwebPolys(args);
     const board = ctx.rootSvg.group().id("board");
-    const gridlines = board.group().id("gridlines");
+    const layers = createGridlineLayers(board);
+    const gridlines = layers.root;
 
     // apply boardFill before the first markers
     const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
@@ -53,13 +54,13 @@ export const cobweb = (ctx: RendererBase): BoardReturn => {
             const cell = slice[x];
             switch (cell.type) {
                 case "circle":
-                    gridlines.circle(cell.r * 2).fill({color: hexFill, opacity: hexOpacity}).stroke("none").center(cell.cx, cell.cy);
+                    layers.fill.circle(cell.r * 2).fill({color: hexFill, opacity: hexOpacity}).stroke("none").center(cell.cx, cell.cy);
                     break;
                 case "poly":
-                    gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+                    layers.fill.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
                     break;
                 case "path":
-                    gridlines.path(cell.path).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
+                    layers.fill.path(cell.path).fill({color: hexFill, opacity: hexOpacity}).stroke("none");
                     break;
             }
         }
@@ -99,13 +100,13 @@ export const cobweb = (ctx: RendererBase): BoardReturn => {
             let ele: SVGElement;
             switch (cell.type) {
                 case "circle":
-                    ele = gridlines.circle(cell.r * 2).fill({color: "white", opacity: 0}).stroke(strokeAttrs).center(cell.cx, cell.cy);
+                    ele = layers.strokes.circle(cell.r * 2).fill({color: "white", opacity: 0}).stroke(strokeAttrs).center(cell.cx, cell.cy);
                     break;
                 case "poly":
-                    ele = gridlines.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                    ele = layers.strokes.polygon(cell.points.map(pt => `${pt.x},${pt.y}`).join(" ")).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
                     break;
                 case "path":
-                    ele = gridlines.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
+                    ele = layers.strokes.path(cell.path).fill({color: "white", opacity: 0}).stroke(strokeAttrs);
                     break;
             }
             if (ctx.options.boardClick !== undefined) {
