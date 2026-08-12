@@ -123,7 +123,7 @@ playwright.config.ts                    ← chromium / firefox / webkit projects
 |--------|----------------|
 | `npm test` | Mocha unit tests (svgdom); no browsers |
 | `npm run sync-playground-samples` | Regenerate `playground-samples.js` from JSON |
-| `npm run test:browser:install` | Install Playwright browsers (once per machine/CI image) |
+| `npm run test:browser:install` | Install Playwright browsers (once per machine/CI image; **requires Node.js 20+**) |
 | `npm run test:browser` | sync → `dist-dev` → copy bundle → Playwright (282 runs: 94 snippets × 3 browsers) |
 
 ## Troubleshooting
