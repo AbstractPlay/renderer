@@ -6,12 +6,12 @@ The [renderer playground](https://renderer.dev.abstractplay.com) ships a library
 
 | Piece | Purpose |
 |-------|---------|
-| [`test/fixtures/playground-samples.json`](../test/fixtures/playground-samples.json) | **Canonical catalog** — edit this file to add or change snippets |
-| [`test/playground-samples.js`](../test/playground-samples.js) | Generated browser shim (`PLAYGROUND_SAMPLES`); committed so the playground works without a build step |
-| [`test/playground.js`](../test/playground.js) | Playground UI logic only; reads `var samples = PLAYGROUND_SAMPLES` |
-| [`test/browser/harness.html`](../test/browser/harness.html) | Minimal page used by Playwright (`?sample=<key>`) |
-| [`test/playwright/`](../test/playwright/) | Playwright specs and structural health checks |
-| [`bin/sync-playground-samples.mjs`](../bin/sync-playground-samples.mjs) | Regenerates `playground-samples.js` from the JSON catalog |
+| `test/fixtures/playground-samples.json` | **Canonical catalog** — edit this file to add or change snippets |
+| `test/playground-samples.js` | Generated browser shim (`PLAYGROUND_SAMPLES`); committed so the playground works without a build step |
+| `test/playground.js` | Playground UI logic only; reads `var samples = PLAYGROUND_SAMPLES` |
+| `test/browser/harness.html` | Minimal page used by Playwright (`?sample=<key>`) |
+| `test/playwright/` | Playwright specs and structural health checks |
+| `bin/sync-playground-samples.mjs` | Regenerates `playground-samples.js` from the JSON catalog |
 
 **CI** (`npm test` then `npm run test:browser`) runs every snippet in Chromium, Firefox, and WebKit on ubuntu-latest. **Mocha** unit tests remain the fast default; browser tests use the webpack browser bundle (`APRender.min.js`).
 
@@ -25,7 +25,7 @@ Browser tests do **not** compare screenshots. Each snippet must:
 - Give every track def SVG a non-zero `viewBox`
 - Emit no page errors or `console.error` during render
 
-Logic lives in [`test/playwright/render-health.ts`](../test/playwright/render-health.ts). Targeted Mocha tests (for example [`test/track-area.test.ts`](../test/track-area.test.ts)) still cover edge cases in svgdom; browser tests exercise the real bundle.
+Logic lives in `test/playwright/render-health.ts`. Targeted Mocha tests (for example `test/track-area.test.ts`) still cover edge cases in svgdom; browser tests exercise the real bundle.
 
 ## Adding a new snippet
 
@@ -97,7 +97,7 @@ Preview in the playground after `npm run dist-dev` and copying files to `dist/`,
 
 ## Optional: docs site samples
 
-[`docs/samples/`](../docs/samples/) holds **pretty-printed** JSON files for embedded examples on [docs.abstractplay.com](https://docs.abstractplay.com/renderer/). That folder is **not** wired to the playground catalog or Playwright. When a feature deserves a docs-page example, add or update a matching file there separately (same render content, formatted for humans).
+`docs/samples/` holds **pretty-printed** JSON files for embedded examples on [docs.abstractplay.com](https://docs.abstractplay.com/renderer/). That folder is **not** wired to the playground catalog or Playwright. When a feature deserves a docs-page example, add or update a matching file there separately (same render content, formatted for humans).
 
 Do **not** point Mocha or Playwright tests at `docs/samples/` — use inline fixtures under `test/` per project conventions.
 
