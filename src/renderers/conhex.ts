@@ -297,7 +297,7 @@ export class ConhexRenderer extends RendererBase {
             this.annotateBoard(grid, dots);
         }
 
-        const box = this.rotateBoard({ignoreRotation: true});
+        const box = this.rotateBoard();
 
         const layoutBox = this.placeTrackAreas(box);
 
