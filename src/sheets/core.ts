@@ -1036,6 +1036,19 @@ sheet.glyphs.set("piece-square-borderless", (canvas: SVGContainer) => {
     return group;
 });
 
+sheet.glyphs.set("piece-square-dashed", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 5;
+    group.rect(sheet.cellsize, sheet.cellsize)
+        .attr("data-playerfill", true)
+        .attr("data-context-border", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000", dasharray: "12"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
 sheet.glyphs.set("piece-square-single", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
