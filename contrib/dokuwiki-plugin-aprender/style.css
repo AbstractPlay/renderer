@@ -1,0 +1,52 @@
+.aprender-frame {
+    display: block;
+    margin: 1em 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.aprender-frame.aprender-has-scale {
+    margin-bottom: 2em;
+}
+
+.aprender-frame .aprender {
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.aprender-frame .aprender svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+}
+
+.aprender-frame.aprender-has-width:not(.aprender-has-height) .aprender svg {
+    width: 100%;
+    height: auto;
+}
+
+.aprender-frame.aprender-has-height:not(.aprender-has-width) .aprender svg {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+}
+
+.aprender-frame.aprender-has-width.aprender-has-height .aprender svg {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+}
+
+pre.aprender-error {
+    margin: 0;
+    padding: 0.75em 1em;
+    border: 1px solid #c62828;
+    background: #ffebee;
+    color: #b71c1c;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.9em;
+}
