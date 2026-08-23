@@ -56,6 +56,7 @@ Embed [Abstract Play](https://abstractplay.com) renderer JSON in wiki pages as l
 | Nothing appears (no board, no error) | **Do not wrap the block in a code fence** (`<code>`, ` ``` `, or indented preformatted text). Tags must be raw wiki text. Purge cache (`?purge=true`). View page source: search for `class="aprender"` — if missing, syntax did not run. |
 | Empty placeholder box | Browser devtools console for JS errors; confirm the bundle URL loads (ad blockers, CSP, offline CDN). View source: `id="aprender-bundle"` script tag should appear above the diagram. |
 | "Invalid JSON" on save/preview | Paste the JSON into the [playground](https://renderer.dev.abstractplay.com) first; fix syntax errors. |
+| "Invalid JSON in settings attribute" | Check `settings='...'` is valid JSON; use single quotes around the attribute value. |
 | Schema error shown in the box | JSON must match the [renderer schema](https://docs.abstractplay.com/renderer/schema-reference/). |
 | Works only after cache purge | Normal after plugin install or upgrade — purge cache. |
 | Fatal error about `handle` method | Plugin version mismatch — update to the current `syntax.php` (DokuWiki 2023 API) and purge cache. |
@@ -92,15 +93,14 @@ Put render JSON between opening and closing tags on their own lines:
 </aprender>
 ```
 
-### Optional attributes
+### Optional layout attributes
 
-Add attributes to the opening tag:
+Add attributes to the opening tag for display tweaks. Layout attributes override the same keys in `settings` when both are present.
 
 | Attribute | Effect | Example |
 |-----------|--------|---------|
 | `rotate` | Rotate the board (degrees) | `<aprender rotate="90">` |
-| `colourblind` | Colour-blind-friendly palette | `<aprender colourblind>` |
-| `patterns` | Black-and-white patterns | `<aprender patterns>` |
+| `colourblind` | Colour-blind-friendly palette shortcut | `<aprender colourblind>` |
 | `width` | Width of the diagram frame | `<aprender width="400">` or `<aprender width="50%">` |
 | `height` | Height of the diagram frame | `<aprender height="300">` or `<aprender height="50%">` |
 | `scale` | Uniform scale factor | `<aprender scale="50%">` or `<aprender scale="0.5">` |
@@ -109,13 +109,58 @@ Bare numbers are pixels (`400` → `400px`). `width` percentages are relative to
 
 Use `width` alone to scale proportionally. Use `width` + `height` for a fixed box (the board letterboxes inside). `scale` shrinks the whole frame visually without changing layout flow much.
 
-Combine attributes: `<aprender rotate="90" colourblind>`.
+### Customization (`settings` attribute)
+
+Renderer customization (colours, colour context, glyph swaps, palette) goes in a **`settings` JSON attribute** on the opening tag. Use the same shape as the playground **settings** box:
+
+```text
+<aprender settings='{"colourContext":{"background":"#111","fill":"#222","strokes":"#888","borders":"#666","labels":"#ccc","annotations":"#f0f0f0"},"palette":["#e31a1c","#1f78b4"]}'>
+{
+  "board": { "style": "squares-checkered", "width": 8, "height": 8 },
+  "legend": {
+    "A": { "name": "piece", "colour": 1 },
+    "B": { "name": "piece", "colour": 2 }
+  },
+  "pieces": "BBBBBBBB\nBBBBBBBB\n_\n_\n_\n_\nAAAAAAAA\nAAAAAAAA"
+}
+</aprender>
+```
+
+Wrap the attribute in **single quotes** so the JSON inside can use double quotes without escaping.
+
+| `settings` key | Maps to | Notes |
+|----------------|---------|--------|
+| `colourContext` | `colourContext` | `background`, `fill`, `strokes`, `borders`, `labels`, `annotations`, `board` |
+| `palette` | `colours` | Playground name; hex strings, `null`, or pattern ids |
+| `colours` | `colours` | Direct API name (alternative to `palette`) |
+| `glyphmap` | `glyphmap` | `[["requestedGlyph","replacementGlyph"], ...]` |
+| `colourBlind` | `colourBlind` | `true` for colour-blind palette |
+| `patterns` | `patterns` | Pattern-based player colours |
+| `patternList` | `patternList` | Pattern ids for default slots |
+| `showAnnotations` | `showAnnotations` | Show move annotations |
+| `rotate` | `rotate` | Prefer the `rotate` tag attribute for simple cases |
+
+**Merge order:** `settings` JSON is applied first; layout tag attributes (`rotate`, `colourblind`, `width`, `height`, `scale`) override on conflict.
+
+### Customization in render JSON
+
+Board layout, pieces, legend glyphs, markers, and annotations belong in the **render JSON body**, not in `settings`:
+
+| Need | Where in JSON |
+|------|----------------|
+| Board topology, labels, markers | `board` |
+| Piece appearance | `legend` |
+| Renderer flags (`hide-labels`, `no-piece-click`, …) | top-level `options` array |
+| Annotations | top-level `annotations` array — omit entries you do not want shown |
+
+Reference: [renderer docs](https://docs.abstractplay.com/renderer/) and [schema reference](https://docs.abstractplay.com/renderer/schema-reference/).
 
 ### Creating JSON
 
 1. Use the [renderer playground](https://renderer.dev.abstractplay.com) or [designer](https://designer.abstractplay.com) to build and tweak a position.
-2. Copy the JSON from the editor.
-3. Wrap it in `<aprender>` … `</aprender>` on the wiki page.
+2. Copy the **render JSON** into the block body.
+3. Copy the playground **settings JSON** into `settings='...'` on the opening tag (if customization is needed).
+4. Save the wiki page.
 
 Reference documentation: [docs.abstractplay.com/renderer](https://docs.abstractplay.com/renderer/).
 
@@ -192,6 +237,7 @@ Use this after install, upgrade, or server changes:
 - [ ] Invalid schema JSON shows a renderer error in the placeholder after load
 - [ ] A page **without** `<aprender>` blocks does not request `APRender.min.js` (check browser Network tab)
 - [ ] `rotate="90"` on the opening tag rotates the diagram
+- [ ] `settings='{"colourContext":{...}}'` applies custom colours/context
 - [ ] Cached page still renders after a full browser reload
 - [ ] Plugin settings: custom bundle URL is respected after cache purge
 

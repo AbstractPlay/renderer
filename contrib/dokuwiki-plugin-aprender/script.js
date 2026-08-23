@@ -64,6 +64,95 @@
     }
 
     /**
+     * Map playground-compatible settings JSON to APRender.render() options.
+     *
+     * @param {object|undefined} settings
+     * @returns {object}
+     */
+    function settingsToRenderOptions(settings) {
+        var opts = {};
+
+        if (!settings || typeof settings !== 'object') {
+            return opts;
+        }
+
+        if (settings.colourContext) {
+            opts.colourContext = settings.colourContext;
+            opts.contextGlobal = false;
+        }
+
+        if (settings.palette) {
+            opts.colours = settings.palette;
+            opts.coloursGlobal = false;
+        }
+
+        if (settings.colours) {
+            opts.colours = settings.colours;
+            opts.coloursGlobal = settings.coloursGlobal !== undefined
+                ? settings.coloursGlobal
+                : false;
+        }
+
+        if (settings.glyphmap) {
+            opts.glyphmap = settings.glyphmap;
+        }
+
+        if (settings.colourBlind) {
+            opts.colourBlind = true;
+        }
+
+        if (settings.patterns) {
+            opts.patterns = true;
+        }
+
+        if (settings.patternList) {
+            opts.patternList = settings.patternList;
+        }
+
+        if (settings.showAnnotations !== undefined) {
+            opts.showAnnotations = settings.showAnnotations;
+        }
+
+        if (settings.rotate !== undefined) {
+            opts.rotate = settings.rotate;
+        }
+
+        if (settings.contextGlobal !== undefined) {
+            opts.contextGlobal = settings.contextGlobal;
+        }
+
+        if (settings.coloursGlobal !== undefined && settings.colours) {
+            opts.coloursGlobal = settings.coloursGlobal;
+        }
+
+        return opts;
+    }
+
+    /**
+     * Layout tag attributes override settings JSON.
+     *
+     * @param {object} renderOptions
+     * @param {object} options
+     */
+    function applyLayoutOptions(renderOptions, options) {
+        if (options.rotate !== undefined) {
+            renderOptions.rotate = options.rotate;
+        }
+
+        if (options.colourBlind) {
+            renderOptions.colourBlind = true;
+        }
+
+        if (options.width !== undefined) {
+            renderOptions.width = '100%';
+        }
+
+        if (options.height !== undefined) {
+            renderOptions.height = '100%';
+        }
+    }
+
+    /**
      * @param {HTMLElement} container
      * @param {object} options
      */
@@ -87,6 +176,21 @@
             frame.style.transform = 'scale(' + normalizeScale(options.scale) + ')';
             frame.style.transformOrigin = 'top left';
             frame.classList.add('aprender-has-scale');
+        }
+    }
+
+    /**
+     * @param {HTMLElement} container
+     * @param {object} renderOptions
+     */
+    function applyFrameBackground(container, renderOptions) {
+        var frame = container.parentElement;
+        if (!frame || !frame.classList.contains('aprender-frame')) {
+            frame = container;
+        }
+
+        if (renderOptions.colourContext && renderOptions.colourContext.background) {
+            frame.style.backgroundColor = renderOptions.colourContext.background;
         }
     }
 
@@ -167,27 +271,11 @@
 
         applyFrameSizing(container, options);
 
-        var renderOptions = {
-            divid: instance.id,
-            prefix: instance.id + '-'
-        };
-
-        if (options.rotate !== undefined) {
-            renderOptions.rotate = options.rotate;
-        }
-        if (options.colourBlind) {
-            renderOptions.colourBlind = true;
-        }
-        if (options.patterns) {
-            renderOptions.patterns = true;
-        }
-
-        if (options.width !== undefined) {
-            renderOptions.width = '100%';
-        }
-        if (options.height !== undefined) {
-            renderOptions.height = '100%';
-        }
+        var renderOptions = settingsToRenderOptions(options.settings);
+        renderOptions.divid = instance.id;
+        renderOptions.prefix = instance.id + '-';
+        applyLayoutOptions(renderOptions, options);
+        applyFrameBackground(container, renderOptions);
 
         try {
             window.APRender.render(instance.json, renderOptions);

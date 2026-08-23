@@ -4,12 +4,12 @@
  * Syntax plugin for embedding Abstract Play renderer JSON.
  *
  * Usage:
- *   <aprender>
+ *   <aprender settings='{"colourContext":{...}}'>
  *   { "board": ... }
  *   </aprender>
  *
- * Optional attributes on the opening tag:
- *   rotate="90" colourblind patterns width="100%" height="400"
+ * Optional layout attributes on the opening tag:
+ *   rotate="90" colourblind width="100%" height="400" scale="50%"
  *
  * @license MIT
  */
@@ -61,15 +61,44 @@ class syntax_plugin_aprender extends DokuWiki_Syntax_Plugin
 
         $attrString = trim($parts[1]);
         $body = $parts[2];
-        $options = $this->parseAttributes($attrString);
+        $parseResult = $this->parseAttributes($attrString);
+        if (isset($parseResult['error'])) {
+            return ['error' => $parseResult['error']];
+        }
 
+        $options = $parseResult['options'];
         $maxBytes = (int) $this->getConf('max_json_bytes');
         $trimmed = trim($body);
+        $payloadBytes = strlen($trimmed);
 
-        if (strlen($trimmed) > $maxBytes) {
+        if (isset($options['_settingsRaw'])) {
+            $payloadBytes += strlen((string) $options['_settingsRaw']);
+        }
+
+        if ($payloadBytes > $maxBytes) {
             return [
                 'error' => sprintf($this->getLang('json_too_large'), $maxBytes),
             ];
+        }
+
+        if (isset($options['_settingsRaw'])) {
+            $settings = json_decode($options['_settingsRaw'], true);
+            unset($options['_settingsRaw']);
+
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($settings)) {
+                $message = $this->getLang('settings_invalid');
+                $detail = json_last_error_msg();
+                if ($detail !== 'No error') {
+                    $message .= ': ' . $detail;
+                }
+                return ['error' => $message];
+            }
+
+            if ($this->isList($settings)) {
+                return ['error' => $this->getLang('settings_not_object')];
+            }
+
+            $options['settings'] = $settings;
         }
 
         $json = json_decode($trimmed, true);
@@ -124,16 +153,20 @@ class syntax_plugin_aprender extends DokuWiki_Syntax_Plugin
     }
 
     /**
-     * Parse optional attributes from the opening tag.
-     *
-     * @return array<string, mixed>
+     * @return array{options: array<string, mixed>, error?: string}
      */
     protected function parseAttributes(string $attrString): array
     {
         $options = [];
 
         if ($attrString === '') {
-            return $options;
+            return ['options' => $options];
+        }
+
+        $settingsRaw = $this->extractSettingsAttribute($attrString);
+        if ($settingsRaw !== null) {
+            $options['_settingsRaw'] = $settingsRaw;
+            $attrString = $this->removeSettingsAttribute($attrString);
         }
 
         if (preg_match('/\brotate=(["\']?)(-?\d+)\1/i', $attrString, $match)) {
@@ -156,15 +189,42 @@ class syntax_plugin_aprender extends DokuWiki_Syntax_Plugin
             $options['colourBlind'] = true;
         }
 
-        if (preg_match('/\bpatterns\b/i', $attrString)) {
-            $options['patterns'] = true;
-        }
-
         if (preg_match('/\bscale=(["\']?)([^"\'\s>]+)\1/i', $attrString, $match)) {
             $options['scale'] = $match[2];
         }
 
-        return $options;
+        return ['options' => $options];
+    }
+
+    /**
+     * Extract the raw JSON string from a settings='...' or settings="..." attribute.
+     */
+    protected function extractSettingsAttribute(string $attrString): ?string
+    {
+        if (preg_match('/\bsettings=\'([^\']*)\'/is', $attrString, $match)) {
+            return $match[1];
+        }
+
+        if (preg_match('/\bsettings="([^"]*)"/is', $attrString, $match)) {
+            return $match[1];
+        }
+
+        return null;
+    }
+
+    protected function removeSettingsAttribute(string $attrString): string
+    {
+        $attrString = preg_replace('/\bsettings=\'[^\']*\'/is', '', $attrString);
+        if ($attrString === null) {
+            return '';
+        }
+
+        $attrString = preg_replace('/\bsettings="[^"]*"/is', '', $attrString);
+        if ($attrString === null) {
+            return '';
+        }
+
+        return trim($attrString);
     }
 
     /**
