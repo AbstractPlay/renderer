@@ -4,7 +4,7 @@ email  aaron@daltons.ca
 date   2026-08-22
 name   Abstract Play Renderer
 desc   Embed Abstract Play renderer JSON as SVG board diagrams
-url    https://github.com/AbstractPlay/renderer/tree/master/contrib/dokuwiki-plugin-aprender
+url    https://github.com/AbstractPlay/renderer/tree/main/contrib/dokuwiki-plugin-aprender
 
 [script]
 script.js

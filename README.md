@@ -1,6 +1,6 @@
 # Abstract Play Renderer
 
-[![Build Status](https://travis-ci.com/AbstractPlay/renderer.svg?branch=master)](https://travis-ci.com/AbstractPlay/renderer)
+[![Build Status](https://travis-ci.com/AbstractPlay/renderer.svg?branch=main)](https://travis-ci.com/AbstractPlay/renderer)
 
 This private NPM module graphically renders game states. This repository houses the authoritative JSON schema.
 
