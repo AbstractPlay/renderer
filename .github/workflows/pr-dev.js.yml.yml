@@ -1,0 +1,34 @@
+# Basic validation for pull requests — tests, lint, and build without publish/deploy/relay.
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Dev Server PR Validation
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: 'npm'
+    - run: npm ci
+    - run: npm test
+    - run: npx playwright install --with-deps chromium firefox webkit
+    - run: npm run test:browser
+    - name: Verify contact sheet is up to date
+      run: |
+        npm run contact-sheet
+        git diff --exit-code contact.png docs/contact-sheet.svg docs/fonts/dejavu-sans.ttf
+    - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
+    - run: npm run build-ts
+    - run: npm run build-bundle
+    - run: npm run test:bundle
+    - run: npm run lint
