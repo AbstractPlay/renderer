@@ -276,6 +276,8 @@ export abstract class RendererBase {
     public rootSvg?: Svg;
     /** Main-board polygon grid from the last top-level `dispatchBoardRender` call. */
     protected mainBoardPolys?: Poly[][];
+    /** Don't rebuild the same glyphs */
+    private readonly glyphCache = new Map<string, SVGSymbol>();
 
     /**
      * Creates an instance of RendererBase. A name must be provided. Also sets the default options.
@@ -343,6 +345,8 @@ export abstract class RendererBase {
      * @param opts - Renderer options passed by the user
      */
     protected optionsPrecheck(opts: IRendererOptionsIn): void {
+        this.glyphCache.clear();
+
         // Check colour blindness
         if (opts.colourBlind !== undefined) {
             this.options.colourBlind = opts.colourBlind;
@@ -814,12 +818,26 @@ export abstract class RendererBase {
         for (const [idx, g] of glyphs.entries()) {
             let baseScale = 1;
             let got: SVGSymbol;
+            // Whether this glyph that was already built in this layer
+            let shared = false;
             if (("name" in g) && (g.name !== undefined)) {
                 let player: number | undefined;
                 if (g.colour !== undefined && typeof g.colour === "number") {
                     player = g.colour;
                 }
-                got = this.loadGlyph(g.name, player, parent);
+                // This should identify the glyph.
+                const cacheKey = [
+                    g.name, player ?? "", g.opacity ?? 1, layout,
+                    x2uid([g.colour ?? null, g.colour2 ?? null]),
+                ].join("\u0000");
+                const already = this.glyphCache.get(cacheKey);
+                if (already !== undefined) {
+                    got = already;
+                    shared = true;
+                } else {
+                    got = this.loadGlyph(g.name, player, layout === "isoFace" ? parent : this.rootSvg);
+                    this.glyphCache.set(cacheKey, got);
+                }
                 if (this.options.glyphmap.length > 0) {
                     const i = this.options.glyphmap.findIndex(t => t[0] === g.name);
                     if (i >= 0) {
@@ -844,8 +862,9 @@ export abstract class RendererBase {
                 const text = group.text(g.text).font(fontOpts);
                 text.attr("data-playerfill", true);
                 const temptext = this.rootSvg.text(g.text).font(fontOpts);
-                const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
-                group.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
+                const textBox = temptext.bbox();
+                const squaresize = Math.max(textBox.height, textBox.width);
+                group.viewbox(textBox.x, textBox.y, textBox.width, textBox.height);
                 group.attr("data-cellsize", squaresize);
                 temptext.remove();
                 got = group;
@@ -853,8 +872,10 @@ export abstract class RendererBase {
                 throw new Error(`Could not load one of the components of the glyph '${opts.legendKey}': ${JSON.stringify(g)}.`);
             }
 
-            const glyphId = glyph2uid(g, opts.legendKey, idx);
-            got.id(glyphId);
+            const glyphId = shared ? (got.id() as string) : glyph2uid(g, opts.legendKey, idx);
+            if (!shared) {
+                got.id(glyphId);
+            }
 
             if (opts.fontStyleRules !== undefined && "text" in g && (g.fontFamily !== undefined || g.fontWeight !== undefined)) {
                 const props: string[] = [];
@@ -867,62 +888,64 @@ export abstract class RendererBase {
                 opts.fontStyleRules.push(`#${glyphId} text { ${props.join("; ")}; }`);
             }
 
-            const contextStroke = this.options.colourContext.strokes;
-            const contextFill = this.options.colourContext.fill;
-            const contextBorder = this.options.colourContext.borders;
-            const contextBackground = this.options.colourContext.background;
-            const contextBoard = this.options.colourContext.board;
-            got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
-            got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
-            got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
-            got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
-            got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
-            if (contextBoard !== undefined) {
-                got.find("[data-context-board=true]").each(function(this: SVGElement) { this.fill(contextBoard); });
-            }
-
-            let sheetCellSize = got.viewbox().height;
-            if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
-                sheetCellSize = got.attr("data-cellsize") as number;
-                if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
-                    throw new Error(`The glyph you requested (${opts.legendKey}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+            if (!shared) {
+                const contextStroke = this.options.colourContext.strokes;
+                const contextFill = this.options.colourContext.fill;
+                const contextBorder = this.options.colourContext.borders;
+                const contextBackground = this.options.colourContext.background;
+                const contextBoard = this.options.colourContext.board;
+                got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
+                got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
+                got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
+                got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
+                got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
+                if (contextBoard !== undefined) {
+                    got.find("[data-context-board=true]").each(function(this: SVGElement) { this.fill(contextBoard); });
                 }
-            }
 
-            let opacity = 1;
-            if (g.opacity !== undefined) {
-                opacity = g.opacity;
-            }
-
-            const colourVals = [g.colour, g.colour2];
-            for (let i = 0; i < colourVals.length; i++) {
-                const colourVal = colourVals[i];
-                const suffix = i > 0 ? (i + 1).toString() : "";
-                if (colourVal !== undefined) {
-                    const resolved = this.resolveFill(colourVal as string | number | Gradient | Colourfuncs, "#000", { scale: sheetCellSize });
-                    this.applyPlayerFillTargets(got, suffix, resolved, opacity);
-                } else if ("text" in g && g.text !== undefined) {
-                    let darkest = contextBackground;
-                    for (let j = idx - 1; j >= 0; j--) {
-                        const prev = glyphs[j];
-                        if ("colour" in prev && prev.colour !== undefined) {
-                            darkest = this.resolveColour(prev.colour) as string;
-                            break;
-                        }
+                let sheetCellSize = got.viewbox().height;
+                if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                    sheetCellSize = got.attr("data-cellsize") as number;
+                    if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                        throw new Error(`The glyph you requested (${opts.legendKey}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
                     }
-                    const func: FunctionBestContrast = {
-                        func: "bestContrast",
-                        bg: darkest,
-                        fg: ["#000", "#fff"],
-                    };
-                    const normColour = this.resolveColour(func, "#000");
-                    // @ts-expect-error (poor SVGjs typing)
-                    got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
-                    // @ts-expect-error (poor SVGjs typing)
-                    got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); });
-                } else {
-                    got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
-                    got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); });
+                }
+
+                let opacity = 1;
+                if (g.opacity !== undefined) {
+                    opacity = g.opacity;
+                }
+
+                const colourVals = [g.colour, g.colour2];
+                for (let i = 0; i < colourVals.length; i++) {
+                    const colourVal = colourVals[i];
+                    const suffix = i > 0 ? (i + 1).toString() : "";
+                    if (colourVal !== undefined) {
+                        const resolved = this.resolveFill(colourVal as string | number | Gradient | Colourfuncs, "#000", { scale: sheetCellSize });
+                        this.applyPlayerFillTargets(got, suffix, resolved, opacity);
+                    } else if ("text" in g && g.text !== undefined) {
+                        let darkest = contextBackground;
+                        for (let j = idx - 1; j >= 0; j--) {
+                            const prev = glyphs[j];
+                            if ("colour" in prev && prev.colour !== undefined) {
+                                darkest = this.resolveColour(prev.colour) as string;
+                                break;
+                            }
+                        }
+                        const func: FunctionBestContrast = {
+                            func: "bestContrast",
+                            bg: darkest,
+                            fg: ["#000", "#fff"],
+                        };
+                        const normColour = this.resolveColour(func, "#000");
+                        // @ts-expect-error (poor SVGjs typing)
+                        got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
+                        // @ts-expect-error (poor SVGjs typing)
+                        got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); });
+                    } else {
+                        got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
+                        got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); });
+                    }
                 }
             }
 
@@ -1819,8 +1842,9 @@ export abstract class RendererBase {
                             size: fontsize,
                             opacity: 0.5,
                         });
-                        const squaresize = Math.max(temptext.bbox().height, temptext.bbox().width);
-                        nestedGroup.viewbox(temptext.bbox().x, temptext.bbox().y, temptext.bbox().width, temptext.bbox().height);
+                        const textBox = temptext.bbox();
+                        const squaresize = Math.max(textBox.height, textBox.width);
+                        nestedGroup.viewbox(textBox.x, textBox.y, textBox.width, textBox.height);
                         nestedGroup.attr("data-cellsize", squaresize);
                         temptext.remove();
                         const got = nestedGroup;
@@ -3746,8 +3770,9 @@ export abstract class RendererBase {
                     tmptxt.attr(a.name, a.value);
                 }
             }
-            maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
-            maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
+            const tmpBox = tmptxt.bbox();
+            maxWidth = Math.max(maxWidth, tmpBox.width);
+            maxHeight = Math.max(maxHeight, tmpBox.height);
             const symtxt = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
             const realtxt = symtxt.text(b.label).font({size: 17, fill: colour, anchor: "start"});
             if (b.attributes !== undefined) {
@@ -3755,7 +3780,7 @@ export abstract class RendererBase {
                     realtxt.attr(a.name, a.value);
                 }
             }
-            symtxt.viewbox(tmptxt.bbox());
+            symtxt.viewbox(tmpBox);
             tmptxt.remove();
             labels.push(symtxt);
         }
@@ -3908,11 +3933,12 @@ export abstract class RendererBase {
         let maxHeight = 0;
         for (const k of key.list) {
             const tmptxt = this.rootSvg.text(k.name).font({size: 17, fill: labelColour, anchor: "start"});
-            maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
-            maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
+            const tmpBox = tmptxt.bbox();
+            maxWidth = Math.max(maxWidth, tmpBox.width);
+            maxHeight = Math.max(maxHeight, tmpBox.height);
             const symtxt = nested.symbol();
             symtxt.text(k.name).font({size: 17, fill: labelColour, anchor: "start"});
-            symtxt.viewbox(tmptxt.bbox());
+            symtxt.viewbox(tmpBox);
             tmptxt.remove();
             labels.push(symtxt);
         }
@@ -4115,11 +4141,12 @@ export abstract class RendererBase {
         let maxHeight = 0;
         for (const lbl of [lblUpOne, lblUpAll, lblDownOne, lblDownAll]) {
             const tmptxt = this.rootSvg.text(lbl).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
-            maxWidth = Math.max(maxWidth, tmptxt.bbox().width);
-            maxHeight = Math.max(maxHeight, tmptxt.bbox().height);
+            const tmpBox = tmptxt.bbox();
+            maxWidth = Math.max(maxWidth, tmpBox.width);
+            maxHeight = Math.max(maxHeight, tmpBox.height);
             const symtxt = nested.symbol();
             symtxt.text(lbl).font({size: 17, fill: this.options.colourContext.strokes, anchor: "start"});
-            symtxt.viewbox(tmptxt.bbox());
+            symtxt.viewbox(tmpBox);
             tmptxt.remove();
             labels.push(symtxt);
         }
