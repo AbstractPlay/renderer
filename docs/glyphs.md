@@ -171,8 +171,8 @@ Each glyph object in the legend supports these properties. `name` and `text` are
 | `opacity` | number | `1` | 0 (transparent) to 1 (opaque); applied to player-tagged fills and strokes. |
 | `rotate` | number \| null | `0` | Degrees, −360 to 360. Negative is counter-clockwise. |
 | `orientation` | `"fluid"` \| `"vertical"` | `"fluid"` | After rotation, `"vertical"` keeps text upright. |
-| `flipx` | boolean | `false` | Mirror horizontally. |
-| `flipy` | boolean | `false` | Mirror vertically. |
+| `flipx` | boolean | `false` | Mirror horizontally. With **`fluid`** (default sheet glyphs), flip is in piece/board coordinates and rotates with the board. With **`vertical`** or text glyphs, flip is relative to the **screen** (left/right stays fixed when `board.rotate` changes). |
+| `flipy` | boolean | `false` | Mirror vertically. Same **`fluid`** vs **`vertical`** / text behaviour as `flipx`. |
 | `nudge` | `{ dx, dy }` | — | Offset from centre in cell units; negative `dx`/`dy` move left/up. |
 | `fontFamily` | string | — | CSS font family for text glyphs. |
 | `fontWeight` | string \| number | — | CSS font weight for text glyphs. |

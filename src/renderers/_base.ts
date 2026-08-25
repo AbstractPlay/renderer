@@ -12,7 +12,7 @@ import { unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
-import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit";
+import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphFlipAxes, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit";
 import {
     computeAnnulusPlacement,
     computeSidebarPlacement,
@@ -1030,11 +1030,14 @@ export abstract class RendererBase {
                 size = factor * cellsize;
             }
 
-            if (g.flipx !== undefined && g.flipx) {
-                use.flip("x");
+            const { flipx, flipy } = resolveGlyphFlipAxes(g, boardRotation, rotationOpts);
+            const flipOriginX = layout === "isoFace" ? layerIsoFaceX + layerIsoFaceDrawSize / 2 : 0;
+            const flipOriginY = layout === "isoFace" ? layerIsoFaceY + layerIsoFaceDrawSize / 2 : 0;
+            if (flipx) {
+                use.scale(-1, 1, flipOriginX, flipOriginY);
             }
-            if (g.flipy !== undefined && g.flipy) {
-                use.flip("y");
+            if (flipy) {
+                use.scale(1, -1, flipOriginX, flipOriginY);
             }
 
             if (g.nudge !== undefined) {

@@ -124,6 +124,37 @@ export const resolveGlyphRotationDegrees = (
     return rotation;
 };
 
+export type GlyphFlipAxes = { flipx: boolean; flipy: boolean };
+
+/** Effective flip axes at bake time; upright flat glyphs swap at 90°/270° for screen-stable mirrors. */
+export const resolveGlyphFlipAxes = (
+    g: Glyph,
+    boardRotation: number,
+    opts?: GlyphRotationOptions,
+): GlyphFlipAxes => {
+    const flipx = g.flipx === true;
+    const flipy = g.flipy === true;
+    if (!flipx && !flipy) {
+        return { flipx: false, flipy: false };
+    }
+
+    const counterRotate = opts?.counterRotateWithBoard !== false;
+    const stabilize =
+        counterRotate &&
+        glyphKeepsUpright(g) &&
+        opts?.rotateFluidWithBoard !== true;
+
+    if (!stabilize) {
+        return { flipx, flipy };
+    }
+
+    const r = ((boardRotation % 360) + 360) % 360;
+    if (r === 90 || r === 270) {
+        return { flipx: flipy, flipy: flipx };
+    }
+    return { flipx, flipy };
+};
+
 /**
  * Conservative shrink so a centered square in face UV stays inside a skewed cube face parallelogram.
  */

@@ -10,6 +10,7 @@ import {
     multiplyIsoAffine,
     projectedTopCenterMatrix,
     resolveFaceInset,
+    resolveGlyphFlipAxes,
     resolveGlyphRotationDegrees,
 } from "../src/renderers/isometric/faceGlyphFit";
 import { genCube } from "../src/renderers/isometric/cubes";
@@ -120,5 +121,24 @@ describe("iso face glyph fit", () => {
         expect(resolveGlyphRotationDegrees({ name: "piecepack-number-1", colour: 1 }, 90)).to.equal(0);
         expect(resolveGlyphRotationDegrees({ name: "piecepack-number-1", colour: 1, orientation: "vertical" }, 90, { counterRotateWithBoard: true })).to.equal(-90);
         expect(resolveGlyphRotationDegrees({ name: "piecepack-number-1", colour: 1 }, 90, isoTop)).to.equal(90);
+    });
+
+    it("should swap flip axes for upright legend glyphs at 90° and 270° board rotation", () => {
+        const verticalFlip = { name: "arimaa-camel", colour: 1, orientation: "vertical" as const, flipx: true };
+        const legendOpts = { counterRotateWithBoard: true, rotateFluidWithBoard: false };
+        const isoTop = { counterRotateWithBoard: true, rotateFluidWithBoard: true };
+
+        expect(resolveGlyphFlipAxes(verticalFlip, 0, legendOpts)).to.deep.equal({ flipx: true, flipy: false });
+        expect(resolveGlyphFlipAxes(verticalFlip, 180, legendOpts)).to.deep.equal({ flipx: true, flipy: false });
+        expect(resolveGlyphFlipAxes(verticalFlip, 90, legendOpts)).to.deep.equal({ flipx: false, flipy: true });
+        expect(resolveGlyphFlipAxes(verticalFlip, 270, legendOpts)).to.deep.equal({ flipx: false, flipy: true });
+
+        const fluidFlip = { name: "arimaa-camel", colour: 1, orientation: "fluid" as const, flipx: true };
+        expect(resolveGlyphFlipAxes(fluidFlip, 90, legendOpts)).to.deep.equal({ flipx: true, flipy: false });
+
+        expect(resolveGlyphFlipAxes(verticalFlip, 90, isoTop)).to.deep.equal({ flipx: true, flipy: false });
+
+        const bothFlip = { name: "arimaa-camel", colour: 1, orientation: "vertical" as const, flipx: true, flipy: true };
+        expect(resolveGlyphFlipAxes(bothFlip, 90, legendOpts)).to.deep.equal({ flipx: true, flipy: true });
     });
 });

@@ -1,0 +1,802 @@
+{
+  "board": {
+    "style": "squares",
+    "width": 8,
+    "height": 8,
+    "markers": [
+      {
+        "type": "glyph",
+        "glyph": "T",
+        "points": [
+          {
+            "col": 2,
+            "row": 2
+          },
+          {
+            "col": 5,
+            "row": 2
+          },
+          {
+            "col": 2,
+            "row": 5
+          },
+          {
+            "col": 5,
+            "row": 5
+          }
+        ]
+      },
+      {
+        "type": "edge",
+        "colour": {
+          "func": "custom",
+          "default": "#bf9212",
+          "palette": 1
+        },
+        "edge": "S"
+      },
+      {
+        "type": "edge",
+        "colour": {
+          "func": "custom",
+          "default": "#989898",
+          "palette": 2
+        },
+        "edge": "N"
+      }
+    ]
+  },
+  "legend": {
+    "T": {
+      "name": "piece",
+      "colour": "_context_fill",
+      "opacity": 0.5,
+      "scale": 0.75
+    },
+    "E1": {
+      "name": "arimaa-elephant",
+      "colour": {
+        "func": "custom",
+        "default": "#bf9212",
+        "palette": 1
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#bf9212",
+            "palette": 1
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 5
+      },
+      "orientation": "vertical"
+    },
+    "E1x": [
+      {
+        "name": "arimaa-elephant",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 3
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 5
+        },
+        "orientation": "vertical"
+      }
+    ],
+    "E2": {
+      "name": "arimaa-elephant",
+      "colour": {
+        "func": "custom",
+        "default": "#989898",
+        "palette": 2
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#989898",
+            "palette": 2
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 6
+      },
+      "orientation": "vertical",
+      "flipx": true
+    },
+    "E2x": [
+      {
+        "name": "arimaa-elephant",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 4
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 6
+        },
+        "orientation": "vertical",
+        "flipx": true
+      }
+    ],
+    "M1": {
+      "name": "arimaa-camel",
+      "colour": {
+        "func": "custom",
+        "default": "#bf9212",
+        "palette": 1
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#bf9212",
+            "palette": 1
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 5
+      },
+      "orientation": "vertical"
+    },
+    "M1x": [
+      {
+        "name": "arimaa-camel",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 3
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 5
+        },
+        "orientation": "vertical"
+      }
+    ],
+    "M2": {
+      "name": "arimaa-camel",
+      "colour": {
+        "func": "custom",
+        "default": "#989898",
+        "palette": 2
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#989898",
+            "palette": 2
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 6
+      },
+      "orientation": "vertical",
+      "flipx": true
+    },
+    "M2x": [
+      {
+        "name": "arimaa-camel",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 4
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 6
+        },
+        "orientation": "vertical",
+        "flipx": true
+      }
+    ],
+    "H1": {
+      "name": "arimaa-horse",
+      "colour": {
+        "func": "custom",
+        "default": "#bf9212",
+        "palette": 1
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#bf9212",
+            "palette": 1
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 5
+      },
+      "orientation": "vertical"
+    },
+    "H1x": [
+      {
+        "name": "arimaa-horse",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 3
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 5
+        },
+        "orientation": "vertical"
+      }
+    ],
+    "H2": {
+      "name": "arimaa-horse",
+      "colour": {
+        "func": "custom",
+        "default": "#989898",
+        "palette": 2
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#989898",
+            "palette": 2
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 6
+      },
+      "orientation": "vertical",
+      "flipx": true
+    },
+    "H2x": [
+      {
+        "name": "arimaa-horse",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 4
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 6
+        },
+        "orientation": "vertical",
+        "flipx": true
+      }
+    ],
+    "D1": {
+      "name": "arimaa-dog",
+      "colour": {
+        "func": "custom",
+        "default": "#bf9212",
+        "palette": 1
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#bf9212",
+            "palette": 1
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 5
+      },
+      "orientation": "vertical"
+    },
+    "D1x": [
+      {
+        "name": "arimaa-dog",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 3
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 5
+        },
+        "orientation": "vertical"
+      }
+    ],
+    "D2": {
+      "name": "arimaa-dog",
+      "colour": {
+        "func": "custom",
+        "default": "#989898",
+        "palette": 2
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#989898",
+            "palette": 2
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 6
+      },
+      "orientation": "vertical",
+      "flipx": true
+    },
+    "D2x": [
+      {
+        "name": "arimaa-dog",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 4
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 6
+        },
+        "orientation": "vertical",
+        "flipx": true
+      }
+    ],
+    "C1": {
+      "name": "arimaa-cat",
+      "colour": {
+        "func": "custom",
+        "default": "#bf9212",
+        "palette": 1
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#bf9212",
+            "palette": 1
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 5
+      },
+      "orientation": "vertical"
+    },
+    "C1x": [
+      {
+        "name": "arimaa-cat",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 3
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 5
+        },
+        "orientation": "vertical"
+      }
+    ],
+    "C2": {
+      "name": "arimaa-cat",
+      "colour": {
+        "func": "custom",
+        "default": "#989898",
+        "palette": 2
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#989898",
+            "palette": 2
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 6
+      },
+      "orientation": "vertical",
+      "flipx": true
+    },
+    "C2x": [
+      {
+        "name": "arimaa-cat",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 4
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 6
+        },
+        "orientation": "vertical",
+        "flipx": true
+      }
+    ],
+    "R1": {
+      "name": "arimaa-rabbit",
+      "colour": {
+        "func": "custom",
+        "default": "#bf9212",
+        "palette": 1
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#bf9212",
+            "palette": 1
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 5
+      },
+      "orientation": "vertical"
+    },
+    "R1x": [
+      {
+        "name": "arimaa-rabbit",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 3
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#bf9212",
+              "palette": 1
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 5
+        },
+        "orientation": "vertical"
+      }
+    ],
+    "R2": {
+      "name": "arimaa-rabbit",
+      "colour": {
+        "func": "custom",
+        "default": "#989898",
+        "palette": 2
+      },
+      "colour2": {
+        "func": "custom",
+        "default": {
+          "func": "bestContrast",
+          "bg": {
+            "func": "custom",
+            "default": "#989898",
+            "palette": 2
+          },
+          "fg": [
+            "#fff",
+            "#000"
+          ]
+        },
+        "palette": 6
+      },
+      "orientation": "vertical",
+      "flipx": true
+    },
+    "R2x": [
+      {
+        "name": "arimaa-rabbit",
+        "colour": {
+          "func": "custom",
+          "default": {
+            "func": "flatten",
+            "fg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "bg": "_context_board",
+            "opacity": 0.375
+          },
+          "palette": 4
+        },
+        "colour2": {
+          "func": "custom",
+          "default": {
+            "func": "bestContrast",
+            "bg": {
+              "func": "custom",
+              "default": "#989898",
+              "palette": 2
+            },
+            "fg": [
+              "#fff",
+              "#000"
+            ]
+          },
+          "palette": 6
+        },
+        "orientation": "vertical",
+        "flipx": true
+      }
+    ]
+  },
+  "pieces": "-,R2,R2,-,M2,-,R2,D2\n-,R2,H2,H2,R2,-,E2,R2\n_\n_\n_\n_\nR1,E1,-,R1,H1,H1,R1,-\nD1,R1,-,M1,-,R1,R1,-"
+}
