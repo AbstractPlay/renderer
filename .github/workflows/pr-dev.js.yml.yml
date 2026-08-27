@@ -19,6 +19,8 @@ jobs:
       with:
         node-version: 24
         cache: 'npm'
+    - name: Pin npm
+      run: npm install -g npm@11.6.2
     - run: npm ci
     - run: npm test
     - run: npx playwright install --with-deps chromium firefox webkit

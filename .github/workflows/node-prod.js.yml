@@ -29,6 +29,8 @@ jobs:
       with:
         node-version: 24
         cache: 'npm'
+    - name: Pin npm
+      run: npm install -g npm@11.6.2
     - run: npm ci
     - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
     - id: capture_version
@@ -82,6 +84,8 @@ jobs:
             node-version: 24
             registry-url: https://npm.pkg.github.com/
             scope: "@abstractplay"
+        - name: Pin npm
+          run: npm install -g npm@11.6.2
         - run: echo "registry=https://npm.pkg.github.com/@abstractplay" >> .npmrc
         - run: npm publish $(ls *.tgz) --tag latest
           env:

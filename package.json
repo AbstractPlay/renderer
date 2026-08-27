@@ -48,8 +48,10 @@
     "author": "Aaron Dalton <aaron@daltons.ca> (https://www.perlkonig.com)",
     "license": "MIT",
     "engines": {
-        "node": ">=24"
+        "node": ">=24",
+        "npm": "11.6.2"
     },
+    "packageManager": "npm@11.6.2",
     "keywords": [
         "abstractplay",
         "svg"
