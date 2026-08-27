@@ -27,7 +27,7 @@ jobs:
     - name: Use Node.js 24.x
       uses: actions/setup-node@v3
       with:
-        node-version: 24.x
+        node-version: 24
         cache: 'npm'
     - run: npm ci
     - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
@@ -79,7 +79,7 @@ jobs:
               name: package
         - uses: actions/setup-node@v3
           with:
-            node-version: 24.x
+            node-version: 24
             registry-url: https://npm.pkg.github.com/
             scope: "@abstractplay"
         - run: echo "registry=https://npm.pkg.github.com/@abstractplay" >> .npmrc
