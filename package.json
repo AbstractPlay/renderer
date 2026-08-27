@@ -30,7 +30,7 @@
         "build": "npm run build-ts && npm run build-bundle && npm run test:bundle && npm run lint && npm pack",
         "build-ts": "npm run json2ts && rimraf build && tsc && shx mkdir -p build/schemas && shx cp ./src/schemas/schema.d.ts ./build/schemas",
         "build-bundle": "webpack --config webpack.npm.config.js",
-        "test:bundle": "mocha -r ts-node/register test/bundle-exports.test.ts",
+        "test:bundle": "mocha -r ts-node/register test/bundle-exports.test.ts test/bundle-cjs-require.test.cjs",
         "test": "mocha -r ts-node/register test/**/*.test.ts",
         "test:browser": "node bin/sync-playground-samples.mjs && npm run dist-dev && shx cp dist/APRender.min.js test/browser/ && playwright test",
         "test:browser:install": "playwright install --with-deps chromium firefox webkit",
@@ -47,6 +47,9 @@
     },
     "author": "Aaron Dalton <aaron@daltons.ca> (https://www.perlkonig.com)",
     "license": "MIT",
+    "engines": {
+        "node": ">=24"
+    },
     "keywords": [
         "abstractplay",
         "svg"

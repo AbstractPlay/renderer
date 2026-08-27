@@ -16,7 +16,7 @@ jobs:
 
     # strategy:
     #   matrix:
-    #     node-version: [16.x, 18.x, 20.x]
+    #     node-version: [20.x, 22.x, 24.x]
     #     # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -24,10 +24,10 @@ jobs:
       with:
         ref: "main"
         fetch-depth: 0
-    - name: Use Node.js 18.x
+    - name: Use Node.js 24.x
       uses: actions/setup-node@v3
       with:
-        node-version: 18.x
+        node-version: 24.x
         cache: 'npm'
     - run: npm ci
     - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
@@ -79,7 +79,7 @@ jobs:
               name: package
         - uses: actions/setup-node@v3
           with:
-            node-version: 18.x
+            node-version: 24.x
             registry-url: https://npm.pkg.github.com/
             scope: "@abstractplay"
         - run: echo "registry=https://npm.pkg.github.com/@abstractplay" >> .npmrc
