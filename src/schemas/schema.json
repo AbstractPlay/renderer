@@ -12,6 +12,100 @@
             "type": "number",
             "exclusiveMinimum": 0
         },
+        "chatActorRef": {
+            "description": "Actor reference shared with structured chat log and structured render labels.",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "kind": {
+                            "const": "seat"
+                        },
+                        "seat": {
+                            "$ref": "#/$defs/positiveInteger"
+                        }
+                    },
+                    "required": [
+                        "kind",
+                        "seat"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "kind": {
+                            "const": "label"
+                        },
+                        "key": {
+                            "type": "string"
+                        },
+                        "params": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        }
+                    },
+                    "required": [
+                        "kind",
+                        "key"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "kind": {
+                            "const": "none"
+                        }
+                    },
+                    "required": [
+                        "kind"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "structuredRenderLabel": {
+            "description": "Structured render label resolved to a display string in front (see gameslib structured-render-labels docs).",
+            "type": "object",
+            "properties": {
+                "textKey": {
+                    "type": "string"
+                },
+                "textParams": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": [
+                            "string",
+                            "number"
+                        ]
+                    }
+                },
+                "actor": {
+                    "$ref": "#/$defs/chatActorRef"
+                }
+            },
+            "required": [
+                "textKey"
+            ],
+            "additionalProperties": false
+        },
+        "renderLabel": {
+            "description": "Plain string or structured label with i18n key and optional seat actor.",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "$ref": "#/$defs/structuredRenderLabel"
+                }
+            ]
+        },
         "stashstrings": {
             "description": "Pattern for the global stash definitions for the `homeworlds` renderer.",
             "type": "string",
@@ -1468,7 +1562,7 @@
                 },
                 "label": {
                     "description": "The text that will appear at the top left of the area",
-                    "type": "string"
+                    "$ref": "#/$defs/renderLabel"
                 },
                 "width": {
                     "description": "By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width. Expressed as number of pieces.",
@@ -1569,7 +1663,7 @@
                     ]
                 },
                 "label": {
-                    "type": "string"
+                    "$ref": "#/$defs/renderLabel"
                 },
                 "matrix": {
                     "$ref": "#/$defs/polymatrix"
@@ -1662,7 +1756,7 @@
                     ]
                 },
                 "label": {
-                    "type": "string"
+                    "$ref": "#/$defs/renderLabel"
                 },
                 "stash": {
                     "description": "This is an array of stacks of pieces (themselves an array).",
@@ -1689,8 +1783,7 @@
             "properties": {
                 "label": {
                     "description": "The label that will be visible on the rendered image.",
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/$defs/renderLabel"
                 },
                 "value": {
                     "description": "The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.",
@@ -2466,7 +2559,7 @@
                 },
                 "label": {
                     "description": "The string itself you want to display.",
-                    "type": "string"
+                    "$ref": "#/$defs/renderLabel"
                 },
                 "points": {
                     "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
@@ -2731,7 +2824,7 @@
                 },
                 "label": {
                     "description": "The string itself you want to display.",
-                    "type": "string"
+                    "$ref": "#/$defs/renderLabel"
                 },
                 "points": {
                     "description": "Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.",
@@ -3495,7 +3588,7 @@
                     "type": "object",
                     "properties": {
                         "label": {
-                            "type": "string",
+                            "$ref": "#/$defs/renderLabel",
                             "default": "Player 1: Order"
                         },
                         "occluded": {
@@ -3511,7 +3604,7 @@
                     "type": "object",
                     "properties": {
                         "label": {
-                            "type": "string",
+                            "$ref": "#/$defs/renderLabel",
                             "default": "Player 2: Order"
                         },
                         "occluded": {

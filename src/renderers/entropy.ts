@@ -5,6 +5,7 @@ import { IPoint } from "../grids/_base";
 import { APRenderRep } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
+import { labelDisplayText } from "../common/renderLabel";
 
 /**
  * This is the Entropy-specific renderer that handles the side-by-side rendering and optional occlusion.
@@ -41,7 +42,7 @@ export class EntropyRenderer extends RendererBase {
         let occlude2 = false;
         if ( ("boardOne" in this.json.board) && (this.json.board.boardOne !== undefined) ) {
             if ( ("label" in this.json.board.boardOne) && (this.json.board.boardOne.label !== undefined) ) {
-                label1 = this.json.board.boardOne.label;
+                label1 = labelDisplayText(this.json.board.boardOne.label);
             }
             if ( ("occluded" in this.json.board.boardOne) && (this.json.board.boardOne.occluded !== undefined) ) {
                 occlude1 = this.json.board.boardOne.occluded;
@@ -49,7 +50,7 @@ export class EntropyRenderer extends RendererBase {
         }
         if ( ("boardTwo" in this.json.board) && (this.json.board.boardTwo !== undefined) ) {
             if ( ("label" in this.json.board.boardTwo) && (this.json.board.boardTwo.label !== undefined) ) {
-                label2 = this.json.board.boardTwo.label;
+                label2 = labelDisplayText(this.json.board.boardTwo.label);
             }
             if ( ("occluded" in this.json.board.boardTwo) && (this.json.board.boardTwo.occluded !== undefined) ) {
                 occlude2 = this.json.board.boardTwo.occluded;

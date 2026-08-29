@@ -3,6 +3,7 @@ import { APRenderRep, AnnotationFreespace, AreaKey, Freepiece as IPiece } from "
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { IPoint } from "../grids/_base";
 import { rotate, usePieceAt } from "../common/plotting";
+import { labelDisplayText } from "../common/renderLabel";
 import { x2uid} from "../common/glyph2uid";
 
 type BackFill = {
@@ -235,7 +236,7 @@ export class FreespaceRenderer extends RendererBase {
 
                     const [{x: x1, y: y1}, {x: x2, y: y2}] = marker.points
 
-                    const text = field.text(marker.label)
+                    const text = field.text(labelDisplayText(marker.label))
                         .attr("dy", "0.55em")
                         .addClass(`aprender-marker-${x2uid(marker)}`)
                         .font({size: fontsize, fill: colour, anchor: "middle"})

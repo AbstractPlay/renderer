@@ -3,6 +3,7 @@ import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
 import { APRenderRep, type Polypiece, type AreaPieces as IPiecesArea, type AreaPolyomino as IPolyArea } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
+import { labelDisplayText } from "../common/renderLabel";
 import { x2uid } from "../common/glyph2uid";
 import { squares } from "../boards";
 
@@ -192,11 +193,11 @@ export class PolyominoRenderer extends RendererBase {
                     }
 
                     // Add area label
-                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
+                    const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
                     const txtWidth = tmptxt.bbox().w;
                     tmptxt.remove();
                     nested.width(Math.max(areaWidth, txtWidth));
-                    const txt = nested.text(area.label).addClass(`aprender-area-label`).attr("dy", "0.55em");
+                    const txt = nested.text(labelDisplayText(area.label)).addClass(`aprender-area-label`).attr("dy", "0.55em");
                     txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("dominant-baseline", "middle")
                         .move(0, 0);
@@ -257,11 +258,11 @@ export class PolyominoRenderer extends RendererBase {
                     nested.use(poly).size(areaWidth, cellsize * (numRows - 1)).move(0, (textHeight * 2) + cellsize);
 
                     // Add area label
-                    const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
+                    const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
                     const txtWidth = tmptxt.bbox().w;
                     tmptxt.remove();
                     nested.width(Math.max(areaWidth, txtWidth));
-                    const txt = nested.text(area.label).addClass(`aprender-area-label`).attr("dy", "0.55em");
+                    const txt = nested.text(labelDisplayText(area.label)).addClass(`aprender-area-label`).attr("dy", "0.55em");
                     txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("dominant-baseline", "middle")
                         .move(0, 0);

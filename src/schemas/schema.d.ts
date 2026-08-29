@@ -304,6 +304,24 @@ export type RowCol1 = {
   [k: string]: unknown;
 };
 /**
+ * Actor reference shared with structured chat log and structured render labels.
+ */
+export type ChatActorRef =
+  | {
+      kind: "seat";
+      seat: PositiveInteger;
+    }
+  | {
+      kind: "label";
+      key: string;
+      params?: {
+        [k: string]: string | number;
+      };
+    }
+  | {
+      kind: "none";
+    };
+/**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
 export type BoardHomeworlds = {
@@ -334,6 +352,10 @@ export type PiecesHomeworlds = string[][];
  * @minItems 1
  */
 export type PiecesTree = [TreeNode, ...TreeNode[]];
+/**
+ * Plain string or structured label with i18n key and optional seat actor.
+ */
+export type RenderLabel = string | StructuredRenderLabel;
 /**
  * Pattern for the global stash definitions for the `homeworlds` renderer.
  */
@@ -1132,9 +1154,9 @@ export interface MarkerLabel {
    */
   belowGrid?: boolean;
   /**
-   * The string itself you want to display.
+   * Plain string or structured label with i18n key and optional seat actor.
    */
-  label: string;
+  label: string | StructuredRenderLabel;
   /**
    * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
    *
@@ -1161,6 +1183,16 @@ export interface MarkerLabel {
    * Font style, e.g. 'font: Stencil; font-weight: Bold'
    */
   font?: string;
+}
+/**
+ * Structured render label resolved to a display string in front (see gameslib structured-render-labels docs).
+ */
+export interface StructuredRenderLabel {
+  textKey: string;
+  textParams?: {
+    [k: string]: string | number;
+  };
+  actor?: ChatActorRef;
 }
 export interface MarkerEdge {
   /**
@@ -1253,7 +1285,10 @@ export interface BoardEntropy {
    * Describes the left-hand or top board
    */
   boardOne?: {
-    label?: string;
+    /**
+     * Plain string or structured label with i18n key and optional seat actor.
+     */
+    label?: string | StructuredRenderLabel;
     /**
      * Used as an aid to the player by occluding one of the boards
      */
@@ -1263,7 +1298,10 @@ export interface BoardEntropy {
    * Describes the right-hand or bottom board
    */
   boardTwo?: {
-    label?: string;
+    /**
+     * Plain string or structured label with i18n key and optional seat actor.
+     */
+    label?: string | StructuredRenderLabel;
     /**
      * Used as an aid to the player by occluding one of the boards
      */
@@ -1343,9 +1381,9 @@ export interface MarkerFreespaceLabel {
    */
   type: "label";
   /**
-   * The string itself you want to display.
+   * Plain string or structured label with i18n key and optional seat actor.
    */
-  label: string;
+  label: string | StructuredRenderLabel;
   /**
    * Expects exactly two points. This defines a line along which the text will flow and be centred along, as best as we can.
    *
@@ -1521,7 +1559,7 @@ export interface AreaPieces {
   /**
    * The text that will appear at the top left of the area
    */
-  label: string;
+  label: string | StructuredRenderLabel;
   /**
    * By default, the pieces area will wrap once it reaches the width of the game board itself. This lets you set a fixed width. Expressed as number of pieces.
    */
@@ -1586,7 +1624,7 @@ export interface AreaReserves {
  */
 export interface AreaPolyomino {
   type: "polyomino";
-  label: string;
+  label: RenderLabel;
   matrix: Polymatrix;
   /**
    * Optional. A colour you want to shade the background with. Helpful when dealing with borderless pieces or weird colours.
@@ -1622,7 +1660,7 @@ export interface AreaStackingExpanded {
  */
 export interface AreaVolcanoStash {
   type: "localStash";
-  label: string;
+  label: RenderLabel;
   /**
    * This is an array of stacks of pieces (themselves an array).
    */
@@ -1662,9 +1700,9 @@ export interface AreaButtonBar {
 }
 export interface ButtonBarButton {
   /**
-   * The label that will be visible on the rendered image.
+   * Plain string or structured label with i18n key and optional seat actor.
    */
-  label: string;
+  label: string | StructuredRenderLabel;
   /**
    * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
    */

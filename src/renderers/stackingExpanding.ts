@@ -3,6 +3,7 @@ import { GridPoints, Poly } from "../grids/_base";
 import { APRenderRep, AreaStackingExpanded } from "../schemas/schema";
 import { IRendererOptionsIn, RendererBase } from "./_base";
 import { usePieceAt } from "../common/plotting";
+import { labelDisplayText } from "../common/renderLabel";
 import { hexOfCir, hexOfHex, hexOfTri, snubSquare, squares, vertex } from "../boards";
 
 interface ILocalStash {
@@ -231,7 +232,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     }
 
                     // Add area label
-                    const txt = this.rootSvg.text(area.label).attr("dy", "0.55em");
+                    const txt = this.rootSvg.text(labelDisplayText(area.label)).attr("dy", "0.55em");
                     txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("dominant-baseline", "middle")
                         .move(gridPoints[0][0].x - this.cellsize, placeY);

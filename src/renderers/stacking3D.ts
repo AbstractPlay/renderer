@@ -5,6 +5,7 @@ import { createGridlineLayers, getBoardFill } from "../boards";
 import { rectOfRects } from "../grids";
 import { Svg, StrokeData, G as SVGG } from "@svgdotjs/svg.js";
 import { usePieceAt } from "../common/plotting";
+import { labelDisplayText } from "../common/renderLabel";
 import { x2uid } from "../common/glyph2uid";
 
 interface ILocalStash {
@@ -668,7 +669,7 @@ export class Stacking3DRenderer extends RendererBase {
                     }
 
                     // Add area label
-                    const txt = this.rootSvg.text(area.label).attr("dy", "0.55em");
+                    const txt = this.rootSvg.text(labelDisplayText(area.label)).attr("dy", "0.55em");
                     txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
                         .attr("dominant-baseline", "middle")
                         .move(gridPoints[start][start].x - this.cellsize, placeY);

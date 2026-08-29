@@ -16,6 +16,8 @@ Games may set a base `rotate` on the board (degrees, clockwise):
 
 {% renderWidget "samples/formatting-custom-labels.json" %}
 
+Area and board `label` fields accept either a plain string or a **structured render label** (`textKey`, optional `textParams`, optional `actor` with seat). Gameslib emits structured labels for player-named stashes; Abstract Play front resolves them to display names before drawing. See [gameslib structured render labels](/gameslib/structured-render-labels/) and the `renderLabel` schema definition.
+
 ## Strokes and opacity
 
 *Example games:* [Blockade](https://play.abstractplay.com/games/blockade), [Dots and Boxes](https://play.abstractplay.com/games/boxes)

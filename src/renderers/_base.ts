@@ -10,6 +10,7 @@ import { glyph2uid, x2uid } from "../common/glyph2uid";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
+import { labelDisplayText } from "../common/renderLabel";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
 import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphFlipAxes, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit";
@@ -2501,7 +2502,7 @@ export abstract class RendererBase {
                     }
                     font += marker.font ?? '';
                     const text = targetGroup.text((add) => {
-                            add.tspan(marker.label ).attr('style', font).attr("dy", "0.55em");
+                            add.tspan(labelDisplayText(marker.label)).attr('style', font).attr("dy", "0.55em");
                         })
                         .addClass(`aprender-marker-${x2uid(cloned)}`)
                         .font({ fill: colour, anchor: "middle"})
@@ -3718,7 +3719,7 @@ export abstract class RendererBase {
                         const yRelative = point.y - top;
                         const row = Math.floor(yRelative / btnHeight);
                         if ( (row >= 0) && (row < numButtons) ) {
-                            let value = bar.buttons[row].label;
+                            let value = labelDisplayText(bar.buttons[row].label);
                             if(bar.buttons[row].value !== undefined) {
                                 value = bar.buttons[row].value!;
                             }
@@ -3767,7 +3768,7 @@ export abstract class RendererBase {
         let maxHeight = 0;
         for (const b of bar.buttons) {
             const cloned = {attributes: b.attributes, fill: b.fill};
-            const tmptxt = this.rootSvg.text(b.label).font({size: 17, fill: colour, anchor: "start"});
+            const tmptxt = this.rootSvg.text(labelDisplayText(b.label)).font({size: 17, fill: colour, anchor: "start"});
             if (b.attributes !== undefined) {
                 for (const a of b.attributes) {
                     tmptxt.attr(a.name, a.value);
@@ -3777,7 +3778,7 @@ export abstract class RendererBase {
             maxWidth = Math.max(maxWidth, tmpBox.width);
             maxHeight = Math.max(maxHeight, tmpBox.height);
             const symtxt = nested.symbol().addClass(`aprender-button-${x2uid(cloned)}`);
-            const realtxt = symtxt.text(b.label).font({size: 17, fill: colour, anchor: "start"});
+            const realtxt = symtxt.text(labelDisplayText(b.label)).font({size: 17, fill: colour, anchor: "start"});
             if (b.attributes !== undefined) {
                 for (const a of b.attributes) {
                     realtxt.attr(a.name, a.value);
@@ -3814,7 +3815,7 @@ export abstract class RendererBase {
             const b: ButtonBarButton = bar.buttons[i];
             const symlabel = labels[i];
             const symrect = rects[i];
-            let value = b.label.replace(/\s/g, "");
+            let value = labelDisplayText(b.label).replace(/\s/g, "");
             if (b.value !== undefined) {
                 value = b.value;
             }
@@ -4481,7 +4482,7 @@ export abstract class RendererBase {
                 if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
                     labelColour = this.resolveColour(this.json.board.labelColour) as string;
                 }
-                const tmptxt = this.rootSvg.text(area.label).font({size: textHeight, anchor: "start", fill: labelColour});
+                const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({size: textHeight, anchor: "start", fill: labelColour});
                 const txtWidth = tmptxt.bbox().w;
                 tmptxt.remove();
                 // set the actual width of the nested svg
@@ -4489,7 +4490,7 @@ export abstract class RendererBase {
                 const realWidth = Math.max(vbw, txtWidth);
                 nested.width(realWidth);
                 nested.viewbox(vbx, vby, realWidth, vbh);
-                const txt = nested.text(area.label).addClass(`aprender-area-label`);
+                const txt = nested.text(labelDisplayText(area.label)).addClass(`aprender-area-label`);
                 txt.font({size: textHeight, anchor: "start", fill: labelColour})
                     .attr("dy", "0.55em")
                     .attr("dominant-baseline", "middle")
