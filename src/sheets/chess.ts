@@ -640,4 +640,58 @@ sheet.glyphs.set("chess-rook-solid-traditional", (canvas: SVGContainer) => {
     return symbol;
 });
 
+sheet.glyphs.set("piece-shogi", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const border = 5;
+    const pts: [number, number][] = [
+        [-92, 105],
+        [92, 105],
+        [73, -66],
+        [0, -105],
+        [-73, -66],
+    ];
+    symbol.polygon(pts)
+        .attr("data-context-border", true)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"});
+
+    const minX = Math.min(...pts.map(([x]) => x));
+    const maxX = Math.max(...pts.map(([x]) => x));
+    const minY = Math.min(...pts.map(([, y]) => y));
+    const maxY = Math.max(...pts.map(([, y]) => y));
+    symbol.viewbox(
+        minX - border, minY - border,
+        maxX - minX + (border * 2), maxY - minY + (border * 2),
+    );
+    return symbol;
+});
+
+sheet.glyphs.set("piece-janggi", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const border = 5;
+    const radius = 100;
+    const pts: [number, number][] = [];
+    for (let i = 0; i < 8; i++) {
+        const degrees = 22.5 + (45 * i);
+        const [x, y] = projectPoint(0, 0, radius, degrees);
+        pts.push([x, y]);
+    }
+    symbol.polygon(pts)
+        .attr("data-context-border", true)
+        .attr("data-playerfill", true)
+        .fill("#fff")
+        .stroke({width: border, color: "#000"});
+
+    const minX = Math.min(...pts.map(([x]) => x));
+    const maxX = Math.max(...pts.map(([x]) => x));
+    const minY = Math.min(...pts.map(([, y]) => y));
+    const maxY = Math.max(...pts.map(([, y]) => y));
+    symbol.viewbox(
+        minX - border, minY - border,
+        maxX - minX + (border * 2), maxY - minY + (border * 2),
+    );
+    return symbol;
+});
+
 export { sheet as ChessSheet };
