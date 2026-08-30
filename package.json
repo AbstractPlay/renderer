@@ -10,9 +10,10 @@
     "main": "build/index.js",
     "types": "build/index.d.ts",
     "files": [
-        "build/index.js",
-        "build/index.js.map",
+        "build/**/*.js",
+        "build/**/*.js.map",
         "build/**/*.d.ts",
+        "build/**/*.json",
         "LICENSE"
     ],
     "exports": {
@@ -32,7 +33,7 @@
         "build-ts": "npm run json2ts && node scripts/patch-esm-deps.mjs && rimraf build && tsc && shx mkdir -p build/schemas && shx cp ./src/schemas/schema.d.ts ./build/schemas",
         "typecheck": "node scripts/patch-esm-deps.mjs && tsc --noEmit",
         "pretest": "npm run typecheck",
-        "test:postbuild": "node scripts/smoke-esm-entry.mjs",
+        "test:postbuild": "node scripts/smoke-esm-entry.mjs && node scripts/check-npm-pack.mjs",
         "test": "mocha",
         "test:bundle": "mocha test/bundle-exports.test.ts",
         "test:browser": "npm run dist-dev && playwright test",
