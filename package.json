@@ -29,9 +29,8 @@
     },
     "scripts": {
         "build": "npm run build-ts && npm run test:postbuild && npm run lint && npm pack",
-        "build-ts": "npm run json2ts && rimraf build && tsc && shx mkdir -p build/schemas && shx cp ./src/schemas/schema.d.ts ./build/schemas",
-        "postinstall": "node scripts/patch-esm-deps.mjs",
-        "typecheck": "tsc --noEmit",
+        "build-ts": "npm run json2ts && node scripts/patch-esm-deps.mjs && rimraf build && tsc && shx mkdir -p build/schemas && shx cp ./src/schemas/schema.d.ts ./build/schemas",
+        "typecheck": "node scripts/patch-esm-deps.mjs && tsc --noEmit",
         "pretest": "npm run typecheck",
         "test:postbuild": "node scripts/smoke-esm-entry.mjs",
         "test": "mocha",
