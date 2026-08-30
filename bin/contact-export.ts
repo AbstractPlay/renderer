@@ -1,17 +1,20 @@
 import { copyFileSync, mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
+import { fileURLToPath } from "url";
 import { Resvg } from "@resvg/resvg-js";
 import {
     CONTACT_SHEET_FONT_FAMILY,
     CONTACT_SHEET_VIEWBOX_WIDTH,
     generateContactSheetSvg,
-} from "./contact";
+} from "./contact.js";
+
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 const SVG_BASE_DPI = 96;
 const TARGET_DPI = Number(process.env.CONTACT_SHEET_DPI ?? 96);
 
-const fontSource = join(__dirname, "..", "node_modules", "dejavu-fonts-ttf", "ttf", "DejaVuSans.ttf");
-const fontDestDir = join(__dirname, "..", "docs", "fonts");
+const fontSource = join(repoRoot, "node_modules", "dejavu-fonts-ttf", "ttf", "DejaVuSans.ttf");
+const fontDestDir = join(repoRoot, "docs", "fonts");
 const fontDest = join(fontDestDir, "dejavu-sans.ttf");
 
 mkdirSync(fontDestDir, { recursive: true });
@@ -19,7 +22,7 @@ copyFileSync(fontSource, fontDest);
 
 async function main(): Promise<void> {
     const svg = await generateContactSheetSvg();
-    writeFileSync("docs/contact-sheet.svg", svg, "utf8");
+    writeFileSync(join(repoRoot, "docs", "contact-sheet.svg"), svg, "utf8");
 
     const outputWidth = Math.round(CONTACT_SHEET_VIEWBOX_WIDTH * (TARGET_DPI / SVG_BASE_DPI));
     const resvg = new Resvg(svg, {
@@ -30,7 +33,7 @@ async function main(): Promise<void> {
             defaultFontFamily: CONTACT_SHEET_FONT_FAMILY,
         },
     });
-    writeFileSync("contact.png", resvg.render().asPng());
+    writeFileSync(join(repoRoot, "contact.png"), resvg.render().asPng());
 
     // tslint:disable-next-line: no-console
     console.log(
