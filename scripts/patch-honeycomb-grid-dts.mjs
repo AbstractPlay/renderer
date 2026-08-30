@@ -1,6 +1,6 @@
 /* eslint-env node */
 /**
- * Patch dependencies whose package.json exports omit ESM entry points needed for NodeNext consumers.
+ * Patch honeycomb-grid type re-exports for NodeNext resolution.
  */
 import fs from "fs";
 import path from "path";
@@ -23,4 +23,4 @@ function patchHoneycomb() {
 }
 
 patchHoneycomb();
-console.log("patch-esm-deps: OK");
+console.log("patch-honeycomb-grid-dts: OK");
