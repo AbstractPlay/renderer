@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { icehousePyramidDims, resolvePyramidDims, ICEHOUSE_LARGE_BASE, ICEHOUSE_LARGE_SIDE_HEIGHT, DEFAULT_PYRAMID_SIDE_HEIGHT } from "../src/renderers/isometric/pyramidDims";
@@ -7,8 +6,8 @@ import { ISO_PROJECTION_PRESETS } from "../src/renderers/isometric/projection";
 import { isoShadeFace } from "../src/renderers/isometric/shading";
 import { isoSymbolPlacement } from "../src/renderers/isometric/symbolPlacement";
 import { generateCubes } from "../src/renderers/isometric/cubes";
+import { createSVGWindow } from "svgdom";
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

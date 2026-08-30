@@ -1,9 +1,9 @@
-import { IPolyPolygon, pentagonal as pentagonalGrid } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
-import { pentagonalBoard } from "../common/pentagons";
-import { Pentagonal, PentagonalNodeData } from "../graphs";
-import { BoardReturn, createGridlineLayers } from ".";
+import { IPolyPolygon, pentagonal as pentagonalGrid } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting.js";
+import { pentagonalBoard } from "../common/pentagons/index.js";
+import { Pentagonal, PentagonalNodeData } from "../graphs/index.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 export const pentagonal = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

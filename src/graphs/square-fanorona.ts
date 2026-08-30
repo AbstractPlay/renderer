@@ -1,5 +1,5 @@
 import { UndirectedGraph } from "graphology";
-import { Graph } from "./Graph";
+import { Graph } from "./Graph.js";
 
 export class SquareFanoronaGraph extends Graph {
     public graph: UndirectedGraph

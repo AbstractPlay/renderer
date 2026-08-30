@@ -1,8 +1,8 @@
 import { FillData, StrokeData, Svg, Gradient as SVGGradient } from "@svgdotjs/svg.js";
-import { IPoint } from "../../grids";
-import { ISO_PROJECTION_PRESETS, IsoProjectionParams, projectOblique } from "./projection";
-import { CubeFaceFills } from "./cubes";
-import { coneSilhouettePoints } from "./coneSilhouette";
+import { IPoint } from "../../grids/index.js";
+import { ISO_PROJECTION_PRESETS, IsoProjectionParams, projectOblique } from "./projection.js";
+import { CubeFaceFills } from "./cubes.js";
+import { coneSilhouettePoints } from "./coneSilhouette.js";
 
 export type Cone = {
     xMin: number;

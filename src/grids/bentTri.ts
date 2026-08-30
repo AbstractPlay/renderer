@@ -1,7 +1,7 @@
-import { GridPoints, IGeneratorArgs, IPoint } from "./_base";
-import { computeBentPositions, Graph as BentTriGraph } from "../common/bentTri";
-import { buildGridLayers as buildPlayableGridLayers } from "../common/bentTri/gridLayers";
-import { centroid, pullTowards } from "../common/plotting";
+import { GridPoints, IGeneratorArgs, IPoint } from "./_base.js";
+import { computeBentPositions, Graph as BentTriGraph } from "../common/bentTri/index.js";
+import { buildGridLayers as buildPlayableGridLayers } from "../common/bentTri/gridLayers.js";
+import { centroid, pullTowards } from "../common/plotting.js";
 
 export type BentTriGridResult = {
     grid: GridPoints;

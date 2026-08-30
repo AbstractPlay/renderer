@@ -1,6 +1,6 @@
 import { Matrix } from "transformation-matrix-js";
 import { FillData, StrokeData, Svg, G as SVGG, Rect as SVGRect } from "@svgdotjs/svg.js";
-import { IPoint } from "../../grids";
+import { IPoint } from "../../grids/index.js";
 import {
     affineFromUnitRect,
     cabinetPieceVisibility,
@@ -9,8 +9,8 @@ import {
     isoProjectionCacheSuffix,
     projectOblique,
     usesLayeredCellDraw,
-} from "./projection";
-import { applyIsoAffineMatrix } from "./faceGlyphFit";
+} from "./projection.js";
+import { applyIsoAffineMatrix } from "./faceGlyphFit.js";
 
 export type CubeSideFace = "left" | "right" | "west";
 

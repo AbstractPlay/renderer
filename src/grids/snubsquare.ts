@@ -1,5 +1,5 @@
-import { rad2deg, rotatePoint } from "../common/plotting";
-import { GridPoints, IGeneratorArgs, IPoint, normalizeX, SnubStart} from "./_base";
+import { rad2deg, rotatePoint } from "../common/plotting.js";
+import { GridPoints, IGeneratorArgs, IPoint, normalizeX, SnubStart} from "./_base.js";
 
 /**
  * Generates a rectangular snubsquare field.

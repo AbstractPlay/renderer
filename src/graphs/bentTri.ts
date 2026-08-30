@@ -1,7 +1,7 @@
 import { UndirectedGraph } from "graphology";
-import { Graph } from "./Graph";
-import { Graph as BentTriGraph } from "../common/bentTri";
-import { IPoint } from "../grids";
+import { Graph } from "./Graph.js";
+import { Graph as BentTriGraph } from "../common/bentTri/index.js";
+import { IPoint } from "../grids/index.js";
 
 export type BentTriNodeData = {
     id: number;

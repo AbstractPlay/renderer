@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import "mocha";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
@@ -6,8 +5,8 @@ import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 import { expandSquareGrid, rectOfRects, tileCornerXY } from "../src/grids";
+import { createSVGWindow } from "svgdom";
 
-const { createSVGWindow } = require("svgdom");
 
 const CELL = 50;
 const TILE = 3;

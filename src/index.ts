@@ -9,16 +9,21 @@
  */
 
 import { Element as SVGElement, G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
-import Ajv, {DefinedError as AJVError} from "ajv";
-import { renderers } from "./renderers";
-import { sheets } from "./sheets";
+import AjvImport from "ajv";
+import type { ErrorObject, ValidateFunction } from "ajv";
+import { renderers } from "./renderers/index.js";
+import { sheets } from "./sheets/index.js";
 export { sheets };
-import { IRendererOptionsIn } from "./renderers/_base";
-import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings, Colourfuncs } from "./schemas/schema";
-import schema from "./schemas/schema.json";
-import { v4 as uuidv4 } from 'uuid';
+import { IRendererOptionsIn } from "./renderers/_base.js";
+import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings, Colourfuncs } from "./schemas/schema.js";
+import schema from "./schemas/schema.json" with { type: "json" };
+import { v4 as uuidv4 } from "uuid";
 
-const ajv = new Ajv();
+type AjvInstance = {
+    compile(jsonSchema: object): ValidateFunction;
+};
+const ajvCtor = AjvImport as unknown as new () => AjvInstance;
+const ajv = new ajvCtor();
 const validate = ajv.compile(schema);
 
 export type {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings};
@@ -122,7 +127,7 @@ export const addPrefix = (svg: string, opts = {} as IRenderOptions): string => {
  * @param errors - List of validation errors
  * @returns A formatted string representing the errors
  */
-const formatAJVErrors = (errors: AJVError[]): string => {
+const formatAJVErrors = (errors: ErrorObject[]): string => {
     const msgs: string[] = [];
     for (const e of errors) {
         msgs.push(`The element "${e.instancePath}" "${e.message}".`)
@@ -229,7 +234,7 @@ const unionLayoutBBox = (draw: Svg): { x: number; y: number; width: number; heig
 export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     // Validate the JSON
     if (! validate(json)) {
-        throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors as AJVError[])}`);
+        throw new Error(`The json object you submitted does not validate against the established schema. The validator said the following:\n${formatAJVErrors(validate.errors ?? [])}`);
     }
 
     // Initialize the SVG container

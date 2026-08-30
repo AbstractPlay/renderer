@@ -1,4 +1,4 @@
-import { IsoCubeFaces, IsoPiece, IsoStackPiece } from "../../schemas/schema";
+import { IsoCubeFaces, IsoPiece, IsoStackPiece } from "../../schemas/schema.js";
 
 export type IsoStackEntry = string | IsoStackPiece;
 export type IsoPiecesGrid = IsoStackEntry[][][];

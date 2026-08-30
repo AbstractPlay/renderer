@@ -1,6 +1,6 @@
 import fnv from "fnv-plus";
 import stringify from "json-stringify-deterministic";
-import { Glyph } from "../schemas/schema";
+import { Glyph } from "../schemas/schema.js";
 
 export const glyph2uid = (g: Glyph, rootKey?: string, index?: number): string => {
     const parts: string[] = ["aprender", "glyph"];

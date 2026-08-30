@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+* Full ESM package (`"type": "module"`, NodeNext `tsc` emit); webpack removed.
+* Playground moved to `playground/` with Vite (`npm run playground`, `dist-dev` / `dist-prod`); samples imported directly from `test/fixtures/playground-samples.json` (no generated `playground-samples.js` shim).
+
 ### Added
 
 * Playwright cross-browser smoke tests render every playground snippet in Chromium, Firefox, and WebKit (structural SVG checks, not screenshots). See [Playground samples](/renderer/playground-samples/).
-* Playground catalog moved to `test/fixtures/playground-samples.json` with generated `test/playground-samples.js`; `niche-areas-track` sample for fractured-flat + bottom score track (Firefox track regression).
+* Playground catalog in `test/fixtures/playground-samples.json`; `niche-areas-track` sample for fractured-flat + bottom score track (Firefox track regression).
 * Added two triangle pieces to core sheet for game Realm.
 * Added an `area` called `pieces` used by the default renderer. Give it a list of pieces in the legend, and it will place them in a bar beneath the board. Current use is for tracking pieces being rearranged in a game of Realm. Also added to the `stacking-offset` renderer. (The playground has been updated.)
 * Added a Catastrophe button to the Homeworlds renderer.

@@ -1,10 +1,10 @@
 import { Svg, Use as SVGUse, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, Poly } from "../grids/_base";
-import { APRenderRep, AreaStackingExpanded } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt } from "../common/plotting";
-import { labelDisplayText } from "../common/renderLabel";
-import { hexOfCir, hexOfHex, hexOfTri, snubSquare, squares, vertex } from "../boards";
+import { GridPoints, Poly } from "../grids/_base.js";
+import { APRenderRep, AreaStackingExpanded } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { usePieceAt } from "../common/plotting.js";
+import { labelDisplayText } from "../common/renderLabel.js";
+import { hexOfCir, hexOfHex, hexOfTri, snubSquare, squares, vertex } from "../boards/index.js";
 
 interface ILocalStash {
     [k: string]: unknown;

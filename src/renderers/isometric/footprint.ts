@@ -1,5 +1,5 @@
 import { G as SVGG } from "@svgdotjs/svg.js";
-import { Poly } from "../../grids/_base";
+import { Poly } from "../../grids/_base.js";
 
 const FOOTPRINT_STROKE_RATIO = 0.02;
 const FOOTPRINT_HALO_MULTIPLIER = 2.5;

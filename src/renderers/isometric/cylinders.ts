@@ -1,11 +1,11 @@
 import { Matrix } from "transformation-matrix-js";
-import { ptDistance } from "../../common/plotting";
+import { ptDistance } from "../../common/plotting.js";
 import { FillData, StrokeData, Svg, Circle as SVGCircle, Gradient as SVGGradient } from "@svgdotjs/svg.js";
-import { IPoint } from "../../grids";
-import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique } from "./projection";
-import { CubeFaceFills } from "./cubes";
-import { cylinderSilhouettePoints } from "./cylinderSilhouette";
-import { applyIsoAffineMatrix } from "./faceGlyphFit";
+import { IPoint } from "../../grids/index.js";
+import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique } from "./projection.js";
+import { CubeFaceFills } from "./cubes.js";
+import { cylinderSilhouettePoints } from "./cylinderSilhouette.js";
+import { applyIsoAffineMatrix } from "./faceGlyphFit.js";
 
 export type Cylinder = {
     transform: Matrix;

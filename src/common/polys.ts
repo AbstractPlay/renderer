@@ -1,5 +1,5 @@
-import { Poly } from "../grids";
-import { circle2poly } from "./plotting";
+import { Poly } from "../grids/index.js";
+import { circle2poly } from "./plotting.js";
 import turfUnion from "@turf/union";
 import { polygon as turfPoly, Properties, Feature, Polygon, MultiPolygon } from "@turf/helpers";
 import getConvexHull from "monotone-chain-convex-hull";

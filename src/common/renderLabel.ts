@@ -1,4 +1,4 @@
-import type { RenderLabel } from "../schemas/schema";
+import type { RenderLabel } from "../schemas/schema.js";
 
 /** Coerce a render label to plain text for SVG drawing (front resolves structured labels first). */
 export function labelDisplayText(label: RenderLabel): string {

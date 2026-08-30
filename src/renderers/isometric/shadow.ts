@@ -1,5 +1,5 @@
 import { G as SVGG } from "@svgdotjs/svg.js";
-import { IsoSymbolPlacement } from "./symbolPlacement";
+import { IsoSymbolPlacement } from "./symbolPlacement.js";
 
 export const ISO_CONTACT_BLUR_FILTER_ID = "_isoContactBlur";
 

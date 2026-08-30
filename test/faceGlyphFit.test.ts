@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { SVG, registerWindow } from "@svgdotjs/svg.js";
+import { createSVGWindow } from "svgdom";
 import {
     computeMaxCenteredSquareSide,
     cubeFaceDecorUvScale,
@@ -20,8 +21,6 @@ import { ISO_PROJECTION_PRESETS } from "../src/renderers/isometric/projection";
 import { Orientation } from "honeycomb-grid";
 import { Matrix } from "transformation-matrix-js";
 
-/* eslint-disable @typescript-eslint/no-require-imports */
-const { createSVGWindow } = require("svgdom");
 
 describe("iso face glyph fit", () => {
     it("should default face inset to 1 when scale is omitted", () => {

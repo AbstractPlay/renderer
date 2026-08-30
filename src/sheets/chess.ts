@@ -1,6 +1,6 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import type { ISheet } from "./ISheet";
-import { projectPoint } from "../common/plotting";
+import type { ISheet } from "./ISheet.js";
+import { projectPoint } from "../common/plotting.js";
 
 const sheet: ISheet = {
     name: "chess",

@@ -1,4 +1,4 @@
-import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
+import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base.js";
 
 /**
  * Generate a hexagonal field of intersection points.

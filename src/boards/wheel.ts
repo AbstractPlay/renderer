@@ -1,9 +1,9 @@
 import { StrokeData } from "@svgdotjs/svg.js";
-import { IPolyPath, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { ptDistance, rotatePoint } from "../common/plotting";
-import { IWheelArgs, wheelLabels, wheelPolys, wheel as wheelGrid } from "../grids/wheel";
-import { BoardReturn, createGridlineLayers } from ".";
+import { IPolyPath, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { ptDistance, rotatePoint } from "../common/plotting.js";
+import { IWheelArgs, wheelLabels, wheelPolys, wheel as wheelGrid } from "../grids/wheel.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 // skipping backFill for this style right now; it's not even in use
 

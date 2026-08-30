@@ -1,5 +1,5 @@
-import { deg2rad, toggleFacing } from "../common/plotting";
-import { GridPoints, IGeneratorArgs, IPoint} from "./_base";
+import { deg2rad, toggleFacing } from "../common/plotting.js";
+import { GridPoints, IGeneratorArgs, IPoint} from "./_base.js";
 
 export interface IMancalaRoundArgs extends IGeneratorArgs {
     // the angle in degrees at which to start (table facing)

@@ -1,6 +1,6 @@
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
-import { genPyramidHexPolys, pyramidHex as pyramidHexGrid } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { genPyramidHexPolys, pyramidHex as pyramidHexGrid } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 
 export const pyramidHex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) || (ctx.json.board === null) ) {

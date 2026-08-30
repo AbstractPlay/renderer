@@ -1,4 +1,5 @@
-import { sheets } from "../src/sheets";
+import { createSVGWindow } from "svgdom";
+import { sheets } from "../src/sheets/index.js";
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 
 /** SVG viewBox width (user units at 96 DPI baseline). */
@@ -99,13 +100,7 @@ function injectContactSheetFont(svg: string): string {
     return svg.replace(/(<svg[^>]*>)/, `$1${style}`);
 }
 
-function importEsm<T>(specifier: string): Promise<T> {
-    // TypeScript downlevels `import()` to `require()` when module is commonjs; svgdom is ESM-only.
-    return new Function("specifier", "return import(specifier)")(specifier) as Promise<T>;
-}
-
 export async function generateContactSheetSvg(): Promise<string> {
-    const { createSVGWindow } = await importEsm<{ createSVGWindow: () => Window }>("svgdom");
     const window = createSVGWindow();
     const document = window.document;
     registerWindow(window, document);
@@ -179,7 +174,9 @@ export async function generateContactSheetSvg(): Promise<string> {
     return injectContactSheetFont(canvas.svg());
 }
 
-if (require.main === module) {
+import { fileURLToPath } from "node:url";
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
     generateContactSheetSvg()
         .then((svg) => {
             // tslint:disable-next-line: no-console

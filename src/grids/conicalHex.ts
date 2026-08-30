@@ -1,5 +1,5 @@
-import { GridPoints, IGeneratorArgs, IPoint, IPolyPolygon } from "./_base";
-import { centroid } from "../common/plotting";
+import { GridPoints, IGeneratorArgs, IPoint, IPolyPolygon } from "./_base.js";
+import { centroid } from "../common/plotting.js";
 
 type Vertex = [number,number];
 type Hex = Vertex[];

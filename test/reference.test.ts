@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
@@ -9,9 +8,9 @@ import { APRenderRep } from "../src/schemas/schema";
 import { getReferenceAsset, listReferenceAssets } from "../src/references/registry";
 import { playfieldHullFromPolys, computePlayfieldMetrics, computeAnnulusPlacement, computeSidebarPlacement, referenceStyleSelectors, resolveSourceForSide } from "../src/references/helpers";
 import { hexOfHex } from "../src/boards/hexOfHex";
+import { createSVGWindow } from "svgdom";
 
-const schema = require("../src/schemas/schema.json");
-const { createSVGWindow } = require("svgdom");
+import schema from "../src/schemas/schema.json" with { type: "json" };
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

@@ -2,18 +2,21 @@
 
 The [renderer playground](https://renderer.dev.abstractplay.com) ships a library of example render JSON (“snippets”) that demonstrate boards, markers, annotations, engines, and niche features. The same catalog drives **cross-browser smoke tests** so layout bugs (for example Firefox score-track sizing) are caught before deploy.
 
-## What changed
+## Layout
 
 | Piece | Purpose |
 |-------|---------|
 | `test/fixtures/playground-samples.json` | **Canonical catalog** — edit this file to add or change snippets |
-| `test/playground-samples.js` | Generated browser shim (`PLAYGROUND_SAMPLES`); committed so the playground works without a build step |
-| `test/playground.js` | Playground UI logic only; reads `var samples = PLAYGROUND_SAMPLES` |
-| `test/browser/harness.html` | Minimal page used by Playwright (`?sample=<key>`) |
+| `playground/playground.html` | Public demo page (deployed to `dist/playground.html`) |
+| `playground/playground.js` | Playground UI (ESM; imports samples JSON and `@abstractplay/renderer`) |
+| `playground/harness.html` | Minimal page used by Playwright (`?sample=<key>`) |
+| `playground/harness.js` | Harness render logic |
+| `playground/vite.config.ts` | Vite dev server and production MPA build → `dist/` |
+| `playground/vite.aprender.config.ts` | IIFE build of `dist/APRender.min.js` (dokuwiki and legacy script tags) |
 | `test/playwright/` | Playwright specs and structural health checks |
-| `bin/sync-playground-samples.mjs` | Regenerates `playground-samples.js` from the JSON catalog |
+| `playwright.config.mjs` | Chromium / Firefox / WebKit projects; `vite preview` on port 4173 |
 
-**CI** (`npm test` then `npm run test:browser`) runs every snippet in Chromium, Firefox, and WebKit on ubuntu-latest. **Mocha** unit tests remain the fast default; browser tests use the webpack browser bundle (`APRender.min.js`).
+**CI** (`npm test` then `npm run test:browser`) runs every snippet in Chromium, Firefox, and WebKit on ubuntu-latest. **Mocha** unit tests remain the fast default; browser tests build the Vite playground and exercise the real browser bundle (`APRender.min.js`).
 
 ### Structural “renders cleanly” contract
 
@@ -25,11 +28,11 @@ Browser tests do **not** compare screenshots. Each snippet must:
 - Give every track def SVG a non-zero `viewBox`
 - Emit no page errors or `console.error` during render
 
-Logic lives in `test/playwright/render-health.ts`. Targeted Mocha tests (for example `test/track-area.test.ts`) still cover edge cases in svgdom; browser tests exercise the real bundle.
+Logic lives in `test/playwright/render-health.ts`. Targeted Mocha tests (for example `test/track-area.test.ts`) still cover edge cases in svgdom; browser tests exercise the bundled renderer.
 
 ## Adding a new snippet
 
-**Always edit the JSON catalog.** Do not hand-edit `test/playground-samples.js` (it is regenerated).
+**Always edit the JSON catalog.** The playground, harness, and Playwright tests import `test/fixtures/playground-samples.json` directly — there is no generated JS shim to sync.
 
 ### 1. Choose a stable key
 
@@ -65,20 +68,12 @@ Each entry has three fields:
 
 **Example** (score track on a fractured-flat board): see `niche-areas-track` in the catalog.
 
-### 3. Regenerate the browser shim
+### 3. Verify locally
 
 ```bash
-npm run sync-playground-samples
-```
-
-This updates `test/playground-samples.js` and `test/browser/playground-samples.js`. **Commit both the JSON and the generated JS.**
-
-### 4. Verify locally
-
-```bash
-npm test                                    # Mocha, including catalog drift test
+npm test                                    # Mocha, including catalog validation
 npm run test:browser:install                # once per machine
-npm run test:browser                        # all snippets × 3 browsers
+npm run test:browser                        # dist-dev → Playwright (94 snippets × 3 browsers)
 ```
 
 Debug a single snippet:
@@ -87,13 +82,24 @@ Debug a single snippet:
 npx playwright test --project=firefox --grep my-new-sample
 ```
 
-Preview in the playground after `npm run dist-dev` and copying files to `dist/`, or open the harness while the test server is running:
+**Local playground (hot reload, no build):**
 
-`http://localhost:4173/harness.html?sample=my-new-sample`
+```bash
+npm run playground
+```
 
-### 5. Deploy
+Open `http://localhost:3000/` (redirects to `playground.html`) or use `?sample=my-new-sample` on the harness.
 
-`npm run deploy` / CI `deploy:ci` already run `sync-playground-samples` and copy `playground-samples.js` to `dist/` with the playground HTML.
+**Production-like preview** (after `npm run dist-dev`):
+
+- Playground: `npx vite preview --config playground/vite.config.ts` → `http://localhost:4173/playground.html`
+- Harness: `http://localhost:4173/harness.html?sample=my-new-sample`
+
+`npm run test:browser` runs the full pipeline (`dist-dev` then Playwright with `vite preview`).
+
+### 4. Deploy
+
+`npm run deploy` / CI `deploy:ci` upload the Vite `dist/` folder (playground HTML, assets, and `APRender.min.js`) via serverless-finch. No manual file copies.
 
 ## Optional: docs site samples
 
@@ -105,16 +111,17 @@ Do **not** point Mocha or Playwright tests at `docs/samples/` — use inline fix
 
 ```
 test/fixtures/playground-samples.json   ← edit snippets here
-test/playground-samples.js              ← generated; commit after sync
-test/playground.js                      ← UI only
-test/playground.html                    ← loads APRender.min.js + samples + playground.js
-test/browser/harness.html               ← Playwright render target
-test/browser/serve.mjs                  ← static server (port 4173)
+playground/index.html                   ← dev root redirect → playground.html
+playground/playground.html              ← public demo
+playground/playground.js                ← demo UI (ESM)
+playground/harness.html                 ← Playwright render target
+playground/harness.js
+playground/vite.config.ts               ← dev + MPA build to dist/
+playground/vite.aprender.config.ts      ← APRender.min.js IIFE
 test/playwright/samples.spec.ts         ← one test per snippet per browser
 test/playwright/render-health.ts        ← in-browser assertions
-test/playground-samples.test.ts         ← JSON ↔ JS key drift check
-bin/sync-playground-samples.mjs         ← JSON → JS generator
-playwright.config.ts                    ← chromium / firefox / webkit projects
+test/playground-samples.test.ts         ← JSON catalog validation
+playwright.config.mjs                   ← browser projects + vite preview
 ```
 
 ## npm scripts
@@ -122,16 +129,19 @@ playwright.config.ts                    ← chromium / firefox / webkit projects
 | Script | What it does |
 |--------|----------------|
 | `npm test` | Mocha unit tests (svgdom); no browsers |
-| `npm run sync-playground-samples` | Regenerate `playground-samples.js` from JSON |
+| `npm run playground` | Vite dev server on port 3000 (`playground/`) |
+| `npm run dist-dev` | Build `dist/` (playground + `APRender.min.js`, unminified playground assets) |
+| `npm run dist-prod` | Same, production mode (minified) |
 | `npm run test:browser:install` | Install Playwright browsers (once per machine/CI image; **requires Node.js 20+**) |
-| `npm run test:browser` | sync → `dist-dev` → copy bundle → Playwright (282 runs: 94 snippets × 3 browsers) |
+| `npm run test:browser` | `dist-dev` → Playwright (282 runs: 94 snippets × 3 browsers) |
 
 ## Troubleshooting
 
 | Symptom | Likely cause |
 |---------|----------------|
-| Mocha fails “playground-samples.js matches … keys” | Ran sync locally but did not commit `playground-samples.js`, or edited the JS file by hand |
-| Playwright “missing sample” | Key typo in URL or JSON not synced to `test/browser/playground-samples.js` |
+| Mocha fails catalog validation | Invalid JSON in a snippet `render` string, or missing `name` / `render` on an entry |
+| Playwright “missing sample” | Key typo in URL or snippet not added to `playground-samples.json` |
 | Playwright track height failure | Track layout bug (check `niche-areas-track` in Firefox first) |
-| Playwright passes locally, fails in CI | Run `npm run test:browser` (full pipeline), not `npx playwright test` alone without building/copying `APRender.min.js` |
+| Playwright passes locally, fails in CI | Run `npm run test:browser` (full pipeline), not `npx playwright test` alone without `dist-dev` |
 | Custom renderer fails “no playfield” | Renderer must still output an SVG with graphics; health check accepts `#pieces`, `#gridlines`, `#stash`, or any path/rect/use content |
+| `npm run playground` 404 on samples | Vite `fs.allow` includes repo root; ensure `test/fixtures/playground-samples.json` exists |

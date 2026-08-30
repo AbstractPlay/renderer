@@ -1,9 +1,9 @@
-import { BoardBasic } from "../schemas/schema";
-import { GridPoints, IPoint, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardBasic } from "../schemas/schema.js";
+import { GridPoints, IPoint, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 import tinycolor from "tinycolor2";
-import { centroid } from "../common/plotting";
-import { BoardReturn, createCellsLayers } from ".";
+import { centroid } from "../common/plotting.js";
+import { BoardReturn, createCellsLayers } from "./index.js";
 
 export const dvgc = (ctx: RendererBase): BoardReturn => {
     if ( ctx.json === undefined || ctx.json === null || ctx.rootSvg === undefined ) {

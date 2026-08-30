@@ -1,8 +1,8 @@
-import { BoardBasic } from "../schemas/schema";
-import { centroid } from "../common/plotting";
-import { IPolyPolygon, snubsquare, SnubStart } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { BoardBasic } from "../schemas/schema.js";
+import { centroid } from "../common/plotting.js";
+import { IPolyPolygon, snubsquare, SnubStart } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

@@ -1,9 +1,9 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, Poly } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { rotate, usePieceAt } from "../common/plotting";
-import { sowing } from "../boards";
+import { GridPoints, Poly } from "../grids/_base.js";
+import { APRenderRep } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { rotate, usePieceAt } from "../common/plotting.js";
+import { sowing } from "../boards/index.js";
 
 /**
  * This is the default renderer used for most games.

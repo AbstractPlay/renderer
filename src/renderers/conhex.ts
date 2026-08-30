@@ -1,10 +1,10 @@
 import { Svg } from "@svgdotjs/svg.js";
-// import { GridPoints } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt } from "../common/plotting";
-import { IPoint, rectOfRects, IPolyCircle } from "../grids";
-import { getBoardFill, getConhexCells } from "../boards";
+// import { GridPoints } from "../grids/_base.js";
+import { APRenderRep } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { usePieceAt } from "../common/plotting.js";
+import { IPoint, rectOfRects, IPolyCircle } from "../grids/index.js";
+import { getBoardFill, getConhexCells } from "../boards/index.js";
 
 /**
  * Generates the pattern of 0s and 1s that denote whether

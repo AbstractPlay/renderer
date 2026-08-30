@@ -1,8 +1,8 @@
 import { FillData, StrokeData, Svg } from "@svgdotjs/svg.js";
-import { IPoint } from "../../grids";
-import { ISO_PROJECTION_PRESETS, IsoProjectionParams, projectOblique, usesLayeredCellDraw } from "./projection";
-import { isoShadeFace, IsoFaceRole } from "./shading";
-import { ICEHOUSE_LARGE_BASE, PyramidDims } from "./pyramidDims";
+import { IPoint } from "../../grids/index.js";
+import { ISO_PROJECTION_PRESETS, IsoProjectionParams, projectOblique, usesLayeredCellDraw } from "./projection.js";
+import { isoShadeFace, IsoFaceRole } from "./shading.js";
+import { ICEHOUSE_LARGE_BASE, PyramidDims } from "./pyramidDims.js";
 
 export type PyramidFace = "north" | "east" | "south" | "west";
 

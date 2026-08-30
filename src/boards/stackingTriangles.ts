@@ -1,7 +1,7 @@
-import { centroid } from "../common/plotting";
-import { BoardReturn, createGridlineLayers, edges2corners, pts2id } from ".";
-import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { centroid } from "../common/plotting.js";
+import { BoardReturn, createGridlineLayers, edges2corners, pts2id } from "./index.js";
+import { GridPoints, IPoint, IPolyPolygon, Poly } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 import { defineHex, Grid, HexOffset, Orientation, rectangle } from "honeycomb-grid";
 
 // Skipping backFill for this board style for now. It's not even being used at the moment.

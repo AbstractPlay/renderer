@@ -1,7 +1,7 @@
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
-import { centroid } from "../common/plotting";
-import { GridPoints, IPoint, IPolyPolygon, snubsquare } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { centroid } from "../common/plotting.js";
+import { GridPoints, IPoint, IPolyPolygon, snubsquare } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 
 export const cairoCatalan = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

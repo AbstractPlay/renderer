@@ -1,5 +1,5 @@
-import { circleOfLifeRingSvg, scribeChartLeftSvg, scribeChartRightSvg, scribeChartSvg } from "./assets/content";
-import type { ReferenceAsset } from "./types";
+import { circleOfLifeRingSvg, scribeChartLeftSvg, scribeChartRightSvg, scribeChartSvg } from "./assets/content.js";
+import type { ReferenceAsset } from "./types.js";
 
 function scribeStyleSlots(glyphCount: number): ReferenceAsset["styleSlots"] {
     return {

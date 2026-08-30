@@ -1,10 +1,10 @@
 import { Svg, StrokeData, Element as SVGElement, FillData, Gradient as SVGGradient } from "@svgdotjs/svg.js";
-import { APRenderRep, AnnotationFreespace, AreaKey, Freepiece as IPiece } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { IPoint } from "../grids/_base";
-import { rotate, usePieceAt } from "../common/plotting";
-import { labelDisplayText } from "../common/renderLabel";
-import { x2uid} from "../common/glyph2uid";
+import { APRenderRep, AnnotationFreespace, AreaKey, Freepiece as IPiece } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { IPoint } from "../grids/_base.js";
+import { rotate, usePieceAt } from "../common/plotting.js";
+import { labelDisplayText } from "../common/renderLabel.js";
+import { x2uid} from "../common/glyph2uid.js";
 
 type BackFill = {
     type?: "full"|"board";

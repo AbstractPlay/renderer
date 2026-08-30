@@ -2,7 +2,7 @@
 
 
 import { Container, Element, Use } from "@svgdotjs/svg.js";
-import { IPoint } from "../grids";
+import { IPoint } from "../grids/index.js";
 
 /**
  * Ensures a degree measurement lies [0, 360)

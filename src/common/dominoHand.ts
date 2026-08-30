@@ -1,6 +1,6 @@
 import type { G, Svg } from "@svgdotjs/svg.js";
-import type { AreaPieces, DominoTileRef } from "../schemas/schema";
-import { usePieceAt } from "./plotting";
+import type { AreaPieces, DominoTileRef } from "../schemas/schema.js";
+import { usePieceAt } from "./plotting.js";
 
 /** Matches default renderer piece scale on `square*` boards. */
 export const DOMINO_HAND_PIECE_SCALE = 0.85;

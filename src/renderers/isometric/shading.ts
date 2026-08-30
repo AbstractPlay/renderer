@@ -1,5 +1,5 @@
-import { hex2rgb, lighten, rgb2hex } from "../../common/colours";
-import { IPoint } from "../../grids";
+import { hex2rgb, lighten, rgb2hex } from "../../common/colours.js";
+import { IPoint } from "../../grids/index.js";
 
 export type IsoFaceRole = "top" | "left" | "right";
 

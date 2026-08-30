@@ -1,8 +1,8 @@
 import { StrokeData } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { calcBearing, centroid } from "../common/plotting";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { GridPoints, IPoint, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { calcBearing, centroid } from "../common/plotting.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 const FRACTURED_FLAT_PADDING = 8;
 

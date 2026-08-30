@@ -1,12 +1,12 @@
-import { GridPoints } from "../grids/_base";
-import { AnnotationBasic, APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { createGridlineLayers, getBoardFill } from "../boards";
-import { rectOfRects } from "../grids";
+import { GridPoints } from "../grids/_base.js";
+import { AnnotationBasic, APRenderRep } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { createGridlineLayers, getBoardFill } from "../boards/index.js";
+import { rectOfRects } from "../grids/index.js";
 import { Svg, StrokeData, G as SVGG } from "@svgdotjs/svg.js";
-import { usePieceAt } from "../common/plotting";
-import { labelDisplayText } from "../common/renderLabel";
-import { x2uid } from "../common/glyph2uid";
+import { usePieceAt } from "../common/plotting.js";
+import { labelDisplayText } from "../common/renderLabel.js";
+import { x2uid } from "../common/glyph2uid.js";
 
 interface ILocalStash {
     [k: string]: unknown;

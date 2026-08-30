@@ -1,6 +1,6 @@
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
-import { IPolyCircle, hexOfCir as hexOfCirGrid } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { IPolyCircle, hexOfCir as hexOfCirGrid } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 
 export const hexOfCir = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

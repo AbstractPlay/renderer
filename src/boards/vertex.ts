@@ -1,10 +1,10 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
-import { IPolyPolygon, rectOfRects } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from ".";
-import { rotatePoint, shortenLine } from "../common/plotting";
-import { Graph, SquareFanoronaGraph, SquareGraph, SquareOrthGraph } from "../graphs";
-import { calcStarPoints } from "../common/starPoints";
+import { IPolyPolygon, rectOfRects } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
+import { rotatePoint, shortenLine } from "../common/plotting.js";
+import { Graph, SquareFanoronaGraph, SquareGraph, SquareOrthGraph } from "../graphs/index.js";
+import { calcStarPoints } from "../common/starPoints.js";
 
 export const vertex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

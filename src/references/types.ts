@@ -1,4 +1,4 @@
-import type { ColourResolvable } from "../schemas/schema";
+import type { ColourResolvable } from "../schemas/schema.js";
 
 export type ReferenceSide = "left" | "right" | "top" | "bottom";
 

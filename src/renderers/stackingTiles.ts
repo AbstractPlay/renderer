@@ -1,8 +1,8 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, Poly } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { squares } from "../boards";
+import { GridPoints, Poly } from "../grids/_base.js";
+import { APRenderRep } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { squares } from "../boards/index.js";
 
 /**
  * The `stacking-tiles` renderer is used to show a side view of a stack of pieces. Currently only used in Focus.

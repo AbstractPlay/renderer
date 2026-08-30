@@ -1,6 +1,6 @@
 import { Orientation } from "honeycomb-grid";
-import { CompassDirection } from "../../boards";
-import { IsometricPieces } from "../../schemas/schema";
+import { CompassDirection } from "../../boards/index.js";
+import { IsometricPieces } from "../../schemas/schema.js";
 
 export type HexOrientation = "p" | "f";
 

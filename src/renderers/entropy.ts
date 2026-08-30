@@ -1,11 +1,11 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { createGridlineLayers, getBoardFill } from "../boards";
-import { rectOfRects } from "../grids";
-import { IPoint } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt } from "../common/plotting";
-import { labelDisplayText } from "../common/renderLabel";
+import { createGridlineLayers, getBoardFill } from "../boards/index.js";
+import { rectOfRects } from "../grids/index.js";
+import { IPoint } from "../grids/_base.js";
+import { APRenderRep } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { usePieceAt } from "../common/plotting.js";
+import { labelDisplayText } from "../common/renderLabel.js";
 
 /**
  * This is the Entropy-specific renderer that handles the side-by-side rendering and optional occlusion.

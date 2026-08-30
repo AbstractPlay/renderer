@@ -1,9 +1,9 @@
 // import { Nested } from "@svgdotjs/svg.js";
 // import { SVG } from "@svgdotjs/svg.js";
 
-import { Graph } from "../common/pentagons";
-import { Graph as BentTriGraph } from "../common/bentTri";
-import { Graph as StarGraph } from "../common/star";
+import { Graph } from "../common/pentagons/index.js";
+import { Graph as BentTriGraph } from "../common/bentTri/index.js";
+import { Graph as StarGraph } from "../common/star/index.js";
 
 /**
  * A simple x,y coordinate container.

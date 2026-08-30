@@ -1,5 +1,5 @@
-import { GridPoints, IGeneratorArgs, IPoint } from "./_base";
-import { Graph as StarGraph } from "../common/star";
+import { GridPoints, IGeneratorArgs, IPoint } from "./_base.js";
+import { Graph as StarGraph } from "../common/star/index.js";
 
 /**
  * Playable vertex positions for a Star board.

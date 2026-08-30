@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import { Matrix } from "transformation-matrix-js";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
@@ -11,6 +10,7 @@ import { coneSilhouette } from "../src/renderers/isometric/coneSilhouette";
 import { cylinderSilhouette } from "../src/renderers/isometric/cylinderSilhouette";
 import { depthBucketIndex, depthToNormalized, isoDepthModulate } from "../src/renderers/isometric/shading";
 import { piecesRowWidth, parseIsoPiecesString } from "../src/renderers/isometric/piecesGrid";
+import { createSVGWindow } from "svgdom";
 import {
     boardDepthWeight,
     buildIsoProjectionMatrix,
@@ -28,7 +28,6 @@ import { isoPieceHeight } from "../src/renderers/isometric/stack";
 import { permuteCubeFaces, permuteCubeFacesForProjection } from "../src/renderers/isometric/cubeOrientation";
 import { rectOfRects } from "../src/grids";
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

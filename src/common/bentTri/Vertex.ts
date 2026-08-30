@@ -1,4 +1,4 @@
-import { IPoint } from "../../grids";
+import { IPoint } from "../../grids/index.js";
 
 export class Vertex {
     private _id: number;

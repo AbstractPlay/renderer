@@ -1,19 +1,19 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
-import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema";
-import { sheets } from "../sheets";
-import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting";
-import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand";
-import { glyph2uid, x2uid } from "../common/glyph2uid";
+import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids/index.js";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
+import { sheets } from "../sheets/index.js";
+import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting.js";
+import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
+import { glyph2uid, x2uid } from "../common/glyph2uid.js";
 import tinycolor from "tinycolor2";
-import { unionPolys } from "../common/polys";
-import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours";
-import { labelDisplayText } from "../common/renderLabel";
-import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards";
-import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphFlipAxes, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit";
+import { unionPolys } from "../common/polys.js";
+import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours.js";
+import { labelDisplayText } from "../common/renderLabel.js";
+import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
+import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphFlipAxes, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit.js";
 import {
     computeAnnulusPlacement,
     computeSidebarPlacement,
@@ -32,7 +32,7 @@ import {
     sidebarLayoutMetricsInParent,
     unionBoardReferenceBox,
     type ReferenceSide,
-} from "../references/helpers";
+} from "../references/helpers.js";
 // import { customAlphabet } from 'nanoid'
 // const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
 
@@ -4724,7 +4724,7 @@ export abstract class RendererBase {
     protected resolveReferenceArt(ref: BoardReference, side: ReferenceSide, sourceId: string): {
         defId: string;
         svgContent?: string;
-        meta: import("../references/types").ResolvedReferenceArt;
+        meta: import("../references/types.js").ResolvedReferenceArt;
     } {
         const legendGlyphs = this.legendGlyphsForReferenceKey(sourceId);
         if (legendGlyphs !== null) {
@@ -4749,7 +4749,7 @@ export abstract class RendererBase {
     protected ensureReferenceDef(resolved: {
         defId: string;
         svgContent?: string;
-        meta: import("../references/types").ResolvedReferenceArt;
+        meta: import("../references/types.js").ResolvedReferenceArt;
     }): Svg | SVGSymbol {
         if (this.rootSvg === undefined) {
             throw new Error("Cannot place board reference before SVG is initialized.");

@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import "mocha";
 import { Element as SVGElement, SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { StackingOffsetRenderer } from "../src/renderers/stackingOffset";
 import { IRendererOptionsIn } from "../src/renderers/_base";
+import { createSVGWindow } from "svgdom";
 import {
     STREETCAR_FENCE_COUNT,
     streetcarClaimLinesRenderRep,
 } from "./fixtures/streetcarClaimLines";
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

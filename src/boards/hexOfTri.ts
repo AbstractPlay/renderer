@@ -1,8 +1,8 @@
-import { IPoint, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { hexOfTri as hexOfTriGrid } from "../grids";
-import { BoardReturn, createGridlineLayers } from ".";
-import { offsetPolygon } from "../common/plotting";
+import { IPoint, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { hexOfTri as hexOfTriGrid } from "../grids/index.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
+import { offsetPolygon } from "../common/plotting.js";
 
 export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

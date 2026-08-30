@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
@@ -7,9 +6,9 @@ import { dominoClickPayload, buildPiecesAreaRows, shouldRotateAreaPieces } from 
 import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep, AreaPieces } from "../src/schemas/schema";
-import schema from "../src/schemas/schema.json";
+import schema from "../src/schemas/schema.json" with { type: "json" };
+import { createSVGWindow } from "svgdom";
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

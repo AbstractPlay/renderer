@@ -1,2 +1,2 @@
-export { getReferenceAsset, listReferenceAssets } from "./registry";
-export type { ReferenceAsset, PlayfieldMetrics } from "./types";
+export { getReferenceAsset, listReferenceAssets } from "./registry.js";
+export type { ReferenceAsset, PlayfieldMetrics } from "./types.js";

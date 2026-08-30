@@ -1,5 +1,5 @@
-import { GridPoints } from "../../grids/_base";
-import { IsoPiecesGrid, IsoStackEntry } from "./stack";
+import { GridPoints } from "../../grids/_base.js";
+import { IsoPiecesGrid, IsoStackEntry } from "./stack.js";
 
 export const piecesRowWidth = (
     rowIndex: number,

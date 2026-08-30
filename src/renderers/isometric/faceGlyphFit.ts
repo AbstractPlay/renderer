@@ -1,10 +1,10 @@
 import { Matrix } from "transformation-matrix-js";
 import { Svg } from "@svgdotjs/svg.js";
-import { centroid } from "../../common/plotting";
-import { IsoPiece, Glyph } from "../../schemas/schema";
-import { Hex } from "./hexes";
-import { glyphViewBoxSquareDrawSize } from "./symbolPlacement";
-import type { CubePaintFace } from "./cubes";
+import { centroid } from "../../common/plotting.js";
+import { IsoPiece, Glyph } from "../../schemas/schema.js";
+import { Hex } from "./hexes.js";
+import { glyphViewBoxSquareDrawSize } from "./symbolPlacement.js";
+import type { CubePaintFace } from "./cubes.js";
 
 export const ISO_FACE_UNIT = 100;
 

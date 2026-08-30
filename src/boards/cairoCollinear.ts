@@ -1,8 +1,8 @@
 import { Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import { cairo, IPoint, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { BoardBasic } from "../schemas/schema";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { cairo, IPoint, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { BoardBasic } from "../schemas/schema.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

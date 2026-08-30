@@ -1,10 +1,10 @@
 /* eslint-disable no-prototype-builtins */
 import { Box, StrokeData, Svg, Use } from "@svgdotjs/svg.js";
-import { rectOfRects } from "../grids";
-import type { IPoint } from "../grids/_base";
-import { APRenderRep, AreaHWStash } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt } from "../common/plotting";
+import { rectOfRects } from "../grids/index.js";
+import type { IPoint } from "../grids/_base.js";
+import { APRenderRep, AreaHWStash } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { usePieceAt } from "../common/plotting.js";
 
 type Seat = "N" | "E" | "S" | "W";
 

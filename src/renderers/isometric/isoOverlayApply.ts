@@ -1,10 +1,10 @@
-import { IsoPiece } from "../../schemas/schema";
-import { IsoFaceGlyphComposer, paintIsoDecorOnSymbol } from "./faceOverlays";
-import { resolveFaceInset } from "./faceGlyphFit";
-import { boardHexOrientation, parseLintelPiece } from "./lintels";
-import { assertIsoOverlayValid, isoOverlayFromPiece } from "./isoOverlayPiece";
-import { isoPieceHeight } from "./stack";
-import { IsoProjectionParams } from "./projection";
+import { IsoPiece } from "../../schemas/schema.js";
+import { IsoFaceGlyphComposer, paintIsoDecorOnSymbol } from "./faceOverlays.js";
+import { resolveFaceInset } from "./faceGlyphFit.js";
+import { boardHexOrientation, parseLintelPiece } from "./lintels.js";
+import { assertIsoOverlayValid, isoOverlayFromPiece } from "./isoOverlayPiece.js";
+import { isoPieceHeight } from "./stack.js";
+import { IsoProjectionParams } from "./projection.js";
 import { Svg } from "@svgdotjs/svg.js";
 
 export const applyIsoPieceOverlays = (opts: {

@@ -1,7 +1,7 @@
 import { Element as SVGElement, StrokeData } from "@svgdotjs/svg.js";
-import { RendererBase } from "../renderers/_base";
-import { ICobwebArgs, cobweb as cobwebGrid, cobwebLabels, cobwebPolys } from "../grids/cobweb";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { RendererBase } from "../renderers/_base.js";
+import { ICobwebArgs, cobweb as cobwebGrid, cobwebLabels, cobwebPolys } from "../grids/cobweb.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 export const cobweb = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

@@ -1,20 +1,20 @@
-import { RendererBase } from "./_base";
-import { DefaultRenderer } from "./default";
-import { EntropyRenderer } from "./entropy";
-import { HomeworldsOrigRenderer } from "./homeworldsOrig";
-import { HomeworldsRenderer } from "./homeworlds";
-import { StackingExpandingRenderer } from "./stackingExpanding";
-import { Stacking3DRenderer } from "./stacking3D";
-import { StackingOffsetRenderer } from "./stackingOffset";
-import { StackingTilesRenderer } from "./stackingTiles";
-import { FreespaceRenderer } from "./freespace";
-import { SowingNumeralsRenderer } from "./sowingNumerals";
-import { SowingPipsRenderer } from "./sowingPips";
-import { ConhexRenderer } from "./conhex";
-import { MulticellSquareRenderer } from "./multicellSquare";
-import { PolyominoRenderer } from "./polyomino";
-import { IsometricRenderer } from "./isometric";
-import { TreePyramidRenderer } from "./treePyramid";
+import { RendererBase } from "./_base.js";
+import { DefaultRenderer } from "./default.js";
+import { EntropyRenderer } from "./entropy.js";
+import { HomeworldsOrigRenderer } from "./homeworldsOrig.js";
+import { HomeworldsRenderer } from "./homeworlds.js";
+import { StackingExpandingRenderer } from "./stackingExpanding.js";
+import { Stacking3DRenderer } from "./stacking3D.js";
+import { StackingOffsetRenderer } from "./stackingOffset.js";
+import { StackingTilesRenderer } from "./stackingTiles.js";
+import { FreespaceRenderer } from "./freespace.js";
+import { SowingNumeralsRenderer } from "./sowingNumerals.js";
+import { SowingPipsRenderer } from "./sowingPips.js";
+import { ConhexRenderer } from "./conhex.js";
+import { MulticellSquareRenderer } from "./multicellSquare.js";
+import { PolyominoRenderer } from "./polyomino.js";
+import { IsometricRenderer } from "./isometric.js";
+import { TreePyramidRenderer } from "./treePyramid.js";
 
 export {
     RendererBase as Renderer, DefaultRenderer, StackingOffsetRenderer, StackingTilesRenderer,

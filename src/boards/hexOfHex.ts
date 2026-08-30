@@ -1,6 +1,6 @@
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
-import { IPoint, IPolyPolygon, hexOfHex as hexOfHexGrid } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { IPoint, IPolyPolygon, hexOfHex as hexOfHexGrid } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 
 export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

@@ -1,5 +1,5 @@
-import { projectPoint } from "../common/plotting";
-import { GridPoints, IGeneratorArgs, IPoint, IPolyPath, IPolyPolygon } from "./_base";
+import { projectPoint } from "../common/plotting.js";
+import { GridPoints, IGeneratorArgs, IPoint, IPolyPath, IPolyPolygon } from "./_base.js";
 
 export interface IWheelArgs extends IGeneratorArgs {
     straight?: boolean;

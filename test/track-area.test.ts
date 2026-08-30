@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
@@ -8,9 +7,9 @@ import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 import { computePlayfieldMetrics } from "../src/references/helpers";
 import { render as renderBoard } from "../src/index";
+import { createSVGWindow } from "svgdom";
 
-const schema = require("../src/schemas/schema.json");
-const { createSVGWindow } = require("svgdom");
+import schema from "../src/schemas/schema.json" with { type: "json" };
 
 const CELL_SIZE = 50;
 

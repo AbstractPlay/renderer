@@ -1,9 +1,9 @@
-import { IPolyPolygon, bentTri as bentTriGrid } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { calcBearing, centroid, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
-import { bentTriBoard } from "../common/bentTri";
-import { BentTri, BentTriNodeData } from "../graphs";
-import { BoardReturn, createGridlineLayers } from ".";
+import { IPolyPolygon, bentTri as bentTriGrid } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { calcBearing, centroid, projectPoint, ptDistance, rotatePoint } from "../common/plotting.js";
+import { bentTriBoard } from "../common/bentTri/index.js";
+import { BentTri, BentTriNodeData } from "../graphs/index.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 export const bentTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

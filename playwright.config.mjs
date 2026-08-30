@@ -17,7 +17,7 @@ export default defineConfig({
         { name: "webkit", use: { ...devices["Desktop Safari"] } },
     ],
     webServer: {
-        command: "node test/browser/serve.mjs",
+        command: "vite preview --config playground/vite.config.ts --port 4173",
         port: 4173,
         reuseExistingServer: !process.env.CI,
     },

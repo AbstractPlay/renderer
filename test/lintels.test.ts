@@ -1,8 +1,7 @@
 import { expect } from "chai";
 import "mocha";
 import Ajv from "ajv";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const schema = require("../src/schemas/schema.json");
+import schema from "../src/schemas/schema.json" with { type: "json" };
 import {
     allHexLintelPieces,
     boardHexOrientation,

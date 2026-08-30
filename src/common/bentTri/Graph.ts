@@ -1,5 +1,5 @@
-import { Edge } from "./Edge";
-import { Vertex } from "./Vertex";
+import { Edge } from "./Edge.js";
+import { Vertex } from "./Vertex.js";
 import {
     type LatticeRef,
     type Point,
@@ -8,7 +8,7 @@ import {
     placeCopy,
     positionKey,
     refKey,
-} from "./lattice";
+} from "./lattice.js";
 
 export type BentTriOptions = {
     scale?: number;

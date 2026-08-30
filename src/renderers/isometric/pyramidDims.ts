@@ -1,4 +1,4 @@
-import { IsoPiece, IsoPyramidSize } from "../../schemas/schema";
+import { IsoPiece, IsoPyramidSize } from "../../schemas/schema.js";
 
 /** Reference base width in symbol units (cell-filling footprint, like other iso pieces). */
 export const ICEHOUSE_LARGE_BASE = 100;

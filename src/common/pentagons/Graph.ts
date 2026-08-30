@@ -1,6 +1,6 @@
-import { geSolve } from ".";
-import { Edge } from "./Edge";
-import { Vertex } from "./Vertex";
+import { geSolve } from "./index.js";
+import { Edge } from "./Edge.js";
+import { Vertex } from "./Vertex.js";
 
 export class Graph {
     public vertices: Vertex[] = [];

@@ -1,5 +1,5 @@
-import { Glyph, IsoFaceDecor, IsoPiece } from "../../schemas/schema";
-import { isSpacerPiece, parseLintelPiece } from "./lintels";
+import { Glyph, IsoFaceDecor, IsoPiece } from "../../schemas/schema.js";
+import { isSpacerPiece, parseLintelPiece } from "./lintels.js";
 
 export type IsoOverlaySpec = {
     top?: Glyph[];

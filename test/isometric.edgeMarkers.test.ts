@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { IsometricRenderer } from "../src/renderers/isometric";
+import { createSVGWindow } from "svgdom";
 import {
     collectEdgeMarkerSegments,
     hexCellPolysFromGrid,
@@ -16,7 +16,6 @@ import { rectOfRects, hexOfCir } from "../src/grids";
 import { hexOfHex } from "../src/grids";
 import { Matrix } from "transformation-matrix-js";
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

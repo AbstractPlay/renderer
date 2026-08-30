@@ -1,5 +1,5 @@
-import { hexOfTri } from ".";
-import { GridPoints, IGeneratorArgs} from "./_base";
+import { hexOfTri } from "./index.js";
+import { GridPoints, IGeneratorArgs} from "./_base.js";
 
 /**
  * Generates a hexagonal field of centre points that will accommodate circles.

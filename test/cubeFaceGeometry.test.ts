@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { IsometricRenderer } from "../src/renderers";
 import { isoShadeFace } from "../src/renderers/isometric/shading";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
+import { createSVGWindow } from "svgdom";
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

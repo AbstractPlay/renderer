@@ -1,8 +1,8 @@
 /* eslint-disable no-prototype-builtins */
 import { StrokeData, Svg } from "@svgdotjs/svg.js";
-import { rectOfRects } from "../grids";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
+import { rectOfRects } from "../grids/index.js";
+import { APRenderRep } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
 
 type Seat = "N" | "E" | "S" | "W";
 

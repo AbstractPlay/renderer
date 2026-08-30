@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { expect } from "chai";
 import "mocha";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
+import { createSVGWindow } from "svgdom";
 import {
     fracturedFlatBoardCenter,
     fracturedFlatCellLabel,
@@ -13,7 +13,6 @@ import {
 } from "../src/boards/fracturedFlat";
 import { centroid } from "../src/common/plotting";
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

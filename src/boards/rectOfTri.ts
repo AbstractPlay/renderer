@@ -1,7 +1,7 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
-import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from ".";
-import { hexOfTri, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
+import { hexOfTri, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 
 export const rectOfTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

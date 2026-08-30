@@ -1,4 +1,8 @@
-import { rgb as convert_rgb, hsl as convert_hsl, hex as convert_hex } from "color-convert";
+import convert from "color-convert";
+
+const convert_rgb = convert.rgb;
+const convert_hsl = convert.hsl;
+const convert_hex = convert.hex;
 
 export const getRandomColor = ():string => {
     const letters = '0123456789ABCDEF';

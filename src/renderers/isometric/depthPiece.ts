@@ -1,13 +1,13 @@
 import { StrokeData, Svg } from "@svgdotjs/svg.js";
-import { IsoPiece, Colourfuncs } from "../../schemas/schema";
-import { generateCubes, CubeFaceFills } from "./cubes";
-import { permuteCubeFacesForProjection, effectiveCubeYaw } from "./cubeOrientation";
-import { generateCylinders } from "./cylinders";
-import { generateCones } from "./cones";
-import { generateHexes } from "./hexes";
-import { generatePyramids } from "./pyramids";
-import { resolvePyramidDims, isPyramidPiece } from "./pyramidDims";
-import { ISO_PROJECTION_PRESETS, IsoProjectionParams } from "./projection";
+import { IsoPiece, Colourfuncs } from "../../schemas/schema.js";
+import { generateCubes, CubeFaceFills } from "./cubes.js";
+import { permuteCubeFacesForProjection, effectiveCubeYaw } from "./cubeOrientation.js";
+import { generateCylinders } from "./cylinders.js";
+import { generateCones } from "./cones.js";
+import { generateHexes } from "./hexes.js";
+import { generatePyramids } from "./pyramids.js";
+import { resolvePyramidDims, isPyramidPiece } from "./pyramidDims.js";
+import { ISO_PROJECTION_PRESETS, IsoProjectionParams } from "./projection.js";
 import {
     depthBucketIndex,
     depthToNormalized,
@@ -16,10 +16,10 @@ import {
     isoShadeFace,
     isoShadeFaces,
     IsoFaceFills,
-} from "./shading";
-import { isMultiFaceCube, isoPieceHeight } from "./stack";
-import { effectiveRotatedPiece, generateIsoLintelOrSpacer } from "./pieceSymbols";
-import { boardHexOrientation, isSpacerPiece, parseLintelPiece } from "./lintels";
+} from "./shading.js";
+import { isMultiFaceCube, isoPieceHeight } from "./stack.js";
+import { effectiveRotatedPiece, generateIsoLintelOrSpacer } from "./pieceSymbols.js";
+import { boardHexOrientation, isSpacerPiece, parseLintelPiece } from "./lintels.js";
 
 export type IsoOverlayApplier = (idSymbol: string, pc: IsoPiece, effectiveYaw: number) => void;
 

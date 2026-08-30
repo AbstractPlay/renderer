@@ -1,5 +1,5 @@
-import { geSolve, Graph as PentGraph } from "../pentagons";
-import { IPoint } from "../../grids";
+import { geSolve, Graph as PentGraph } from "../pentagons/index.js";
+import { IPoint } from "../../grids/index.js";
 
 const PENTAGON_SCALE = 65;
 

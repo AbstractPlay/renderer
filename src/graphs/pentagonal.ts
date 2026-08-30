@@ -1,6 +1,6 @@
 import { UndirectedGraph } from "graphology";
-import { Graph } from "./Graph";
-import { Graph as PentGraph } from "../common/pentagons";
+import { Graph } from "./Graph.js";
+import { Graph as PentGraph } from "../common/pentagons/index.js";
 
 export type NodeData = {
     id: number;

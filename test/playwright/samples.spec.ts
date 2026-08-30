@@ -1,6 +1,8 @@
-import { expect, test } from "@playwright/test";
-import samples from "../fixtures/playground-samples.json";
+import playwright from "@playwright/test";
+import samples from "../fixtures/playground-samples.json" with { type: "json" };
 import { assertRenderHealth } from "./render-health";
+
+const { test, expect } = playwright;
 
 const sampleKeys = Object.keys(samples);
 

@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import "mocha";
+import fs from "node:fs";
+import readline from "node:readline";
 import { sheets } from "../../src/sheets";
 
 describe("Glyph sheets", () => {
     it ("sheet names should match the file name", () => {
-        const fs = require("fs");
         fs
             .readdirSync("src/sheets/")
             .filter((file: string) => (file.indexOf(".") !== 0) && (! file.startsWith("index")) && (file.slice(-3) === ".ts"))
@@ -39,8 +39,6 @@ describe("Glyph sheets", () => {
     // });
 
     it("should be in alphabetical order", (done) => {
-        const fs = require("fs");
-        const readline = require("readline");
         const reGlyph: RegExp = /^sheet\.glyphs\.set\("(\S+)"/;
 
         fs

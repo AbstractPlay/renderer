@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
@@ -6,9 +5,9 @@ import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
-const schema = require("../src/schemas/schema.json");
+import { createSVGWindow } from "svgdom";
+import schema from "../src/schemas/schema.json" with { type: "json" };
 
-const { createSVGWindow } = require("svgdom");
 
 const makeDraw = (): Svg => {
     const window = createSVGWindow();

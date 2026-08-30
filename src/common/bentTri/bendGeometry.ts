@@ -1,5 +1,5 @@
-import { Graph } from "./Graph";
-import { type Point, overlapRowsFor } from "./lattice";
+import { Graph } from "./Graph.js";
+import { type Point, overlapRowsFor } from "./lattice.js";
 
 export type BentGeometryOptions = {
     /** Outward bow strength in 0–1 (0 = flat). */

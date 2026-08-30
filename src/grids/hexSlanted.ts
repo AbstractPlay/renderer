@@ -1,4 +1,4 @@
-import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base";
+import { GridPoints, IGeneratorArgs, IPoint, normalizeX} from "./_base.js";
 
 /**
  * Generates a hexagonal field of center points that will accommodate hexagons.

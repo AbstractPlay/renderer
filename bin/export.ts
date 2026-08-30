@@ -3,7 +3,8 @@
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
-import { sheets } from "../src/sheets";
+import { createSVGWindow } from "svgdom";
+import { sheets } from "../src/sheets/index.js";
 
 // tslint:disable-next-line: no-unused-expression
 yargs(hideBin(process.argv))
@@ -41,8 +42,6 @@ function exportGlyph(sheetName: string, glyphName: string): string {
         throw new Error("The sheet and glyph were valid, but no glyph was loaded. This should never happen.");
     }
 
-    // tslint:disable-next-line: no-var-requires
-    const { createSVGWindow } = require("svgdom");
     const window = createSVGWindow();
     const document = window.document;
 

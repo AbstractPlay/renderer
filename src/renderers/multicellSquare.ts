@@ -1,9 +1,9 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, rectOfRects, IPoint, Poly } from "../grids";
-import { APRenderRep, type Multipiece } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { usePieceAt } from "../common/plotting";
-import { squares } from "../boards";
+import { GridPoints, rectOfRects, IPoint, Poly } from "../grids/index.js";
+import { APRenderRep, type Multipiece } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { usePieceAt } from "../common/plotting.js";
+import { squares } from "../boards/index.js";
 
 /**
  * This renderer deforms pieces to fit into rectangular areas that can span

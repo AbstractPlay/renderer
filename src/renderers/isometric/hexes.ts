@@ -1,13 +1,13 @@
 import { Matrix } from "transformation-matrix-js";
-import { centroid } from "../../common/plotting";
+import { centroid } from "../../common/plotting.js";
 import { FillData, StrokeData, Svg, Polygon as SVGPoly, G as SVGG } from "@svgdotjs/svg.js";
-import { IPoint } from "../../grids";
-import { CompassDirection, edges2corners } from "../../boards";
+import { IPoint } from "../../grids/index.js";
+import { CompassDirection, edges2corners } from "../../boards/index.js";
 import { defineHex, Orientation } from "honeycomb-grid";
-import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique, usesLayeredCellDraw } from "./projection";
-import { CubeFaceFills } from "./cubes";
-import { isoShadeProjectedFace } from "./shading";
-import { applyIsoAffineMatrix } from "./faceGlyphFit";
+import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, isoProjectionCacheSuffix, projectOblique, usesLayeredCellDraw } from "./projection.js";
+import { CubeFaceFills } from "./cubes.js";
+import { isoShadeProjectedFace } from "./shading.js";
+import { applyIsoAffineMatrix } from "./faceGlyphFit.js";
 
 export type Hex = {
     transform: Matrix;

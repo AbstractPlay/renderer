@@ -14,11 +14,11 @@
  * 8. Expose grid rings outside-in, clockwise from the north apex (gridLayers).
  */
 
-import { Graph, type BentTriOptions } from "./Graph";
-import { Vertex } from "./Vertex";
-import { Edge } from "./Edge";
-import { computeBentPositions, type BentGeometryOptions } from "./bendGeometry";
-import { overlapRowsFor } from "./lattice";
+import { Graph, type BentTriOptions } from "./Graph.js";
+import { Vertex } from "./Vertex.js";
+import { Edge } from "./Edge.js";
+import { computeBentPositions, type BentGeometryOptions } from "./bendGeometry.js";
+import { overlapRowsFor } from "./lattice.js";
 
 export { Vertex, Edge, Graph, computeBentPositions, overlapRowsFor };
 export type { BentTriOptions, BentGeometryOptions };

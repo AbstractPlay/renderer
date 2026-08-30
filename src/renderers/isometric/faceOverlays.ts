@@ -1,10 +1,10 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { Matrix } from "transformation-matrix-js";
-import { Glyph, IsoFaceDecor } from "../../schemas/schema";
-import { Cube, CubePaintFace, genCube } from "./cubes";
-import { genCylinder } from "./cylinders";
-import { genHex } from "./hexes";
-import { centroid } from "../../common/plotting";
+import { Glyph, IsoFaceDecor } from "../../schemas/schema.js";
+import { Cube, CubePaintFace, genCube } from "./cubes.js";
+import { genCylinder } from "./cylinders.js";
+import { genHex } from "./hexes.js";
+import { centroid } from "../../common/plotting.js";
 import {
     applyIsoAffineMatrix,
     hexTopOverlayPrepMatrix,
@@ -14,8 +14,8 @@ import {
     projectedTopCenterMatrix,
     computeMaxCenteredSquareSide,
     type ProjectedTopSilhouette,
-} from "./faceGlyphFit";
-import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, usesLayeredCellDraw } from "./projection";
+} from "./faceGlyphFit.js";
+import { buildIsoProjectionMatrix, ISO_PROJECTION_PRESETS, IsoProjectionParams, usesLayeredCellDraw } from "./projection.js";
 import { Orientation } from "honeycomb-grid";
 
 export type IsoFaceGlyphComposer = (glyphs: Glyph[], ctx: IsoFaceComposeContext) => Svg;

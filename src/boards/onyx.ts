@@ -1,7 +1,7 @@
-import { GridPoints, IPoint, IPolyPolygon, snubsquare, SnubStart } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { centroid, rotatePoint } from "../common/plotting";
-import { BoardReturn, createGridlineLayers } from ".";
+import { GridPoints, IPoint, IPolyPolygon, snubsquare, SnubStart } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { centroid, rotatePoint } from "../common/plotting.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 export const onyx = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

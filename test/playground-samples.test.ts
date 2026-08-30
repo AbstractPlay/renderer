@@ -4,16 +4,17 @@ import path from "node:path";
 import "mocha";
 
 const jsonPath = path.join(process.cwd(), "test", "fixtures", "playground-samples.json");
-const jsPath = path.join(process.cwd(), "test", "playground-samples.js");
 
 describe("playground samples catalog", () => {
-    it("playground-samples.js matches playground-samples.json keys", () => {
-        const json = JSON.parse(fs.readFileSync(jsonPath, "utf8")) as Record<string, unknown>;
-        const jsSource = fs.readFileSync(jsPath, "utf8");
-        const match = jsSource.match(/var PLAYGROUND_SAMPLES = (\{[\s\S]*\});/);
-        expect(match).to.not.equal(null);
-
-        const fromJs = JSON.parse(match![1]!) as Record<string, unknown>;        expect(Object.keys(fromJs).sort()).to.deep.equal(Object.keys(json).sort());
+    it("playground-samples.json has at least one sample with render JSON", () => {
+        const json = JSON.parse(fs.readFileSync(jsonPath, "utf8")) as Record<string, { name: string; render: string }>;
+        const keys = Object.keys(json);
+        expect(keys.length).to.be.greaterThan(0);
+        for (const key of keys) {
+            expect(json[key]).to.have.property("name");
+            expect(json[key]).to.have.property("render");
+            JSON.parse(json[key]!.render);
+        }
     });
 
     it("includes niche-areas-track regression sample", () => {

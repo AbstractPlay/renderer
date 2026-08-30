@@ -1,9 +1,9 @@
-import { IPolyPolygon, star as starGrid } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting";
-import { starBoard, starFrequencyFromWidth } from "../common/star";
-import { Star, StarNodeData } from "../graphs";
-import { BoardReturn, createGridlineLayers } from ".";
+import { IPolyPolygon, star as starGrid } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting.js";
+import { starBoard, starFrequencyFromWidth } from "../common/star/index.js";
+import { Star, StarNodeData } from "../graphs/index.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 export const star = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

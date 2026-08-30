@@ -1,4 +1,4 @@
-import { GridPoints, IPolyPolygon } from "./_base";
+import { GridPoints, IPolyPolygon } from "./_base.js";
 
 export type TileCorner = "nw" | "ne" | "sw" | "se";
 

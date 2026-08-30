@@ -1,8 +1,8 @@
-import { Graph } from "./Graph";
+import { Graph } from "./Graph.js";
 
 export { Graph };
-export type { Edge, Vertex } from "../pentagons";
-export { embedStarPositions, applyStarOrientation } from "./geometry";
+export type { Edge, Vertex } from "../pentagons/index.js";
+export { embedStarPositions, applyStarOrientation } from "./geometry.js";
 
 /** Segments per outer edge on the standard Star board (matches realstar.png). */
 export const STAR_DEFAULT_FREQUENCY = 10;

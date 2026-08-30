@@ -1,10 +1,13 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import type { ISheet } from "./ISheet";
+import type { ISheet } from "./ISheet.js";
 import { Orientation, defineHex } from "honeycomb-grid";
-import { rgb as convert_rgb, hex as convert_hex } from "color-convert";
-import { lighten } from "../common/colours";
+import convert from "color-convert";
+
+const convert_rgb = convert.rgb;
+const convert_hex = convert.hex;
+import { lighten } from "../common/colours.js";
 import fnv from "fnv-plus";
-import { projectPoint } from "../common/plotting";
+import { projectPoint } from "../common/plotting.js";
 
 const sheet: ISheet = {
     name: "core",

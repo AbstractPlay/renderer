@@ -1,8 +1,8 @@
 import { StrokeData } from "@svgdotjs/svg.js";
-import { GridPoints, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { centroid } from "../common/plotting";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { GridPoints, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { centroid } from "../common/plotting.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 /**
  * This generator creates a moon squad board, which is a standard hexhex5 with the centre cell

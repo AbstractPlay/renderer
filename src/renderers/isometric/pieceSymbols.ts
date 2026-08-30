@@ -1,9 +1,9 @@
 import { StrokeData, Svg } from "@svgdotjs/svg.js";
 import { FillData } from "@svgdotjs/svg.js";
-import { IsometricPieces } from "../../schemas/schema";
-import { generateCubes, CubeFaceFills } from "./cubes";
-import { generateHexes } from "./hexes";
-import { ISO_PROJECTION_PRESETS, IsoProjectionParams } from "./projection";
+import { IsometricPieces } from "../../schemas/schema.js";
+import { generateCubes, CubeFaceFills } from "./cubes.js";
+import { generateHexes } from "./hexes.js";
+import { ISO_PROJECTION_PRESETS, IsoProjectionParams } from "./projection.js";
 import {
     boardHexOrientation,
     drawnCubeEdges,
@@ -11,7 +11,7 @@ import {
     isSpacerPiece,
     parseLintelPiece,
     resolveHexLintelDrawnEdges,
-} from "./lintels";
+} from "./lintels.js";
 
 export const effectiveRotatedPiece = (
     piece: IsometricPieces | string,

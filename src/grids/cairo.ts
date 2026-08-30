@@ -1,4 +1,4 @@
-import { GridPoints, IGeneratorArgs, IPoint, PentagonOrientation} from "./_base";
+import { GridPoints, IGeneratorArgs, IPoint, PentagonOrientation} from "./_base.js";
 
 /**
  * Generates a square field of points separated by a fixed width and height.

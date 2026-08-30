@@ -1,11 +1,11 @@
-import { GridPoints } from "../../grids/_base";
-import { IsoPiece } from "../../schemas/schema";
+import { GridPoints } from "../../grids/_base.js";
+import { IsoPiece } from "../../schemas/schema.js";
 import { Svg } from "@svgdotjs/svg.js";
 import { Matrix } from "transformation-matrix-js";
-import { effectiveCubeYaw } from "./cubeOrientation";
-import { IsoProjectionParams, projectedCellDepth, usesLayeredCellDraw } from "./projection";
-import { isoSymbolPlacement } from "./symbolPlacement";
-import { IsoPiecesGrid, isMultiFaceCube, parseStackEntry } from "./stack";
+import { effectiveCubeYaw } from "./cubeOrientation.js";
+import { IsoProjectionParams, projectedCellDepth, usesLayeredCellDraw } from "./projection.js";
+import { isoSymbolPlacement } from "./symbolPlacement.js";
+import { IsoPiecesGrid, isMultiFaceCube, parseStackEntry } from "./stack.js";
 
 export type IsoDepthWeight = { wx: number; wy: number };
 

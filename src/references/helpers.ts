@@ -1,10 +1,10 @@
 import { G as SVGG, Svg, Box as SVGBox } from "@svgdotjs/svg.js";
-import { Poly } from "../grids/_base";
-import { BoardReference } from "../schemas/schema";
-import { getReferenceAsset } from "./registry";
-import type { AnnulusAnchor, PlayfieldMetrics, ReferencePlacement, ReferenceSide, ResolvedReferenceArt, SidebarAnchor } from "./types";
+import { Poly } from "../grids/_base.js";
+import { BoardReference } from "../schemas/schema.js";
+import { getReferenceAsset } from "./registry.js";
+import type { AnnulusAnchor, PlayfieldMetrics, ReferencePlacement, ReferenceSide, ResolvedReferenceArt, SidebarAnchor } from "./types.js";
 
-export type { ReferenceSide } from "./types";
+export type { ReferenceSide } from "./types.js";
 
 function collectPolyPoints(poly: Poly): { x: number; y: number }[] {
     if (poly.type === "circle") {

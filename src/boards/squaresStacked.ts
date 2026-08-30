@@ -1,7 +1,7 @@
-import { IPoint, IPolyPolygon, rectOfRects } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { rotatePoint } from "../common/plotting";
-import { BoardReturn, createGridlineLayers } from ".";
+import { IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { rotatePoint } from "../common/plotting.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 export const squaresStacked = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

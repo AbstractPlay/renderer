@@ -1,10 +1,10 @@
 import { Element as SVGElement, Rect as SVGRect, StrokeData, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
-import { expandSquareGrid, IPoint, IPolyPolygon, rectOfRects } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { rotatePoint, shortenLine } from "../common/plotting";
+import { expandSquareGrid, IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { rotatePoint, shortenLine } from "../common/plotting.js";
 import tinycolor from "tinycolor2";
-import { MarkerOutline } from "../schemas/schema";
-import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from ".";
+import { MarkerOutline } from "../schemas/schema.js";
+import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from "./index.js";
 
 export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

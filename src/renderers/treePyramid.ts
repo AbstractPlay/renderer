@@ -1,9 +1,9 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { IPoint } from "../grids/_base";
-import { AnnotationTree, APRenderRep, BoardBasic, PiecesTree, TreeNode } from "../schemas/schema";
-import { x2uid } from "../common/glyph2uid";
-import { IRendererOptionsIn, RendererBase} from "./_base";
-import { projectPoint, usePieceAt } from "../common/plotting";
+import { IPoint } from "../grids/_base.js";
+import { AnnotationTree, APRenderRep, BoardBasic, PiecesTree, TreeNode } from "../schemas/schema.js";
+import { x2uid } from "../common/glyph2uid.js";
+import { IRendererOptionsIn, RendererBase} from "./_base.js";
+import { projectPoint, usePieceAt } from "../common/plotting.js";
 
 /**
  * This is the default renderer used for most games.

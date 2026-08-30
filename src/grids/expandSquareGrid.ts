@@ -1,5 +1,5 @@
-import { GridPoints, IPoint } from "./_base";
-import { rectOfRects } from "./rectOfRects";
+import { GridPoints, IPoint } from "./_base.js";
+import { rectOfRects } from "./rectOfRects.js";
 
 /**
  * Corner grid for square-board markers (lines, shading, labels, edges).

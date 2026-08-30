@@ -1,5 +1,5 @@
-import { deg2rad } from "../../common/plotting";
-import { IPoint } from "../../grids";
+import { deg2rad } from "../../common/plotting.js";
+import { IPoint } from "../../grids/index.js";
 import { Matrix } from "transformation-matrix-js";
 
 export type IsoProjectionPreset =

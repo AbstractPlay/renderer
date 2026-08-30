@@ -10,9 +10,9 @@ Currently the only supported output format is SVG. The library has been tested a
 
 ## Usage
 
-In the browser, simply load `APRender.js` via a `<script>` tag. For a concrete example, [see the playground](https://renderer.dev.abstractplay.com).
+In the browser, load `APRender.min.js` via a `<script>` tag (the playground and dokuwiki plugin use the same bundle). For a concrete example, [see the playground](https://renderer.dev.abstractplay.com).
 
-From within Node, simply import the variables and functions you need. Both methods give you access to the same API.
+From within Node, import from `@abstractplay/renderer` (`build/index.js`). Both paths expose the same API.
 
 The API and schema are documented on the [docs site](https://docs.abstractplay.com/renderer/).
 
@@ -20,13 +20,14 @@ The API and schema are documented on the [docs site](https://docs.abstractplay.c
 
 If you want to create a new set of graphics, see [Adding pieces](https://docs.abstractplay.com/renderer/adding-pieces/) and the [contact sheet](https://docs.abstractplay.com/renderer/contact-sheet/) for existing piece names. After changing glyph sheets, run `npm run contact-sheet` and commit `docs/contact-sheet.svg` and `contact.png`.
 
-New renderer features should include a **playground snippet** so the public demo and cross-browser tests stay current. Edit [`test/fixtures/playground-samples.json`](test/fixtures/playground-samples.json), run `npm run sync-playground-samples`, and commit the generated `test/playground-samples.js`. See [Playground samples and browser tests](https://docs.abstractplay.com/renderer/playground-samples/) for the full workflow.
+New renderer features should include a **playground snippet** so the public demo and cross-browser tests stay current. Edit [`test/fixtures/playground-samples.json`](test/fixtures/playground-samples.json) and commit the JSON — the playground and Playwright harness import it directly. See [Playground samples and browser tests](https://docs.abstractplay.com/renderer/playground-samples/) for the full workflow.
 
 ### Tests
 
 - `npm test` — Mocha unit tests (fast; runs in CI).
+- `npm run playground` — Vite dev server for the interactive demo (`playground/`).
 - `npm run test:browser:install` — install Playwright browsers (once per machine).
-- `npm run test:browser` — render every playground snippet in Chromium, Firefox, and WebKit.
+- `npm run test:browser` — build `dist/` and render every playground snippet in Chromium, Firefox, and WebKit.
 
 ![Contact sheet](./contact.png "Rudimentary contact sheet")
 
@@ -41,5 +42,5 @@ The [main website](https://www.abstractplay.com) houses the development blog and
   - `npm install` (installs dependencies)
   - `npm run test` (makes sure everything is working)
   - `npm run test:browser` (optional locally; required in CI — playground snippets in Chromium, Firefox, WebKit)
-  - `npm run build` (compiles the TypeScript files into the `./build` folder)
-  - `npm run dist-dev` (or `dist-prod` if you want it minified; bundles everything for the browser into the `./dist` folder)
+  - `npm run build` (compiles TypeScript into `./build`)
+  - `npm run dist-dev` (or `dist-prod` for minified output; Vite builds the playground and `APRender.min.js` into `./dist`)

@@ -1,7 +1,7 @@
-import { IPolyPolygon, snubsquare, SnubStart } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { rotatePoint } from "../common/plotting";
-import { BoardReturn, createGridlineLayers } from ".";
+import { IPolyPolygon, snubsquare, SnubStart } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { rotatePoint } from "../common/plotting.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 export const snubSquare = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

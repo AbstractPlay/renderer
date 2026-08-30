@@ -1,9 +1,9 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { IPolyPolygon } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
-import { peripheralReferenceSides } from "../references/helpers";
-import { IRendererOptionsIn, RendererBase} from "./_base";
-import { usePieceAt } from "../common/plotting";
+import { IPolyPolygon } from "../grids/_base.js";
+import { APRenderRep } from "../schemas/schema.js";
+import { peripheralReferenceSides } from "../references/helpers.js";
+import { IRendererOptionsIn, RendererBase} from "./_base.js";
+import { usePieceAt } from "../common/plotting.js";
 
 /**
  * This is the default renderer used for most games.

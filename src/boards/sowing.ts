@@ -1,8 +1,8 @@
 import { Element as SVGElement } from "@svgdotjs/svg.js";
-import { IPoint, rectOfRects } from "../grids";
-import { MarkerOutline } from "../schemas/schema";
-import { RendererBase } from "../renderers/_base";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { IPoint, rectOfRects } from "../grids/index.js";
+import { MarkerOutline } from "../schemas/schema.js";
+import { RendererBase } from "../renderers/_base.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 export const sowing = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

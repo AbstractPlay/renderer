@@ -1,4 +1,4 @@
-import { GridPoints, IPoint, IPolyPolygon, Poly } from "../../grids/_base";
+import { GridPoints, IPoint, IPolyPolygon, Poly } from "../../grids/_base.js";
 
 export type EdgeSide = "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
 

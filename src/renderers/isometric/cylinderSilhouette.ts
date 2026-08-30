@@ -1,6 +1,6 @@
-import { circle2poly, projectPoint } from "../../common/plotting";
-import { IPoint } from "../../grids";
-import { ISO_PROJECTION_PRESETS, IsoProjectionParams, projectOblique } from "./projection";
+import { circle2poly, projectPoint } from "../../common/plotting.js";
+import { IPoint } from "../../grids/index.js";
+import { ISO_PROJECTION_PRESETS, IsoProjectionParams, projectOblique } from "./projection.js";
 
 const normDeg = (deg: number): number => ((deg % 360) + 360) % 360;
 

@@ -1,6 +1,6 @@
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
-import { conicalHex as conicalHexGrid, genConicalHexPolys } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { conicalHex as conicalHexGrid, genConicalHexPolys } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 
 export const conicalHex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) || (ctx.json.board === null) ) {

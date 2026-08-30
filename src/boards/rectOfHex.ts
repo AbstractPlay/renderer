@@ -1,7 +1,7 @@
-import { centroid } from "../common/plotting";
-import { BoardReturn, createCellsLayers, edges2corners, getBoardFill, pts2id } from ".";
-import { GridPoints, IPoint, IPolyPolygon } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { centroid } from "../common/plotting.js";
+import { BoardReturn, createCellsLayers, edges2corners, getBoardFill, pts2id } from "./index.js";
+import { GridPoints, IPoint, IPolyPolygon } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 import { Grid, defineHex, Orientation, HexOffset, rectangle } from "honeycomb-grid";
 
 export const rectOfHex = (ctx: RendererBase): BoardReturn => {

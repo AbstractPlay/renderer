@@ -1,7 +1,7 @@
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
-import { matrixRectRotN90 } from "../common/plotting";
-import { GridPoints, IPoint, IPolyPolygon, rectOfRects } from "../grids";
-import { RendererBase } from "../renderers/_base";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { matrixRectRotN90 } from "../common/plotting.js";
+import { GridPoints, IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
 
 // This function is only called for the conhex-cells style
 // For conhex-dots, the renderer itself does the layout work

@@ -1,9 +1,9 @@
 import { Element as SVGElement, StrokeData } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, Poly } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { centroid } from "../common/plotting";
-import { hexOfTri as hexOfTriGrid } from "../grids";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { GridPoints, IPoint, Poly } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { centroid } from "../common/plotting.js";
+import { hexOfTri as hexOfTriGrid } from "../grids/index.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

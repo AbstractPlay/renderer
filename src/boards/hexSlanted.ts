@@ -1,7 +1,7 @@
-import { BoardBasic } from "../schemas/schema";
-import { IPoint, IPolyPolygon, hexSlanted as hexSlantedGrid} from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { BoardReturn, createGridlineLayers, getBoardFill } from ".";
+import { BoardBasic } from "../schemas/schema.js";
+import { IPoint, IPolyPolygon, hexSlanted as hexSlantedGrid} from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 export const hexSlanted = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {

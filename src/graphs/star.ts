@@ -1,6 +1,6 @@
 import { UndirectedGraph } from "graphology";
-import { Graph } from "./Graph";
-import { Graph as StarGraph } from "../common/star";
+import { Graph } from "./Graph.js";
+import { Graph as StarGraph } from "../common/star/index.js";
 
 export type StarNodeData = {
     id: number;

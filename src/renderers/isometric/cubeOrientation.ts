@@ -1,5 +1,5 @@
-import { IsoCubeFaces } from "../../schemas/schema";
-import { IsoProjectionParams, usesLayeredCellDraw } from "./projection";
+import { IsoCubeFaces } from "../../schemas/schema.js";
+import { IsoProjectionParams, usesLayeredCellDraw } from "./projection.js";
 
 export type VisibleCubeFaces = {
     top: IsoCubeFaces["top"];

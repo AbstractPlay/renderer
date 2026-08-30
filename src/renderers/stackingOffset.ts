@@ -1,9 +1,9 @@
 import { Svg, G as SVGG } from "@svgdotjs/svg.js";
-import { GridPoints, IPoint, Poly } from "../grids/_base";
-import { APRenderRep } from "../schemas/schema";
-import { IRendererOptionsIn, RendererBase } from "./_base";
-import { centroid, projectPoint, rotatePoint, usePieceAt } from "../common/plotting";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowingRound, squares, squaresDiamonds, vertex, wheel } from "../boards";
+import { GridPoints, IPoint, Poly } from "../grids/_base.js";
+import { APRenderRep } from "../schemas/schema.js";
+import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { centroid, projectPoint, rotatePoint, usePieceAt } from "../common/plotting.js";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowingRound, squares, squaresDiamonds, vertex, wheel } from "../boards/index.js";
 
 /**
  * The `stacking-offset` renderer creates stacks of pieces by offsetting them slightly to give a 3D look.

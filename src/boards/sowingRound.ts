@@ -1,8 +1,8 @@
 import { Element as SVGElement } from "@svgdotjs/svg.js";
-import { IPolyCircle, mancalaRound } from "../grids";
-import { RendererBase } from "../renderers/_base";
-import { MarkerOutline } from "../schemas/schema";
-import { BoardReturn, createGridlineLayers } from ".";
+import { IPolyCircle, mancalaRound } from "../grids/index.js";
+import { RendererBase } from "../renderers/_base.js";
+import { MarkerOutline } from "../schemas/schema.js";
+import { BoardReturn, createGridlineLayers } from "./index.js";
 
 export const sowingRound = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
