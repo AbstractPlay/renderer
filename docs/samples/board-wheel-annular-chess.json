@@ -1,0 +1,23 @@
+{
+  "renderer": "stacking-offset",
+    "board": {
+    "style": "circular-wheel-spaces-checkered",
+    "width": 24,
+    "height": 4,
+    "circular-inner": 2
+  },
+  "options": ["swap-labels"],
+  "legend": {
+    "w": {
+      "name": "piece",
+      "colour": 1,
+      "scale": 0.7
+    },
+    "b": {
+      "name": "piece",
+      "colour": 2,
+      "scale": 0.7
+    }
+  },
+  "pieces": "b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b\nb,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b\nb,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b\nb,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b"
+}

@@ -75,6 +75,9 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 | `bent-tri` |
 | `star` |
 | `circular-wheel` |
+| `circular-wheel-spaces` |
+| `circular-wheel-vertices` |
+| `circular-wheel-spaces-checkered` |
 | `circular-cobweb` |
 | `circular-moon` |
 | `fractured-flat` |
@@ -107,7 +110,7 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 | `clickable-edges` | On `squares*` and rect-of-hex boards, makes individual cell edges clickable. |
 | `reverse-letters` | Reverses the order of letter labels (columns or rows, depending on board). |
 | `reverse-numbers` | Reverses the order of numeric labels. |
-| `swap-labels` | Swaps which axis uses letter labels and which uses numeric labels. |
+| `swap-labels` | On `squares*` / `vertex` boards, swaps which axis uses letters vs numbers. On `circular-wheel*` boards, replaces default letter labels around the circumference with `1`…`n`. |
 | `no-piece-click` | Disables click targets on pieces; only board cells receive clicks. |
 | `no-piece-shadow` | Isometric: disables contact shadows drawn under pieces. |
 | `no-iso-depth-shade` | Isometric: disables height-based shading on cells. |

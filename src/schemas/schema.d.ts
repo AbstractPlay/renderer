@@ -272,6 +272,9 @@ export type BoardStyles =
   | "bent-tri"
   | "star"
   | "circular-wheel"
+  | "circular-wheel-spaces"
+  | "circular-wheel-vertices"
+  | "circular-wheel-spaces-checkered"
   | "circular-cobweb"
   | "circular-moon"
   | "fractured-flat"
@@ -473,7 +476,7 @@ export interface APRenderRep {
     | "isometric"
     | "tree-pyramid";
   /**
-   * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
+   * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers on `squares*` and `vertex` boards; on `circular-wheel*` boards it replaces default letter labels around the circumference with numbers `1` through `n`. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
   options?: (
     | "hide-labels"
@@ -734,7 +737,7 @@ export interface BoardBasic {
     opacity?: number;
   };
   /**
-   * On `squares*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, left column.
+   * On `squares*` and `circular-wheel*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, left column.
    *
    * @minItems 1
    */
@@ -778,7 +781,7 @@ export interface BoardBasic {
    */
   clickDeltaY?: number;
   /**
-   * Only meaningful for the `squares-checkered` boards. Determines whether the first row start with a light or dark square.
+   * Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. Determines whether the first row start with a light or dark square.
    */
   startLight?: boolean;
   /**
@@ -790,7 +793,7 @@ export interface BoardBasic {
    */
   labelGrid?: string[][];
   /**
-   * An optional array of strings to override the default column labeling.
+   * An optional array of strings to override the default column labeling. On `circular-wheel*` boards, labels are placed around the outer circumference.
    */
   columnLabels?: string[];
   /**
@@ -835,6 +838,10 @@ export interface BoardBasic {
    * By default, circular boards start with a vertical line drawn from the centre straight "north". This lets you choose a different starting degree. In this plane, 0 degrees is towards the top of the screen and increases clockwise.
    */
   "circular-start"?: number;
+  /**
+   * Inner hole radius for `circular-wheel*` boards, expressed as a multiple of the cell size. A larger value creates a bigger central hole and more equal sector sizes. Default is 0.
+   */
+  "circular-inner"?: number;
   /**
    * For the `cairo-collinear` board, the top-left pair of pentagons can either be oriented horizontally or vertically.
    */

@@ -12,11 +12,10 @@ const REQUIRED = [
     "build/schemas/schema.json",
 ];
 
-const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
-const result = spawnSync(npmCmd, ["pack", "--dry-run"], {
-    cwd: ROOT,
-    encoding: "utf8",
-});
+const args = ["pack", "--dry-run"];
+const result = process.platform === "win32"
+    ? spawnSync(`npm ${args.join(" ")}`, { cwd: ROOT, encoding: "utf8", shell: true })
+    : spawnSync("npm", args, { cwd: ROOT, encoding: "utf8" });
 
 if (result.status !== 0) {
     console.error(result.stderr || result.stdout || "npm pack --dry-run failed");

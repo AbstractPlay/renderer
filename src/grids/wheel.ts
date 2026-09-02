@@ -2,55 +2,22 @@ import { projectPoint } from "../common/plotting.js";
 import { GridPoints, IGeneratorArgs, IPoint, IPolyPath, IPolyPolygon } from "./_base.js";
 
 export interface IWheelArgs extends IGeneratorArgs {
-    straight?: boolean;
     start?: number;
+    /** Inner hole radius in cell-size units (default 0). */
+    innerRadius?: number;
 }
 
-/**
- * Generates a circular web & spoke field. This function returns the centroids of each space.
- * Vertices and spaces are interlaced. The first row is the outermost row of vertices.
- * The second row is the outermost row of spaces. The next row is vertices, then spaces, etc.
- * The last row is always the singular centre point. And yes, the centre point gets repeated
- * in each row of vertices.
- *
- * @param args - Generator options
- * @returns Map of x,y coordinates to row/column locations
- */
-export const wheel = (args: IWheelArgs): GridPoints => {
-    const polys = wheelPolys(args);
-    const grid: GridPoints = [];
-    for (let row = 0; row < polys.length; row++) {
-        const slice = polys[row];
-        const verts: IPoint[] = [];
-        const spaces: IPoint[] = [];
-        for (const poly of slice) {
-            // The vertex is always the "top left" corner of the poly
-            verts.push(poly.points[1]);
-            // If it's an outer space, we need to bias the centroid further outward
-            // Indices 1 and 2 are the "top" left and right points
-            // Duplicate them to bias the average outwards
-            const pts: IPoint[] = [...poly.points];
-            if (row === 0) {
-                pts.push(poly.points[1]);
-                pts.push(poly.points[2]);
-                pts.push(poly.points[1]);
-                pts.push(poly.points[2]);
-                pts.push(poly.points[1]);
-                pts.push(poly.points[2]);
-            }
-            const cx = pts.reduce((prev, curr) => prev += curr.x, 0) / pts.length;
-            const cy = pts.reduce((prev, curr) => prev += curr.y, 0) / pts.length;
-            spaces.push({x: cx, y: cy});
-        }
-        grid.push(verts);
-        grid.push(spaces);
-    }
-    grid.push([{x: 0, y: 0}]);
-
-    return grid;
+export interface IWheelSpokeData {
+    pts: IPoint[][];
+    dists: number[];
+    gridWidth: number;
+    gridHeight: number;
+    innerR: number;
+    cellSize: number;
+    start: number;
 }
 
-export const wheelPolys = (args: IWheelArgs): (IPolyPolygon|IPolyPath)[][] => {
+export function resolveWheelArgs(args: IWheelArgs): IWheelSpokeData {
     let cellSize = 50;
     if (args.cellSize !== undefined) {
         cellSize = args.cellSize;
@@ -64,32 +31,121 @@ export const wheelPolys = (args: IWheelArgs): (IPolyPolygon|IPolyPath)[][] => {
     if (args.gridWidth !== undefined) {
         gridWidth = args.gridWidth;
     }
-    let straight = false;
-    if (args.straight !== undefined) {
-        straight = args.straight;
-    }
     let start = 0;
     if (args.start !== undefined) {
         start = args.start;
     }
+    let innerR = 0;
+    if (args.innerRadius !== undefined) {
+        innerR = args.innerRadius * cellSize;
+    }
 
-    // First generate a list of intersection points for each line
-    // Each line has the same distribution of points
-    const pts: IPoint[][] = [];
+    const dists: number[] = [];
+    for (let j = 0; j <= gridHeight; j++) {
+        dists.push(innerR + cellSize * j);
+    }
+
     const phi = 360 / gridWidth;
+    const pts: IPoint[][] = [];
     for (let i = 0; i < gridWidth; i++) {
         const line: IPoint[] = [];
         const angle = start + (phi * i);
-        for (let j = 0; j <= gridHeight; j++) {
-            const [x,y] = projectPoint(0, 0, cellSize * j, angle);
-            line.push({x,y})
+        for (const dist of dists) {
+            const [x, y] = projectPoint(0, 0, dist, angle);
+            line.push({x, y});
         }
         pts.push(line);
     }
-    // wrap the lines around
-    pts.push(pts[0].map(pt => {return {...pt}}));
+    pts.push(pts[0].map(pt => ({...pt})));
 
-    // construct polys, section by section, from inside to outside
+    return {pts, dists, gridWidth, gridHeight, innerR, cellSize, start};
+}
+
+/** Radial centroid of an annular sector between `rInner` and `rOuter`. */
+export function annularSectorCentroidRadius(rInner: number, rOuter: number): number {
+    if (rOuter <= rInner) {
+        return rInner;
+    }
+    const outer2 = rOuter * rOuter;
+    const inner2 = rInner * rInner;
+    return (2 / 3) * (outer2 * rOuter - inner2 * rInner) / (outer2 - inner2);
+}
+
+function spaceCentroid(args: IWheelArgs, row: number, col: number): IPoint {
+    const {dists, gridWidth, gridHeight, start} = resolveWheelArgs(args);
+    const bottom = gridHeight - 1 - row;
+    const top = bottom + 1;
+    const rBar = annularSectorCentroidRadius(dists[bottom], dists[top]);
+    const phi = 360 / gridWidth;
+    const midAngle = start + phi * (col + 0.5);
+    const [x, y] = projectPoint(0, 0, rBar, midAngle);
+    return {x, y};
+}
+
+/**
+ * Space centroids only — one row per ring. Row 0 is the outermost ring.
+ */
+export const wheelGridSpaces = (args: IWheelArgs): GridPoints => {
+    const {gridWidth, gridHeight} = resolveWheelArgs(args);
+    const grid: GridPoints = [];
+    for (let row = 0; row < gridHeight; row++) {
+        const spaces: IPoint[] = [];
+        for (let col = 0; col < gridWidth; col++) {
+            spaces.push(spaceCentroid(args, row, col));
+        }
+        grid.push(spaces);
+    }
+    return grid;
+};
+
+/**
+ * Intersection points only — one row per ring radius. Row 0 is the outermost ring.
+ * When innerRadius is 0, the innermost row places all spokes at the centre.
+ */
+export const wheelGridVertices = (args: IWheelArgs): GridPoints => {
+    const {pts, gridHeight, gridWidth} = resolveWheelArgs(args);
+    const grid: GridPoints = [];
+    for (let ring = gridHeight; ring >= 0; ring--) {
+        const row: IPoint[] = [];
+        for (let i = 0; i < gridWidth; i++) {
+            row.push(pts[i][ring]);
+        }
+        grid.push(row);
+    }
+    return grid;
+};
+
+/**
+ * Vertices and spaces interlaced (legacy). Row 0 is outer vertices; odd rows are spaces.
+ * Final row is the centre point when innerRadius is 0.
+ */
+export const wheelGridBoth = (args: IWheelArgs): GridPoints => {
+    const polys = wheelPolys(args);
+    const {innerR} = resolveWheelArgs(args);
+    const grid: GridPoints = [];
+    for (let row = 0; row < polys.length; row++) {
+        const slice = polys[row];
+        const verts: IPoint[] = [];
+        const spaces: IPoint[] = [];
+        for (const poly of slice) {
+            verts.push(poly.points[1]);
+            spaces.push(spaceCentroid(args, row, spaces.length));
+        }
+        grid.push(verts);
+        grid.push(spaces);
+    }
+    if (innerR === 0) {
+        grid.push([{x: 0, y: 0}]);
+    }
+    return grid;
+};
+
+/** @deprecated Use wheelGridBoth, wheelGridSpaces, or wheelGridVertices. */
+export const wheel = wheelGridBoth;
+
+export const wheelPolys = (args: IWheelArgs): (IPolyPolygon|IPolyPath)[][] => {
+    const {pts, dists, gridHeight} = resolveWheelArgs(args);
+
     const polys: (IPolyPolygon|IPolyPath)[][] = [];
     for (let slice = 0; slice < pts.length - 1; slice++) {
         const left = pts[slice];
@@ -103,93 +159,52 @@ export const wheelPolys = (args: IWheelArgs): (IPolyPolygon|IPolyPath)[][] => {
             const tl = left[top];
             const tr = right[top];
             const br = right[bottom];
-            // round off the tops
+            const bottomR = dists[bottom];
+            const topR = dists[top];
+
             if (cell === gridHeight - 1) {
-                if (straight) {
-                    slicePolys.push({
-                        type: "path",
-                        points: [bl, tl, tr, br],
-                        path: `M${tl.x},${tl.y} A ${cellSize * top} ${cellSize * top} 0 0 1 ${tr.x},${tr.y} L${br.x},${br.y} L${bl.x},${bl.y} Z`
-                    });
-                } else {
-                    slicePolys.push({
-                        type: "path",
-                        points: [bl, tl, tr, br],
-                        path: `M${tl.x},${tl.y} A ${cellSize * top} ${cellSize * top} 0 0 1 ${tr.x},${tr.y} L${br.x},${br.y} A ${cellSize * bottom} ${cellSize * bottom} 0 0 0 ${bl.x},${bl.y} Z`
-                    });
-                }
-            }
-            // innermost cells only have three points
-            else if (cell === 0) {
-                if (straight) {
-                    slicePolys.push({
-                        type: "poly",
-                        points: [bl, tl, tr],
-                    });
-                } else {
-                    slicePolys.push({
-                        type: "path",
-                        points: [bl, tl, tr],
-                        path: `M${tl.x},${tl.y} A ${cellSize * top} ${cellSize * top} 0 0 1 ${tr.x},${tr.y} L${bl.x},${bl.y} Z`
-                    });
-                }
-            }
-            // round out the others if `straight` is false
-            else {
-                if (straight) {
-                    slicePolys.push({type: "poly", points: [bl, tl, tr, br]});
-                } else {
-                    slicePolys.push({
-                        type: "path",
-                        points: [bl, tl, tr, br],
-                        path: `M${tl.x},${tl.y} A ${cellSize * top} ${cellSize * top} 0 0 1 ${tr.x},${tr.y} L${br.x},${br.y} A ${cellSize * bottom} ${cellSize * bottom} 0 0 0 ${bl.x},${bl.y} Z`
-                    });
-                }
+                slicePolys.push({
+                    type: "path",
+                    points: [bl, tl, tr, br],
+                    path: `M${tl.x},${tl.y} A ${topR} ${topR} 0 0 1 ${tr.x},${tr.y} L${br.x},${br.y} A ${bottomR} ${bottomR} 0 0 0 ${bl.x},${bl.y} Z`,
+                });
+            } else if (cell === 0 && bottomR === 0) {
+                slicePolys.push({
+                    type: "path",
+                    points: [bl, tl, tr],
+                    path: `M${tl.x},${tl.y} A ${topR} ${topR} 0 0 1 ${tr.x},${tr.y} L${bl.x},${bl.y} Z`,
+                });
+            } else {
+                slicePolys.push({
+                    type: "path",
+                    points: [bl, tl, tr, br],
+                    path: `M${tl.x},${tl.y} A ${topR} ${topR} 0 0 1 ${tr.x},${tr.y} L${br.x},${br.y} A ${bottomR} ${bottomR} 0 0 0 ${bl.x},${bl.y} Z`,
+                });
             }
         }
         polys.push(slicePolys);
     }
-    // currently col/row, but we need row/col
+
     const rearranged: (IPolyPolygon|IPolyPath)[][] = [];
     for (let row = 0; row < gridHeight; row++) {
         rearranged.push([...polys.map(col => col[gridHeight - 1 - row])]);
     }
-    // finally, add the centre circle
     return rearranged;
-}
+};
 
 export const wheelLabels = (args: IWheelArgs): IPoint[] => {
-    let cellSize = 50;
-    if (args.cellSize !== undefined) {
-        cellSize = args.cellSize;
-    }
-
-    let gridHeight = 4;
-    let gridWidth = 8;
-    if (args.gridHeight !== undefined) {
-        gridHeight = args.gridHeight;
-    }
-    if (args.gridWidth !== undefined) {
-        gridWidth = args.gridWidth;
-    }
-    // let straight = true;
-    // if (args.straight !== undefined) {
-    //     straight = args.straight;
-    // }
-    let start = 0;
-    if (args.start !== undefined) {
-        start = args.start;
-    }
-
-    const innerR = 0;
-    const webR = gridHeight * cellSize;
-    const outerR = innerR + webR;
+    const {dists, gridWidth, gridHeight, cellSize, start} = resolveWheelArgs(args);
+    const outerR = dists[gridHeight];
     const phi = 360 / gridWidth;
     const pts: IPoint[] = [];
     for (let i = 0; i < gridWidth; i++) {
         const angle = start + (phi * (i + 0.5));
-        const [x,y] = projectPoint(0, 0, outerR + (cellSize / 2), angle);
-        pts.push({x,y})
+        const [x, y] = projectPoint(0, 0, outerR + (cellSize / 2), angle);
+        pts.push({x, y});
     }
     return pts;
-}
+};
+
+/** Interlace space-ring polys with empty rows for legacy both-mode flood markers. */
+export const wheelPolysInterlaced = (args: IWheelArgs): (IPolyPolygon | IPolyPath)[][] =>
+    wheelPolys(args).reduce((prev, curr) => [...prev, curr, []], [[]] as (IPolyPolygon | IPolyPath)[][]);

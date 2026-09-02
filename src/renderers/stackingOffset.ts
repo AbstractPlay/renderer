@@ -105,6 +105,9 @@ export class StackingOffsetRenderer extends RendererBase {
                 ({ grid: gridPoints, polys, boardFill } = cobweb(this));
                 break;
             case "circular-wheel":
+            case "circular-wheel-spaces":
+            case "circular-wheel-vertices":
+            case "circular-wheel-spaces-checkered":
                 ({ grid: gridPoints, polys, boardFill } = wheel(this));
                 break;
             case "conhex-cells":

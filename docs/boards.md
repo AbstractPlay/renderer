@@ -212,7 +212,23 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 ### `circular-wheel`
 
+Legacy interlaced style: pieces may be placed on **vertices** (even rows) or **space** centroids (odd rows). Row 0 is the outermost vertex ring; the final row is the centre point when `circular-inner` is 0. New games should prefer the explicit styles below.
+
 {% renderWidget "samples/board-wheel.json" %}
+
+### `circular-wheel-spaces`
+
+Spaces only — one row per ring. Row 0 is the outer ring, row `height - 1` is the inner ring. Supports `backFill`, `blocked`, `columnLabels`, and `circular-inner`.
+
+### `circular-wheel-vertices`
+
+Vertices only — intersection points at each ring radius. Row 0 is the outer ring. Supports `backFill`, `blocked`, and `columnLabels`.
+
+### `circular-wheel-spaces-checkered`
+
+Like `circular-wheel-spaces` with alternating light/dark sector fills (no flood markers required). Optional `startLight` controls which ring/column parity is light.
+
+{% renderWidget "samples/board-wheel-annular-chess.json" %}
 
 ### `circular-cobweb`
 
