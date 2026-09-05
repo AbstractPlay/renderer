@@ -39,7 +39,7 @@ sheet.glyphs.set("chess-amazon-outline-traditional", (canvas: SVGContainer) => {
     group.path("M21.007 3.708a1.463 1.45 0 1 0 2.925 0 1.463 1.45 0 1 0-2.925 0");
     group.path("M27.223 4.434a1.463 1.45 0 1 0 2.925 0 1.463 1.45 0 1 0-2.925 0");
     group.path("M33.073 6.61a1.463 1.45 0 1 0 2.925 0 1.463 1.45 0 1 0-2.925 0");
-    symbol.viewbox(6.9395, 0.2071, 31.059, 43.3379);
+    symbol.viewbox(7.4395, 0.7071, 30.059, 42.3379);
     return symbol;
 });
 
@@ -74,7 +74,7 @@ sheet.glyphs.set("chess-amazon-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.1});
-    symbol.viewbox(-4.7, -4.7, 54.4, 54.4);
+    symbol.viewbox(7.4, 0.8, 30.1, 42.5);
     return symbol;
 });
 
@@ -101,7 +101,7 @@ sheet.glyphs.set("chess-archbishop-outline-traditional", (canvas: SVGContainer) 
         .stroke("none");
     group.path("m29.5 29.8c0.7-15.3-1.9-21-6.9-21.8")
         .fill("none");
-    symbol.viewbox(-4.7, -4.7, 54.4, 54.4);
+    symbol.viewbox(4.5, 3.8, 36, 36.5284);
     return symbol;
 });
 
@@ -134,7 +134,7 @@ sheet.glyphs.set("chess-archbishop-solid-traditional", (canvas: SVGContainer) =>
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5});
-    symbol.viewbox(-4.7, -4.7, 54.4, 54.4);
+    symbol.viewbox(4.5, 3.8, 36, 36.5284);
     return symbol;
 });
 
@@ -264,7 +264,7 @@ sheet.glyphs.set("chess-boat-outline-traditional", (canvas: SVGContainer) => {
     group.path("M24.984 8.203v19.169")
         .fill("none");
     group.path("M34.387 24.448s2.03-6.635-1.774-12.545H14.781c3.804 5.91 1.866 12.49 2.005 12.545l.836-.006z");
-    symbol.viewbox(0.23, 6.132, 44.0592, 28.444);
+    symbol.viewbox(0.73, 6.632, 43.0592, 27.444);
     return symbol;
 });
 
@@ -288,7 +288,7 @@ sheet.glyphs.set("chess-boat-solid-traditional", (canvas: SVGContainer) => {
         .stroke({color: "#fff", width: 1.5, linejoin: "miter"});
     group.path("M33.629 23.566s1.755-5.7-1.534-10.78H16.184c3.29 5.077 1.614 10.73 1.734 10.78l.723-.006z");
     group.path("m40.979 26.006-3.22 2.531a.93.93 0 0 1-.562.219h-23.34a.925.925 0 0 1-.875-.625l-.625-1.75H3.17v.5h3a.93.93 0 0 1 .844.562l1.812 4.125 27.59.063c.063-.02.071-.036.156-.063.076-.023.163-.043.22-.062 2.5-1.998 3.64-3.953 4.155-5.375.03-.081.006-.048.031-.125z");
-    symbol.viewbox(-0.081, 5.856, 44.7166, 29.07);
+    symbol.viewbox(0.769, 6.706, 43.0166, 27.37);
     return symbol;
 });
 
@@ -315,7 +315,7 @@ sheet.glyphs.set("chess-centaur-outline-traditional", (canvas: SVGContainer) => 
         .fill("none");
     group.path("M22.5 19.7s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5");
     group.path("M38.5 14.2c-4-6.5-13.5-3.5-16 4v3.5-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10 5.5-3 15.5-3 21 0 0 0 9-4 6-10");
-    symbol.viewbox(3.8269, -1.3, 37.2854, 47.746);
+    symbol.viewbox(4.3269, -0.8, 36.2854, 46.746);
     return symbol;
 });
 
@@ -357,7 +357,7 @@ sheet.glyphs.set("chess-centaur-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5});
-    symbol.viewbox(3.8269, -1.352, 37.2854, 48.072);
+    symbol.viewbox(4.3269, -0.852, 36.2854, 47.072);
     return symbol;
 });
 
@@ -371,7 +371,7 @@ sheet.glyphs.set("chess-champion-outline-traditional", (canvas: SVGContainer) =>
     group.path("M 22.5 4 C 22.467298 9.7235199 11.24221 10.524784 11 16 C 10.741151 21.804116 11.11112 33.16307 10.5 35.96875 C 10.233176 37.193751 5.0293445 37.220791 5 39 C 4.9746717 40.535701 15.379315 40 22.5 40 C 29.620685 40 40.025328 40.535701 40 39 C 39.970655 37.220791 34.766824 37.193751 34.5 35.96875 C 33.888879 33.16307 34.258849 21.804116 34 16 C 33.75779 10.524784 22.532702 9.7235199 22.5 4 z ");
     group.path("M18.5 19h8");
     group.path("M22.5 19v12");
-    symbol.viewbox(3, 2, 39.0001, 40.0905);
+    symbol.viewbox(3.5, 2.5, 38.0001, 39.0905);
     return symbol;
 });
 
@@ -390,7 +390,7 @@ sheet.glyphs.set("chess-champion-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5});
-    symbol.viewbox(3, 2, 39.0001, 40.0905);
+    symbol.viewbox(3.5, 2.5, 38.0001, 39.0905);
     return symbol;
 });
 
@@ -420,7 +420,7 @@ sheet.glyphs.set("chess-chancellor-outline-traditional", (canvas: SVGContainer) 
         .fill("none");
     group.path("M 30,30 L 15,30")
         .fill("none");
-    symbol.viewbox(6.098, 3.331, 29.902, 38.489);
+    symbol.viewbox(6.598, 3.831, 28.902, 37.489);
     return symbol;
 });
 
@@ -451,7 +451,7 @@ sheet.glyphs.set("chess-chancellor-solid-traditional", (canvas: SVGContainer) =>
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5, linecap: "butt", linejoin: "miter"});
-    symbol.viewbox(6.098, 3.331, 29.902, 38.489);
+    symbol.viewbox(6.598, 3.831, 28.902, 37.489);
     return symbol;
 });
 
@@ -470,7 +470,7 @@ sheet.glyphs.set("chess-commoner-outline-traditional", (canvas: SVGContainer) =>
         .fill("none");
     group.path("m10.6 35.1c6-3.2 16.8-3.2 22.7 0")
         .fill("none");
-    symbol.viewbox(-4.75, -4.75, 54.5, 54.5);
+    symbol.viewbox(2.9864, 5.5, 38.9926, 33.95);
     return symbol;
 });
 
@@ -502,7 +502,7 @@ sheet.glyphs.set("chess-commoner-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.725});
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(2.8019, 5.3037, 39.3816, 34.339);
     return symbol;
 });
 
@@ -518,7 +518,7 @@ sheet.glyphs.set("chess-dabbaba-outline-traditional", (canvas: SVGContainer) => 
         .fill("none");
     group.path("M6.754 37.493a4.354 4.452 0 1 0 8.708 0 4.354 4.452 0 1 0-8.708 0");
     group.path("M29.71 37.493a4.354 4.452 0 1 0 8.709 0 4.354 4.452 0 1 0-8.708 0");
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(5.254, 8.516, 34.665, 34.8315);
     return symbol;
 });
 
@@ -544,7 +544,7 @@ sheet.glyphs.set("chess-dabbaba-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.725});
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(5.254, 8.516, 34.665, 34.8315);
     return symbol;
 });
 
@@ -575,7 +575,7 @@ sheet.glyphs.set("chess-dragon-outline-traditional", (canvas: SVGContainer) => {
         .fill("none");
     group.path("m 33.037975,33.607595 c -0.103568,2.951669 2.951668,3.003452 2.899885,0")
         .fill("none");
-    symbol.viewbox(3.3743, 5.1554, 36.6546, 35.8446);
+    symbol.viewbox(3.8743, 5.6554, 35.6546, 34.8446);
     return symbol;
 });
 
@@ -615,7 +615,7 @@ sheet.glyphs.set("chess-dragon-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5, linejoin: "miter"});
-    symbol.viewbox(3.3743, 5.1554, 36.6546, 35.8446);
+    symbol.viewbox(3.8743, 5.6554, 35.6546, 34.8446);
     return symbol;
 });
 
@@ -676,7 +676,7 @@ sheet.glyphs.set("chess-elephant-outline-traditional", (canvas: SVGContainer) =>
     group.path("M21.948 26.632c.38.269 1.505.039 1.505.039");
     group.path("M13.67 23.647c-1.436-.414-3.786-1.333-4.937-1.93-.823-.427-2.355-1.442-3.259-2.16-.933-.74-2.177-1.815-2.177-1.881 0-.032.408-.65.907-1.375 2.667-3.873 4.934-6.392 6.412-7.124.487-.242.672-.281 1.459-.315.559-.025 1.282.014 1.907.102 1.197.168 2.926.568 2.926.678 0 .042-.089.124-.198.18-.707.367-1.92 1.19-2.014 1.367-.154.288-.01 1.491.455 3.781.649 3.206.835 3.73 1.615 4.549l.483.506-.31.485c-.403.627-.586 1.053-.77 1.792-.162.658-.805 1.741-1.028 1.735-.073-.002-.735-.177-1.471-.39");
     group.path("M29.776 23.448a4.5 4.5 0 0 1-.581-1.313 6 6 0 0 0-.606-1.41l-.416-.693.38-.38a4.2 4.2 0 0 0 1.087-1.795c.27-.897.86-3.894 1.03-5.241.138-1.083.14-1.246.025-1.45-.075-.133-.572-.498-1.17-.858-.57-.344-1.038-.653-1.038-.686 0-.088 2.133-.572 3.067-.696 1.24-.165 2.521-.081 3.148.206 1.269.58 3.159 2.547 5.404 5.623.86 1.177 1.883 2.677 1.954 2.864.074.19-2.139 2.017-3.776 3.116-1.696 1.139-4.328 2.293-6.743 2.958-.703.193-1.3.351-1.326.351s-.223-.268-.439-.596");
-    symbol.viewbox(0.237, 6.035, 44.93, 32.8568);
+    symbol.viewbox(0.737, 6.535, 43.93, 31.8568);
     return symbol;
 });
 
@@ -778,7 +778,7 @@ sheet.glyphs.set("chess-elephant-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5, linejoin: "miter"});
-    symbol.viewbox(0.237, 6.035, 44.93, 32.8568);
+    symbol.viewbox(0.737, 6.535, 43.93, 31.8568);
     return symbol;
 });
 
@@ -815,7 +815,7 @@ sheet.glyphs.set("chess-ferz-outline-traditional", (canvas: SVGContainer) => {
         .fill("none");
     group.path("m19.49 24.491 5.886-5.885")
         .fill("none");
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(7.8275, 6.1345, 29.684, 34.5405);
     return symbol;
 });
 
@@ -839,7 +839,7 @@ sheet.glyphs.set("chess-ferz-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.1});
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(7.8275, 6.1345, 29.684, 34.5405);
     return symbol;
 });
 
@@ -859,7 +859,7 @@ sheet.glyphs.set("chess-fool-outline-traditional", (canvas: SVGContainer) => {
         .fill("none");
     group.path("M 15,32 C 20,30 25,30.01558 30,32")
         .fill("none");
-    symbol.viewbox(-0.3694, 2.0248, 45.7343, 40.9439);
+    symbol.viewbox(0.1306, 2.5248, 44.7343, 39.9439);
     return symbol;
 });
 
@@ -884,7 +884,7 @@ sheet.glyphs.set("chess-fool-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5});
-    symbol.viewbox(-0.3694, 2.0248, 45.7343, 38.1885);
+    symbol.viewbox(0.1306, 2.5248, 44.7343, 37.1885);
     return symbol;
 });
 
@@ -920,7 +920,7 @@ sheet.glyphs.set("chess-giraffe-outline-traditional", (canvas: SVGContainer) => 
         .attr("data-playerfill2", true)
         .fill("#000")
         .stroke("none");
-    symbol.viewbox(3.3665, 0.2, 38.1335, 42.9003);
+    symbol.viewbox(3.8665, 0.7, 37.1335, 41.9003);
     return symbol;
 });
 
@@ -959,7 +959,7 @@ sheet.glyphs.set("chess-giraffe-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerfill2", true)
         .fill("#fff")
         .stroke("none");
-    symbol.viewbox(3.3665, 0.2, 38.1335, 42.9003);
+    symbol.viewbox(3.8665, 0.7, 37.1335, 41.9003);
     return symbol;
 });
 
@@ -1215,7 +1215,7 @@ sheet.glyphs.set("chess-mann-outline-traditional", (canvas: SVGContainer) => {
         .fill("none");
     group.path("M33.072 16.852v6.7875")
         .fill("none");
-    symbol.viewbox(2.9961, -0.0117, 39.0079, 44.1311);
+    symbol.viewbox(3.4961, 0.4883, 38.0079, 43.1311);
     return symbol;
 });
 
@@ -1242,7 +1242,7 @@ sheet.glyphs.set("chess-mann-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 0.9});
-    symbol.viewbox(2.9961, -0.0117, 39.0079, 44.1311);
+    symbol.viewbox(3.4961, 0.4883, 38.0079, 43.1311);
     return symbol;
 });
 
@@ -1273,7 +1273,7 @@ sheet.glyphs.set("chess-nightrider-outline-traditional", (canvas: SVGContainer) 
     group.path("M37.006 25.002h5.498v2h-5.501Z");
     group.path("M38.001 30.003h5.003v2h-5.003Z");
     group.path("M38.001 35.003h5.003v2h-5.003Z");
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(4.501, 2.9451, 40.003, 37.5569);
     return symbol;
 });
 
@@ -1304,7 +1304,7 @@ sheet.glyphs.set("chess-nightrider-solid-traditional", (canvas: SVGContainer) =>
         .fill("#fff")
         .stroke("none");
     group.path("M15.8 14.751a.5 1.502 60 1 1-2.6 1.502.5 1.502 60 1 1 2.6-1.502");
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(4.501, 2.9451, 40.003, 38.0579);
     return symbol;
 });
 
@@ -1661,7 +1661,7 @@ sheet.glyphs.set("chess-short-rook-outline-traditional", (canvas: SVGContainer) 
         .fill("none");
     group.path("M12 33.003h21.003")
         .fill("none");
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(7.495, 13.501, 30.009, 27.003);
     return symbol;
 });
 
@@ -1693,7 +1693,7 @@ sheet.glyphs.set("chess-short-rook-solid-traditional", (canvas: SVGContainer) =>
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.2});
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(7.495, 13.501, 30.009, 27.003);
     return symbol;
 });
 
@@ -1714,7 +1714,7 @@ sheet.glyphs.set("chess-unicorn-outline-traditional", (canvas: SVGContainer) => 
         .attr("data-playerfill2", true)
         .fill("#000")
         .stroke("none");
-    symbol.viewbox(2.9361, 4.7885, 37.0928, 36.2115);
+    symbol.viewbox(3.4361, 5.2885, 36.0928, 35.2115);
     return symbol;
 });
 
@@ -1738,7 +1738,7 @@ sheet.glyphs.set("chess-unicorn-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerfill2", true)
         .fill("#fff")
         .stroke("none");
-    symbol.viewbox(2.9361, 4.7885, 37.0928, 36.7115);
+    symbol.viewbox(3.4361, 5.2885, 36.0928, 35.7115);
     return symbol;
 });
 
@@ -1755,7 +1755,7 @@ sheet.glyphs.set("chess-wazir-outline-traditional", (canvas: SVGContainer) => {
         .fill("none");
     group.path("M18.142 21.58h8.284")
         .fill("none");
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(7.8275, 6.1345, 29.684, 34.5405);
     return symbol;
 });
 
@@ -1779,7 +1779,7 @@ sheet.glyphs.set("chess-wazir-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.1});
-    symbol.viewbox(-5.1, -5.1, 55.2, 55.2);
+    symbol.viewbox(7.8275, 6.1345, 29.684, 34.5405);
     return symbol;
 });
 
@@ -1791,7 +1791,7 @@ sheet.glyphs.set("chess-wizard-outline-traditional", (canvas: SVGContainer) => {
         .fill({color: "#fff", opacity: 1, rule: "evenodd"})
         .stroke({color: "#000", width: 1.5, linecap: "round", linejoin: "round", miterlimit: 4});
     group.path("M22.338 7.41c4.008 2.333 6.706 6.66 6.706 11.628 0 7.433-6.035 13.468-13.467 13.468a13.4 13.4 0 0 1-8.816-3.3c2.334 5.94 8.108 10.169 14.874 10.169 8.826 0 16.01-7.184 16.01-16.01 0-8.586-6.812-15.581-15.307-15.955");
-    symbol.viewbox(4.761, 5.41, 34.884, 35.965);
+    symbol.viewbox(5.261, 5.91, 33.884, 34.965);
     return symbol;
 });
 
@@ -1802,7 +1802,7 @@ sheet.glyphs.set("chess-wizard-solid-traditional", (canvas: SVGContainer) => {
         .fill({color: "#000", opacity: 1, rule: "evenodd"})
         .stroke({color: "#000", width: 1.5, linecap: "round", linejoin: "round", miterlimit: 4});
     group.path("M22.338 7.41c4.008 2.333 6.706 6.66 6.706 11.628 0 7.433-6.035 13.468-13.467 13.468a13.4 13.4 0 0 1-8.816-3.3c2.334 5.94 8.108 10.169 14.874 10.169 8.826 0 16.01-7.184 16.01-16.01 0-8.586-6.812-15.581-15.307-15.955");
-    symbol.viewbox(4.761, 5.41, 34.884, 35.965);
+    symbol.viewbox(5.261, 5.91, 33.884, 34.965);
     return symbol;
 });
 
@@ -1859,7 +1859,7 @@ sheet.glyphs.set("chess-zebra-outline-traditional", (canvas: SVGContainer) => {
         .attr("data-playerfill2", true)
         .fill("#000")
         .stroke("none");
-    symbol.viewbox(3.5272, 3.57, 37.9483, 37.905);
+    symbol.viewbox(4.0272, 4.07, 36.9483, 36.905);
     return symbol;
 });
 
@@ -1912,7 +1912,7 @@ sheet.glyphs.set("chess-zebra-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerfill2", true)
         .fill("#fff")
         .stroke("none");
-    symbol.viewbox(4.047, 4.116, 36.971, 36.884);
+    symbol.viewbox(4.547, 4.616, 35.971, 35.884);
     return symbol;
 });
 

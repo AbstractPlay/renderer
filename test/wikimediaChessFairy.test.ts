@@ -47,6 +47,44 @@ describe("Wikimedia fairy chess import", () => {
         const parts = vb![1].split(",").map((s) => Number.parseFloat(s.trim()));
         expect(parts[2]).to.be.greaterThan(30, "viewbox width should match knight-scale tile");
         expect(parts[3]).to.be.greaterThan(30, "viewbox height should match knight-scale tile");
+        expect(Math.max(parts[2], parts[3])).to.be.lessThan(48, "viewbox should not retain Wikimedia 55px padding");
         expect(block).to.include("M21.");
+    });
+
+    it("fairy traditional glyphs avoid oversized Wikimedia viewboxes", () => {
+        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const fairy = [
+            "amazon", "archbishop", "boat", "centaur", "champion", "chancellor", "commoner",
+            "dabbaba", "dragon", "elephant", "ferz", "fool", "giraffe", "mann", "nightrider",
+            "short-rook", "unicorn", "wazir", "wizard", "zebra",
+        ];
+        for (const piece of fairy) {
+            for (const variant of ["outline", "solid"]) {
+                const name = `chess-${piece}-${variant}-traditional`;
+                const block = extractGlyphBlock(chessTs, name);
+                const vb = block.match(/symbol\.viewbox\(([^)]+)\)/);
+                expect(vb, name).to.not.equal(null);
+                const parts = vb![1].split(",").map((s) => Number.parseFloat(s.trim()));
+                const maxDim = Math.max(parts[2], parts[3]);
+                expect(maxDim, `${name} viewbox max`).to.be.lessThan(48);
+                expect(vb![1], `${name} Wikimedia padding`).to.not.match(/-5\.1,\s*-5\.1,\s*55\.2,\s*55\.2/);
+            }
+        }
+    });
+
+    it("short rook renders smaller than standard rook", () => {
+        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const maxDim = (name: string): number => {
+            const block = extractGlyphBlock(chessTs, name);
+            const vb = block.match(/symbol\.viewbox\(([^)]+)\)/)!;
+            const parts = vb[1].split(",").map((s) => Number.parseFloat(s.trim()));
+            return Math.max(parts[2], parts[3]);
+        };
+        expect(maxDim("chess-short-rook-outline-traditional")).to.be.lessThan(
+            maxDim("chess-rook-outline-traditional"),
+        );
+        expect(maxDim("chess-short-rook-solid-traditional")).to.be.lessThan(
+            maxDim("chess-rook-solid-traditional"),
+        );
     });
 });
