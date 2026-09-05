@@ -274,20 +274,29 @@ sheet.glyphs.set("chess-boat-solid-traditional", (canvas: SVGContainer) => {
         .attr("data-playerfill", true)
         .fill({color: "#000", opacity: 1, rule: "evenodd"})
         .stroke({color: "#000", width: 1.5, linecap: "round", linejoin: "round", miterlimit: 4});
-    group.path("m8.369 32.516 28.13.06s.69-.21.75-.25c5.43-4.26 5.03-8.54 5.03-8.54l-5.09 4.04h-23.33l-.89-2.38h-10.7v2.38h3.9l2 4.62")
-        .attr("data-playerfill2", true)
-        .fill("#fff")
-        .stroke("none");
-    group.path("M34.389 24.446s2.03-6.63-1.78-12.54h-17.83c3.81 5.91 1.87 12.49 2.01 12.54z");
     group.path("M24.989 8.206v19.17")
         .fill("none")
         .stroke({color: "#000", width: 3, linejoin: "miter"});
+    group.path("M7.543 25.209l17.42-17.07 14.85 17.67")
+        .fill("none")
+        .stroke({color: "#000", width: 0.8, linejoin: "miter", linecap: "round"});
     group.path("M25.029 8.206v19.17")
         .attr("data-playerstroke2", true)
         .fill("none")
         .stroke({color: "#fff", width: 1.5, linejoin: "miter"});
-    group.path("M33.629 23.566s1.755-5.7-1.534-10.78H16.184c3.29 5.077 1.614 10.73 1.734 10.78l.723-.006z");
-    group.path("m40.979 26.006-3.22 2.531a.93.93 0 0 1-.562.219h-23.34a.925.925 0 0 1-.875-.625l-.625-1.75H3.17v.5h3a.93.93 0 0 1 .844.562l1.812 4.125 27.59.063c.063-.02.071-.036.156-.063.076-.023.163-.043.22-.062 2.5-1.998 3.64-3.953 4.155-5.375.03-.081.006-.048.031-.125z");
+    group.path("m8.369 32.516 28.13.06s.69-.21.75-.25c5.43-4.26 5.03-8.54 5.03-8.54l-5.09 4.04h-23.33l-.89-2.38h-10.7v2.38h3.9l2 4.62")
+        .attr("data-playerfill2", true)
+        .fill("#fff");
+    group.path("M34.389 24.446s2.03-6.63-1.78-12.54h-17.83c3.81 5.91 1.87 12.49 2.01 12.54z")
+        .attr("data-playerfill2", true)
+        .fill("#fff");
+    group.path("M34.389 24.446s2.03-6.63-1.78-12.54h-17.83c3.81 5.91 1.87 12.49 2.01 12.54z");
+    group.path("M33.629 23.566s1.755-5.7-1.534-10.78H16.184c3.29 5.077 1.614 10.73 1.734 10.78l.723-.006z")
+        .attr("data-playerstroke2", true)
+        .stroke({color: "#fff", width: 1});
+    group.path("m40.979 26.006-3.22 2.531a.93.93 0 0 1-.562.219h-23.34a.925.925 0 0 1-.875-.625l-.625-1.75H3.17v.5h3a.93.93 0 0 1 .844.562l1.812 4.125 27.59.063c.063-.02.071-.036.156-.063.076-.023.163-.043.22-.062 2.5-1.998 3.64-3.953 4.155-5.375.03-.081.006-.048.031-.125z")
+        .attr("data-playerstroke2", true)
+        .stroke({color: "#fff", width: 1});
     symbol.viewbox(0.769, 6.706, 43.0166, 27.37);
     return symbol;
 });

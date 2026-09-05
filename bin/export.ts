@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
-import { hideBin } from "yargs/helpers";
-import yargs from "yargs/yargs";
+import yargs from "yargs";
 import { createSVGWindow } from "svgdom";
 import { sheets } from "../src/sheets/index.js";
 
 // tslint:disable-next-line: no-unused-expression
-yargs(hideBin(process.argv))
+yargs(process.argv.slice(2))
   .command("$0 <sheet> <glyph>", "export a glyph", (y) => {
       return y.positional("sheet", {
         demandOption: true,

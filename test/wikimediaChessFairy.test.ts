@@ -72,6 +72,33 @@ describe("Wikimedia fairy chess import", () => {
         }
     });
 
+    it("boat solid hull has white fill with outer black stroke", () => {
+        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const block = extractGlyphBlock(chessTs, "chess-boat-solid-traditional");
+        const deckIdx = block.indexOf('m8.369 32.516 28.13.06');
+        const deckEnd = block.indexOf("group.path(", deckIdx + 1);
+        const deckBlock = block.slice(deckIdx, deckEnd);
+        expect(deckBlock).to.include('fill("#fff")');
+        expect(deckBlock).not.to.include('.stroke("none")');
+        expect(block).to.match(/m40\.979 26\.006[\s\S]*data-playerstroke2[\s\S]*stroke\(\{color: "#fff", width: 1\}/);
+    });
+
+    it("boat solid includes sail rigging ropes", () => {
+        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const block = extractGlyphBlock(chessTs, "chess-boat-solid-traditional");
+        expect(block).to.include("M7.543 25.209l17.42-17.07 14.85 17.67");
+        expect(block).to.match(/group\.path\("M7\.543 25\.209l17\.42-17\.07 14\.85 17\.67"\)[\s\S]*?width: 0\.8/);
+        const ropeIdx = block.indexOf('group.path("M7.543 25.209l17.42-17.07 14.85 17.67")');
+        const sailIdx = block.indexOf(
+            'group.path("M34.389 24.446s2.03-6.63-1.78-12.54h-17.83c3.81 5.91 1.87 12.49 2.01 12.54z")',
+        );
+        expect(ropeIdx).to.be.greaterThan(-1);
+        expect(sailIdx).to.be.greaterThan(ropeIdx, "rigging sits under the sail fill");
+        const ropeEnd = block.indexOf("width: 0.8", ropeIdx);
+        expect(ropeEnd).to.be.greaterThan(ropeIdx);
+        expect(block.slice(ropeIdx, ropeEnd)).not.to.include("data-playerstroke2");
+    });
+
     it("short rook renders smaller than standard rook", () => {
         const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
         const maxDim = (name: string): number => {
