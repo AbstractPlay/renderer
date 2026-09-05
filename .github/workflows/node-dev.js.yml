@@ -141,15 +141,3 @@ jobs:
           https://api.github.com/repos/abstractplay/gameslib/dispatches \
           -d "$(jq -n --arg v "$RENDERER_VERSION" '{event_type:"dep_update_dev", client_payload:{renderer_version:$v}}')"
 
-      - name: Trigger designer rebuild
-        env:
-          RENDERER_VERSION: ${{ needs.build.outputs.renderer_version }}
-        run: |
-          curl -L \
-          -X POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.PAT_WORKFLOWS }}" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/abstractplay/designer/dispatches \
-          -d "$(jq -n --arg v "$RENDERER_VERSION" '{event_type:"dep_update_prod", client_payload:{renderer_version:$v}}')"
-
