@@ -579,6 +579,10 @@ export interface Glyph {
    */
   nudge?: {
     /**
+     * The offset coordinate system. 'glyph' uses the glyph's rotated/flipped axes. 'piece' uses the enclosing piece (or isometric face) axes, allowing an upright label's position to rotate with its piece. Both use glyph-scaled units.
+     */
+    relativeTo?: "glyph" | "piece";
+    /**
      * Negative values move the glyph to the left.
      */
     dx?: number;

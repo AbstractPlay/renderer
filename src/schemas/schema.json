@@ -576,6 +576,11 @@
                     "description": "The number of units to nudge the glyph from centre.",
                     "type": "object",
                     "properties": {
+                        "relativeTo": {
+                            "description": "The offset coordinate system. 'glyph' uses the glyph's rotated/flipped axes. 'piece' uses the enclosing piece (or isometric face) axes, allowing an upright label's position to rotate with its piece. Both use glyph-scaled units.",
+                            "enum": ["glyph", "piece"],
+                            "default": "glyph"
+                        },
                         "dx": {
                             "description": "Negative values move the glyph to the left.",
                             "type": "number",

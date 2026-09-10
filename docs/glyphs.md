@@ -173,7 +173,7 @@ Each glyph object in the legend supports these properties. `name` and `text` are
 | `orientation` | `"fluid"` \| `"vertical"` | `"fluid"` | After rotation, `"vertical"` keeps text upright. |
 | `flipx` | boolean | `false` | Mirror horizontally. With **`fluid`** (default sheet glyphs), flip is in piece/board coordinates and rotates with the board. With **`vertical`** or text glyphs, flip is relative to the **screen** (left/right stays fixed when `board.rotate` changes). |
 | `flipy` | boolean | `false` | Mirror vertically. Same **`fluid`** vs **`vertical`** / text behaviour as `flipx`. |
-| `nudge` | `{ dx, dy }` | — | Offset from centre in cell units; negative `dx`/`dy` move left/up. |
+| `nudge` | `{ dx, dy, relativeTo? }` | — | Offset from centre in glyph-scaled units; negative `dx`/`dy` move left/up. `relativeTo: "glyph"` (default) uses the glyph's rotated/flipped axes. `relativeTo: "piece"` uses the enclosing piece or face axes, so upright text can stay beside a rotating piece. |
 | `fontFamily` | string | — | CSS font family for text glyphs. |
 | `fontWeight` | string \| number | — | CSS font weight for text glyphs. |
 

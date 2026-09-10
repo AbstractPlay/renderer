@@ -1050,7 +1050,16 @@ export abstract class RendererBase {
                 if (g.nudge.dy !== undefined) {
                     dy = g.nudge.dy;
                 }
-                use.dmove(dx, dy);
+                if (g.nudge.relativeTo === "piece") {
+                    // Translate in the enclosing piece/face axes after glyph rotation
+                    // and flips. Keep the same scaled units as the legacy nudge.
+                    const matrix = use.matrixify();
+                    matrix.e += dx * factor;
+                    matrix.f += dy * factor;
+                    use.matrix(matrix);
+                } else {
+                    use.dmove(dx, dy);
+                }
             }
         }
 
