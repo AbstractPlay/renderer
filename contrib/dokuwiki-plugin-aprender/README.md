@@ -218,10 +218,10 @@ sequenceDiagram
     Browser->>DokuWiki: Request page
     DokuWiki->>Browser: JSON scripts, placeholder divs, bundle tag
     Browser->>CDN: Load APRender.min.js once
-    Browser->>Browser: APRender.render per instance
+    Browser->>Browser: APRender.renderStatic per instance
 ```
 
-On parse, the syntax plugin validates JSON. When the page body is rendered, each block outputs its JSON in `<script type="application/json">` tags plus a `<div class="aprender">` placeholder, and the first block on the page also emits the `APRender.min.js` script tag. Client `script.js` reads that embedded JSON and calls `APRender.render()` for each placeholder.
+On parse, the syntax plugin validates JSON. When the page body is rendered, each block outputs its JSON in `<script type="application/json">` tags plus a `<div class="aprender">` placeholder, and the first block on the page also emits the `APRender.min.js` script tag. Client `script.js` reads that embedded JSON and calls `APRender.renderStatic()` for each placeholder. Each instance passes a unique `prefix` (derived from its container id) so internal SVG ids (patterns, gradients, etc.) do not collide when multiple boards appear on one page.
 
 DokuWiki builds the page `<head>` (including `JSINFO`) **before** the body, so instance data is **not** passed via `JSINFO`.
 

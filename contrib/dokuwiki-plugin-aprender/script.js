@@ -244,7 +244,10 @@
     function whenAPRenderReady(onReady, onTimeout, attempts) {
         var remaining = attempts === undefined ? 200 : attempts;
 
-        if (window.APRender && typeof window.APRender.render === 'function') {
+        if (
+            window.APRender
+            && typeof window.APRender.renderStatic === 'function'
+        ) {
             onReady();
             return;
         }
@@ -272,13 +275,15 @@
         applyFrameSizing(container, options);
 
         var renderOptions = settingsToRenderOptions(options.settings);
-        renderOptions.divid = instance.id;
         renderOptions.prefix = instance.id + '-';
         applyLayoutOptions(renderOptions, options);
         applyFrameBackground(container, renderOptions);
 
         try {
-            window.APRender.render(instance.json, renderOptions);
+            container.innerHTML = window.APRender.renderStatic(
+                instance.json,
+                renderOptions
+            );
             fitSvg(container);
         } catch (err) {
             var message = err && err.message ? err.message : String(err);
