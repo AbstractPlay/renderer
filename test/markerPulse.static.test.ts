@@ -60,7 +60,13 @@ describe("marker pulse static output", () => {
 
     it("live render without staticAnimations omits pulse keyframes in serialized svg", () => {
         const draw = makeDraw();
-        render(pulseFixture, {
+        // No pulse on this board — a live pulse starts SVG.js .loop() and keeps Node alive.
+        const boardOnly: APRenderRep = {
+            board: { style: "squares", height: 1, width: 1 },
+            legend: { A: { name: "piece", colour: 1 } },
+            pieces: "A",
+        };
+        render(boardOnly, {
             ...baseOptions,
             target: draw,
             staticAnimations: false,
