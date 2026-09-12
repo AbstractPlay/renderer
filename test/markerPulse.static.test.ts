@@ -54,7 +54,7 @@ describe("marker pulse static output", () => {
     it("staticAnimations emits CSS keyframes and per-marker animation duration", () => {
         const out = staticPulseSvg("wiki-1-");
         expect(out).to.include("@keyframes aprender-marker-pulse");
-        expect(out).to.match(/animation:\s*aprender-marker-pulse\s+1500ms/i);
+        expect(out).to.match(/animation:\s*aprender-marker-pulse\s+3000ms/i);
         expect(out).to.include('id="wiki-1-aprender-pulse-keyframes"');
     });
 

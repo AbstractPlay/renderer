@@ -2,6 +2,8 @@ import { Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, Svg, TimeL
 
 export const PULSE_KEYFRAMES_STYLE_ID = "aprender-pulse-keyframes";
 const PULSE_ANIMATION_NAME = "aprender-marker-pulse";
+/** Live SVG.js swing runs duration per leg (in + out); CSS keyframes use one duration per full cycle. */
+const STATIC_PULSE_CYCLE_MULTIPLIER = 2;
 
 export type PulseElement = SVGCircle | SVGPolygon | SVGPath;
 
@@ -26,7 +28,8 @@ export const attachMarkerPulse = (
             throw new Error("rootSvg is required for static marker pulse.");
         }
         ensureStaticPulseStyles(mode.rootSvg);
-        const animation = `animation: ${PULSE_ANIMATION_NAME} ${durationMs}ms ease-in-out infinite`;
+        const cycleMs = durationMs * STATIC_PULSE_CYCLE_MULTIPLIER;
+        const animation = `animation: ${PULSE_ANIMATION_NAME} ${cycleMs}ms ease-in-out infinite`;
         const existingStyle = element.attr("style");
         element.attr(
             "style",
