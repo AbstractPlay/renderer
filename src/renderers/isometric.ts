@@ -1,5 +1,6 @@
 
-import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, TimeLike, Symbol as SVGSymbol, Use } from "@svgdotjs/svg.js";
+import { FillData, StrokeData, Svg, G as SVGG, Gradient as SVGGradient, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, Symbol as SVGSymbol, Use } from "@svgdotjs/svg.js";
+import { attachMarkerPulse } from "../common/markerPulse.js";
 import { GridPoints, IPoint, IPolyCircle, IPolyPolygon, Poly } from "../grids/_base.js";
 import { AnnotationBasic, APRenderRep, AreaKey, Colourfuncs, IsoPiece, MarkerEdge, RowCol } from "../schemas/schema.js";
 import { IRendererOptionsIn, RendererBase } from "./_base.js";
@@ -1526,10 +1527,10 @@ export class IsometricRenderer extends RendererBase {
                         }
                     }
                     if (marker.pulse !== undefined && floodEle !== undefined) {
-                        floodEle
-                            .animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike)
-
-                            .during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
+                        attachMarkerPulse(floodEle, marker.pulse, {
+                            static: this.options.staticAnimations,
+                            rootSvg: this.rootSvg,
+                        });
                     }
                 }
             }

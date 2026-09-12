@@ -1,4 +1,4 @@
-import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, TimeLike, Box as SVGBox } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, Box as SVGBox } from "@svgdotjs/svg.js";
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids/index.js";
@@ -11,6 +11,7 @@ import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys.js";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours.js";
 import { labelDisplayText } from "../common/renderLabel.js";
+import { attachMarkerPulse } from "../common/markerPulse.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
 import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphFlipAxes, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit.js";
@@ -142,6 +143,10 @@ export interface IRendererOptionsIn {
      * @param piece - A string representation of the piece that was clicked on, if any
      */
     boardHover?: (row: number, col: number, piece: string) => void;
+    /**
+     * When true, emit serialized-safe animations (e.g. CSS keyframes for marker pulse).
+     */
+    staticAnimations?: boolean;
 }
 
 /**
@@ -165,6 +170,7 @@ export interface IRendererOptionsOut {
     glyphmap: [string,string,number][];
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
+    staticAnimations: boolean;
 }
 
 export const paletteDefault = ["#e31a1c", "#1f78b4", "#33a02c", "#ffff99", "#6a3d9a", "#ff7f00", "#b15928", "#fb9a99", "#a6cee3", "#b2df8a", "#fdbf6f", "#cab2d6"];
@@ -307,7 +313,8 @@ export abstract class RendererBase {
             showAnnotations: true,
             columnLabels: "abcdefghijklmnopqrstuvwxyz",
             rotate: 0,
-            glyphmap: []
+            glyphmap: [],
+            staticAnimations: false,
         };
     }
 
@@ -444,6 +451,7 @@ export abstract class RendererBase {
         if (opts.boardHover !== undefined) {
             this.options.boardHover = opts.boardHover;
         }
+        this.options.staticAnimations = opts.staticAnimations ?? false;
     }
 
     protected buildPlayerPalette(opts: IRendererOptionsIn): void {
@@ -2198,8 +2206,10 @@ export abstract class RendererBase {
                                 break;
                         }
                         if (marker.pulse !== undefined && floodEle !== undefined) {
-
-                            floodEle.animate({duration: marker.pulse, delay: 0, when: "now", swing: true} as TimeLike).during((t: number) => floodEle!.fill({opacity: t})).loop(undefined, true);
+                            attachMarkerPulse(floodEle, marker.pulse, {
+                                static: this.options.staticAnimations,
+                                rootSvg: this.rootSvg,
+                            });
                         }
                     }
                 } else if (marker.type === "line") {

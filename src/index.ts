@@ -74,6 +74,11 @@ export interface IRenderOptions extends IRendererOptionsIn {
      * Only works with static rendering.
      */
     prefix?: string;
+    /**
+     * When true, emit CSS/SVG-native animations that survive serialization.
+     * Set by {@link renderStatic} and {@link renderglyph}; not for live {@link render}.
+     */
+    staticAnimations?: boolean;
 }
 
 export const addPrefix = (svg: string, opts = {} as IRenderOptions): string => {
@@ -110,10 +115,17 @@ export const addPrefix = (svg: string, opts = {} as IRenderOptions): string => {
             new RegExp(`href="#${escapedId}"`, "g"),
             new RegExp(`xlink:href="#${escapedId}"`, "g"),
             new RegExp(`"#${escapedId}"`, "g"), // handles cases like begin="0s;id.end"
+            // CSS id selectors in <style> blocks (e.g. glyph font-family rules)
+            new RegExp(`#${escapedId}(?=[\\s\\{\\.\\#\\>\\+\\~\\[\\,\\:])`, "g"),
             ];
 
             refPatterns.forEach((regex) => {
-                svg = svg.replace(regex, (match) => match.replace(`#${id}`, `#${newId}`));
+                svg = svg.replace(regex, (match) => {
+                    if (match.startsWith("#")) {
+                        return `#${newId}`;
+                    }
+                    return match.replace(`#${id}`, `#${newId}`);
+                });
             });
         });
     }
@@ -150,6 +162,7 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
     const uid = uuidv4();
     node.setAttribute("id", uid);
     opts.divelem = node;
+    opts.staticAnimations = true;
     const canvas = render(json, opts);
     const svgString = addPrefix(canvas.svg(), opts);
     document.body.removeChild(node); // clean up
@@ -180,6 +193,7 @@ export const renderglyph = (glyphid: string, colour: number | string | Colourfun
     const uid = uuidv4();
     node.setAttribute("id", uid);
     opts.divelem = node;
+    opts.staticAnimations = true;
     const canvas = render(obj, opts);
     return addPrefix(canvas.svg(), opts);
 }
@@ -293,7 +307,7 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, coloursGlobal: opts.coloursGlobal, colourContext: opts.colourContext, contextGlobal: opts.contextGlobal, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap,});
+    renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, coloursGlobal: opts.coloursGlobal, colourContext: opts.colourContext, contextGlobal: opts.contextGlobal, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap, staticAnimations: opts.staticAnimations ?? false});
     if (draw.bbox().h !== 0
         && draw.viewbox().h === 0  // Only set it here if the renderer didn't set it
         ) {

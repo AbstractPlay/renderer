@@ -178,4 +178,36 @@ describe("addPrefix scaled-pattern collisions", () => {
         expect(out).to.include('href="#game1-dots-extra"');
         expect(out).to.include('fill="url(#game1-dots-extra)"');
     });
+
+    it("prefixes #id selectors inside style blocks for glyph font rules", () => {
+        const svg = [
+            "<defs>",
+            "<style>#glyphA text { font-family: Custom !important; }</style>",
+            '<symbol id="glyphA"><text>A</text></symbol>',
+            "</defs>",
+            '<use href="#glyphA"/>',
+        ].join("");
+        const out = addPrefix(svg, prefixOpts);
+        expect(out).to.include('id="game1-glyphA"');
+        expect(out).to.include("#game1-glyphA text");
+        expect(out).to.include('href="#game1-glyphA"');
+        expect(out).not.to.include("#glyphA text");
+    });
+
+    it("prefixes hyphenated id selectors in style without corrupting shorter ids", () => {
+        const svg = [
+            "<defs>",
+            "<style>#dots-extra rect { fill: red; } #dots circle { fill: blue; }</style>",
+            '<pattern id="dots"/>',
+            '<pattern id="dots-extra"/>',
+            "</defs>",
+            '<rect fill="url(#dots-extra)"/>',
+        ].join("");
+        const out = addPrefix(svg, prefixOpts);
+        expect(out).to.include("#game1-dots-extra rect");
+        expect(out).to.include("#game1-dots circle");
+        expect(out).not.to.include("#dots-extra rect");
+        expect(out).not.to.include("#dots circle");
+        expect(out).to.include('fill="url(#game1-dots-extra)"');
+    });
 });
