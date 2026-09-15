@@ -579,6 +579,10 @@ export interface Glyph {
    */
   nudge?: {
     /**
+     * Nudge coordinate system. piece: composite/legend-nested axes (offset before this layer's rotate, scale, flip). glyph: this layer's local axes after rotate, scale, flip. When omitted, defaults to piece for text glyphs and glyph for sheet (name) glyphs.
+     */
+    relativeTo?: "piece" | "glyph";
+    /**
      * Negative values move the glyph to the left.
      */
     dx?: number;

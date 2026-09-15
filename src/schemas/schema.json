@@ -576,6 +576,10 @@
                     "description": "The number of units to nudge the glyph from centre.",
                     "type": "object",
                     "properties": {
+                        "relativeTo": {
+                            "description": "Nudge coordinate system. piece: composite/legend-nested axes (offset before this layer's rotate, scale, flip). glyph: this layer's local axes after rotate, scale, flip. When omitted, defaults to piece for text glyphs and glyph for sheet (name) glyphs.",
+                            "enum": ["piece", "glyph"]
+                        },
                         "dx": {
                             "description": "Negative values move the glyph to the left.",
                             "type": "number",

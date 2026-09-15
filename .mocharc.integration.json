@@ -1,0 +1,6 @@
+{
+  "require": ["tsx/cjs"],
+  "extension": ["ts"],
+  "spec": ["test/**/*.integration.test.ts"],
+  "timeout": 180000
+}

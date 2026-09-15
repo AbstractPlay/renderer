@@ -173,9 +173,31 @@ Each glyph object in the legend supports these properties. `name` and `text` are
 | `orientation` | `"fluid"` \| `"vertical"` | `"fluid"` | After rotation, `"vertical"` keeps text upright. |
 | `flipx` | boolean | `false` | Mirror horizontally. With **`fluid`** (default sheet glyphs), flip is in piece/board coordinates and rotates with the board. With **`vertical`** or text glyphs, flip is relative to the **screen** (left/right stays fixed when `board.rotate` changes). |
 | `flipy` | boolean | `false` | Mirror vertically. Same **`fluid`** vs **`vertical`** / text behaviour as `flipx`. |
-| `nudge` | `{ dx, dy }` | — | Offset from centre in cell units; negative `dx`/`dy` move left/up. |
+| `nudge` | `{ dx, dy, relativeTo? }` | see below | Offset from the layer centre in legend cell units (500-unit composite); negative `dx`/`dy` move left/up. |
 | `fontFamily` | string | — | CSS font family for text glyphs. |
 | `fontWeight` | string \| number | — | CSS font weight for text glyphs. |
+
+### `nudge` and `relativeTo`
+
+Legend composites stack several glyph layers in one nested symbol (for example plane art plus altitude digits). Each layer can carry a `nudge` `{ dx, dy }`. The optional **`relativeTo`** field chooses which coordinate system those offsets use:
+
+| Value | When applied | Axes | Typical use |
+| --- | --- | --- | --- |
+| **`piece`** | **Before** this layer’s `rotate`, `scale`, and `flip` | **Composite / legend-nested** space (shared with sibling layers in the same legend key) | Offsets authored “beside the plane”, “on the card corner”, or “with the piece” as the board spins |
+| **`glyph`** | **After** this layer’s `rotate`, `scale`, and `flip` | **This layer’s local** axes (legacy behaviour) | Fine tweaks in the layer’s own rotated/scaled frame |
+
+**Defaults** (when `relativeTo` is omitted), similar to `orientation`:
+
+| Layer kind | Default `relativeTo` |
+| --- | --- |
+| **`text`** glyph | **`piece`** |
+| Sheet glyph (`name`, no `text`) | **`glyph`** |
+
+Set **`relativeTo: "piece"`** explicitly on a sheet layer when you want composite-space offsets (for example a fluid `name: "plane"` layer or stacked `piece` icons). Set **`relativeTo: "glyph"`** on text when you need the older glyph-local offset after counter-rotation.
+
+Board **marker** nudges (labels, halos, and so on) are unrelated; they use the marker schema, not legend glyph `nudge`.
+
+**Upright** layers counter-rotate using **`board.rotate` plus `opts.rotate`** so they stay readable when the playground spins the board. That includes **text** (default upright unless `orientation: "fluid"`) and sheet glyphs with **`orientation: "vertical"`**. Piece-relative nudges on those layers are authored in the **`board.rotate` frame** from the render JSON; any extra **`opts.rotate`** is applied to the nudge vector before the layer’s counter-rotate so composite offsets stay aligned with sibling layers.
 
 The legend also supports **polymatrix** entries (arrays of arrays for the polyomino renderer) and **isoPiece** entries (isometric renderer). See [Engines](/renderer/engines/).
 

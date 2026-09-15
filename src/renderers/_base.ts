@@ -14,7 +14,19 @@ import { labelDisplayText } from "../common/renderLabel.js";
 import { attachMarkerPulse } from "../common/markerPulse.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
-import { isoFaceGlyphDrawSize, isoFaceGlyphPlacement, resolveGlyphFlipAxes, resolveGlyphRotationDegrees } from "./isometric/faceGlyphFit.js";
+import {
+    glyphKeepsUpright,
+    isoFaceGlyphDrawSize,
+    isoFaceGlyphPlacement,
+    resolveGlyphFlipAxes,
+    resolveGlyphRotationDegrees,
+} from "./isometric/faceGlyphFit.js";
+import {
+    applyGlyphLocalNudge,
+    applyPieceGlyphNudge,
+    resolveGlyphNudgeRelativeTo,
+    rotatePieceNudgeVector,
+} from "./glyphNudge.js";
 import {
     computeAnnulusPlacement,
     computeSidebarPlacement,
@@ -1006,12 +1018,41 @@ export abstract class RendererBase {
                 : parent.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
 
             const boardRotation = this.getRotation();
+            const legendEmbedRotation =
+                layout === "legend" ? this.getLegendGlyphBoardRotation() : boardRotation;
             const rotationOpts = layout === "legend"
                 ? { counterRotateWithBoard: true, rotateFluidWithBoard: false }
                 : {
                     counterRotateWithBoard: opts.counterRotateWithBoard ?? false,
                     rotateFluidWithBoard: opts.counterRotateWithBoard ?? false,
                 };
+
+            let nudgeDx = 0;
+            let nudgeDy = 0;
+            let nudgeRelativeTo: ReturnType<typeof resolveGlyphNudgeRelativeTo> = "glyph";
+            if (g.nudge !== undefined) {
+                if (g.nudge.dx !== undefined) {
+                    nudgeDx = g.nudge.dx;
+                }
+                if (g.nudge.dy !== undefined) {
+                    nudgeDy = g.nudge.dy;
+                }
+                nudgeRelativeTo = resolveGlyphNudgeRelativeTo(g, g.nudge);
+                if (nudgeRelativeTo === "piece") {
+                    let pdx = nudgeDx;
+                    let pdy = nudgeDy;
+                    if (
+                        layout === "legend"
+                        && glyphKeepsUpright(g)
+                        && rotationOpts.counterRotateWithBoard !== false
+                    ) {
+                        const viewerRotation = boardRotation - legendEmbedRotation;
+                        ({ dx: pdx, dy: pdy } = rotatePieceNudgeVector(pdx, pdy, viewerRotation));
+                    }
+                    applyPieceGlyphNudge(use, pdx, pdy);
+                }
+            }
+
             const rotation = resolveGlyphRotationDegrees(g, boardRotation, rotationOpts);
             if (rotation !== null) {
                 const rotOrigin = layout === "isoFace" ? layerIsoFaceX + layerIsoFaceDrawSize / 2 : 0;
@@ -1049,16 +1090,8 @@ export abstract class RendererBase {
                 use.scale(1, -1, flipOriginX, flipOriginY);
             }
 
-            if (g.nudge !== undefined) {
-                let dx = 0;
-                let dy = 0;
-                if (g.nudge.dx !== undefined) {
-                    dx = g.nudge.dx;
-                }
-                if (g.nudge.dy !== undefined) {
-                    dy = g.nudge.dy;
-                }
-                use.dmove(dx, dy);
+            if (g.nudge !== undefined && nudgeRelativeTo === "glyph") {
+                applyGlyphLocalNudge(use, nudgeDx, nudgeDy);
             }
         }
 
@@ -4696,6 +4729,30 @@ export abstract class RendererBase {
         }
         rotation = rotation % 360;
         while (rotation < 0) { rotation += 360; }
+        return rotation;
+    }
+
+    /**
+     * Rotation baked into legend defs (upright text counter-rotate, flips). Excludes `opts.rotate`
+     * so playground / viewer rotation only spins `#board` via {@link rotateBoard}.
+     */
+    protected getLegendGlyphBoardRotation(): number {
+        if (!this.json) {
+            return 0;
+        }
+        let rotation = 0;
+        if (
+            this.json.board !== undefined
+            && this.json.board !== null
+            && ("rotate" in this.json.board)
+            && this.json.board.rotate !== undefined
+        ) {
+            rotation += this.json.board.rotate;
+        }
+        rotation = rotation % 360;
+        while (rotation < 0) {
+            rotation += 360;
+        }
         return rotation;
     }
 

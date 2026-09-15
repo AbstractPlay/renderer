@@ -35,6 +35,7 @@
         "pretest": "npm run typecheck",
         "test:postbuild": "node scripts/smoke-package-entry.mjs && node scripts/check-npm-pack.mjs",
         "test": "mocha",
+        "test:integration": "mocha --config .mocharc.integration.json",
         "test:bundle": "mocha test/bundle-exports.test.ts",
         "test:browser": "npm run dist-dev && playwright test",
         "test:browser:install": "playwright install --with-deps chromium firefox webkit",
