@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import { Element as SVGElement, G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
+import { G as SVGG, NumberAlias, SVG, Svg } from "@svgdotjs/svg.js";
 import AjvImport from "ajv";
 import type { ErrorObject, ValidateFunction } from "ajv";
 import { renderers } from "./renderers/index.js";
@@ -18,6 +18,7 @@ import { IRendererOptionsIn } from "./renderers/_base.js";
 import { APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings, Colourfuncs } from "./schemas/schema.js";
 import schema from "./schemas/schema.json" with { type: "json" };
 import { v4 as uuidv4 } from "uuid";
+import { findUsesWithReferenceFragment } from "./utils/svgUseQuery.js";
 
 type AjvInstance = {
     compile(jsonSchema: object): ValidateFunction;
@@ -231,7 +232,7 @@ const unionLayoutBBox = (draw: Svg): { x: number; y: number; width: number; heig
         union = unionLayoutExtents(union, tableau.rbox(draw));
     }
 
-    const trackUses = draw.find('[href*="_track_"]') as unknown as SVGElement[];
+    const trackUses = findUsesWithReferenceFragment(draw, "_track_");
     for (const use of trackUses) {
         const x = Number(use.x());
         const y = Number(use.y());

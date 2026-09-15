@@ -8,8 +8,16 @@ import { APRenderRep } from "../src/schemas/schema";
 import { computePlayfieldMetrics } from "../src/references/helpers";
 import { render as renderBoard } from "../src/index";
 import { createSVGWindow } from "svgdom";
+import { findUseWithReference, findUsesWithReferenceFragment } from "../src/utils/svgUseQuery.js";
 
 import schema from "../src/schemas/schema.json" with { type: "json" };
+import {
+    checkeredLeftTrackFixture,
+    checkeredTopTrackFixture,
+    dualBottomTracksFixture,
+    fracturedFlatBottomTrackFixture,
+    scoreTrackFixture,
+} from "./fixtures/svgdomVisualCases";
 
 const CELL_SIZE = 50;
 
@@ -27,111 +35,11 @@ const baseOptions: IRendererOptionsIn = {
     sheets: ["core"],
 };
 
-const emptyBoard8 = "--------\n--------\n--------\n--------\n--------\n--------\n--------\n--------";
-
-const scoreTrackFixture: APRenderRep = {
-    board: { style: "squares", width: 8, height: 8 },
-    legend: {
-        M: { name: "piece", colour: 1 },
-        S: { name: "piece", colour: 2 },
-    },
-    pieces: emptyBoard8,
-    areas: [
-        {
-            type: "track",
-            position: "top",
-            board: { style: "squares", width: 12, height: 1, strokeColour: "#ccc" },
-            pieces: "MMSS----MMMM",
-            annotations: [{ type: "dots", targets: [{ row: 0, col: 4 }] }],
-        },
-    ],
-};
-
-const checkeredTopTrackFixture: APRenderRep = {
-    board: { style: "squares-checkered", width: 8, height: 8 },
-    legend: {
-        A: { name: "piece", colour: 1 },
-        B: { name: "piece", colour: 2 },
-    },
-    pieces: null,
-    areas: [
-        {
-            type: "track",
-            position: "top",
-            board: { style: "squares", width: 12, height: 1 },
-            pieces: "AABB----AAAA",
-            annotations: [{ type: "dots", targets: [{ row: 0, col: 4 }] }],
-        },
-    ],
-};
-
-const checkeredLeftTrackFixture: APRenderRep = {
-    board: { style: "squares-checkered", width: 8, height: 8 },
-    legend: {
-        A: { name: "piece", colour: 1 },
-        B: { name: "piece", colour: 2 },
-    },
-    pieces: null,
-    areas: [
-        {
-            type: "track",
-            position: "left",
-            board: { style: "squares", width: 1, height: 12 },
-            pieces: "AABB----AAAA",
-            annotations: [{ type: "dots", targets: [{ row: 4, col: 0 }] }],
-        },
-    ],
-};
-
-const dualBottomTracksFixture: APRenderRep = {
-    board: { style: "squares", width: 4, height: 4 },
-    legend: {
-        M: { name: "piece", colour: 1 },
-    },
-    pieces: "----\n----\n----\n----",
-    areas: [
-        {
-            type: "track",
-            position: "bottom",
-            board: { style: "squares", width: 6, height: 1 },
-            pieces: "MMMM--",
-        },
-        {
-            type: "track",
-            position: "bottom",
-            board: { style: "squares", width: 4, height: 1 },
-            pieces: "MM--",
-        },
-    ],
-};
-
-const fracturedFlatBottomTrackFixture: APRenderRep = {
-    board: { style: "fractured-flat", strokeWeight: 0.5 },
-    legend: {
-        S: { name: "cube", colour: 1 },
-        N6: { name: "piecepack-number-6" },
-        N5: { name: "piecepack-number-5" },
-        N4: { name: "piecepack-number-4" },
-        N3: { name: "piecepack-number-3" },
-        N2: { name: "piecepack-number-2" },
-        N1: { name: "piecepack-number-1" },
-    },
-    pieces: "-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-,-,-,-,-,-,-,-\n-,-,-,-,-\n-",
-    areas: [
-        {
-            type: "track",
-            position: "bottom",
-            board: { style: "squares", width: 13, height: 1 },
-            pieces: "N6,N5,N4,N3,N2,N1,S,N1,N2,N3,N4,N5,N6",
-        },
-    ],
-};
-
 const FRACTURED_FLAT_CELL_SIZE = 40;
 const VIEWBOX_PAD = 2;
 
 const findTrackUse = (draw: Svg): SVGElement => {
-    const uses = draw.find('[href*="_track_"]') as unknown as SVGElement[];
+    const uses = findUsesWithReferenceFragment(draw, "_track_");
     expect(uses.length).to.be.greaterThan(0);
     return uses[0];
 };
@@ -177,7 +85,7 @@ describe("track area", () => {
         expect(board!.findOne("#_track_0")).to.equal(null);
         const tableau = draw.findOne("#board-tableau") as SVGG | null;
         expect(tableau).to.not.equal(null);
-        expect(tableau!.findOne('[href="#_track_0"], [href*="_track_0"]')).to.not.equal(null);
+        expect(findUseWithReference(tableau!, "#_track_0")).to.not.equal(undefined);
     });
 
     it("places pieces on the track grid", () => {
@@ -207,7 +115,7 @@ describe("track area", () => {
 
     it("stacks bottom tracks in declaration order", () => {
         const draw = render(dualBottomTracksFixture);
-        const uses = draw.find('[href*="_track_"]') as unknown as SVGElement[];
+        const uses = findUsesWithReferenceFragment(draw, "_track_");
         expect(uses.length).to.equal(2);
         const y0 = Number(uses[0].attr("y") ?? 0);
         const y1 = Number(uses[1].attr("y") ?? 0);
@@ -329,7 +237,7 @@ describe("track area", () => {
 
     it("sets root viewBox to include stacked bottom tracks via render()", () => {
         const draw = renderWithViewbox(dualBottomTracksFixture);
-        const uses = draw.find('[href*="_track_"]') as unknown as SVGElement[];
+        const uses = findUsesWithReferenceFragment(draw, "_track_");
         expect(uses.length).to.equal(2);
         for (const trackUse of uses) {
             expectViewboxIncludesTrack(draw, trackUse);
@@ -342,7 +250,7 @@ describe("track area", () => {
         });
         const tableau = draw.findOne("#board-tableau") as SVGG | null;
         expect(tableau).to.not.equal(null);
-        expect(tableau!.findOne('[href*="_track_"]')).to.not.equal(null);
+        expect(findUsesWithReferenceFragment(tableau!, "_track_").length).to.be.greaterThan(0);
 
         const playfield = computePlayfieldMetrics(draw, FRACTURED_FLAT_CELL_SIZE);
         const trackUse = findTrackUse(draw);

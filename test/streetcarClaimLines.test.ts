@@ -8,6 +8,7 @@ import {
     STREETCAR_FENCE_COUNT,
     streetcarClaimLinesRenderRep,
 } from "./fixtures/streetcarClaimLines";
+import { findAmong } from "../src/utils/svgUseQuery.js";
 
 
 const makeDraw = (): Svg => {
@@ -78,7 +79,7 @@ describe("Streetcar Suburb claim-line regression", () => {
         const markerLines = (draw.findOne("#cells-markers") as SVGElement).find("line") as SVGElement[];
         expect(markerLines.length).to.equal(STREETCAR_FENCE_COUNT);
 
-        const visibleFence = markerLines.find((line) => strokeWidth(line) > 0);
+        const visibleFence = findAmong(markerLines, (line) => strokeWidth(line) > 0);
         expect(visibleFence).to.not.equal(undefined);
 
         for (const line of markerLines) {

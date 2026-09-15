@@ -40,10 +40,17 @@ export function assertRenderHealth(): RenderHealthResult {
         }
     }
 
-    const trackUses = svg.querySelectorAll('use[href*="_track_"], use[xlink\\:href*="_track_"]');
+    // Match track <use> by reference (same as src/utils/svgUseQuery — no [href] CSS selectors).
+    const useReference = (useEl: Element): string =>
+        useEl.getAttribute("href")
+        ?? useEl.getAttributeNS("http://www.w3.org/1999/xlink", "href")
+        ?? "";
+    const trackUses = [...svg.querySelectorAll("use")].filter((useEl) =>
+        useReference(useEl).includes("_track_"),
+    );
     for (const useEl of trackUses) {
         const height = Number.parseFloat(useEl.getAttribute("height") || "0");
-        const href = useEl.getAttribute("href") || useEl.getAttribute("xlink:href") || "";
+        const href = useReference(useEl);
         if (!(height > 0)) {
             return { ok: false, message: `track use has zero height: ${href}` };
         }

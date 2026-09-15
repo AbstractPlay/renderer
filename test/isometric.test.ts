@@ -7,6 +7,7 @@ import { SHADOW_OPACITY } from "../src/renderers/isometric/shadow";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 import { createSVGWindow } from "svgdom";
+import { findAmong, useReference } from "../src/utils/svgUseQuery.js";
 
 
 const makeDraw = (): Svg => {
@@ -142,10 +143,7 @@ describe("IsometricRenderer key", () => {
         renderer.render(keyRenderRep(), draw, baseOptions);
 
         expect(draw.findOne("#_key")).to.not.equal(null);
-        const keyUse = draw.find("use").find((u) => {
-            const href = (u.attr("href") ?? u.attr("xlink:href")) as string | undefined;
-            return href === "#_key";
-        });
+        const keyUse = findAmong(draw.find("use"), (u) => useReference(u) === "#_key");
         expect(keyUse).to.not.equal(undefined);
     });
 
@@ -156,13 +154,11 @@ describe("IsometricRenderer key", () => {
         renderer.render(keyRenderRep("left"), drawLeft, baseOptions);
         renderer.render(keyRenderRep("right"), drawRight, baseOptions);
 
-        const keyLeft = drawLeft.find("use").find((u) => (u.attr("href") ?? u.attr("xlink:href")) === "#_key");
-        const keyRight = drawRight.find("use").find((u) => (u.attr("href") ?? u.attr("xlink:href")) === "#_key");
+        const keyLeft = findAmong(drawLeft.find("use"), (u) => useReference(u) === "#_key");
+        const keyRight = findAmong(drawRight.find("use"), (u) => useReference(u) === "#_key");
         expect(keyLeft).to.not.equal(undefined);
         expect(keyRight).to.not.equal(undefined);
-        const transformLeft = keyLeft!.attr("transform") as string;
-        const transformRight = keyRight!.attr("transform") as string;
-        expect(transformLeft).to.not.equal(transformRight);
+        expect(keyLeft!.x()).to.not.equal(keyRight!.x());
     });
 });
 

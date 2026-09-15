@@ -6,6 +6,7 @@ import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 import { expandSquareGrid, rectOfRects, tileCornerXY } from "../src/grids";
 import { createSVGWindow } from "svgdom";
+import { findAmong } from "../src/utils/svgUseQuery.js";
 
 
 const CELL = 50;
@@ -271,10 +272,10 @@ describe("tileSpacing line markers", () => {
         renderer.render(rep, draw, baseOptions);
 
         const paths = draw.find("path");
-        const placed = paths.find((p) => p.attr("d") === "M-25,180 L175,180");
-        const flipped = paths.find((p) => p.attr("d") === "M237.5,180 L437.5,180");
-        const scored = paths.find((p) => p.attr("d") === "M-25,220 L175,220");
-        const current = paths.find((p) => p.attr("d") === "M237.5,220 L437.5,220");
+        const placed = findAmong(paths, (p) => p.attr("d") === "M-25,180 L175,180");
+        const flipped = findAmong(paths, (p) => p.attr("d") === "M237.5,180 L437.5,180");
+        const scored = findAmong(paths, (p) => p.attr("d") === "M-25,220 L175,220");
+        const current = findAmong(paths, (p) => p.attr("d") === "M237.5,220 L437.5,220");
         expect(placed).to.not.equal(undefined);
         expect(flipped).to.not.equal(undefined);
         expect(scored).to.not.equal(undefined);
