@@ -2,6 +2,7 @@ import { expect } from "chai";
 import "mocha";
 import {
     getCompatibleStyles,
+    isBoardChromeEligible,
     isInvalidStylePair,
 } from "../../src/boardChrome/index";
 
@@ -27,5 +28,19 @@ describe("boardChrome registry", () => {
         const stacked = getCompatibleStyles("squares-stacked");
         expect(stacked).to.include("squares-checkered");
         expect(stacked).to.not.include("vertex");
+    });
+
+    it("excludes squares-diamonds from style swap options", () => {
+        expect(getCompatibleStyles("vertex")).to.not.include("squares-diamonds");
+        expect(getCompatibleStyles("squares-checkered")).to.not.include(
+            "squares-diamonds",
+        );
+        expect(getCompatibleStyles("squares-diamonds")).to.deep.equal([]);
+        const rep = {
+            board: { style: "squares-diamonds", width: 4, height: 4 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "----\n----\n----\n----",
+        };
+        expect(isBoardChromeEligible(rep)).to.equal(false);
     });
 });

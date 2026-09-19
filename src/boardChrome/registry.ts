@@ -1,10 +1,10 @@
 import type { BoardStyles } from "../schemas/schema.js";
 
+/** Flat rect row/col grids that share the same coordinate system (swappable via customization). */
 export const ROW_COL_FLAT_RECT: BoardStyles[] = [
     "squares",
     "squares-checkered",
     "squares-beveled",
-    "squares-diamonds",
     "pegboard",
 ];
 
@@ -92,6 +92,9 @@ for (const s of ROW_COL_FLAT_RECT) {
 for (const s of ROW_COL_GRID_STACKED) {
     REGISTRY[s] = entryRowColStacked();
 }
+
+/** Distinct topology — not in the row/col style swap group. */
+REGISTRY["squares-diamonds"] = NO_CUSTOMIZE;
 
 export function getBoardStyleEntry(style: string | undefined): BoardStyleRegistryEntry {
     if (style === undefined) {
