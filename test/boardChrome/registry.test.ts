@@ -43,4 +43,26 @@ describe("boardChrome registry", () => {
         };
         expect(isBoardChromeEligible(rep)).to.equal(false);
     });
+
+    it("excludes pegboard and vertex-fanorona from customization", () => {
+        expect(getCompatibleStyles("vertex")).to.not.include("pegboard");
+        expect(getCompatibleStyles("vertex")).to.not.include("vertex-fanorona");
+        expect(getCompatibleStyles("squares-checkered")).to.not.include("pegboard");
+        expect(getCompatibleStyles("pegboard")).to.deep.equal([]);
+        expect(getCompatibleStyles("vertex-fanorona")).to.deep.equal([]);
+
+        const pegRep = {
+            board: { style: "pegboard", width: 4, height: 4 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "----\n----\n----\n----",
+        };
+        expect(isBoardChromeEligible(pegRep)).to.equal(false);
+
+        const fanRep = {
+            board: { style: "vertex-fanorona", width: 4, height: 4 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "----\n----\n----\n----",
+        };
+        expect(isBoardChromeEligible(fanRep)).to.equal(false);
+    });
 });

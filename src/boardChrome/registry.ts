@@ -5,14 +5,9 @@ export const ROW_COL_FLAT_RECT: BoardStyles[] = [
     "squares",
     "squares-checkered",
     "squares-beveled",
-    "pegboard",
 ];
 
-export const VERTEX_STYLES: BoardStyles[] = [
-    "vertex",
-    "vertex-cross",
-    "vertex-fanorona",
-];
+export const VERTEX_STYLES: BoardStyles[] = ["vertex", "vertex-cross"];
 
 export const ROW_COL_GRID_STACKED: BoardStyles[] = ["squares-stacked"];
 
@@ -93,8 +88,10 @@ for (const s of ROW_COL_GRID_STACKED) {
     REGISTRY[s] = entryRowColStacked();
 }
 
-/** Distinct topology — not in the row/col style swap group. */
+/** Distinct or specialized topologies — not in the row/col style swap group. */
 REGISTRY["squares-diamonds"] = NO_CUSTOMIZE;
+REGISTRY["pegboard"] = NO_CUSTOMIZE;
+REGISTRY["vertex-fanorona"] = NO_CUSTOMIZE;
 
 export function getBoardStyleEntry(style: string | undefined): BoardStyleRegistryEntry {
     if (style === undefined) {

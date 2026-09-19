@@ -24,7 +24,7 @@ Entry points exported from `@abstractplay/renderer`:
 
 `getCompatibleStyles(currentStyle)` lists swappable `board.style` values within the same registry group. Cross-group changes (e.g. `squares-stacked` → `vertex`) fail `validateRenderCustomization`.
 
-`squares-diamonds` is not user-swappable via customization.
+`squares-diamonds`, `pegboard`, and `vertex-fanorona` are not user-swappable via customization (specialized topologies).
 
 ## Board fields (allowlist)
 
