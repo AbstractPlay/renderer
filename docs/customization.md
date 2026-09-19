@@ -49,6 +49,6 @@ Front passes `sanitizeMode: 'live'` so unsupported markers (e.g. `flood` after a
 
 ## Related
 
-- [Boards](./boards.md) — topology reference
-- [Glyphs](./glyphs.md) — glyph ids and glyphmap tuples
+- [Boards](/renderer/boards/) — topology reference
+- [Glyphs](/renderer/glyphs/) — glyph ids and glyphmap tuples
 - [Front Customize & themes](/front/subsystems/customize/) — UI, bulk apply, legacy `glyphmap`
