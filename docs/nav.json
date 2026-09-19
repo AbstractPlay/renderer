@@ -2,6 +2,7 @@
   { "slug": "index", "title": "Overview" },
   { "slug": "concepts" },
   { "slug": "boards" },
+  { "slug": "customization", "title": "User customization" },
   { "slug": "glyphs" },
   { "slug": "contact-sheet", "title": "Contact sheet" },
   { "slug": "adding-pieces", "title": "Adding pieces" },
