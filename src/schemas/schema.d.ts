@@ -726,7 +726,7 @@ export interface BoardBasic {
    */
   labelOpacity?: number;
   /**
-   * Multiplier on the default row and column coordinate label font size (based on cell size). Defaults to 1.
+   * Multiplier on the default row and column coordinate label font size (16px on most boards; rect-of-hex styles use cell size / 5). Defaults to 1.
    */
   labelScale?: number;
   /**

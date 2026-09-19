@@ -3305,7 +3305,36 @@ export abstract class RendererBase {
         return rowLabels;
     }
 
-    /** Default row/column coordinate label font size (before `board.labelScale`). */
+    /** Default row/col coordinate label size on most boards (legacy implicit SVG ~16px). */
+    private static readonly COORD_LABEL_DEFAULT_FONT_SIZE = 16;
+
+    private static readonly RECT_OF_HEX_BOARD_STYLES = new Set([
+        "hex-odd-p",
+        "hex-even-p",
+        "hex-odd-f",
+        "hex-even-f",
+    ]);
+
+    /** Legacy rect-of-hex boards used `cellsize / 5`; other row/col boards used ~16px. */
+    private coordinateLabelUsesCellsizeFifthBase(): boolean {
+        const board = this.json?.board;
+        if (board === null || board === undefined || !("style" in board)) {
+            return false;
+        }
+        const style = board.style;
+        return (
+            style !== undefined &&
+            RendererBase.RECT_OF_HEX_BOARD_STYLES.has(style)
+        );
+    }
+
+    public coordinateLabelBaseFontSize(): number {
+        if (this.coordinateLabelUsesCellsizeFifthBase()) {
+            return this.cellsize / 5;
+        }
+        return RendererBase.COORD_LABEL_DEFAULT_FONT_SIZE;
+    }
+
     public boardLabelFontSize(): number {
         let scale = 1;
         const board = this.json?.board;
@@ -3317,7 +3346,7 @@ export abstract class RendererBase {
         ) {
             scale = board.labelScale;
         }
-        return (this.cellsize / 5) * scale;
+        return this.coordinateLabelBaseFontSize() * scale;
     }
 
     public applyCoordinateLabelStyle(
