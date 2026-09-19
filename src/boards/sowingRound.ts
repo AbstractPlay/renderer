@@ -69,7 +69,7 @@ export const sowingRound = (ctx: RendererBase): BoardReturn => {
         // Columns (letters)
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[grid.length - 1][col].x, y: grid[grid.length - 1][col].y};
-            labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
         }
     }
 

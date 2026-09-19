@@ -88,7 +88,7 @@ export const cobweb = (ctx: RendererBase): BoardReturn => {
         // Columns (letters)
         for (let col = 0; col < width; col++) {
             const pt = labelPts[col];
-            labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pt.x, pt.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pt.x, pt.y);
         }
     }
 

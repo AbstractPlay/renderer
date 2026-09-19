@@ -131,8 +131,8 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
 
             const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
             const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
-            labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
-            labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + leftNum), labelColour, labelOpacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + rightNum), labelColour, labelOpacity).center(pointR.x, pointR.y);
         }
     }
 

@@ -726,6 +726,10 @@ export interface BoardBasic {
    */
   labelOpacity?: number;
   /**
+   * Multiplier on the default row and column coordinate label font size (based on cell size). Defaults to 1.
+   */
+  labelScale?: number;
+  /**
    * The opacity of lines drawn to construct the board.
    */
   strokeOpacity?: number;

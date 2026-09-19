@@ -336,18 +336,18 @@ export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
             const pointTop = {x: (grid[0][col].x + grid[0][col+1].x) / 2, y: ((grid[0][col].y + grid[0][col+1].y) / 2) - (cellsize * 1.25)};
             const pointBottom = {x: (grid[height - 1][col].x + grid[height - 1][col+1].x) / 2, y: ((grid[height - 1][col].y + grid[height - 1][col+1].y) / 2) + (cellsize * 1.25)};
             if (! hideHalf) {
-                labels.text(columnLabels[col / 2]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col / 2]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
-            labels.text(columnLabels[col / 2]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col / 2]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
             const pointL = {x: ((grid[row][0].x + grid[row][1].x) / 2) - (cellsize * 1.25), y: (grid[row][0].y + grid[row][1].y) / 2};
             const pointR = {x: ((grid[row][realwidth - 1].x + grid[row][realwidth - 2].x) / 2) + (cellsize * 1.25), y: (grid[row][realwidth - 1].y + grid[row][realwidth - 2].y) / 2};
-            labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
-                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+                ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
             }
         }
     }

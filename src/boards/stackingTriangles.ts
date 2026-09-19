@@ -180,9 +180,9 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
             }
             if (! skipped.includes(label)) {
                 if (! hideHalf) {
-                    labels.text(label).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                    ctx.applyCoordinateLabelStyle(labels.text(label), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
                 }
-                labels.text(label).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+                ctx.applyCoordinateLabelStyle(labels.text(label), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
             }
         }
     }
@@ -215,9 +215,9 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
                     throw new Error(`Invalid increment`);
             }
             const label = rowLabels[(row * 3) + inc];
-            labels.text(label).fill(labelColour).opacity(localOpacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(label), labelColour, localOpacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
-                labels.text(label).fill(labelColour).opacity(localOpacity).center(pointR.x, pointR.y);
+                ctx.applyCoordinateLabelStyle(labels.text(label), labelColour, localOpacity).center(pointR.x, pointR.y);
             }
         }
     }

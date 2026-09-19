@@ -199,8 +199,8 @@ export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
         for (let row = 0; row < grid.length; row++) {
             const pointL = {x: minx - buffer, y: grid[row][0].y};
             const pointR = {x: maxx + buffer, y: grid[row][grid[row].length - 1].y};
-            labels.text(columnLabels[row] + "1").fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
-            labels.text(columnLabels[row] + polys[row].length.toString()).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[row] + "1"), labelColour, labelOpacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[row] + polys[row].length.toString()), labelColour, labelOpacity).center(pointR.x, pointR.y);
         }
     }
 

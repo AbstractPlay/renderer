@@ -3175,6 +3175,12 @@
                     "maximum": 1,
                     "default": 1
                 },
+                "labelScale": {
+                    "description": "Multiplier on the default row and column coordinate label font size (based on cell size). Defaults to 1.",
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "default": 1
+                },
                 "strokeOpacity": {
                     "description": "The opacity of lines drawn to construct the board.",
                     "type": "number",

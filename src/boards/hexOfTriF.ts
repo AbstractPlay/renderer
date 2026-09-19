@@ -181,8 +181,8 @@ export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
 
             const pointL = {x: gridBase[row][0].x - cellsize, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
             const pointR = {x: gridBase[row][gridBase[row].length - 1].x + cellsize, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
-            labels.text(columnLabels[height - row - 1] + leftNum).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
-            labels.text(columnLabels[height - row - 1] + rightNum).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + leftNum), labelColour, labelOpacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + rightNum), labelColour, labelOpacity).center(pointR.x, pointR.y);
         }
     }
 

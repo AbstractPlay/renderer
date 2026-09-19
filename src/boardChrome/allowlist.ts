@@ -1,0 +1,45 @@
+/** Board keys users may set via customization merge (not width/height/modular sizing). */
+export const BOARD_CHROME_BOARD_KEYS = new Set([
+    "style",
+    "reference",
+    "rotate",
+    "labelColour",
+    "labelOpacity",
+    "labelScale",
+    "strokeColour",
+    "strokeWeight",
+    "strokeOpacity",
+    "backFill",
+    "blocked",
+    "clickDeltaX",
+    "clickDeltaY",
+    "startLight",
+    "labelGrid",
+    "columnLabels",
+    "rowLabels",
+    "labelStyle",
+    "skipLabels",
+    "tileWidth",
+    "tileHeight",
+    "tileSpacing",
+    "tileLineMult",
+    "stackMax",
+    "stackOffset",
+    "circular-start",
+    "circular-inner",
+    "cairoStart",
+    "markers",
+    "showEndPits",
+    "squarePits",
+    "half",
+    "alternatingSymmetry",
+]);
+
+export const BOARD_CHROME_DENIED_KEYS = new Set([
+    "width",
+    "height",
+    "minWidth",
+    "maxWidth",
+]);
+
+export const BOARD_CHROME_TOP_KEYS = new Set(["board", "options"]);

@@ -102,9 +102,9 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
                 pointBottom = {x: grid[height - 1][realcol].x+half, y: grid[height - 1][realcol].y + cellsize};
             }
             if (! hideHalf) {
-                labels.text(columnLabels[col]).fill(labelColour).opacity(opacity).center(pointTop.x, pointTop.y);
+                ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, opacity).center(pointTop.x, pointTop.y);
             }
-            labels.text(columnLabels[col]).fill(labelColour).opacity(opacity).center(pointBottom.x, pointBottom.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, opacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
@@ -123,9 +123,9 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
                 pointL = {x: grid[realrow][0].x - cellsize, y: grid[realrow][0].y+half};
                 pointR = {x: grid[realrow][width - 1].x + cellsize, y: grid[realrow][width - 1].y+half};
             }
-            labels.text(rowLabels[row]).fill(labelColour).opacity(opacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, opacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
-                labels.text(rowLabels[row]).fill(labelColour).opacity(opacity).center(pointR.x, pointR.y);
+                ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, opacity).center(pointR.x, pointR.y);
             }
         }
     }

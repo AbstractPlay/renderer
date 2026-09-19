@@ -28,6 +28,16 @@ const ajv = new ajvCtor();
 const validate = ajv.compile(schema);
 
 export type {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings};
+export {
+    applyBoardChrome,
+    sanitizeRenderRep,
+    validateRenderCustomization,
+    getCompatibleStyles,
+    isBoardChromeEligible,
+    isInvalidStylePair,
+    getBoardStyleEntry,
+} from "./boardChrome/index.js";
+export type { BoardChromeInput, ValidateResult } from "./boardChrome/index.js";
 
 /**
  * Defines the options the renderer accepts. It includes all the options the renderer class needs ({@link IRendererOptionsIn})
@@ -308,7 +318,7 @@ export const render = (json: APRenderRep, opts = {} as IRenderOptions): Svg => {
     if ( (renderer === undefined) || (renderer === null) ) {
         throw new Error(`Could not find the renderer "${ json.renderer }".`);
     }
-    renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, coloursGlobal: opts.coloursGlobal, colourContext: opts.colourContext, contextGlobal: opts.contextGlobal, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap, staticAnimations: opts.staticAnimations ?? false});
+    renderer.render(json, draw, {sheets: opts.sheets, patterns: opts.patterns, patternList: opts.patternList, colourBlind: opts.colourBlind, colours: opts.colours, coloursGlobal: opts.coloursGlobal, colourContext: opts.colourContext, contextGlobal: opts.contextGlobal, rotate: opts.rotate, showAnnotations: opts.showAnnotations, boardClick, boardHover, glyphmap: opts.glyphmap, staticAnimations: opts.staticAnimations ?? false, sanitizeMode: opts.sanitizeMode});
     if (draw.bbox().h !== 0
         && draw.viewbox().h === 0  // Only set it here if the renderer didn't set it
         ) {

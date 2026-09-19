@@ -126,7 +126,7 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
     if ("labelStyle" in ctx.json.board && ctx.json.board.labelStyle !== undefined && ctx.json.board.labelStyle !== null) {
         labelStyle = ctx.json.board.labelStyle;
     }
-    const fontSize = ctx.cellsize / 5;
+    const fontSize = ctx.boardLabelFontSize();
     const seenEdges = new Set<string>();
     let customLabels: string[]|undefined;
     if ( ("columnLabels" in ctx.json.board) && (ctx.json.board.columnLabels !== undefined) ) {
@@ -272,9 +272,9 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
                 }
             }
             if (! hideHalf) {
-                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
-            labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows
@@ -297,9 +297,9 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
                     pointR = {x: maxX + (cellsize * 0.5), y: cy};
                 }
             }
-            labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
-                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+                ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
             }
         }
     }

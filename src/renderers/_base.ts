@@ -1,4 +1,4 @@
-import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, Box as SVGBox } from "@svgdotjs/svg.js";
+import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, Box as SVGBox, Text as SVGText } from "@svgdotjs/svg.js";
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids/index.js";
@@ -159,6 +159,10 @@ export interface IRendererOptionsIn {
      * When true, emit serialized-safe animations (e.g. CSS keyframes for marker pulse).
      */
     staticAnimations?: boolean;
+    /**
+     * When `live`, incompatible board markers are skipped instead of throwing.
+     */
+    sanitizeMode?: "live" | "strict";
 }
 
 /**
@@ -183,6 +187,7 @@ export interface IRendererOptionsOut {
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
     staticAnimations: boolean;
+    sanitizeMode: "live" | "strict";
 }
 
 export const paletteDefault = ["#e31a1c", "#1f78b4", "#33a02c", "#ffff99", "#6a3d9a", "#ff7f00", "#b15928", "#fb9a99", "#a6cee3", "#b2df8a", "#fdbf6f", "#cab2d6"];
@@ -327,6 +332,7 @@ export abstract class RendererBase {
             rotate: 0,
             glyphmap: [],
             staticAnimations: false,
+            sanitizeMode: "strict",
         };
     }
 
@@ -464,6 +470,7 @@ export abstract class RendererBase {
             this.options.boardHover = opts.boardHover;
         }
         this.options.staticAnimations = opts.staticAnimations ?? false;
+        this.options.sanitizeMode = opts.sanitizeMode ?? "strict";
     }
 
     protected buildPlayerPalette(opts: IRendererOptionsIn): void {
@@ -2172,6 +2179,9 @@ export abstract class RendererBase {
                     targetGroup.polygon(ptstr).addClass(`aprender-marker-${x2uid(cloned)}`).fill(colour).opacity(opacity).attr({ 'pointer-events': 'none' });
                 } else if (marker.type === "flood") {
                     if (polys === undefined) {
+                        if (this.options.sanitizeMode === "live") {
+                            continue;
+                        }
                         throw new Error("The `flood` marker can only be used if polygons are passed to the marking code.");
                     }
                     let isGradient = false;
@@ -2221,6 +2231,9 @@ export abstract class RendererBase {
                         let floodEle: SVGCircle|SVGPolygon|SVGPath|undefined;
                         const cell = polys[point.row][point.col];
                         if (cell === undefined || cell === null) {
+                            if (this.options.sanitizeMode === "live") {
+                                continue;
+                            }
                             throw new Error(`There is no polygon at row ${point.row}, col ${point.col}. (In "wheel" boards, polygons are only present on odd-numbered rows.)`);
                         }
                         // the following eslint and ts exceptions are due to poor SVGjs typing
@@ -2315,6 +2328,9 @@ export abstract class RendererBase {
                      *     because it draws a solid circle occluded by the board
                      */
                     if (! this.json.board.style.startsWith("circular") && ! this.json.board.style.startsWith("conical-hex") && !this.json.board.style.startsWith("hex-of") ) {
+                        if (this.options.sanitizeMode === "live") {
+                            continue;
+                        }
                         throw new Error("The `halo` marker only works with `circular-*`, `conical-hex*`, and `hex-of*` boards.");
                     }
 
@@ -2327,6 +2343,9 @@ export abstract class RendererBase {
                                 polys = opts.polys;
                             }
                             if (polys === undefined) {
+                                if (this.options.sanitizeMode === "live") {
+                                    continue;
+                                }
                                 throw new Error("The `halo` marker requires that the polygons be passed.");
                             }
                             const union = unionPolys(polys.flat()).map(([x,y]) => {return {x,y}}) as IPoint[];
@@ -2392,6 +2411,9 @@ export abstract class RendererBase {
                             polys = opts.polys;
                         }
                         if (polys === undefined) {
+                            if (this.options.sanitizeMode === "live") {
+                                continue;
+                            }
                             throw new Error("The `halo` marker requires that the polygons be passed.");
                         }
                         let rx = 0;
@@ -3281,6 +3303,34 @@ export abstract class RendererBase {
             rowLabels.push((height - row).toString());
         }
         return rowLabels;
+    }
+
+    /** Default row/column coordinate label font size (before `board.labelScale`). */
+    public boardLabelFontSize(): number {
+        let scale = 1;
+        const board = this.json?.board;
+        if (
+            board !== null &&
+            board !== undefined &&
+            "labelScale" in board &&
+            typeof board.labelScale === "number"
+        ) {
+            scale = board.labelScale;
+        }
+        return (this.cellsize / 5) * scale;
+    }
+
+    public applyCoordinateLabelStyle(
+        el: SVGText,
+        labelColour: string,
+        labelOpacity: number,
+    ): SVGText {
+        return el.font({
+            anchor: "middle",
+            size: this.boardLabelFontSize(),
+            fill: labelColour,
+            opacity: labelOpacity,
+        });
     }
 
     /**

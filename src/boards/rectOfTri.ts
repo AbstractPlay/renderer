@@ -464,18 +464,18 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
             const pointTop = {x: grid[xrow][xcol].x, y: miny - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
             const pointBottom = {x: grid[xrow][xcol].x, y: maxy + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
             if (! hideHalf) {
-                labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointTop.x, pointTop.y);
+                ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
-            labels.text(columnLabels[col]).fill(labelColour).opacity(labelOpacity).center(pointBottom.x, pointBottom.y);
+            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
         }
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
             const pointL = {x: minx - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
             const pointR = {x: maxx + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][0].y};
-            labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointL.x, pointL.y);
+            ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
-                labels.text(rowLabels[row]).fill(labelColour).opacity(labelOpacity).center(pointR.x, pointR.y);
+                ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
             }
         }
     }
