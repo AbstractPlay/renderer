@@ -34,6 +34,9 @@ export {
     validateRenderCustomization,
     getCompatibleStyles,
     isBoardChromeEligible,
+    isBoardStyleCustomizationEligible,
+    isBoardFieldChromeEligible,
+    isBoardBasicBoard,
     isInvalidStylePair,
     getBoardStyleEntry,
 } from "./boardChrome/index.js";

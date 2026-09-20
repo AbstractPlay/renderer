@@ -1,12 +1,8 @@
 import type { APRenderRep } from "../schemas/schema.js";
 import { BOARD_CHROME_BOARD_KEYS, BOARD_CHROME_DENIED_KEYS } from "./allowlist.js";
 import { applyBoardChrome } from "./merge.js";
-import { isBoardChromeEligible } from "./piecesShape.js";
-import {
-    getBoardStyleEntry,
-    getCompatibleStyles,
-    isInvalidStylePair,
-} from "./registry.js";
+import { isBoardStyleCustomizationEligible } from "./piecesShape.js";
+import { getCompatibleStyles, isInvalidStylePair } from "./registry.js";
 import { sanitizeRenderRepWithWarnings } from "./sanitize.js";
 import type { BoardChromeInput, ValidateResult } from "./types.js";
 
@@ -32,7 +28,7 @@ export function validateRenderCustomization(
         }
     }
 
-    if (!isBoardChromeEligible(baseRep)) {
+    if (!isBoardStyleCustomizationEligible(baseRep)) {
         if (boardChrome.style !== undefined) {
             errors.push("Board style cannot be customized for this render representation.");
         }
@@ -73,15 +69,6 @@ export function validateRenderCustomization(
     }
 
     let merged = applyBoardChrome(baseRep, boardChrome);
-    const effectiveStyle =
-        merged.board && "style" in merged.board
-            ? String(merged.board.style)
-            : undefined;
-    if (effectiveStyle && !getBoardStyleEntry(effectiveStyle).customizable) {
-        errors.push(`Board style "${effectiveStyle}" does not support customization.`);
-        return { ok: false, errors, warnings, sanitized: null };
-    }
-
     merged = sanitizeRenderRepWithWarnings(merged, warnings);
 
     return { ok: true, errors, warnings, sanitized: merged };

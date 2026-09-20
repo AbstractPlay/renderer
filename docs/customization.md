@@ -18,7 +18,13 @@ Entry points exported from `@abstractplay/renderer`:
 
 ## Eligibility
 
-`isBoardChromeEligible(rep)` is true for standard row/column grid boards with string `pieces` (see `piecesShape.ts`). Hex-only and special topologies return false for **style** overrides; **rep options** (e.g. `hide-labels`) still merge when the front passes them.
+| API | Meaning |
+|-----|---------|
+| `isBoardStyleCustomizationEligible(rep)` | May swap `board.style` (row/column string grid in a registry swap group) |
+| `isBoardFieldChromeEligible(rep)` | May merge other `render.board` fields (`labelScale`, strokes, markers, …) |
+| `render.options` / `render.glyphmap` | Applied for any rep; unsupported options are ignored at draw time |
+
+Specialized styles (`pegboard`, `vertex-fanorona`, `squares-diamonds`, hex topologies, …) do not allow **style** swaps; **labelScale**, **render options**, and **glyphmap** still apply when saved.
 
 ## Style compatibility
 

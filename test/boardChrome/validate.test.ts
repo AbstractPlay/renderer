@@ -25,4 +25,29 @@ describe("validateRenderCustomization", () => {
         expect(result.ok).to.equal(true);
         expect(result.sanitized?.board).to.not.equal(undefined);
     });
+
+    it("allows labelScale on specialized pegboard style", () => {
+        const pegRep: APRenderRep = {
+            board: { style: "pegboard", width: 4, height: 4 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "----\n----\n----\n----",
+        };
+        const result = validateRenderCustomization(pegRep, {
+            labelScale: 1.5,
+        });
+        expect(result.ok).to.equal(true);
+        expect(result.sanitized?.board?.labelScale).to.equal(1.5);
+    });
+
+    it("rejects style override on pegboard", () => {
+        const pegRep: APRenderRep = {
+            board: { style: "pegboard", width: 4, height: 4 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "----\n----\n----\n----",
+        };
+        const result = validateRenderCustomization(pegRep, {
+            style: "squares-checkered",
+        });
+        expect(result.ok).to.equal(false);
+    });
 });

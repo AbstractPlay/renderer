@@ -26,7 +26,8 @@ export function isBoardBasicBoard(
     return "style" in board && typeof board.style === "string";
 }
 
-export function isBoardChromeEligible(rep: APRenderRep): boolean {
+/** Whether the user may swap `board.style` via customization (row/col string grids in a swap group). */
+export function isBoardStyleCustomizationEligible(rep: APRenderRep): boolean {
     if (!isBoardBasicBoard(rep.board)) {
         return false;
     }
@@ -34,4 +35,14 @@ export function isBoardChromeEligible(rep: APRenderRep): boolean {
         return false;
     }
     return getBoardStyleEntry(rep.board.style).customizable;
+}
+
+/** @deprecated Use {@link isBoardStyleCustomizationEligible} — name kept for API stability. */
+export function isBoardChromeEligible(rep: APRenderRep): boolean {
+    return isBoardStyleCustomizationEligible(rep);
+}
+
+/** Whether non-style board chrome (labelScale, strokes, markers, …) may be merged onto this rep. */
+export function isBoardFieldChromeEligible(rep: APRenderRep): boolean {
+    return isBoardBasicBoard(rep.board);
 }
