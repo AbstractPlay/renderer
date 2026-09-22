@@ -970,7 +970,7 @@ export abstract class RendererBase {
                         got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
                         // @ts-expect-error (poor SVGjs typing)
                         got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); });
-                    } else {
+                    } else if (opacity < 1) {
                         got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
                         got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); });
                     }
