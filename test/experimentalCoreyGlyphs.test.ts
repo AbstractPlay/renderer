@@ -34,11 +34,26 @@ describe("experimental Corey glyphs (two-tone)", () => {
         const pathTags = [...svg.matchAll(/<path\b([^>]*)>/g)].map((m) => m[1]!);
         expect(
             pathTags.some(
-                (attrs) => attrs.includes('data-playerfill="true"') && /\bd="M 84\.223/.test(attrs),
+                (attrs) => attrs.includes('data-playerfill="true"') && /\bd="M 85\.894/.test(attrs),
             ),
         ).to.equal(true);
         expect(svg).to.match(/data-playerfill2="true"[^>]*fill="#000000"/);
         expect(svg).to.match(/data-playerstroke2="true"[^>]*stroke="#000000"/);
+    });
+
+    it("viewBox includes the full head silhouette including the lower face", () => {
+        const draw = makeDraw();
+        const json: APRenderRep = {
+            board: { style: "squares", width: 1, height: 1 },
+            legend: { A: { name: "head", colour: 1 } },
+            pieces: "A",
+        };
+        const renderer = new DefaultRenderer();
+        renderer.render(json, draw, { sheets: ["experimental"] });
+        const symVb = draw.svg().match(/<symbol[^>]*viewBox="([^"]+)"/)?.[1]?.split(/\s+/).map(Number);
+        expect(symVb?.length).to.equal(4);
+        const [, y0, , h] = symVb!;
+        expect(y0! + h!).to.be.greaterThan(448);
     });
 
     it("backs open ink strokes with traced playerfill under stroke2 (head antennae)", () => {
