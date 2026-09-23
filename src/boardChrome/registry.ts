@@ -76,6 +76,17 @@ const NO_CUSTOMIZE: BoardStyleRegistryEntry = {
     customizable: false,
 };
 
+/** Pegboard shares square-grid marker drawing (Twixt, Connections, …); style is not swappable. */
+function entryPegboard(): BoardStyleRegistryEntry {
+    return {
+        compatibilityGroup: "none",
+        compatibleStyles: [],
+        hasPolys: true,
+        supportedMarkers: ROW_COL_MARKER_TYPES,
+        customizable: false,
+    };
+}
+
 const REGISTRY: Partial<Record<BoardStyles, BoardStyleRegistryEntry>> = {};
 
 for (const s of VERTEX_STYLES) {
@@ -90,7 +101,7 @@ for (const s of ROW_COL_GRID_STACKED) {
 
 /** Distinct or specialized topologies — not in the row/col style swap group. */
 REGISTRY["squares-diamonds"] = NO_CUSTOMIZE;
-REGISTRY["pegboard"] = NO_CUSTOMIZE;
+REGISTRY["pegboard"] = entryPegboard();
 REGISTRY["vertex-fanorona"] = NO_CUSTOMIZE;
 
 export function getBoardStyleEntry(style: string | undefined): BoardStyleRegistryEntry {

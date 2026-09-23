@@ -39,6 +39,37 @@ describe("validateRenderCustomization", () => {
         expect(result.sanitized?.board?.labelScale).to.equal(1.5);
     });
 
+    it("keeps pegboard line and edge markers when applying labelScale", () => {
+        const pegRep: APRenderRep = {
+            board: {
+                style: "pegboard",
+                width: 4,
+                height: 4,
+                markers: [
+                    {
+                        type: "line",
+                        points: [{ row: 1, col: 1 }, { row: 1, col: 3 }],
+                        colour: 1,
+                        width: 5,
+                    },
+                    { type: "edge", edge: "N", colour: 1 },
+                ],
+            },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "----\n----\n----\n----",
+        };
+        const result = validateRenderCustomization(pegRep, {
+            labelScale: 1.25,
+        });
+        expect(result.ok).to.equal(true);
+        expect(result.warnings).to.deep.equal([]);
+        const markers =
+            result.sanitized?.board && "markers" in result.sanitized.board
+                ? result.sanitized.board.markers
+                : [];
+        expect(markers?.length).to.equal(2);
+    });
+
     it("rejects style override on pegboard", () => {
         const pegRep: APRenderRep = {
             board: { style: "pegboard", width: 4, height: 4 },

@@ -4,6 +4,7 @@ import {
     getCompatibleStyles,
     isBoardChromeEligible,
     isInvalidStylePair,
+    markerSupportedOnStyle,
 } from "../../src/boardChrome/index";
 
 describe("boardChrome registry", () => {
@@ -64,5 +65,11 @@ describe("boardChrome registry", () => {
             pieces: "----\n----\n----\n----",
         };
         expect(isBoardChromeEligible(fanRep)).to.equal(false);
+    });
+
+    it("pegboard supports line and edge markers used by gameslib peg games", () => {
+        expect(markerSupportedOnStyle("pegboard", "line")).to.equal(true);
+        expect(markerSupportedOnStyle("pegboard", "edge")).to.equal(true);
+        expect(markerSupportedOnStyle("pegboard", "halo")).to.equal(false);
     });
 });

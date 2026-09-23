@@ -48,6 +48,7 @@ Optional number on `boardBasic` (default `1`). Row/column coordinate labels unde
 
 - Omitted in `render.board` → keep game markers; live sanitize may drop unsupported types.
 - Present (including `[]`) → **replace** `board.markers`.
+- **`pegboard`** (Twixt, Connections, …) supports the same row/col marker types as flat square grids (`line`, `edge`, `dots`, …); only `board.style` is not swappable.
 
 ## Live play
 
