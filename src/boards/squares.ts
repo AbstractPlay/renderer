@@ -5,6 +5,7 @@ import { rotatePoint, shortenLine } from "../common/plotting.js";
 import tinycolor from "tinycolor2";
 import { MarkerOutline } from "../schemas/schema.js";
 import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from "./index.js";
+import { drawSquareCellGridEdges, drawSquaresOuterBorder } from "./squaresOuterBorder.js";
 
 export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -669,17 +670,20 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                 if (idx === -1) {
                     const {x: cx, y: cy} = grid[y][x];
                     const half = cellsize / 2;
-                    const pts: IPoint[] = [
-                        {x: cx - half, y: cy - half},
-                        {x: cx + half, y: cy - half},
-                        {x: cx + half, y: cy + half},
-                        {x: cx - half, y: cy + half},
-                    ];
-                    // have to close the poly
-                    pts.push(pts[0]);
-                    layers.strokes.polyline(pts.map(pt => [pt.x, pt.y]).flat())
-                                .fill("none")
-                                .stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    drawSquareCellGridEdges(layers.strokes, {
+                        row: y,
+                        col: x,
+                        width,
+                        height,
+                        cx,
+                        cy,
+                        half,
+                        baseStroke,
+                        baseColour,
+                        baseOpacity,
+                        options: ctx.json.options,
+                        blocked,
+                    });
                 }
             }
         }
@@ -709,6 +713,20 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                 }
             }
         }
+
+        drawSquaresOuterBorder(layers.strokes, {
+            grid,
+            width,
+            height,
+            cellsize,
+            baseStroke,
+            baseColour,
+            baseOpacity,
+            tilex,
+            tiley,
+            options: ctx.json.options,
+            blocked,
+        });
     }
 
     // after gridlines, look for `outline` markers and draw those

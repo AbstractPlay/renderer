@@ -1,4 +1,5 @@
 import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { drawPolyBoundaryEmphasis } from "./squaresOuterBorder.js";
 import { centroid } from "../common/plotting.js";
 import { GridPoints, IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
@@ -233,6 +234,15 @@ export const squaresDiamonds = (ctx: RendererBase): BoardReturn => {
             }
         }
     }
+
+    drawPolyBoundaryEmphasis(layers.strokes, {
+        polys,
+        baseStroke,
+        baseColour,
+        baseOpacity,
+        options: ctx.json.options,
+        blocked,
+    });
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid: gridPoints, polys});
 
