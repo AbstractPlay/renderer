@@ -2,6 +2,7 @@ import { GridPoints } from "../grids/_base.js";
 import { AnnotationBasic, APRenderRep } from "../schemas/schema.js";
 import { IRendererOptionsIn, RendererBase } from "./_base.js";
 import { createGridlineLayers, getBoardFill } from "../boards/index.js";
+import { drawSquareCellGridEdges } from "../boards/squaresOuterBorder.js";
 import { rectOfRects } from "../grids/index.js";
 import { Svg, StrokeData, G as SVGG } from "@svgdotjs/svg.js";
 import { usePieceAt } from "../common/plotting.js";
@@ -38,9 +39,14 @@ export class Stacking3DRenderer extends RendererBase {
 
     private width = 0;
     private height = 0;
+    private blockedCells: Set<string> | undefined;
 
     constructor() {
         super();
+    }
+
+    private isBlocked(row: number, col: number): boolean {
+        return this.blockedCells !== undefined && this.blockedCells.has(`${row},${col}`);
     }
 
     // If lower left is at (0,0), lower right at (1,0), map upper left to (x1, y), upper right to (x2, y).
@@ -156,6 +162,17 @@ export class Stacking3DRenderer extends RendererBase {
         const height: number = this.height;
         const cellsize = this.cellsize;
 
+        const boardDef = this.json.board;
+        type Blocked = { row: number; col: number }[];
+        let blocked: Blocked | undefined;
+        if ( ("blocked" in boardDef) && (boardDef.blocked !== undefined) && (boardDef.blocked !== null) && (Array.isArray(boardDef.blocked)) && (boardDef.blocked.length > 0) ) {
+            blocked = [...(boardDef.blocked as Blocked)];
+        }
+        this.blockedCells = blocked !== undefined
+            ? new Set(blocked.map((c) => `${c.row},${c.col}`))
+            : undefined;
+        const hasBlocked = blocked !== undefined;
+
         let baseStroke = 1;
         let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
@@ -188,19 +205,44 @@ export class Stacking3DRenderer extends RendererBase {
         const [cellFill, cellOpacity] = getBoardFill(this, this.options.colourContext.background);
         if (!backFillIsFull && cellFill !== undefined) {
             const half = cellsize / 2;
-            const corners = [
-                { x: grid[0][0].x - half, y: grid[0][0].y - half },
-                { x: grid[0][width - 1].x + half, y: grid[0][0].y - half },
-                { x: grid[height - 1][width - 1].x + half, y: grid[height - 1][width - 1].y + half },
-                { x: grid[height - 1][0].x - half, y: grid[height - 1][0].y + half },
-            ];
-            const projected = corners.map((c) => {
-                const [px, py] = this.project(c.x, c.y);
-                return `${px},${py}`;
-            }).join(" ");
-            layers.fill.polygon(projected)
-                .fill({color: cellFill ?? this.options.colourContext.background, opacity: cellOpacity})
-                .stroke("none");
+            const fillColour = cellFill ?? this.options.colourContext.background;
+            if (hasBlocked) {
+                for (let row = 0; row < height; row++) {
+                    for (let col = 0; col < width; col++) {
+                        if (this.isBlocked(row, col)) {
+                            continue;
+                        }
+                        const { x: cx, y: cy } = grid[row][col];
+                        const corners = [
+                            { x: cx - half, y: cy - half },
+                            { x: cx + half, y: cy - half },
+                            { x: cx + half, y: cy + half },
+                            { x: cx - half, y: cy + half },
+                        ];
+                        const projected = corners.map((c) => {
+                            const [px, py] = this.project(c.x, c.y);
+                            return `${px},${py}`;
+                        }).join(" ");
+                        layers.fill.polygon(projected)
+                            .fill({ color: fillColour, opacity: cellOpacity })
+                            .stroke("none");
+                    }
+                }
+            } else {
+                const corners = [
+                    { x: grid[0][0].x - half, y: grid[0][0].y - half },
+                    { x: grid[0][width - 1].x + half, y: grid[0][0].y - half },
+                    { x: grid[height - 1][width - 1].x + half, y: grid[height - 1][width - 1].y + half },
+                    { x: grid[height - 1][0].x - half, y: grid[height - 1][0].y + half },
+                ];
+                const projected = corners.map((c) => {
+                    const [px, py] = this.project(c.x, c.y);
+                    return `${px},${py}`;
+                }).join(" ");
+                layers.fill.polygon(projected)
+                    .fill({color: fillColour, opacity: cellOpacity})
+                    .stroke("none");
+            }
         }
 
         // Add board labels
@@ -230,93 +272,122 @@ export class Stacking3DRenderer extends RendererBase {
 
         // Draw grid lines
         const gridlines = layers.strokes;
-        // Horizontal, top of each row, then bottom line after loop
-        let numcols = 1;
-        if (tilex > 0) {
-            numcols = Math.floor(width / tilex);
-        }
-        for (let tileCol = 0; tileCol < numcols; tileCol++) {
-            let idxLeft = 0;
-            if (tilex > 0) {
-                idxLeft = tileCol * tilex;
-            }
-            let idxRight = width - 1;
-            if (tilex > 0) {
-                idxRight = idxLeft + tilex - 1;
-            }
-            for (let row = 0; row < height; row++) {
-                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
-                    if ( (row === 0) || (row === height - 1) ) {
+        const mapPoint = (x: number, y: number): { x: number; y: number } => {
+            const [px, py] = this.project(x, y);
+            return { x: px, y: py };
+        };
+        if (hasBlocked) {
+            const half = cellsize / 2;
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    if (this.isBlocked(y, x)) {
                         continue;
                     }
+                    const { x: cx, y: cy } = grid[y][x];
+                    drawSquareCellGridEdges(gridlines, {
+                        row: y,
+                        col: x,
+                        width,
+                        height,
+                        cx,
+                        cy,
+                        half,
+                        baseStroke,
+                        baseColour,
+                        baseOpacity,
+                        options: this.json.options,
+                        blocked,
+                        mapPoint,
+                    });
                 }
-                let thisStroke = baseStroke;
-                if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
-                    thisStroke = baseStroke * 3;
+            }
+        } else {
+            // Horizontal, top of each row, then bottom line after loop
+            let numcols = 1;
+            if (tilex > 0) {
+                numcols = Math.floor(width / tilex);
+            }
+            for (let tileCol = 0; tileCol < numcols; tileCol++) {
+                let idxLeft = 0;
+                if (tilex > 0) {
+                    idxLeft = tileCol * tilex;
                 }
-                const x1 = grid[row][idxLeft].x - (cellsize / 2);
-                const y1 = grid[row][idxLeft].y - (cellsize / 2);
-                const x2 = grid[row][idxRight].x + (cellsize / 2);
-                const y2 = grid[row][idxRight].y - (cellsize / 2);
-                const [x1p, y1p] = this.project(x1, y1);
-                const [x2p, y2p] = this.project(x2, y2);
-                gridlines.line(x1p, y1p, x2p, y2p).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+                let idxRight = width - 1;
+                if (tilex > 0) {
+                    idxRight = idxLeft + tilex - 1;
+                }
+                for (let row = 0; row < height; row++) {
+                    if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                        if ( (row === 0) || (row === height - 1) ) {
+                            continue;
+                        }
+                    }
+                    let thisStroke = baseStroke;
+                    if ( (tiley > 0) && (tileSpace === 0) && (row > 0) && (row % tiley === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    }
+                    const x1 = grid[row][idxLeft].x - (cellsize / 2);
+                    const y1 = grid[row][idxLeft].y - (cellsize / 2);
+                    const x2 = grid[row][idxRight].x + (cellsize / 2);
+                    const y2 = grid[row][idxRight].y - (cellsize / 2);
+                    const [x1p, y1p] = this.project(x1, y1);
+                    const [x2p, y2p] = this.project(x2, y2);
+                    gridlines.line(x1p, y1p, x2p, y2p).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
 
-                // if ( (row === height - 1) || ( (tiley > 0) && (tileSpace > 0) && ( (row > 0) || (tiley === 1) ) && (row % tiley === tiley - 1) ) ) {
-                if ( row === height - 1 ) {
-                    const lastx1 = grid[row][idxLeft].x - (cellsize / 2);
-                    const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
-                    const lastx2 = grid[row][idxRight].x + (cellsize / 2);
-                    const lasty2 = grid[row][idxRight].y + (cellsize / 2);
-                    const [lastx1p, lasty1p] = this.project(lastx1, lasty1);
-                    const [lastx2p, lasty2p] = this.project(lastx2, lasty2);
-                    gridlines.line(lastx1p, lasty1p, lastx2p, lasty2p).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
-                }
-            }
-        }
-
-        // Vertical, left of each column, then right line after loop
-        let numrows = 1;
-        if (tiley > 0) {
-            numrows = Math.floor(height / tiley);
-        }
-        for (let tileRow = 0; tileRow < numrows; tileRow++) {
-            let idxTop = 0;
-            if (tiley > 0) {
-                idxTop = tileRow * tiley;
-            }
-            let idxBottom = height - 1;
-            if (tiley > 0) {
-                idxBottom = idxTop + tiley - 1;
-            }
-            for (let col = 0; col < width; col++) {
-                if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
-                    if ( (col === 0) || (col === width - 1) ) {
-                        continue;
+                    if ( row === height - 1 ) {
+                        const lastx1 = grid[row][idxLeft].x - (cellsize / 2);
+                        const lasty1 = grid[row][idxLeft].y + (cellsize / 2);
+                        const lastx2 = grid[row][idxRight].x + (cellsize / 2);
+                        const lasty2 = grid[row][idxRight].y + (cellsize / 2);
+                        const [lastx1p, lasty1p] = this.project(lastx1, lasty1);
+                        const [lastx2p, lasty2p] = this.project(lastx2, lasty2);
+                        gridlines.line(lastx1p, lasty1p, lastx2p, lasty2p).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
                     }
                 }
+            }
 
-                let thisStroke = baseStroke;
-                if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
-                    thisStroke = baseStroke * 3;
+            // Vertical, left of each column, then right line after loop
+            let numrows = 1;
+            if (tiley > 0) {
+                numrows = Math.floor(height / tiley);
+            }
+            for (let tileRow = 0; tileRow < numrows; tileRow++) {
+                let idxTop = 0;
+                if (tiley > 0) {
+                    idxTop = tileRow * tiley;
                 }
-                const x1 = grid[idxTop][col].x - (cellsize / 2);
-                const y1 = grid[idxTop][col].y - (cellsize / 2);
-                const x2 = grid[idxBottom][col].x - (cellsize / 2);
-                const y2 = grid[idxBottom][col].y + (cellsize / 2);
-                const [x1p, y1p] = this.project(x1, y1);
-                const [x2p, y2p] = this.project(x2, y2);
-                gridlines.line(x1p, y1p, x2p, y2p).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+                let idxBottom = height - 1;
+                if (tiley > 0) {
+                    idxBottom = idxTop + tiley - 1;
+                }
+                for (let col = 0; col < width; col++) {
+                    if ( (this.json.options) && (this.json.options.includes("no-border")) ) {
+                        if ( (col === 0) || (col === width - 1) ) {
+                            continue;
+                        }
+                    }
 
-                // if ( (col === width - 1) || ( (tilex > 0) && (tileSpace > 0) && ( (col > 0) || (tilex === 1) ) && (col % tilex === tilex - 1) ) ) {
-                if ( col === width - 1 ) {
-                    const lastx1 = grid[idxTop][col].x + (cellsize / 2);
-                    const lasty1 = grid[idxTop][col].y - (cellsize / 2);
-                    const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
-                    const lasty2 = grid[idxBottom][col].y + (cellsize / 2);
-                    const [lastx1p, lasty1p] = this.project(lastx1, lasty1);
-                    const [lastx2p, lasty2p] = this.project(lastx2, lasty2);
-                    gridlines.line(lastx1p, lasty1p, lastx2p, lasty2p).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                    let thisStroke = baseStroke;
+                    if ( (tilex > 0) && (tileSpace === 0) && (col > 0) && (col % tilex === 0) ) {
+                        thisStroke = baseStroke * 3;
+                    }
+                    const x1 = grid[idxTop][col].x - (cellsize / 2);
+                    const y1 = grid[idxTop][col].y - (cellsize / 2);
+                    const x2 = grid[idxBottom][col].x - (cellsize / 2);
+                    const y2 = grid[idxBottom][col].y + (cellsize / 2);
+                    const [x1p, y1p] = this.project(x1, y1);
+                    const [x2p, y2p] = this.project(x2, y2);
+                    gridlines.line(x1p, y1p, x2p, y2p).stroke({width: thisStroke, color: baseColour, opacity: baseOpacity});
+
+                    if ( col === width - 1 ) {
+                        const lastx1 = grid[idxTop][col].x + (cellsize / 2);
+                        const lasty1 = grid[idxTop][col].y - (cellsize / 2);
+                        const lastx2 = grid[idxBottom][col].x + (cellsize / 2);
+                        const lasty2 = grid[idxBottom][col].y + (cellsize / 2);
+                        const [lastx1p, lasty1p] = this.project(lastx1, lasty1);
+                        const [lastx2p, lasty2p] = this.project(lastx2, lasty2);
+                        gridlines.line(lastx1p, lasty1p, lastx2p, lasty2p).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity});
+                    }
                 }
             }
         }
@@ -333,6 +404,9 @@ export class Stacking3DRenderer extends RendererBase {
                 const x = Math.floor((point[0] - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point[1] - (originY - (cellsize / 2))) / cellsize);
                 if (x >= 0 && x < width && y >= 0 && y < height) {
+                    if (this.isBlocked(y, x)) {
+                        return;
+                    }
                     this.options.boardClick!(y, x, "");
                 }
             });
@@ -619,6 +693,9 @@ export class Stacking3DRenderer extends RendererBase {
             const inc = 1;
             for (let row = start; inc === 1 ? row <= end : row >= end; row += inc) {
                 for (let col = 0; col < pieces[row].length; col++) {
+                    if (this.isBlocked(row, col)) {
+                        continue;
+                    }
                     for (let i = 0; i < pieces[row][col].length; i++) {
                         const key = pieces[row][col][i];
                         if ( (key !== null) && (key !== "-") ) {

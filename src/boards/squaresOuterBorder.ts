@@ -94,6 +94,7 @@ export type SquareCellGridParams = {
     baseOpacity: number;
     options?: RenderOptions;
     blocked?: readonly unknown[];
+    mapPoint?: (x: number, y: number) => { x: number; y: number };
 };
 
 function drawSegment(
@@ -105,8 +106,11 @@ function drawSegment(
     baseStroke: number,
     baseColour: string,
     baseOpacity: number,
+    mapPoint?: (x: number, y: number) => { x: number; y: number },
 ): void {
-    strokes.line(x1, y1, x2, y2)
+    const p1 = mapPoint !== undefined ? mapPoint(x1, y1) : { x: x1, y: y1 };
+    const p2 = mapPoint !== undefined ? mapPoint(x2, y2) : { x: x2, y: y2 };
+    strokes.line(p1.x, p1.y, p2.x, p2.y)
         .stroke({ width: baseStroke, color: baseColour, opacity: baseOpacity, ...strokeAttrs });
 }
 
@@ -124,6 +128,7 @@ export function drawSquareCellGridEdges(strokes: SVGG, params: SquareCellGridPar
         baseOpacity,
         options,
         blocked,
+        mapPoint,
     } = params;
 
     const topLeft = { x: cx - half, y: cy - half };
@@ -146,31 +151,31 @@ export function drawSquareCellGridEdges(strokes: SVGG, params: SquareCellGridPar
 
     if (emphasizeOuter) {
         if (!onTop && drawTop) {
-            drawSegment(strokes, topLeft.x, topLeft.y, topRight.x, topRight.y, baseStroke, baseColour, baseOpacity);
+            drawSegment(strokes, topLeft.x, topLeft.y, topRight.x, topRight.y, baseStroke, baseColour, baseOpacity, mapPoint);
         }
         if (!onRight && drawRight) {
-            drawSegment(strokes, topRight.x, topRight.y, bottomRight.x, bottomRight.y, baseStroke, baseColour, baseOpacity);
+            drawSegment(strokes, topRight.x, topRight.y, bottomRight.x, bottomRight.y, baseStroke, baseColour, baseOpacity, mapPoint);
         }
         if (!onBottom && drawBottom) {
-            drawSegment(strokes, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, baseStroke, baseColour, baseOpacity);
+            drawSegment(strokes, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, baseStroke, baseColour, baseOpacity, mapPoint);
         }
         if (!onLeft && drawLeft) {
-            drawSegment(strokes, bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, baseStroke, baseColour, baseOpacity);
+            drawSegment(strokes, bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, baseStroke, baseColour, baseOpacity, mapPoint);
         }
         return;
     }
 
     if (drawTop) {
-        drawSegment(strokes, topLeft.x, topLeft.y, topRight.x, topRight.y, baseStroke, baseColour, baseOpacity);
+        drawSegment(strokes, topLeft.x, topLeft.y, topRight.x, topRight.y, baseStroke, baseColour, baseOpacity, mapPoint);
     }
     if (drawRight) {
-        drawSegment(strokes, topRight.x, topRight.y, bottomRight.x, bottomRight.y, baseStroke, baseColour, baseOpacity);
+        drawSegment(strokes, topRight.x, topRight.y, bottomRight.x, bottomRight.y, baseStroke, baseColour, baseOpacity, mapPoint);
     }
     if (drawBottom) {
-        drawSegment(strokes, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, baseStroke, baseColour, baseOpacity);
+        drawSegment(strokes, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, baseStroke, baseColour, baseOpacity, mapPoint);
     }
     if (drawLeft) {
-        drawSegment(strokes, bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, baseStroke, baseColour, baseOpacity);
+        drawSegment(strokes, bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, baseStroke, baseColour, baseOpacity, mapPoint);
     }
 }
 

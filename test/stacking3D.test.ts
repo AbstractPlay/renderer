@@ -5,6 +5,7 @@ import { Stacking3DRenderer } from "../src/renderers/stacking3D";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep } from "../src/schemas/schema";
 import { createSVGWindow } from "svgdom";
+import { rectOfRects } from "../src/grids/index";
 
 
 const makeDraw = (): Svg => {
@@ -26,6 +27,20 @@ const stacking3DFixture = (): APRenderRep => ({
     board: { style: "squares", width: 5, height: 5 },
     legend: {},
     pieces: [[[]], [[]], [[]], [[]], [[]]],
+});
+
+const stacking3DGridFixture = (width: number, height: number, blocked?: { row: number; col: number }[]): APRenderRep => ({
+    renderer: "stacking-3D",
+    board: {
+        style: "squares",
+        width,
+        height,
+        ...(blocked !== undefined && blocked.length > 0 ? { blocked } : {}),
+    },
+    legend: { P: { name: "piece", colour: 1 } },
+    pieces: Array.from({ length: height }, () =>
+        Array.from({ length: width }, () => [] as string[]),
+    ),
 });
 
 const polygonArea = (pointsAttr: string): number => {
@@ -82,5 +97,95 @@ describe("Stacking-3D renderer", () => {
         expect(fillIdx).to.be.greaterThan(-1);
         expect(strokesIdx).to.be.greaterThan(-1);
         expect(fillIdx).to.be.lessThan(strokesIdx);
+    });
+
+    it("should draw one fill polygon per unblocked cell when board.blocked is set", () => {
+        const drawFull = makeDraw();
+        const drawBlocked = makeDraw();
+        const renderer = new Stacking3DRenderer();
+        const size = 3;
+        const blocked = [{ row: 1, col: 1 }];
+
+        renderer.render(stacking3DGridFixture(size, size), drawFull, {
+            ...baseOptions,
+            colourContext: { ...baseOptions.colourContext, board: "#cccccc" },
+        });
+        renderer.render(stacking3DGridFixture(size, size, blocked), drawBlocked, {
+            ...baseOptions,
+            colourContext: { ...baseOptions.colourContext, board: "#cccccc" },
+        });
+
+        const fullFill = (drawFull.findOne("#board #gridlines-fill") as SVGElement).find("polygon").length;
+        const blockedFill = (drawBlocked.findOne("#board #gridlines-fill") as SVGElement).find("polygon").length;
+        expect(fullFill).to.equal(1);
+        expect(blockedFill).to.equal(size * size - blocked.length);
+    });
+
+    it("should omit grid lines for blocked cells", () => {
+        const drawFull = makeDraw();
+        const drawOnlyCenter = makeDraw();
+        const renderer = new Stacking3DRenderer();
+        const size = 3;
+        const allButCenter: { row: number; col: number }[] = [];
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                if (row !== 1 || col !== 1) {
+                    allButCenter.push({ row, col });
+                }
+            }
+        }
+
+        renderer.render(stacking3DGridFixture(size, size), drawFull, baseOptions);
+        renderer.render(stacking3DGridFixture(size, size, allButCenter), drawOnlyCenter, baseOptions);
+
+        const fullLines = (drawFull.findOne("#board #gridlines-strokes") as SVGElement).find("line").length;
+        const centerOnlyLines = (drawOnlyCenter.findOne("#board #gridlines-strokes") as SVGElement).find("line").length;
+        expect(fullLines).to.equal(8);
+        expect(centerOnlyLines).to.equal(4);
+    });
+
+    it("should not invoke boardClick for blocked cells", () => {
+        const draw = makeDraw();
+        const renderer = new Stacking3DRenderer();
+        const clicks: { row: number; col: number }[] = [];
+        const blocked = [{ row: 1, col: 1 }];
+        renderer.render(stacking3DGridFixture(3, 3, blocked), draw, {
+            ...baseOptions,
+            boardClick: (row, col) => {
+                clicks.push({ row, col });
+            },
+        });
+
+        type Projectable = Stacking3DRenderer & { project(x: number, y: number): [number, number] };
+        const project = (renderer as Projectable).project.bind(renderer);
+        const grid = rectOfRects({ gridHeight: 3, gridWidth: 3, cellSize: 50 });
+        const fireClickAtCell = (row: number, col: number): void => {
+            const { x, y } = grid[row][col];
+            const [px, py] = project(x, y);
+            draw.point = () => ({ x: px, y: py });
+            draw.fire("click", { clientX: px, clientY: py });
+        };
+
+        fireClickAtCell(1, 1);
+        expect(clicks).to.deep.equal([]);
+
+        fireClickAtCell(0, 0);
+        expect(clicks).to.deep.equal([{ row: 0, col: 0 }]);
+    });
+
+    it("should not place pieces on blocked cells", () => {
+        const draw = makeDraw();
+        const renderer = new Stacking3DRenderer();
+        const json: APRenderRep = {
+            ...stacking3DGridFixture(3, 3, [{ row: 1, col: 1 }]),
+            pieces: [
+                [[], [], []],
+                [[], ["P"], []],
+                [[], [], []],
+            ],
+        };
+        renderer.render(json, draw, baseOptions);
+        const pieces = draw.findOne("#board #pieces") as SVGElement;
+        expect(pieces.find("use").length).to.equal(0);
     });
 });
