@@ -16,7 +16,11 @@ export function hasNoBorder(options?: RenderOptions): boolean {
 export function shouldEmphasizeSquaresOuterBorder(
     options?: RenderOptions,
     blocked?: readonly unknown[],
+    tileSpacing?: number,
 ): boolean {
+    if (tileSpacing !== undefined && tileSpacing > 0) {
+        return false;
+    }
     if (hasNoBorder(options)) {
         return false;
     }
@@ -34,8 +38,7 @@ export type SquaresOuterBorderParams = {
     baseStroke: number;
     baseColour: string;
     baseOpacity: number;
-    tilex: number;
-    tiley: number;
+    tileSpacing?: number;
     options?: RenderOptions;
     blocked?: readonly unknown[];
 };
@@ -49,12 +52,11 @@ export function drawSquaresOuterBorder(strokes: SVGG, params: SquaresOuterBorder
         baseStroke,
         baseColour,
         baseOpacity,
-        tilex,
-        tiley,
+        tileSpacing,
         options,
         blocked,
     } = params;
-    if (!shouldEmphasizeSquaresOuterBorder(options, blocked)) {
+    if (!shouldEmphasizeSquaresOuterBorder(options, blocked, tileSpacing)) {
         return;
     }
 
@@ -71,14 +73,10 @@ export function drawSquaresOuterBorder(strokes: SVGG, params: SquaresOuterBorder
         ...strokeAttrs,
     };
 
-    if (tiley === 0) {
-        strokes.line(xLeft, yTop, xRight, yTop).stroke(stroke).attr({ "pointer-events": "none" });
-        strokes.line(xLeft, yBottom, xRight, yBottom).stroke(stroke).attr({ "pointer-events": "none" });
-    }
-    if (tilex === 0) {
-        strokes.line(xLeft, yTop, xLeft, yBottom).stroke(stroke).attr({ "pointer-events": "none" });
-        strokes.line(xRight, yTop, xRight, yBottom).stroke(stroke).attr({ "pointer-events": "none" });
-    }
+    strokes.line(xLeft, yTop, xRight, yTop).stroke(stroke).attr({ "pointer-events": "none" });
+    strokes.line(xLeft, yBottom, xRight, yBottom).stroke(stroke).attr({ "pointer-events": "none" });
+    strokes.line(xLeft, yTop, xLeft, yBottom).stroke(stroke).attr({ "pointer-events": "none" });
+    strokes.line(xRight, yTop, xRight, yBottom).stroke(stroke).attr({ "pointer-events": "none" });
 }
 
 export type SquareCellGridParams = {
@@ -127,7 +125,6 @@ export function drawSquareCellGridEdges(strokes: SVGG, params: SquareCellGridPar
         baseColour,
         baseOpacity,
         options,
-        blocked,
         mapPoint,
     } = params;
 
@@ -136,7 +133,6 @@ export function drawSquareCellGridEdges(strokes: SVGG, params: SquareCellGridPar
     const bottomRight = { x: cx + half, y: cy + half };
     const bottomLeft = { x: cx - half, y: cy + half };
 
-    const emphasizeOuter = shouldEmphasizeSquaresOuterBorder(options, blocked);
     const noBorder = hasNoBorder(options);
 
     const onTop = row === 0;
@@ -148,22 +144,6 @@ export function drawSquareCellGridEdges(strokes: SVGG, params: SquareCellGridPar
     const drawBottom = !noBorder || !onBottom;
     const drawLeft = !noBorder || !onLeft;
     const drawRight = !noBorder || !onRight;
-
-    if (emphasizeOuter) {
-        if (!onTop && drawTop) {
-            drawSegment(strokes, topLeft.x, topLeft.y, topRight.x, topRight.y, baseStroke, baseColour, baseOpacity, mapPoint);
-        }
-        if (!onRight && drawRight) {
-            drawSegment(strokes, topRight.x, topRight.y, bottomRight.x, bottomRight.y, baseStroke, baseColour, baseOpacity, mapPoint);
-        }
-        if (!onBottom && drawBottom) {
-            drawSegment(strokes, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, baseStroke, baseColour, baseOpacity, mapPoint);
-        }
-        if (!onLeft && drawLeft) {
-            drawSegment(strokes, bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, baseStroke, baseColour, baseOpacity, mapPoint);
-        }
-        return;
-    }
 
     if (drawTop) {
         drawSegment(strokes, topLeft.x, topLeft.y, topRight.x, topRight.y, baseStroke, baseColour, baseOpacity, mapPoint);

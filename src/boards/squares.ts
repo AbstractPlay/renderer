@@ -722,8 +722,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
             baseStroke,
             baseColour,
             baseOpacity,
-            tilex,
-            tiley,
+            tileSpacing: tileSpace,
             options: ctx.json.options,
             blocked,
         });

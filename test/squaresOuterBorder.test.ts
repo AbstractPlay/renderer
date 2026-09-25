@@ -102,4 +102,55 @@ describe("squares outer border emphasis", () => {
         expect(thickD).to.be.greaterThan(0);
         expect(thickS).to.not.equal(thickD);
     });
+
+    it("should draw 2× outer frame on contiguous tiled boards (Azacru-style)", () => {
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        renderer.render(
+            squaresFixture({
+                board: {
+                    style: "squares-checkered",
+                    width: 9,
+                    height: 9,
+                    strokeWeight: 1,
+                    tileWidth: 3,
+                    tileHeight: 3,
+                    tileLineMult: 5,
+                },
+                pieces: Array(9).fill("-,-,-,-,-,-,-,-,-").join("\n"),
+            }),
+            draw,
+            baseOptions,
+        );
+
+        const strokes = draw.findOne("#gridlines-strokes") as SVGElement;
+        expect(countLinesAtWidth(strokes, 2)).to.equal(4);
+        expect(strokes.find("line").length).to.be.greaterThan(0);
+    });
+
+    it("should omit 2× outer frame but keep cell outlines when tileSpacing is set (Garden-style)", () => {
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        renderer.render(
+            squaresFixture({
+                options: ["hide-labels"],
+                board: {
+                    style: "squares",
+                    width: 8,
+                    height: 8,
+                    strokeWeight: 1,
+                    tileWidth: 4,
+                    tileHeight: 4,
+                    tileSpacing: 1.25,
+                },
+                pieces: Array(8).fill("-,-,-,-,-,-,-,-").join("\n"),
+            }),
+            draw,
+            baseOptions,
+        );
+
+        const strokes = draw.findOne("#gridlines-strokes") as SVGElement;
+        expect(countLinesAtWidth(strokes, 2)).to.equal(0);
+        expect(strokes.find("line").length).to.be.greaterThan(0);
+    });
 });
