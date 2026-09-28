@@ -215,7 +215,7 @@
       "label": "Rearranging e5",
       "pieces": [
         "En1N",
-        "Ex1N"
+        { "piece": "Ex1N", "text": "2", "textPosition": "below" }
       ]
     }
   ]

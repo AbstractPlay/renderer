@@ -1,5 +1,5 @@
 import type { G, Svg } from "@svgdotjs/svg.js";
-import type { AreaPieces, DominoTileRef } from "../schemas/schema.js";
+import type { AreaPieces, DominoTileRef, PiecesAreaLabeledPiece } from "../schemas/schema.js";
 import { usePieceAt } from "./plotting.js";
 
 /** Matches default renderer piece scale on `square*` boards. */
@@ -8,8 +8,52 @@ export const DOMINO_HAND_PIECE_SCALE = 0.85;
 /** Legend composites are authored for a 500-unit cell (see `usePieceAt`). */
 const LEGEND_CELL_SIZE = 500;
 
-export const isDominoTileRef = (entry: string | DominoTileRef): entry is DominoTileRef => {
+/** Vertical band for optional entry caption text, as a fraction of board cell size. */
+export const PIECES_AREA_CAPTION_BAND = 0.25;
+
+export type PiecesAreaEntry = AreaPieces["pieces"][number];
+
+export const isDominoTileRef = (entry: PiecesAreaEntry): entry is DominoTileRef => {
     return typeof entry === "object" && entry !== null && "domino" in entry;
+};
+
+export const isPiecesAreaLabeledPiece = (entry: PiecesAreaEntry): entry is PiecesAreaLabeledPiece => {
+    return typeof entry === "object" && entry !== null && "piece" in entry;
+};
+
+export const piecesAreaLegendKey = (entry: PiecesAreaEntry): string => {
+    if (typeof entry === "string") {
+        return entry;
+    }
+    if (isPiecesAreaLabeledPiece(entry)) {
+        return entry.piece;
+    }
+    throw new Error("piecesAreaLegendKey does not apply to domino tile refs.");
+};
+
+export const piecesAreaCaption = (
+    entry: PiecesAreaEntry,
+): { text?: string; textPosition: "above" | "below" } => {
+    if (typeof entry === "string") {
+        return { textPosition: "below" };
+    }
+    const textPosition = entry.textPosition ?? "below";
+    if (entry.text === undefined) {
+        return { textPosition };
+    }
+    return { text: entry.text, textPosition };
+};
+
+export const piecesAreaCaptionBandSize = (boardCellsize: number): number => {
+    return boardCellsize * PIECES_AREA_CAPTION_BAND;
+};
+
+export const piecesAreaBodyHeight = (
+    entry: PiecesAreaEntry,
+    ordinaryCellsize: number,
+    boardCellsize: number,
+): number => {
+    return isDominoTileRef(entry) ? boardCellsize : ordinaryCellsize;
 };
 
 /** Whether hand pieces in a `pieces` area should receive board rotation at placement time. */
@@ -20,16 +64,72 @@ export const shouldRotateAreaPieces = (area: AreaPieces): boolean => {
     return !area.pieces.every(isDominoTileRef);
 };
 
-export const piecesAreaSlotWidth = (entry: string | DominoTileRef, ordinaryCellsize: number, boardCellsize: number): number => {
+export const piecesAreaSlotWidth = (entry: PiecesAreaEntry, ordinaryCellsize: number, boardCellsize: number): number => {
     return isDominoTileRef(entry) ? boardCellsize * 2 : ordinaryCellsize;
 };
 
-export const piecesAreaSlotHeight = (entry: string | DominoTileRef, ordinaryCellsize: number, boardCellsize: number): number => {
-    return isDominoTileRef(entry) ? boardCellsize : ordinaryCellsize;
+export const piecesAreaSlotHeight = (entry: PiecesAreaEntry, ordinaryCellsize: number, boardCellsize: number): number => {
+    const body = piecesAreaBodyHeight(entry, ordinaryCellsize, boardCellsize);
+    const { text } = piecesAreaCaption(entry);
+    if (text === undefined) {
+        return body;
+    }
+    return body + piecesAreaCaptionBandSize(boardCellsize);
+};
+
+/** Y coordinate of the piece (or domino tile) vertical centre within a slot. */
+export const piecesAreaPieceCenterYFromSlotTop = (
+    slotTop: number,
+    entry: PiecesAreaEntry,
+    ordinaryCellsize: number,
+    boardCellsize: number,
+): number => {
+    const body = piecesAreaBodyHeight(entry, ordinaryCellsize, boardCellsize);
+    const { text, textPosition } = piecesAreaCaption(entry);
+    if (text === undefined) {
+        return slotTop + body / 2;
+    }
+    const band = piecesAreaCaptionBandSize(boardCellsize);
+    if (textPosition === "above") {
+        return slotTop + band + body / 2;
+    }
+    return slotTop + body / 2;
+};
+
+/** Y coordinate for caption text centre, or undefined when the entry has no caption. */
+export const piecesAreaCaptionCenterYFromSlotTop = (
+    slotTop: number,
+    entry: PiecesAreaEntry,
+    ordinaryCellsize: number,
+    boardCellsize: number,
+): number | undefined => {
+    const { text, textPosition } = piecesAreaCaption(entry);
+    if (text === undefined) {
+        return undefined;
+    }
+    const body = piecesAreaBodyHeight(entry, ordinaryCellsize, boardCellsize);
+    const band = piecesAreaCaptionBandSize(boardCellsize);
+    if (textPosition === "above") {
+        return slotTop + band / 2;
+    }
+    return slotTop + body + band / 2;
+};
+
+/** Top edge Y for a domino tile group within a slot. */
+export const piecesAreaDominoTileTopFromSlotTop = (
+    slotTop: number,
+    entry: PiecesAreaEntry,
+    boardCellsize: number,
+): number => {
+    const { text, textPosition } = piecesAreaCaption(entry);
+    if (text === undefined || textPosition !== "above") {
+        return slotTop;
+    }
+    return slotTop + piecesAreaCaptionBandSize(boardCellsize);
 };
 
 /** Board cells consumed by one entry when wrapping a `pieces` area row. */
-export const piecesAreaCellSpan = (entry: string | DominoTileRef): number => {
+export const piecesAreaCellSpan = (entry: PiecesAreaEntry): number => {
     return isDominoTileRef(entry) ? 2 : 1;
 };
 
@@ -38,7 +138,7 @@ export const piecesAreaCellSpan = (entry: string | DominoTileRef): number => {
  * and are never split across rows.
  */
 export const buildPiecesAreaRows = (
-    pieces: (string | DominoTileRef)[],
+    pieces: PiecesAreaEntry[],
     maxCellsPerRow: number,
 ): number[][] => {
     const rows: number[][] = [];
@@ -67,7 +167,7 @@ export const DOMINO_HAND_TILE_GAP = 0.25;
 export const PIECES_AREA_ROW_GAP = 0.10;
 
 export const piecesAreaHorizontalGap = (
-    entry: string | DominoTileRef,
+    entry: PiecesAreaEntry,
     hpad: number,
     boardCellsize: number,
 ): number => {

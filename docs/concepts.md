@@ -87,6 +87,28 @@ Rows wrap at the board width in **cells** (each domino tile counts as two cells 
 
 {% renderWidget "samples/niche-domino-hand.json" %}
 
+### Entry captions in a `pieces` area
+
+Individual slots may show optional short text above or below the piece (or whole domino tile). This is separate from the area title (`label` at the top-left of the hand bar). Captions are plain strings, not i18n `renderLabel` objects.
+
+Legend-key slot with caption:
+
+```json
+{ "piece": "En1N", "text": "1", "textPosition": "below" }
+```
+
+- `piece` — legend key (same as a bare string entry).
+- `text` — optional caption (typically one to three characters).
+- `textPosition` — `"above"` or `"below"`; defaults to `"below"` when `text` is set.
+
+Domino tile with a whole-tile caption:
+
+```json
+{ "domino": ["DomL35", "DomR35"], "id": "t0", "text": "×", "textPosition": "above" }
+```
+
+Click payloads are unchanged: legend-key slots still return the legend key; domino ends still return the `_domino_…` encoding.
+
 ## Annotations
 
 Drawn above pieces: move arrows, enter/exit markers, dots, outlines, etc. See [Annotations](/renderer/annotations/).

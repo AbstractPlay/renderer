@@ -5,7 +5,7 @@ import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, t
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
 import { sheets } from "../sheets/index.js";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting.js";
-import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaHorizontalGap, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
+import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionCenterYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
 import { glyph2uid, x2uid } from "../common/glyph2uid.js";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys.js";
@@ -4539,6 +4539,11 @@ export abstract class RendererBase {
                     // @ts-expect-error (poor SVGjs typing)
                     nested.rect(areaWidth,areaHeight).fill(this.resolveMarkerFill(area.background, 1));
                 }
+                let labelColour = this.options.colourContext.labels;
+                if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+                    labelColour = this.resolveColour(this.json.board.labelColour) as string;
+                }
+                const entryCaptionSize = boardCellsize / 4;
                 for (let iRow = 0; iRow < pieceRows.length; iRow++) {
                     const row = pieceRows[iRow];
                     let slotX = 0;
@@ -4557,36 +4562,54 @@ export abstract class RendererBase {
                         const iPiece = row[j];
                         const entry = area.pieces[iPiece];
                         const slotWidth = piecesAreaSlotWidth(entry, cellsize, boardCellsize);
-                        const slotHeight = piecesAreaSlotHeight(entry, cellsize, boardCellsize);
-                        const slotCenterY = slotTop + (slotHeight / 2);
+                        const pieceCenterX = slotX + (slotWidth / 2);
+                        const pieceCenterY = piecesAreaPieceCenterYFromSlotTop(slotTop, entry, cellsize, boardCellsize);
                         if (isDominoTileRef(entry)) {
                             const [leftKey, rightKey] = entry.domino;
                             const tileLeft = slotX;
+                            const tileTop = piecesAreaDominoTileTopFromSlotTop(slotTop, entry, boardCellsize);
                             const tileGroup = composeDominoTile(nested, this.rootSvg, leftKey, rightKey, boardCellsize);
-                            tileGroup.move(tileLeft, slotTop);
+                            tileGroup.move(tileLeft, tileTop);
                             if (rotation !== 0) {
-                                rotate(tileGroup, rotation, tileLeft + slotWidth / 2, slotCenterY);
+                                rotate(tileGroup, rotation, pieceCenterX, pieceCenterY);
                             }
                             if (this.options.boardClick !== undefined) {
                                 const handle = entry.id ?? iPiece;
                                 const halfSize = boardCellsize;
-                                const leftHit = nested.rect(halfSize, halfSize).fill({color: "#fff", opacity: 0}).addClass("aprender-domino-hit").move(tileLeft, slotTop);
-                                const rightHit = nested.rect(halfSize, halfSize).fill({color: "#fff", opacity: 0}).addClass("aprender-domino-hit").move(tileLeft + halfSize, slotTop);
+                                const leftHit = nested.rect(halfSize, halfSize).fill({color: "#fff", opacity: 0}).addClass("aprender-domino-hit").move(tileLeft, tileTop);
+                                const rightHit = nested.rect(halfSize, halfSize).fill({color: "#fff", opacity: 0}).addClass("aprender-domino-hit").move(tileLeft + halfSize, tileTop);
                                 leftHit.click((e: Event) => {this.options.boardClick!(-1, -1, dominoClickPayload(handle, leftKey, rightKey, "L")); e.stopPropagation();});
                                 rightHit.click((e: Event) => {this.options.boardClick!(-1, -1, dominoClickPayload(handle, leftKey, rightKey, "R")); e.stopPropagation();});
                             }
                         } else {
-                            const piece = this.rootSvg.findOne("#" + entry) as Svg;
+                            const legendKey = piecesAreaLegendKey(entry);
+                            const piece = this.rootSvg.findOne("#" + legendKey) as Svg;
                             if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${entry}). Each piece in the stack *must* exist in the \`legend\`.`);
+                                throw new Error(`Could not find the requested piece (${legendKey}). Each piece in the stack *must* exist in the \`legend\`.`);
                             }
-                            const newx = slotX + (slotWidth / 2);
-                            const use = usePieceAt({svg: nested, piece, cellsize, x: newx, y: slotCenterY, scalingFactor: 1});
+                            const use = usePieceAt({svg: nested, piece, cellsize, x: pieceCenterX, y: pieceCenterY, scalingFactor: 1});
                             if (rotation !== 0) {
-                                rotate(use, rotation, newx, slotCenterY);
+                                rotate(use, rotation, pieceCenterX, pieceCenterY);
                             }
                             if (this.options.boardClick !== undefined) {
-                                use.click((e: Event) => {this.options.boardClick!(-1, -1, entry); e.stopPropagation();});
+                                use.click((e: Event) => {this.options.boardClick!(-1, -1, legendKey); e.stopPropagation();});
+                            }
+                        }
+                        const caption = piecesAreaCaption(entry);
+                        if (caption.text !== undefined) {
+                            const captionY = piecesAreaCaptionCenterYFromSlotTop(slotTop, entry, cellsize, boardCellsize)!;
+                            const captionFont = {
+                                size: entryCaptionSize,
+                                anchor: "middle" as const,
+                                fill: labelColour,
+                            };
+                            // Text.move aligns bbox origin; with text-anchor middle use amove (anchor x/y).
+                            const captionEl = nested.text(caption.text).addClass("aprender-pieces-entry-label");
+                            captionEl.font(captionFont)
+                                .attr("dominant-baseline", "central")
+                                .amove(pieceCenterX, captionY);
+                            if (rotation !== 0) {
+                                rotate(captionEl, rotation, pieceCenterX, pieceCenterY);
                             }
                         }
                         slotX += slotWidth;
@@ -4603,10 +4626,6 @@ export abstract class RendererBase {
                 }
 
                 // Add area label
-                let labelColour = this.options.colourContext.labels;
-                if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-                    labelColour = this.resolveColour(this.json.board.labelColour) as string;
-                }
                 const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({size: textHeight, anchor: "start", fill: labelColour});
                 const txtWidth = tmptxt.bbox().w;
                 tmptxt.remove();

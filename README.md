@@ -25,7 +25,8 @@ New renderer features should include a **playground snippet** so the public demo
 ### Tests
 
 - `npm test` — Mocha unit tests (fast; runs in CI).
-- `npm run playground` — Vite dev server for the interactive demo (`playground/`).
+- `npm run playground` — build the interactive demo into `dist/` (same as `dist-dev`: playground pages + `APRender.min.js`).
+- `npm run playground:serve` — Vite dev server on port 3000 with hot reload (`playground/`, `@abstractplay/renderer` → `src/`).
 - `npm run test:browser:install` — install Playwright browsers (once per machine).
 - `npm run test:browser` — build `dist/` and render every playground snippet in Chromium, Firefox, and WebKit.
 

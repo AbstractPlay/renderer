@@ -1520,6 +1520,37 @@
             ],
             "additionalProperties": false
         },
+        "piecesAreaEntryTextPosition": {
+            "description": "Where optional short text is drawn relative to a hand piece in a `pieces` area.",
+            "enum": [
+                "above",
+                "below"
+            ],
+            "default": "below"
+        },
+        "piecesAreaLabeledPiece": {
+            "description": "Legend-key entry in a `pieces` area with optional short caption text above or below the piece.",
+            "type": "object",
+            "properties": {
+                "piece": {
+                    "description": "Legend key for the piece to display.",
+                    "type": "string"
+                },
+                "text": {
+                    "description": "Optional short caption (typically one to three characters). Does not use i18n `renderLabel`.",
+                    "type": "string",
+                    "maxLength": 8
+                },
+                "textPosition": {
+                    "description": "Where to draw `text` relative to the piece. Defaults to `below` when `text` is set.",
+                    "$ref": "#/$defs/piecesAreaEntryTextPosition"
+                }
+            },
+            "required": [
+                "piece"
+            ],
+            "additionalProperties": false
+        },
         "dominoTileRef": {
             "description": "A domino tile for use in a `pieces` area. Composes two legend entries (west/left and east/right) into one 2:1 flat tile at render time. Domino pairing is area-only; board placement uses separate half legends per cell.",
             "type": "object",
@@ -1536,6 +1567,15 @@
                 "id": {
                     "description": "Optional stable handle used in click payloads instead of the tile index.",
                     "type": "string"
+                },
+                "text": {
+                    "description": "Optional short caption for the whole tile (typically one to three characters). Does not use i18n `renderLabel`.",
+                    "type": "string",
+                    "maxLength": 8
+                },
+                "textPosition": {
+                    "description": "Where to draw `text` relative to the tile. Defaults to `below` when `text` is set.",
+                    "$ref": "#/$defs/piecesAreaEntryTextPosition"
                 }
             },
             "required": [
@@ -1553,7 +1593,7 @@
                     ]
                 },
                 "pieces": {
-                    "description": "Legend keys for ordinary pieces, or domino tile refs that pair two half legends into one hand tile.",
+                    "description": "Legend keys for ordinary pieces, labeled piece entries, or domino tile refs that pair two half legends into one hand tile.",
                     "type": "array",
                     "items": {
                         "anyOf": [
@@ -1562,6 +1602,9 @@
                             },
                             {
                                 "$ref": "#/$defs/dominoTileRef"
+                            },
+                            {
+                                "$ref": "#/$defs/piecesAreaLabeledPiece"
                             }
                         ]
                     },

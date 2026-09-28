@@ -1566,11 +1566,11 @@ export interface Polypiece {
 export interface AreaPieces {
   type: "pieces";
   /**
-   * Legend keys for ordinary pieces, or domino tile refs that pair two half legends into one hand tile.
+   * Legend keys for ordinary pieces, labeled piece entries, or domino tile refs that pair two half legends into one hand tile.
    *
    * @minItems 1
    */
-  pieces: [string | DominoTileRef, ...(string | DominoTileRef)[]];
+  pieces: [string | DominoTileRef | PiecesAreaLabeledPiece, ...(string | DominoTileRef | PiecesAreaLabeledPiece)[]];
   /**
    * The text that will appear at the top left of the area
    */
@@ -1611,6 +1611,31 @@ export interface DominoTileRef {
    * Optional stable handle used in click payloads instead of the tile index.
    */
   id?: string;
+  /**
+   * Optional short caption for the whole tile (typically one to three characters). Does not use i18n `renderLabel`.
+   */
+  text?: string;
+  /**
+   * Where to draw `text` relative to the tile. Defaults to `below` when `text` is set.
+   */
+  textPosition?: "above" | "below";
+}
+/**
+ * Legend-key entry in a `pieces` area with optional short caption text above or below the piece.
+ */
+export interface PiecesAreaLabeledPiece {
+  /**
+   * Legend key for the piece to display.
+   */
+  piece: string;
+  /**
+   * Optional short caption (typically one to three characters). Does not use i18n `renderLabel`.
+   */
+  text?: string;
+  /**
+   * Where to draw `text` relative to the piece. Defaults to `below` when `text` is set.
+   */
+  textPosition?: "above" | "below";
 }
 /**
  * This is a special area currently only used for the DVGC games and incorporates a `pieces`-style area into the game board itself. It is currently only designed for two-player use with 180 degree rotation. The area is clickable, as are the pieces within. You must tell the renderer which area belongs to which player.

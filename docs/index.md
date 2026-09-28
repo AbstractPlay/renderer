@@ -24,7 +24,7 @@ For advanced controls (colour context, rotation presets, settings JSON), use the
 
 **[renderer.dev.abstractplay.com](https://renderer.dev.abstractplay.com)**
 
-To run it locally from the renderer repo: `npm run playground` (Vite on port 3000, sources under `playground/`). See [Playground samples](/renderer/playground-samples/) for snippet workflow and browser tests.
+To run it locally from the renderer repo: `npm run playground:serve` (Vite on port 3000, sources under `playground/`). To build a static copy like deploy, use `npm run playground` (writes `dist/`). See [Playground samples](/renderer/playground-samples/) for snippet workflow and browser tests.
 
 ## Interactive examples on this site
 

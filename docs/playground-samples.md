@@ -85,12 +85,18 @@ npx playwright test --project=firefox --grep my-new-sample
 **Local playground (hot reload, no build):**
 
 ```bash
-npm run playground
+npm run playground:serve
 ```
 
 Open `http://localhost:3000/` (redirects to `playground.html`) or use `?sample=my-new-sample` on the harness.
 
-**Production-like preview** (after `npm run dist-dev`):
+**Static build** (same output as deploy / browser tests):
+
+```bash
+npm run playground
+```
+
+**Production-like preview** (after `npm run playground` or `dist-dev`):
 
 - Playground: `npx vite preview --config playground/vite.config.ts` → `http://localhost:4173/playground.html`
 - Harness: `http://localhost:4173/harness.html?sample=my-new-sample`
@@ -129,7 +135,8 @@ playwright.config.mjs                   ← browser projects + vite preview
 | Script | What it does |
 |--------|----------------|
 | `npm test` | Mocha unit tests (svgdom); no browsers |
-| `npm run playground` | Vite dev server on port 3000 (`playground/`) |
+| `npm run playground` | Build `dist/` (playground + `APRender.min.js`; same as `dist-dev`) |
+| `npm run playground:serve` | Vite dev server on port 3000 (`playground/`, hot reload) |
 | `npm run dist-dev` | Build `dist/` (playground + `APRender.min.js`, unminified playground assets) |
 | `npm run dist-prod` | Same, production mode (minified) |
 | `npm run test:browser:install` | Install Playwright browsers (once per machine/CI image; **requires Node.js 20+**) |
@@ -144,4 +151,4 @@ playwright.config.mjs                   ← browser projects + vite preview
 | Playwright track height failure | Track layout bug (check `niche-areas-track` in Firefox first) |
 | Playwright passes locally, fails in CI | Run `npm run test:browser` (full pipeline), not `npx playwright test` alone without `dist-dev` |
 | Custom renderer fails “no playfield” | Renderer must still output an SVG with graphics; health check accepts `#pieces`, `#gridlines`, `#stash`, or any path/rect/use content |
-| `npm run playground` 404 on samples | Vite `fs.allow` includes repo root; ensure `test/fixtures/playground-samples.json` exists |
+| `npm run playground:serve` 404 on samples | Vite `fs.allow` includes repo root; ensure `test/fixtures/playground-samples.json` exists |

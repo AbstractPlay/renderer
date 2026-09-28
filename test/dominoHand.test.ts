@@ -2,7 +2,7 @@ import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
-import { dominoClickPayload, buildPiecesAreaRows, shouldRotateAreaPieces } from "../src/common/dominoHand";
+import { dominoClickPayload, buildPiecesAreaRows, piecesAreaCaptionCenterYFromSlotTop, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, shouldRotateAreaPieces } from "../src/common/dominoHand";
 import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep, AreaPieces } from "../src/schemas/schema";
@@ -80,6 +80,33 @@ const directionalAreaData: APRenderRep = {
             type: "pieces",
             label: "Orders",
             pieces: ["mMF", "mFL"],
+        },
+    ],
+};
+
+const labeledPiecesAreaData: APRenderRep = {
+    board: {
+        style: "squares",
+        width: 3,
+        height: 3,
+    },
+    legend: {
+        A: { name: "piece", colour: 1 },
+        B: { name: "piece", colour: 2 },
+    },
+    pieces: [
+        [[], [], []],
+        [[], [], []],
+        [[], [], []],
+    ],
+    areas: [
+        {
+            type: "pieces",
+            label: "Hand",
+            pieces: [
+                { piece: "A", text: "1", textPosition: "below" },
+                { piece: "B", text: "2", textPosition: "above" },
+            ],
         },
     ],
 };
@@ -285,5 +312,77 @@ describe("domino hand area", () => {
             }
         });
         expect(rotatedUses).to.be.greaterThan(0);
+    });
+
+    it("should validate labeled piece entries and domino captions in schema", () => {
+        const ajv = new Ajv();
+        expect(ajv.validate(schema, labeledPiecesAreaData)).to.equal(true);
+        expect(ajv.validate(schema, {
+            ...dominoHandData,
+            areas: [{
+                ...dominoHandData.areas![0],
+                pieces: [{ domino: ["DomL35", "DomR35"], text: "D", textPosition: "above" }],
+            }],
+        })).to.equal(true);
+    });
+
+    it("should resolve legend keys for labeled piece entries", () => {
+        expect(piecesAreaLegendKey("A")).to.equal("A");
+        expect(piecesAreaLegendKey({ piece: "mMF", text: "1" })).to.equal("mMF");
+    });
+
+    it("should place above captions higher than the piece centre in layout helpers", () => {
+        const boardCellsize = 40;
+        const ordinaryCellsize = boardCellsize * 0.75;
+        const slotTop = 20;
+        const entry = { piece: "B", text: "2", textPosition: "above" as const };
+        const pieceY = piecesAreaPieceCenterYFromSlotTop(slotTop, entry, ordinaryCellsize, boardCellsize);
+        const captionY = piecesAreaCaptionCenterYFromSlotTop(slotTop, entry, ordinaryCellsize, boardCellsize)!;
+        expect(captionY).to.be.lessThan(pieceY);
+    });
+
+    it("should render entry captions above or below hand pieces", () => {
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        renderer.render(labeledPiecesAreaData, draw, baseOptions);
+        const piecesArea = draw.findOne("#_pieces0");
+        expect(piecesArea).to.not.equal(null);
+        if (piecesArea === null) {
+            return;
+        }
+        const labels = piecesArea.find(".aprender-pieces-entry-label");
+        expect(labels.length).to.equal(2);
+        const uses = piecesArea.find("use");
+        expect(uses.length).to.equal(2);
+        const handUses: Svg[] = [];
+        uses.forEach((node) => {
+            handUses.push(node as Svg);
+        });
+        handUses.sort((a, b) => a.x() - b.x());
+        const useA = handUses[0]!;
+        const useB = handUses[1]!;
+        let labelBelowCy: number | undefined;
+        let labelAboveCy: number | undefined;
+        let labelBelowX: number | undefined;
+        let labelAboveX: number | undefined;
+        labels.forEach((node) => {
+            const t = node.text();
+            if (t === "1") {
+                labelBelowCy = node.bbox().cy;
+                labelBelowX = Number(node.attr("x"));
+            } else if (t === "2") {
+                labelAboveCy = node.bbox().cy;
+                labelAboveX = Number(node.attr("x"));
+            }
+        });
+        expect(labelBelowCy).to.not.equal(undefined);
+        expect(labelAboveCy).to.not.equal(undefined);
+        expect(labelBelowX).to.not.equal(undefined);
+        expect(labelAboveX).to.not.equal(undefined);
+        expect(labelBelowCy!).to.be.greaterThan(useA.bbox().cy);
+        expect(labelAboveCy!).to.be.lessThan(useB.bbox().cy);
+        // Same slot spacing as hand uses; caption x is pieceCenterX (amove), use x is pieceCenterX - halfSize.
+        expect(labelAboveX! - labelBelowX!).to.be.closeTo(useB.x() - useA.x(), 0.5);
+        expect(labelBelowX! - useA.x()).to.be.closeTo(labelAboveX! - useB.x(), 0.5);
     });
 });
