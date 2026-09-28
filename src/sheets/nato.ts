@@ -148,10 +148,11 @@ sheet.glyphs.set("nato-infantry-special", (canvas: SVGContainer) => {
         .attr("data-context-border", true);
     const text = group.text("SOF")
         .font({anchor: "middle", fill: "#000", size: 100, family: "Tahoma,\"IBM Plex Sans\",sans-serif"})
-        .attr("dy", "0.55em")
         .attr("data-context-border-fill", true)
-        .attr("dominant-baseline", "middle");
-    text.path(`M5,25 L600,25`)
+        .attr("alignment-baseline", "auto")
+        .attr("dominant-baseline", "auto");
+    // Path is the alphabetic baseline (resvg ignores hanging on textPath). ~y=100 tops caps below the frame.
+    text.path(`M5,100 L600,100`)
         .attr("startOffset", "50%");
     group.viewbox(0,0,605,405);
     return group;
