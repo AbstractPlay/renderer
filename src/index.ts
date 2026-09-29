@@ -27,7 +27,17 @@ const ajvCtor = AjvImport as unknown as new () => AjvInstance;
 const ajv = new ajvCtor();
 const validate = ajv.compile(schema);
 
-export type {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings};
+export type {IRendererOptionsIn, APRenderRep, Glyph, PositiveInteger, Colourstrings, Stashstrings, Colourfuncs};
+
+/** A single value from {@link APRenderRep.legend}. */
+export type LegendEntry = NonNullable<APRenderRep["legend"]>[string];
+
+/** Player index, hex/pattern/context token, or colour function — same as a glyph `colour` field. */
+export type ColourResolvable = number | string | Colourfuncs;
+
+export type InlineGlyphRequest =
+    | { mode: "sheet"; name: string; colour: ColourResolvable }
+    | { mode: "legend"; entry: LegendEntry };
 export {
     applyBoardChrome,
     sanitizeRenderRep,
@@ -90,7 +100,7 @@ export interface IRenderOptions extends IRendererOptionsIn {
     prefix?: string;
     /**
      * When true, emit CSS/SVG-native animations that survive serialization.
-     * Set by {@link renderStatic} and {@link renderglyph}; not for live {@link render}.
+     * Set by {@link renderStatic} and inline glyph helpers; not for live {@link render}.
      */
     staticAnimations?: boolean;
 }
@@ -183,7 +193,74 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
     return svgString;
 }
 
+const isIsoLegendEntry = (entry: LegendEntry): boolean => {
+    return (
+        typeof entry === "object" &&
+        entry !== null &&
+        !Array.isArray(entry) &&
+        "piece" in entry
+    );
+};
+
+const buildMiniLegendRep = (entry: LegendEntry): APRenderRep => {
+    const obj: APRenderRep = {
+        board: null,
+        legend: { A: entry },
+        pieces: "A",
+    };
+    if (isIsoLegendEntry(entry)) {
+        obj.renderer = "isometric";
+    }
+    return obj;
+};
+
+const renderMiniLegend = (entry: LegendEntry, opts = {} as IRenderOptions): string => {
+    const obj = buildMiniLegendRep(entry);
+    if (opts.target != null) {
+        const renderOpts = { ...opts, staticAnimations: true };
+        const canvas = render(obj, renderOpts);
+        return addPrefix(canvas.svg(), renderOpts);
+    }
+    return renderStatic(obj, opts);
+};
+
 /**
+ * Renders one sheet glyph by name and colour (inline icon helper).
+ * @beta
+ */
+export const renderSheetGlyph = (
+    name: string,
+    colour: ColourResolvable,
+    opts = {} as IRenderOptions,
+): string => {
+    return renderMiniLegend({ name, colour }, opts);
+};
+
+/**
+ * Renders any legend-map entry as a single inline icon (`legend.A` on a null board).
+ * @beta
+ */
+export const renderLegendGlyph = (entry: LegendEntry, opts = {} as IRenderOptions): string => {
+    return renderMiniLegend(entry, opts);
+};
+
+/**
+ * Dispatches to {@link renderSheetGlyph} or {@link renderLegendGlyph} by mode.
+ * @beta
+ */
+export const renderInlineGlyph = (
+    request: InlineGlyphRequest,
+    opts = {} as IRenderOptions,
+): string => {
+    if (request.mode === "sheet") {
+        return renderSheetGlyph(request.name, request.colour, opts);
+    }
+    return renderLegendGlyph(request.entry, opts);
+};
+
+/**
+ * @deprecated Use {@link renderSheetGlyph} or {@link renderInlineGlyph}.
+ *
  * A helper function for producing code for a single glyph, intended to then be used inline.
  *
  * @param glyphid - The name of the glyph to render
@@ -192,25 +269,13 @@ export const renderStatic = (json: APRenderRep, opts = {} as IRenderOptions): st
  * @returns A string containing a valid `<svg>` tag
  * @beta
  */
-export const renderglyph = (glyphid: string, colour: number | string | Colourfuncs, opts = {} as IRenderOptions): string => {
-    const obj: APRenderRep = {
-        board: null,
-        legend: {
-            A: {
-                name: glyphid,
-                colour,
-            },
-        },
-        pieces: "A",
-    };
-    const node = document.createElement("div");
-    const uid = uuidv4();
-    node.setAttribute("id", uid);
-    opts.divelem = node;
-    opts.staticAnimations = true;
-    const canvas = render(obj, opts);
-    return addPrefix(canvas.svg(), opts);
-}
+export const renderglyph = (
+    glyphid: string,
+    colour: ColourResolvable,
+    opts = {} as IRenderOptions,
+): string => {
+    return renderSheetGlyph(glyphid, colour, opts);
+};
 
 /**
  * This is the primary function. Render an image based on the JSON and options
@@ -338,5 +403,8 @@ export default {
     render,
     renderStatic,
     renderglyph,
+    renderSheetGlyph,
+    renderLegendGlyph,
+    renderInlineGlyph,
     sheets
 };
