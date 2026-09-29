@@ -3,7 +3,7 @@ import { IPolyPolygon } from "../grids/_base.js";
 import { APRenderRep } from "../schemas/schema.js";
 import { peripheralReferenceSides } from "../references/helpers.js";
 import { IRendererOptionsIn, RendererBase} from "./_base.js";
-import { usePieceAt } from "../common/plotting.js";
+import { placeInlineLegendIcon } from "../common/plotting.js";
 
 /**
  * This is the default renderer used for most games.
@@ -126,6 +126,6 @@ export class DefaultRenderer extends RendererBase {
             throw new Error(`Could not find the requested piece (${key}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
         }
         this.rootSvg.viewbox(0, 0, this.cellsize, this.cellsize);
-        usePieceAt({svg: this.rootSvg, piece, cellsize: this.cellsize, x: this.cellsize / 2, y: this.cellsize / 2, scalingFactor: 0.9});
+        placeInlineLegendIcon({ svg: this.rootSvg, piece, cellsize: this.cellsize, scalingFactor: 0.9 });
     }
 }

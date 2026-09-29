@@ -203,15 +203,19 @@ const isIsoLegendEntry = (entry: LegendEntry): boolean => {
 };
 
 const buildMiniLegendRep = (entry: LegendEntry): APRenderRep => {
-    const obj: APRenderRep = {
+    if (isIsoLegendEntry(entry)) {
+        return {
+            renderer: "isometric",
+            board: null,
+            legend: { A: entry },
+            pieces: "A",
+        };
+    }
+    return {
         board: null,
         legend: { A: entry },
         pieces: "A",
     };
-    if (isIsoLegendEntry(entry)) {
-        obj.renderer = "isometric";
-    }
-    return obj;
 };
 
 const renderMiniLegend = (entry: LegendEntry, opts = {} as IRenderOptions): string => {

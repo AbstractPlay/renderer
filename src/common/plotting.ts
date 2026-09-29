@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 
-import { Container, Element, Use } from "@svgdotjs/svg.js";
+import { Container, Element, Svg, Use } from "@svgdotjs/svg.js";
 import { IPoint } from "../grids/index.js";
 
 /**
@@ -157,6 +157,46 @@ export const rotatePoint = (pt: IPoint, deg: number, cpt: IPoint): IPoint => {
         y: ((pt.y - cy) * Math.cos(rad)) + ((pt.x - cx) * Math.sin(rad)) + cy,
     }
 }
+
+/** Design cell for flat composite legend icons (`finalizeLegendViewbox`). */
+export const INLINE_LEGEND_DESIGN_CELL = 500;
+
+const inlineLegendDesignSpan = (piece: Element): number => {
+    const el = piece as Svg;
+    const vb = el.viewbox();
+    if (vb.width > 0 && vb.height > 0) {
+        return Math.max(vb.width, vb.height);
+    }
+    const w = Number(el.width());
+    const h = Number(el.height());
+    const wh = Math.max(w, h);
+    if (wh > 0) {
+        return wh;
+    }
+    return INLINE_LEGEND_DESIGN_CELL;
+};
+
+/**
+ * Scale a legend-map def (`#A`, polymatrix nested, iso symbol, etc.) to fill an inline icon viewport.
+ */
+export const placeInlineLegendIcon = (opts: {
+    svg: Container;
+    piece: Element;
+    cellsize: number;
+    scalingFactor?: number;
+}): Use => {
+    const scalingFactor = opts.scalingFactor ?? 0.9;
+    const designSpan = inlineLegendDesignSpan(opts.piece);
+    const factor = (opts.cellsize * scalingFactor) / designSpan;
+    const cx = opts.cellsize / 2;
+    const cy = opts.cellsize / 2;
+    const drawnSize = designSpan * factor;
+    const newx = cx - drawnSize / 2;
+    const newy = cy - drawnSize / 2;
+    const use = opts.svg.use(opts.piece).move(newx, newy);
+    scale(use, factor, newx, newy);
+    return use;
+};
 
 /**
  * Place (use) piece in svg with center at (x,y), scaling it to fit a cell of size cellsize and further scaling it by scalingFactor.

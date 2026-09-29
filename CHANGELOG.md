@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* `renderSheetGlyph`, `renderLegendGlyph`, and `renderInlineGlyph` for sidebar-style inline icons; full `LegendEntry` support (composite glyph arrays, polymatrix, isometric `isoPiece` on `board: null` without drawing a playfield).
+* Polymatrix legend defs set explicit `width`/`height` so inline icons scale like composite glyphs.
+* Playground sample `glyph-inline-composite` (decktet-style composite on `board: null`).
+
 ### Changed
 
 * Full ESM package (`"type": "module"`, NodeNext `tsc` emit); webpack removed.

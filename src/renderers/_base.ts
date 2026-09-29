@@ -1225,8 +1225,15 @@ export abstract class RendererBase {
                     const deltay = (maxHeight - realheight) / 2 * -1;
 
                     // create nested SVG of the piece, with border
-                    const nested = this.rootSvg.defs().nested().id(key).viewbox(deltax, deltay, maxWidth, maxHeight);
+                    const nested = this.rootSvg.defs().nested().id(key)
+                        .viewbox(deltax, deltay, maxWidth, maxHeight);
                     this.buildPoly(nested, matrix, {divided: true});
+                    if (this.json.board === null) {
+                        const iconSpan = Math.max(maxWidth, maxHeight) * Math.SQRT2;
+                        const padX = (iconSpan - maxWidth) / 2;
+                        const padY = (iconSpan - maxHeight) / 2;
+                        nested.viewbox(deltax - padX, deltay - padY, iconSpan, iconSpan).size(iconSpan, iconSpan);
+                    }
                 }
             }
 
@@ -5124,12 +5131,18 @@ export abstract class RendererBase {
 
     // These functions let the base class build polyominoes
     protected buildPoly(svg: Svg, matrix: Polymatrix, {divided = false, tlmark = false} = {}): void {
-        if (this.json === undefined || this.json.board === null) {
+        if (this.json === undefined) {
             throw new Error("Invalid JSON");
         }
         let baseColour = this.options.colourContext.strokes;
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
+        const board = this.json.board;
+        if (
+            board !== null &&
+            board !== undefined &&
+            "strokeColour" in board &&
+            board.strokeColour !== undefined
+        ) {
+            baseColour = this.resolveColour(board.strokeColour) as string;
         }
 
         const height = matrix.length;
@@ -5178,20 +5191,23 @@ export abstract class RendererBase {
     }
 
     protected drawBorder(svg: Svg, x1: number, y1: number, x2: number, y2: number): void {
-        if ( (this.json === undefined) || (this.json.board === null) ) {
+        if (this.json === undefined) {
             throw new Error("No valid json found.");
         }
         let baseStroke = 1;
         let baseColour = this.options.colourContext.strokes;
         let baseOpacity = 1;
-        if ( ("strokeWeight" in this.json.board) && (this.json.board.strokeWeight !== undefined) ) {
-            baseStroke = this.json.board.strokeWeight;
-        }
-        if ( ("strokeColour" in this.json.board) && (this.json.board.strokeColour !== undefined) ) {
-            baseColour = this.resolveColour(this.json.board.strokeColour) as string;
-        }
-        if ( ("strokeOpacity" in this.json.board) && (this.json.board.strokeOpacity !== undefined) ) {
-            baseOpacity = this.json.board.strokeOpacity;
+        const board = this.json.board;
+        if (board !== null && board !== undefined) {
+            if ( ("strokeWeight" in board) && (board.strokeWeight !== undefined) ) {
+                baseStroke = board.strokeWeight;
+            }
+            if ( ("strokeColour" in board) && (board.strokeColour !== undefined) ) {
+                baseColour = this.resolveColour(board.strokeColour) as string;
+            }
+            if ( ("strokeOpacity" in board) && (board.strokeOpacity !== undefined) ) {
+                baseOpacity = board.strokeOpacity;
+            }
         }
         svg.line(x1, y1, x2, y2)
            .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity, linecap: "round", linejoin: "round"});

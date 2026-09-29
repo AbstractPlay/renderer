@@ -24,7 +24,7 @@ import { activeEdgeSides, collectEdgeMarkerSegments, EdgeSide, isoEdgeLabelOutse
 import { buildIsoProjectionMatrix, isoLabelTransform, mapBoardToScreen, projectedCellDepth, resolveIsoProjection, usesLayeredCellDraw } from "./isometric/projection.js";
 import { isoShadeFace, isoShadeFaces, IsoFaceFills } from "./isometric/shading.js";
 import { ensureIsoContactBlurFilter, isoContactShadow } from "./isometric/shadow.js";
-import { isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement.js";
+import { glyphViewBoxSquareDrawSize, isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement.js";
 import { IsoPiecesGrid, isMultiFaceCube, isoPieceHeight, parseStackEntry } from "./isometric/stack.js";
 import { effectiveRotatedPiece, generateIsoLintelOrSpacer } from "./isometric/pieceSymbols.js";
 import { boardHexOrientation, isSpacerPiece, parseLintelPiece } from "./isometric/lintels.js";
@@ -81,7 +81,8 @@ export class IsometricRenderer extends RendererBase {
         this.rootSvg = draw;
 
         if (this.json.board === null) {
-            throw new Error("This renderer requires that `board` be defined.");
+            this.renderIsoInlineGlyph();
+            return;
         }
 
         // BOARD
@@ -264,6 +265,11 @@ export class IsometricRenderer extends RendererBase {
 
         // now load the custom legend
         let legend: IsoLegend|undefined;
+        if (this.json.legend !== null && this.json.legend !== undefined) {
+            legend = this.json.legend as IsoLegend;
+            this.buildIsoLegendPieceDefs({ numRotations, isoProjection, pieceStroke });
+        }
+
         const faceComposer = this.createIsoFaceComposer();
         const overlayApplier = (idSymbol: string, pc: IsoPiece, effectiveYaw: number) => {
             applyIsoPieceOverlays({
@@ -277,100 +283,6 @@ export class IsometricRenderer extends RendererBase {
                 composer: faceComposer,
             });
         };
-        if (this.json.legend !== null && this.json.legend !== undefined) {
-            legend = this.json.legend as IsoLegend;
-            for (const pc of Object.values(legend)) {
-                if (!isIsoLegendPiece(pc)) {
-                    continue;
-                }
-                assertIsoOverlayValid(pc);
-                this.preloadPatternsForGlyphs(collectIsoOverlayGlyphs(pc));
-            }
-            for (const [key, pc] of Object.entries(this.json.legend as IsoLegend)) {
-                if (!isIsoLegendPiece(pc)) {
-                    continue;
-                }
-                const effPiece = effectiveRotatedPiece(pc.piece, numRotations);
-
-                // generate the pieces
-                if (isMultiFaceCube(pc)) {
-                    for (let y = 0; y < 4; y++) {
-                        const visible = permuteCubeFacesForProjection(pc.faces, y, isoProjection);
-                        const top = this.resolveColour(visible.top, "#000") as string;
-                        const left = this.resolveColour(visible.left, "#000") as string;
-                        const right = this.resolveColour(visible.right, "#000") as string;
-                        const idSymbol = `${key}__y${y}`;
-                        generateCubes({
-                            rootSvg: this.rootSvg,
-                            projection: isoProjection,
-                            heights: [isoPieceHeight(pc)],
-                            stroke: pieceStroke,
-                            fill: {color: isoShadeFace(top, "top")},
-                            faceFills: {
-                                top: {color: isoShadeFace(top, "top")},
-                                left: {color: isoShadeFace(left, "left")},
-                                right: {color: isoShadeFace(right, "right")},
-                            },
-                            idSymbol,
-                        });
-                        this.finishLegendPieceOverlays(idSymbol, pc, pc.piece, y, numRotations, faceComposer, isoProjection);
-                    }
-                } else if (isSpacerPiece(pc.piece) || parseLintelPiece(pc.piece) !== null) {
-                    if (!isSpacerPiece(pc.piece) && !("colour" in pc)) {
-                        throw new Error(`Legend entry "${key}" is missing colour.`);
-                    }
-                    const spacerFill = { color: "transparent" };
-                    const fills = isSpacerPiece(pc.piece)
-                        ? { top: spacerFill, left: spacerFill, right: spacerFill }
-                        : toFaceFillsData(isoShadeFaces(this.resolveColour((pc as { colour: string }).colour, "#000") as string));
-                    generateIsoLintelOrSpacer({
-                        rootSvg: this.rootSvg,
-                        piece: pc.piece,
-                        projection: isoProjection,
-                        heights: [isoPieceHeight(pc)],
-                        stroke: pieceStroke,
-                        fill: fills.top,
-                        faceFills: fills,
-                        idSymbol: key,
-                        numRotations,
-                    });
-                    if (!isSpacerPiece(pc.piece)) {
-                        this.finishLegendPieceOverlays(key, pc, pc.piece, 0, numRotations, faceComposer, isoProjection);
-                    }
-                } else if (!("colour" in pc)) {
-                    throw new Error(`Legend entry "${key}" is missing colour.`);
-                } else if (effPiece === "cube") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
-                    this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
-                } else if (effPiece === "cylinder") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
-                    this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
-                } else if (effPiece === "cone") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateCones({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
-                } else if (effPiece === "pyramid" && isPyramidPiece(pc)) {
-                    const base = this.resolveColour(pc.colour, "#000") as string;
-                    generatePyramids({
-                        rootSvg: this.rootSvg,
-                        projection: isoProjection,
-                        dims: [resolvePyramidDims(pc)],
-                        stroke: pieceStroke,
-                        fill: { color: base },
-                        baseHex: base,
-                        idSymbol: key,
-                    });
-                } else if (effPiece === "hexp" || effPiece === "hexf") {
-                    const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
-                    generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: boardHexOrientation(numRotations)});
-                    this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
-                } else {
-
-                    throw new Error(`Unrecognized isoPiece type "${effPiece}"`);
-                }
-            }
-        }
 
         const sortKeyForEntry = (entry: PointEntry) =>
             computeCellSortKey({
@@ -1573,5 +1485,157 @@ export class IsometricRenderer extends RendererBase {
             effPiece,
             composer,
         });
+    }
+
+    protected buildIsoLegendPieceDefs(opts: {
+        numRotations: number;
+        isoProjection: ReturnType<typeof resolveIsoProjection>;
+        pieceStroke: StrokeData;
+    }): void {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Object in an invalid state!");
+        }
+        const { numRotations, isoProjection, pieceStroke } = opts;
+        const faceComposer = this.createIsoFaceComposer();
+        if (this.json.legend === null || this.json.legend === undefined) {
+            return;
+        }
+        const legend = this.json.legend as IsoLegend;
+        for (const pc of Object.values(legend)) {
+            if (!isIsoLegendPiece(pc)) {
+                continue;
+            }
+            assertIsoOverlayValid(pc);
+            this.preloadPatternsForGlyphs(collectIsoOverlayGlyphs(pc));
+        }
+        for (const [key, pc] of Object.entries(legend)) {
+            if (!isIsoLegendPiece(pc)) {
+                continue;
+            }
+            const effPiece = effectiveRotatedPiece(pc.piece, numRotations);
+
+            if (isMultiFaceCube(pc)) {
+                for (let y = 0; y < 4; y++) {
+                    const visible = permuteCubeFacesForProjection(pc.faces, y, isoProjection);
+                    const top = this.resolveColour(visible.top, "#000") as string;
+                    const left = this.resolveColour(visible.left, "#000") as string;
+                    const right = this.resolveColour(visible.right, "#000") as string;
+                    const idSymbol = `${key}__y${y}`;
+                    generateCubes({
+                        rootSvg: this.rootSvg,
+                        projection: isoProjection,
+                        heights: [isoPieceHeight(pc)],
+                        stroke: pieceStroke,
+                        fill: {color: isoShadeFace(top, "top")},
+                        faceFills: {
+                            top: {color: isoShadeFace(top, "top")},
+                            left: {color: isoShadeFace(left, "left")},
+                            right: {color: isoShadeFace(right, "right")},
+                        },
+                        idSymbol,
+                    });
+                    this.finishLegendPieceOverlays(idSymbol, pc, pc.piece, y, numRotations, faceComposer, isoProjection);
+                }
+            } else if (isSpacerPiece(pc.piece) || parseLintelPiece(pc.piece) !== null) {
+                if (!isSpacerPiece(pc.piece) && !("colour" in pc)) {
+                    throw new Error(`Legend entry "${key}" is missing colour.`);
+                }
+                const spacerFill = { color: "transparent" };
+                const fills = isSpacerPiece(pc.piece)
+                    ? { top: spacerFill, left: spacerFill, right: spacerFill }
+                    : toFaceFillsData(isoShadeFaces(this.resolveColour((pc as { colour: string }).colour, "#000") as string));
+                generateIsoLintelOrSpacer({
+                    rootSvg: this.rootSvg,
+                    piece: pc.piece,
+                    projection: isoProjection,
+                    heights: [isoPieceHeight(pc)],
+                    stroke: pieceStroke,
+                    fill: fills.top,
+                    faceFills: fills,
+                    idSymbol: key,
+                    numRotations,
+                });
+                if (!isSpacerPiece(pc.piece)) {
+                    this.finishLegendPieceOverlays(key, pc, pc.piece, 0, numRotations, faceComposer, isoProjection);
+                }
+            } else if (!("colour" in pc)) {
+                throw new Error(`Legend entry "${key}" is missing colour.`);
+            } else if (effPiece === "cube") {
+                const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
+                generateCubes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
+            } else if (effPiece === "cylinder") {
+                const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
+                generateCylinders({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+                this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
+            } else if (effPiece === "cone") {
+                const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
+                generateCones({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key});
+            } else if (effPiece === "pyramid" && isPyramidPiece(pc)) {
+                const base = this.resolveColour(pc.colour, "#000") as string;
+                generatePyramids({
+                    rootSvg: this.rootSvg,
+                    projection: isoProjection,
+                    dims: [resolvePyramidDims(pc)],
+                    stroke: pieceStroke,
+                    fill: { color: base },
+                    baseHex: base,
+                    idSymbol: key,
+                });
+            } else if (effPiece === "hexp" || effPiece === "hexf") {
+                const fills = toFaceFillsData(isoShadeFaces(this.resolveColour(pc.colour, "#000") as string));
+                generateHexes({rootSvg: this.rootSvg, projection: isoProjection, heights: [isoPieceHeight(pc)], stroke: pieceStroke, fill: fills.top, faceFills: fills, idSymbol: key, orientation: boardHexOrientation(numRotations)});
+                this.finishLegendPieceOverlays(key, pc, effPiece, 0, numRotations, faceComposer, isoProjection);
+            } else {
+                throw new Error(`Unrecognized isoPiece type "${effPiece}"`);
+            }
+        }
+    }
+
+    /**
+     * Single isometric legend icon (`board: null`, `pieces` is a legend key string).
+     */
+    private renderIsoInlineGlyph(): void {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Object in an invalid state!");
+        }
+        this.loadLegend();
+        const isoProjection = resolveIsoProjection("iso");
+        const pieceStroke: StrokeData = {
+            width: PIECE_STROKE_MULTIPLIER,
+            color: this.options.colourContext.strokes,
+            opacity: 1,
+        };
+        this.buildIsoLegendPieceDefs({ numRotations: 0, isoProjection, pieceStroke });
+        if (this.json.pieces === null || typeof this.json.pieces !== "string") {
+            throw new Error("There must be a piece given in the `pieces` property.");
+        }
+        const key = this.json.pieces;
+        let pieceId = key;
+        const entry = this.json.legend?.[key];
+        if (entry !== undefined && isIsoLegendPiece(entry) && isMultiFaceCube(entry)) {
+            pieceId = `${key}__y0`;
+        }
+        const piece = this.rootSvg.findOne("#" + pieceId) as Svg | null;
+        if (piece === null) {
+            throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
+        }
+        this.rootSvg.viewbox(0, 0, this.cellsize, this.cellsize);
+        const budget = this.cellsize * 0.9;
+        const vb = piece.viewbox();
+        let drawW: number;
+        let drawH: number;
+        if (vb.width > 0 && vb.height > 0) {
+            const scale = Math.min(budget / vb.width, budget / vb.height);
+            drawW = vb.width * scale;
+            drawH = vb.height * scale;
+        } else {
+            const side = glyphViewBoxSquareDrawSize(budget, piece);
+            drawW = side;
+            drawH = side;
+        }
+        this.rootSvg.use(piece)
+            .move((this.cellsize - drawW) / 2, (this.cellsize - drawH) / 2)
+            .size(drawW, drawH);
     }
 }
