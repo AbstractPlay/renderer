@@ -2,6 +2,7 @@ export {
     ROW_COL_FLAT_RECT,
     VERTEX_STYLES,
     ROW_COL_GRID_STACKED,
+    HEX_MINMAX_STYLES,
     getBoardStyleEntry,
     getCompatibleStyles,
     isCrossGroupStyleChange,

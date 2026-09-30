@@ -11,6 +11,9 @@ export const VERTEX_STYLES: BoardStyles[] = ["vertex", "vertex-cross"];
 
 export const ROW_COL_GRID_STACKED: BoardStyles[] = ["squares-stacked"];
 
+/** minWidth/maxWidth hex apex boards — swappable spaces (hex-of-hex) vs vertices (hex-of-tri). */
+export const HEX_MINMAX_STYLES: BoardStyles[] = ["hex-of-hex", "hex-of-tri"];
+
 const ROW_COL_MARKER_TYPES = [
     "dots",
     "shading",
@@ -26,7 +29,11 @@ const ROW_COL_MARKER_TYPES = [
 
 export type RowColMarkerType = (typeof ROW_COL_MARKER_TYPES)[number];
 
-export type CompatibilityGroup = "rowColGrid" | "rowColGridStacked" | "none";
+export type CompatibilityGroup =
+    | "rowColGrid"
+    | "rowColGridStacked"
+    | "hexMinMaxGrid"
+    | "none";
 
 export interface BoardStyleRegistryEntry {
     compatibilityGroup: CompatibilityGroup;
@@ -68,6 +75,22 @@ function entryRowColStacked(): BoardStyleRegistryEntry {
     };
 }
 
+const HEX_MINMAX_MARKER_TYPES_NO_FLOOD = ROW_COL_MARKER_TYPES.filter(
+    (t) => t !== "flood",
+);
+
+function entryHexMinMaxGrid(hasPolys: boolean): BoardStyleRegistryEntry {
+    return {
+        compatibilityGroup: "hexMinMaxGrid",
+        compatibleStyles: [...HEX_MINMAX_STYLES],
+        hasPolys,
+        supportedMarkers: hasPolys
+            ? ROW_COL_MARKER_TYPES
+            : HEX_MINMAX_MARKER_TYPES_NO_FLOOD,
+        customizable: true,
+    };
+}
+
 const NO_CUSTOMIZE: BoardStyleRegistryEntry = {
     compatibilityGroup: "none",
     compatibleStyles: [],
@@ -98,6 +121,8 @@ for (const s of ROW_COL_FLAT_RECT) {
 for (const s of ROW_COL_GRID_STACKED) {
     REGISTRY[s] = entryRowColStacked();
 }
+REGISTRY["hex-of-hex"] = entryHexMinMaxGrid(true);
+REGISTRY["hex-of-tri"] = entryHexMinMaxGrid(false);
 
 /** Distinct or specialized topologies — not in the row/col style swap group. */
 REGISTRY["squares-diamonds"] = NO_CUSTOMIZE;

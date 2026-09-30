@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [Unreleased]
+## [1.0.0-ci] - 2026-09-30
+
+### Added
+
+- **Board chrome:** `hexMinMaxGrid` registry group — Customize may swap [`hex-of-hex`](docs/boards.md) and [`hex-of-tri`](docs/boards.md) (shared `minWidth` / `maxWidth` string grid); `hex-of-tri-f` excluded.
+
+### Changed
+
+- **Board chrome:** `isBoardStyleCustomizationEligible` vs `isBoardFieldChromeEligible` — style swaps remain registry-gated; `labelScale`, strokes, `render.options`, and glyphmap apply on any `boardBasic` board (including pegboard and hex apex boards).
 
 ## [1.0.0-ci] - 2026-09-28
 

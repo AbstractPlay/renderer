@@ -81,4 +81,51 @@ describe("validateRenderCustomization", () => {
         });
         expect(result.ok).to.equal(false);
     });
+
+    const hexRep: APRenderRep = {
+        board: { style: "hex-of-hex", minWidth: 3, maxWidth: 5 },
+        legend: { P: { name: "piece", colour: 1 } },
+        pieces: "---\n----\n-----",
+    };
+
+    it("ok for hex-of-hex to hex-of-tri style change", () => {
+        const result = validateRenderCustomization(hexRep, {
+            style: "hex-of-tri",
+        });
+        expect(result.ok).to.equal(true);
+        expect(result.sanitized?.board?.style).to.equal("hex-of-tri");
+    });
+
+    it("rejects hex-of-hex to hex-of-tri-f", () => {
+        const result = validateRenderCustomization(hexRep, {
+            style: "hex-of-tri-f",
+        });
+        expect(result.ok).to.equal(false);
+    });
+
+    it("strips flood markers when swapping hex-of-hex to hex-of-tri", () => {
+        const withFlood: APRenderRep = {
+            ...hexRep,
+            board: {
+                ...hexRep.board,
+                markers: [
+                    {
+                        type: "flood",
+                        colour: 1,
+                        points: [{ row: 0, col: 0 }],
+                    },
+                ],
+            },
+        };
+        const result = validateRenderCustomization(withFlood, {
+            style: "hex-of-tri",
+        });
+        expect(result.ok).to.equal(true);
+        expect(result.warnings.length).to.be.greaterThan(0);
+        const markers =
+            result.sanitized?.board && "markers" in result.sanitized.board
+                ? result.sanitized.board.markers
+                : [];
+        expect(markers?.length).to.equal(0);
+    });
 });

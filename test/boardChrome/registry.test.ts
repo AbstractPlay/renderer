@@ -72,4 +72,26 @@ describe("boardChrome registry", () => {
         expect(markerSupportedOnStyle("pegboard", "edge")).to.equal(true);
         expect(markerSupportedOnStyle("pegboard", "halo")).to.equal(false);
     });
+
+    it("allows hex-of-hex and hex-of-tri to swap within hex min/max group", () => {
+        const fromHex = getCompatibleStyles("hex-of-hex");
+        expect(fromHex).to.include("hex-of-tri");
+        expect(fromHex).to.not.include("vertex");
+        expect(fromHex).to.not.include("squares-checkered");
+        expect(getCompatibleStyles("hex-of-tri")).to.include("hex-of-hex");
+        expect(getCompatibleStyles("hex-of-tri-f")).to.deep.equal([]);
+
+        const hexRep = {
+            board: { style: "hex-of-hex", minWidth: 3, maxWidth: 5 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "---\n----\n-----",
+        };
+        expect(isBoardChromeEligible(hexRep)).to.equal(true);
+    });
+
+    it("hex-of-hex supports flood markers; hex-of-tri does not", () => {
+        expect(markerSupportedOnStyle("hex-of-hex", "flood")).to.equal(true);
+        expect(markerSupportedOnStyle("hex-of-tri", "flood")).to.equal(false);
+        expect(markerSupportedOnStyle("hex-of-tri", "edge")).to.equal(true);
+    });
 });

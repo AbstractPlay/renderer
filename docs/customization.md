@@ -24,13 +24,21 @@ Entry points exported from `@abstractplay/renderer`:
 | `isBoardFieldChromeEligible(rep)` | May merge other `render.board` fields (`labelScale`, strokes, markers, …) |
 | `render.options` / `render.glyphmap` | Applied for any rep; unsupported options are ignored at draw time |
 
-Specialized styles (`pegboard`, `vertex-fanorona`, `squares-diamonds`, hex topologies, …) do not allow **style** swaps; **labelScale**, **render options**, and **glyphmap** still apply when saved.
+Specialized styles (`pegboard`, `vertex-fanorona`, `squares-diamonds`, …) do not allow **style** swaps; **labelScale**, **render options**, and **glyphmap** still apply when saved.
 
 ## Style compatibility
 
-`getCompatibleStyles(currentStyle)` lists swappable `board.style` values within the same registry group. Cross-group changes (e.g. `squares-stacked` → `vertex`) fail `validateRenderCustomization`.
+`getCompatibleStyles(currentStyle)` lists swappable `board.style` values within the same registry group. Cross-group changes (e.g. `squares-stacked` → `vertex`, or `hex-of-hex` → `vertex`) fail `validateRenderCustomization`.
 
-`squares-diamonds`, `pegboard`, and `vertex-fanorona` are not user-swappable via customization (specialized topologies).
+| Group | Swappable styles |
+|-------|------------------|
+| Row/column grid | `vertex`, `vertex-cross`, `squares`, `squares-checkered`, `squares-beveled` |
+| Stacked squares | `squares-stacked` + flat rect styles above (not vertex) |
+| Hex min/max grid | [`hex-of-hex`](/renderer/boards/) (hex cells) ↔ [`hex-of-tri`](/renderer/boards/) (triangle vertices); same `minWidth` / `maxWidth` string grid |
+
+`squares-diamonds`, `pegboard`, and `vertex-fanorona` are not user-swappable. `hex-of-tri-f` and other hex topologies are outside the hex min/max pair for now.
+
+Swapping hex-of-hex ↔ hex-of-tri changes drawing and click geometry while **row/col indices** stay the same (like vertex ↔ checkered on square grids).
 
 ## Board fields (allowlist)
 

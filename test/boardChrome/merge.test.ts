@@ -44,4 +44,16 @@ describe("applyBoardChrome", () => {
         expect(result.ok).to.equal(false);
         expect(result.errors.some((e) => e.includes("width"))).to.equal(true);
     });
+
+    it("swaps hex-of-hex to hex-of-tri preserving minWidth and maxWidth", () => {
+        const hexRep: APRenderRep = {
+            board: { style: "hex-of-hex", minWidth: 2, maxWidth: 4 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "--\n---\n----",
+        };
+        const out = applyBoardChrome(hexRep, { style: "hex-of-tri" });
+        expect(out.board?.style).to.equal("hex-of-tri");
+        expect(out.board?.minWidth).to.equal(2);
+        expect(out.board?.maxWidth).to.equal(4);
+    });
 });
