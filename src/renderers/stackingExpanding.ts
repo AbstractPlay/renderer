@@ -1,17 +1,9 @@
-import { Svg, Use as SVGUse, G as SVGG } from "@svgdotjs/svg.js";
+import { Svg, Use as SVGUse, G as SVGG, Box as SVGBox } from "@svgdotjs/svg.js";
 import { GridPoints, Poly } from "../grids/_base.js";
 import { APRenderRep, AreaStackingExpanded } from "../schemas/schema.js";
 import { IRendererOptionsIn, RendererBase } from "./_base.js";
 import { usePieceAt } from "../common/plotting.js";
-import { labelDisplayText } from "../common/renderLabel.js";
 import { hexOfCir, hexOfHex, hexOfTri, snubSquare, squares, vertex } from "../boards/index.js";
-
-interface ILocalStash {
-    [k: string]: unknown;
-    type: "localStash";
-    label: string;
-    stash: string[][];
-}
 
 /**
  * This is the `stacking-expanding` renderer that handles things like local stashes and the expanded stack column.
@@ -196,51 +188,24 @@ export class StackingExpandingRenderer extends RendererBase {
                 this.annotateBoard(gridPoints, polys);
             }
 
-            // Look for local stashes
-            // This code is optimized for pyramids
-            if ( (this.json.areas !== undefined) && (Array.isArray(this.json.areas)) && (this.json.areas.length > 0) ) {
-                const areas = this.json.areas.filter((x) => x.type === "localStash") as ILocalStash[];
-                const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
-                let placeY = boardBottom + (this.cellsize / 2);
-                for (const area of areas) {
-                    const maxHeight = Math.max(...area.stash.map((s) => s.length)) - 1;
-                    const textHeight = 10; // the allowance for the label
-                    const cellsize = this.cellsize * 0.75;
-                    const offset = 0.35 * cellsize;
-                    for (let iStack = 0; iStack < area.stash.length; iStack++) {
-                        const stack = area.stash[iStack];
-                        for (let i = 0; i < stack.length; i++) {
-                            const p = stack[i];
-                            const piece = this.rootSvg.findOne("#" + p) as Svg;
-                            if ( (piece === null) || (piece === undefined) ) {
-                                throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
-                            }
-                            let sheetCellSize = piece.viewbox().h;
-                            if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                sheetCellSize = piece.attr("data-cellsize") as number;
-                                if ( (sheetCellSize === null) || (sheetCellSize === undefined) ) {
-                                    throw new Error(`The glyph you requested (${p}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
-                                }
-                            }
-                            const newx = gridPoints[0][0].x - this.cellsize + iStack * cellsize + (cellsize / 2);
-                            const newy = placeY + textHeight + (maxHeight - i) * offset + 0.15 * cellsize + (cellsize / 2);
-                            const use = usePieceAt({svg: this.rootSvg, piece, cellsize, x: newx, y: newy});
-                            if (this.options.boardClick !== undefined) {
-                                use.click((e: Event) => {this.options.boardClick!(-1, -1, p); e.stopPropagation();});
-                            }
-                        }
-                    }
-
-                    // Add area label
-                    const txt = this.rootSvg.text(labelDisplayText(area.label)).attr("dy", "0.55em");
-                    txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
-                        .attr("dominant-baseline", "middle")
-                        .move(gridPoints[0][0].x - this.cellsize, placeY);
-
-                    const areaHeight = textHeight + cellsize + maxHeight * offset;
-                    placeY += areaHeight + (this.cellsize * 0.5);
-                }
-            }
+            const boardWidth =
+                "width" in this.json.board && this.json.board.width !== undefined
+                    ? this.json.board.width
+                    : gridPoints[0].length;
+            const boardBottom = gridPoints[gridPoints.length - 1][0].y + this.cellsize;
+            const stashBox = {
+                x: gridPoints[0][0].x - this.cellsize,
+                y: gridPoints[0][0].y,
+                x2: gridPoints[0][0].x - this.cellsize + boardWidth * this.cellsize,
+                y2: boardBottom,
+                width: boardWidth * this.cellsize,
+                height: boardBottom - gridPoints[0][0].y,
+            } as SVGBox;
+            this.localStashArea(stashBox, {
+                startY: boardBottom + this.cellsize / 2,
+                padding: 0,
+                stackLayerOffset: 0.35,
+            });
 
             // if there's a board backfill, it needs to be done before rotation
             const backfilled = this.backFill(boardFill, true);

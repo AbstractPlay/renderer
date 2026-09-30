@@ -22,6 +22,8 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 - Optional text labels above/below pieces in the `pieces` area; local playground serving for development.
 - `blocked` support on the `stacking3D` renderer.
 - Optional legend `glyph` on `buttonBar` buttons, anchored to the left or right (`glyphPosition` `prefix` or `suffix`) while the label stays centred; `label` is optional when `glyph` is set (at least one required at render time); optional `glyphScale` (default `0.76`) sets icon size within the reserved strip.
+- **`localStash` on the default renderer:** pyramid stash columns (`areas[]` with `type: "localStash"`) render below the board after `pieces` areas, using the same wrap model as hand bars (`Math.floor(box.width / cellsize)` stack columns per row, overridable with optional area `width` and `spacing`).
+- **`RendererBase.localStashArea()`** shared placement for default, `stacking-3D`, and `stacking-expanding` renderers; `buildLocalStashRows` in `src/common/localStashArea.ts` and coverage in `test/localStashArea.test.ts`.
 
 ### Changed
 
@@ -29,6 +31,8 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 - **Board chrome:** central registry for per-board-style chrome (labels, borders, fill ordering); `labelScale` and structured label placement; loosened which board styles accept markers, labels, and related features; pegboard and some legacy styles removed from the chrome registry.
 - Thicker default outer border on square boards; fixes for outer-border and label regressions tied to chrome work.
 - NATO infantry-special glyph text placement.
+- **`areaVolcanoStash` schema:** optional `width` and `spacing`; description no longer limited to `stacking-expanding` only.
+- **Stacking renderers:** captured / pool stashes use `localStashArea` (gained board-width wrapping where many stack columns are present).
 
 ### Fixed
 

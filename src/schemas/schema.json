@@ -1797,7 +1797,7 @@
             "additionalProperties": false
         },
         "areaVolcanoStash": {
-            "description": "Used by the `stacking-expanding` renderer for displaying stashes of pyramids (e.g., captured pieces in a Volcano game).",
+            "description": "Pyramid stash columns beside or below the board: each entry in `stash` is a vertical stack (bottom to top). Supported on the default renderer and stacking renderers (e.g., Volcano captured pieces, Agents of M.A.R.S. draw bag). Stack columns wrap at board width unless `width` is set.",
             "type": "object",
             "properties": {
                 "type": {
@@ -1819,6 +1819,14 @@
                             "type": "string"
                         }
                     }
+                },
+                "width": {
+                    "description": "By default, stack columns wrap at the width of the game board (in board cells). This sets a fixed wrap width in stack columns.",
+                    "type": "number"
+                },
+                "spacing": {
+                    "description": "Extra space between stack columns and wrapped rows, as a fraction of board cell size.",
+                    "type": "number"
                 }
             },
             "required": [

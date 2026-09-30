@@ -2,7 +2,8 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids/index.js";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, AreaVolcanoStash, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
+import { buildLocalStashRows, localStashStackLayersAboveBottom } from "../common/localStashArea.js";
 import { sheets } from "../sheets/index.js";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting.js";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionCenterYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
@@ -4689,6 +4690,176 @@ export abstract class RendererBase {
             }
         }
         return {newY: placeY, width: finalWidth};
+    }
+
+    /**
+     * Pyramid stash columns (`localStash` areas), placed below the board like `pieces` areas.
+     * Stack columns wrap at board width (or optional `width` on the area).
+     */
+    protected localStashArea(
+        box: SVGBox,
+        opts?: {
+            padding?: number;
+            startY?: number;
+            canvas?: Svg;
+            /** Layer offset as a fraction of the stash piece cell size (default 0.15). */
+            stackLayerOffset?: number;
+        },
+    ): { newY: number | undefined; width: number | undefined } {
+        if (this.rootSvg === undefined) {
+            throw new Error("Can't place a `localStash` area until the root SVG is initialized!");
+        }
+        let padding = this.cellsize / 2;
+        if (opts?.padding !== undefined) {
+            padding = opts.padding;
+        }
+        let placeY: number | undefined = opts?.startY;
+        let finalWidth: number | undefined;
+        if (
+            this.json === undefined
+            || this.json.areas === undefined
+            || !Array.isArray(this.json.areas)
+            || this.json.areas.length === 0
+        ) {
+            return { newY: placeY, width: finalWidth };
+        }
+        const areas = this.json.areas.filter((x) => x.type === "localStash") as AreaVolcanoStash[];
+        if (areas.length === 0) {
+            return { newY: placeY, width: finalWidth };
+        }
+        const boardWidth = Math.floor(box.width / this.cellsize);
+        if (placeY === undefined) {
+            placeY = box.y2 + padding;
+        }
+        const layerOffsetFrac = opts?.stackLayerOffset ?? 0.15;
+        const cellsize = this.cellsize * 0.75;
+        const stackOffset = layerOffsetFrac * cellsize;
+        const textHeight = this.cellsize / 3;
+        let labelColour = this.options.colourContext.labels;
+        if (
+            this.json.board !== null
+            && "labelColour" in this.json.board
+            && this.json.board.labelColour !== undefined
+        ) {
+            labelColour = this.resolveColour(this.json.board.labelColour) as string;
+        }
+        let root = this.rootSvg;
+        if (opts?.canvas !== undefined) {
+            root = opts.canvas;
+        }
+        for (let iArea = 0; iArea < areas.length; iArea++) {
+            const area = areas[iArea];
+            let desiredWidth = boardWidth;
+            if (area.width !== undefined) {
+                desiredWidth = area.width;
+            }
+            let hpad = 0;
+            if (area.spacing !== undefined) {
+                hpad = this.cellsize * area.spacing;
+            }
+            const stackRows = buildLocalStashRows(area.stash.length, desiredWidth);
+            let areaWidth = 0;
+            let areaHeight = textHeight * 2;
+            for (const row of stackRows) {
+                let rowWidth = 0;
+                let rowLayers = 0;
+                for (let c = 0; c < row.length; c++) {
+                    rowWidth += cellsize;
+                    if (c < row.length - 1) {
+                        rowWidth += hpad;
+                    }
+                    rowLayers = Math.max(rowLayers, localStashStackLayersAboveBottom(area.stash[row[c]]!));
+                }
+                areaWidth = Math.max(areaWidth, rowWidth);
+                areaHeight += cellsize + rowLayers * stackOffset;
+            }
+            for (let r = 0; r < stackRows.length - 1; r++) {
+                areaHeight += piecesAreaVerticalGap(hpad, this.cellsize);
+            }
+            const nested = root
+                .nested()
+                .id(`_localStash${iArea}`)
+                .size(areaWidth + 2, areaHeight + 2)
+                .viewbox(-1, -1, areaWidth + 2, areaHeight + 2)
+                .attr("overflow", "visible");
+            const fullWidth = areaWidth + 2;
+            if (finalWidth === undefined) {
+                finalWidth = fullWidth;
+            } else {
+                finalWidth = Math.max(finalWidth, fullWidth);
+            }
+            let contentY = textHeight * 2;
+            for (let iRow = 0; iRow < stackRows.length; iRow++) {
+                const row = stackRows[iRow];
+                let rowLayers = 0;
+                for (const stackIdx of row) {
+                    rowLayers = Math.max(rowLayers, localStashStackLayersAboveBottom(area.stash[stackIdx]!));
+                }
+                const rowBaseY = contentY + cellsize / 2 + rowLayers * stackOffset;
+                let slotX = 0;
+                for (let c = 0; c < row.length; c++) {
+                    const stackIdx = row[c]!;
+                    const stack = area.stash[stackIdx]!;
+                    const layersAbove = localStashStackLayersAboveBottom(stack);
+                    for (let i = 0; i < stack.length; i++) {
+                        const p = stack[i];
+                        if (p === "-") {
+                            continue;
+                        }
+                        const piece = this.rootSvg.findOne("#" + p) as Svg;
+                        if (piece === null || piece === undefined) {
+                            throw new Error(
+                                `Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`,
+                            );
+                        }
+                        const pieceY = rowBaseY + (layersAbove - i) * stackOffset - 0.1 * cellsize;
+                        const use = usePieceAt({
+                            svg: nested,
+                            piece,
+                            cellsize,
+                            x: slotX + cellsize / 2,
+                            y: pieceY,
+                            scalingFactor: 1,
+                        });
+                        if (this.options.boardClick !== undefined) {
+                            use.click((e: Event) => {
+                                this.options.boardClick!(-1, -1, p);
+                                e.stopPropagation();
+                            });
+                        }
+                    }
+                    slotX += cellsize;
+                    if (c < row.length - 1) {
+                        slotX += hpad;
+                    }
+                }
+                contentY += cellsize + rowLayers * stackOffset;
+                if (iRow < stackRows.length - 1) {
+                    contentY += piecesAreaVerticalGap(hpad, this.cellsize);
+                }
+            }
+            const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({
+                size: textHeight,
+                anchor: "start",
+                fill: labelColour,
+            });
+            const txtWidth = tmptxt.bbox().w;
+            tmptxt.remove();
+            const { x: vbx, y: vby, w: vbw, h: vbh } = nested.viewbox();
+            const realWidth = Math.max(vbw, txtWidth);
+            nested.width(realWidth);
+            nested.viewbox(vbx, vby, realWidth, vbh);
+            nested
+                .text(labelDisplayText(area.label))
+                .addClass("aprender-area-label")
+                .font({ size: textHeight, anchor: "start", fill: labelColour })
+                .attr("dy", "0.55em")
+                .attr("dominant-baseline", "middle")
+                .move(0, 0);
+            nested.move(box.x, placeY);
+            placeY += nested.bbox().height + this.cellsize * 0.5;
+        }
+        return { newY: placeY, width: finalWidth };
     }
 
     /**

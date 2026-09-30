@@ -87,8 +87,12 @@ export class DefaultRenderer extends RendererBase {
 
         layoutBox = this.placeTrackAreas(layoutBox);
 
-        // `pieces` area, if present
-        this.piecesArea(layoutBox);
+        const areaPadding = this.cellsize / 2;
+        const piecesPlacement = this.piecesArea(layoutBox);
+        this.localStashArea(layoutBox, {
+            padding: areaPadding,
+            startY: piecesPlacement.newY,
+        });
 
         // button bar
         this.placeButtonBar(layoutBox);

@@ -1696,7 +1696,7 @@ export interface AreaStackingExpanded {
   stack: string[];
 }
 /**
- * Used by the `stacking-expanding` renderer for displaying stashes of pyramids (e.g., captured pieces in a Volcano game).
+ * Pyramid stash columns beside or below the board: each entry in `stash` is a vertical stack (bottom to top). Supported on the default renderer and stacking renderers (e.g., Volcano captured pieces, Agents of M.A.R.S. draw bag). Stack columns wrap at board width unless `width` is set.
  */
 export interface AreaVolcanoStash {
   type: "localStash";
@@ -1705,6 +1705,14 @@ export interface AreaVolcanoStash {
    * This is an array of stacks of pieces (themselves an array).
    */
   stash: string[][];
+  /**
+   * By default, stack columns wrap at the width of the game board (in board cells). This sets a fixed wrap width in stack columns.
+   */
+  width?: number;
+  /**
+   * Extra space between stack columns and wrapped rows, as a fraction of board cell size.
+   */
+  spacing?: number;
 }
 /**
  * Used to create a button bar for clicking.
