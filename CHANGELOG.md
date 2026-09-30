@@ -21,6 +21,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 - Relative glyph nudges that stay consistent across board rotation.
 - Optional text labels above/below pieces in the `pieces` area; local playground serving for development.
 - `blocked` support on the `stacking3D` renderer.
+- Optional legend `glyph` on `buttonBar` buttons, anchored to the left or right (`glyphPosition` `prefix` or `suffix`) while the label stays centred; `label` is optional when `glyph` is set (at least one required at render time); optional `glyphScale` (default `0.76`) sets icon size within the reserved strip.
 
 ### Changed
 

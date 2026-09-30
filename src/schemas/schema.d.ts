@@ -1742,9 +1742,9 @@ export interface ButtonBarButton {
   /**
    * Plain string or structured label with i18n key and optional seat actor.
    */
-  label: string | StructuredRenderLabel;
+  label?: string | StructuredRenderLabel;
   /**
-   * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label will be passed as is.
+   * The value passed to the click handler as `_btn_X`, where `X` is the value here. If omitted, the label is used, or the `glyph` legend key when there is no label.
    */
   value?: string;
   /**
@@ -1766,6 +1766,18 @@ export interface ButtonBarButton {
    * Optional fill for this specific button.
    */
   fill?: Colourfuncs | Colourstrings;
+  /**
+   * Legend key for an icon anchored inside the button. Optional when `label` is set; at least one of `label` or `glyph` is required (enforced when rendering).
+   */
+  glyph?: string;
+  /**
+   * Anchors the glyph to the left (`prefix`) or right (`suffix`) inside the button; the label stays centred. Defaults to `prefix`.
+   */
+  glyphPosition?: "prefix" | "suffix";
+  /**
+   * Fraction of the reserved glyph strip used for the drawn icon (centred in the strip). Defaults to `0.76` so icons have padding; use `1` to fill the strip.
+   */
+  glyphScale?: number;
 }
 /**
  * Used to create a clickable vertical scroll bar used for hiding/showing layers of pieces.

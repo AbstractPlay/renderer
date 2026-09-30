@@ -11,6 +11,16 @@ import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys.js";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours.js";
 import { labelDisplayText } from "../common/renderLabel.js";
+import {
+    assertButtonBarButton,
+    buttonBarClickValue,
+    buttonBarGlyphAllowance,
+    buttonBarGlyphCenterX,
+    buttonBarGlyphPosition,
+    buttonBarLabelCenterX,
+    buttonBarTotalWidth,
+    placeButtonBarGlyph,
+} from "../common/buttonBar.js";
 import { attachMarkerPulse } from "../common/markerPulse.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
@@ -3851,10 +3861,7 @@ export abstract class RendererBase {
                         const yRelative = point.y - top;
                         const row = Math.floor(yRelative / btnHeight);
                         if ( (row >= 0) && (row < numButtons) ) {
-                            let value = labelDisplayText(bar.buttons[row].label);
-                            if(bar.buttons[row].value !== undefined) {
-                                value = bar.buttons[row].value!;
-                            }
+                            const value = buttonBarClickValue(bar.buttons[row]);
                             this.options.boardClick!(-1, -1, `_btn_${value}`);
                             e.stopPropagation();
                         }
@@ -3893,12 +3900,20 @@ export abstract class RendererBase {
             buffer = height * bar.buffer;
         }
         const nested = this.rootSvg.defs().nested().id("_btnBar");
+        const rotation = this.getRotation();
 
         // build symbols of each label
-        const labels: SVGSymbol[] = [];
+        const labels: (SVGSymbol | undefined)[] = [];
         let maxWidth = minWidth;
         let maxHeight = 0;
-        for (const b of bar.buttons) {
+        const hasAnyGlyph = bar.buttons.some((btn) => btn.glyph !== undefined);
+        for (let i = 0; i < bar.buttons.length; i++) {
+            const b = bar.buttons[i];
+            assertButtonBarButton(b, i);
+            if (b.label === undefined) {
+                labels.push(undefined);
+                continue;
+            }
             const cloned = {attributes: b.attributes, fill: b.fill};
             const tmptxt = this.rootSvg.text(labelDisplayText(b.label)).font({size: 17, fill: colour, anchor: "start"});
             if (b.attributes !== undefined) {
@@ -3925,7 +3940,7 @@ export abstract class RendererBase {
         }
 
         // build the symbol for the rectangle
-        const width = maxWidth * 1.5;
+        const width = buttonBarTotalWidth(maxWidth, height, hasAnyGlyph);
         const rects: SVGSymbol[] = [];
         for (const b of bar.buttons) {
             const cloned = {attributes: b.attributes, fill: b.fill};
@@ -3947,14 +3962,34 @@ export abstract class RendererBase {
             const b: ButtonBarButton = bar.buttons[i];
             const symlabel = labels[i];
             const symrect = rects[i];
-            let value = labelDisplayText(b.label).replace(/\s/g, "");
-            if (b.value !== undefined) {
-                value = b.value;
-            }
+            const value = buttonBarClickValue(b);
             const id = `_btn_${value}`;
             const g = nested.nested().id(id);
             g.use(symrect).size(width, height).move(0, 0);
-            g.use(symlabel).size(maxWidth, maxHeight).center(width / 2, height / 2);
+            if (symlabel !== undefined) {
+                const labelCx = buttonBarLabelCenterX(width, height, b.glyphPosition, b.glyph !== undefined);
+                g.use(symlabel).size(maxWidth, maxHeight).center(labelCx, height / 2);
+            }
+            if (b.glyph !== undefined) {
+                const piece = this.rootSvg.findOne(`#${b.glyph}`) as Svg;
+                if ( (piece === undefined) || (piece === null) ) {
+                    throw new Error(`Could not find the requested piece (${b.glyph}). Each glyph *must* exist in the \`legend\`.`);
+                }
+                const glyphPos = buttonBarGlyphPosition(b.glyphPosition);
+                const glyphCenterX = buttonBarGlyphCenterX(glyphPos, width, height);
+                const allowance = buttonBarGlyphAllowance(height);
+                const usedGlyph = placeButtonBarGlyph({
+                    svg: g,
+                    piece,
+                    allowance,
+                    centerX: glyphCenterX,
+                    centerY: height / 2,
+                    glyphScale: b.glyphScale,
+                });
+                if (rotation !== 0) {
+                    rotate(usedGlyph, rotation, glyphCenterX, height / 2);
+                }
+            }
             groups.push(g);
         }
 
