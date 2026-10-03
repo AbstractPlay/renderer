@@ -56,6 +56,17 @@ A read-only mini-board for score tracks and similar peripheral grids. Each track
 - Multiple tracks on the same side stack outward in `areas` declaration order.
 - `annotations`: optional array of standard board annotations scoped to the track grid.
 
+### `localStash` area
+
+Pyramid stash columns (Volcano-style capture rows, bag pools, Ice Palace hand/pool, etc.) render below the board on the default, `stacking-3D`, and `stacking-expanding` engines. See [Engines](/renderer/engines/) for which games use which renderer.
+
+- `type`: `"localStash"`.
+- Optional `label`, `width` (max stack columns per row), and `spacing` (horizontal gap between columns as a fraction of board cell size).
+- **`stash`:** array of **columns**. Each column is an array of **legend keys**, ordered **bottom → top** (`column[0]` is the bottom piece). Keys are opaque to the renderer; spacing and silhouette sizing come from each key’s entry in the top-level **`legend`** (`name`, not key digits).
+- **Vertical spacing** is derived from glyph names in that column: `pyramid-up-*-3D` entries use shared-base silhouette stacking; other pyramid glyphs use uniform solid stack offset. This is **not** tied to the `renderer` name.
+- **Row layout:** columns wrap at board width (or area `width`); short columns share a row baseline.
+- **Legacy:** `"-"` entries still consume a vertical slot without drawing a piece. New game code should emit **dense** columns only (no spacers). Property names are listed in the [schema reference](/renderer/schema-reference/).
+
 ### Domino tiles in a `pieces` area
 
 Domino pairing is **area-only**. Board placement continues to use separate half legends in adjacent cells (see [Glyphs — domino-style blocks](/renderer/glyphs/#isometric-face-overlays)).

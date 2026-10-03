@@ -272,8 +272,6 @@
       "label": "Player 1: Captured Pieces",
       "stash": [
         [
-          "-",
-          "-",
           "RD3"
         ]
       ]
@@ -283,7 +281,6 @@
       "label": "Player 2: Captured Pieces",
       "stash": [
         [
-          "-",
           "RD2",
           "RD3"
         ]

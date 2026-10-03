@@ -723,7 +723,6 @@ export class Stacking3DRenderer extends RendererBase {
             this.localStashArea(stashBox, {
                 startY: boardBottom + this.cellsize / 2,
                 padding: 0,
-                stackLayerOffset: 0.15,
             });
 
             // `pieces` area, if present

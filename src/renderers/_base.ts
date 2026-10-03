@@ -3,7 +3,19 @@ import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids/index.js";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, AreaVolcanoStash, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
-import { buildLocalStashRows, localStashStackLayersAboveBottom } from "../common/localStashArea.js";
+import {
+    buildLocalStashRows,
+    LOCAL_STASH_PIECE_BASE_Y_FRAC,
+    LOCAL_STASH_STACK_LAYER_OFFSET,
+    localStashColumnProfile,
+    localStashRowMaxSteps,
+    localStashRowStackSpanPx,
+    localStashSilhouettePieceCenterY,
+    localStashSilhouetteRowSharedBaseY,
+    localStashSilhouetteTier,
+    localStashStepsAboveBottom,
+    localStashVerticalStepPx,
+} from "../common/localStashArea.js";
 import { sheets } from "../sheets/index.js";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting.js";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionCenterYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
@@ -4702,7 +4714,7 @@ export abstract class RendererBase {
             padding?: number;
             startY?: number;
             canvas?: Svg;
-            /** Layer offset as a fraction of the stash piece cell size (default 0.15). */
+            /** Layer offset as a fraction of the stash piece cell size (default {@link LOCAL_STASH_STACK_LAYER_OFFSET}). */
             stackLayerOffset?: number;
         },
     ): { newY: number | undefined; width: number | undefined } {
@@ -4731,9 +4743,8 @@ export abstract class RendererBase {
         if (placeY === undefined) {
             placeY = box.y2 + padding;
         }
-        const layerOffsetFrac = opts?.stackLayerOffset ?? 0.15;
+        const layerOffsetFrac = opts?.stackLayerOffset ?? LOCAL_STASH_STACK_LAYER_OFFSET;
         const cellsize = this.cellsize * 0.75;
-        const stackOffset = layerOffsetFrac * cellsize;
         const textHeight = this.cellsize / 3;
         let labelColour = this.options.colourContext.labels;
         if (
@@ -4758,20 +4769,23 @@ export abstract class RendererBase {
                 hpad = this.cellsize * area.spacing;
             }
             const stackRows = buildLocalStashRows(area.stash.length, desiredWidth);
+            const textBand = textHeight;
+            const legend = this.json.legend;
+            const rowBandHeights = stackRows.map((row) => {
+                const rowSpan = localStashRowStackSpanPx(area.stash, row, legend, layerOffsetFrac, cellsize);
+                return cellsize + rowSpan;
+            });
             let areaWidth = 0;
-            let areaHeight = textHeight * 2;
+            let areaHeight = textBand + rowBandHeights.reduce((sum, h) => sum + h, 0);
             for (const row of stackRows) {
                 let rowWidth = 0;
-                let rowLayers = 0;
                 for (let c = 0; c < row.length; c++) {
                     rowWidth += cellsize;
                     if (c < row.length - 1) {
                         rowWidth += hpad;
                     }
-                    rowLayers = Math.max(rowLayers, localStashStackLayersAboveBottom(area.stash[row[c]]!));
                 }
                 areaWidth = Math.max(areaWidth, rowWidth);
-                areaHeight += cellsize + rowLayers * stackOffset;
             }
             for (let r = 0; r < stackRows.length - 1; r++) {
                 areaHeight += piecesAreaVerticalGap(hpad, this.cellsize);
@@ -4788,19 +4802,18 @@ export abstract class RendererBase {
             } else {
                 finalWidth = Math.max(finalWidth, fullWidth);
             }
-            let contentY = textHeight * 2;
+            let contentY = textBand;
             for (let iRow = 0; iRow < stackRows.length; iRow++) {
                 const row = stackRows[iRow];
-                let rowLayers = 0;
-                for (const stackIdx of row) {
-                    rowLayers = Math.max(rowLayers, localStashStackLayersAboveBottom(area.stash[stackIdx]!));
-                }
-                const rowBaseY = contentY + cellsize / 2 + rowLayers * stackOffset;
+                const rowMaxSteps = localStashRowMaxSteps(area.stash, row);
+                const rowBandHeight = rowBandHeights[iRow]!;
+                const silhouetteRowBaseY = localStashSilhouetteRowSharedBaseY(contentY, cellsize);
                 let slotX = 0;
                 for (let c = 0; c < row.length; c++) {
                     const stackIdx = row[c]!;
                     const stack = area.stash[stackIdx]!;
-                    const layersAbove = localStashStackLayersAboveBottom(stack);
+                    const profile = localStashColumnProfile(stack, legend);
+                    const stepPx = localStashVerticalStepPx(profile, layerOffsetFrac, cellsize);
                     for (let i = 0; i < stack.length; i++) {
                         const p = stack[i];
                         if (p === "-") {
@@ -4812,7 +4825,23 @@ export abstract class RendererBase {
                                 `Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`,
                             );
                         }
-                        const pieceY = rowBaseY + (layersAbove - i) * stackOffset - 0.1 * cellsize;
+                        let pieceY: number;
+                        if (profile === "silhouette3D") {
+                            const tier = localStashSilhouetteTier(legend, p);
+                            if (tier === undefined) {
+                                throw new Error(
+                                    `Could not resolve silhouette tier for localStash piece (${p}).`,
+                                );
+                            }
+                            pieceY = localStashSilhouettePieceCenterY(silhouetteRowBaseY, tier, cellsize);
+                        } else {
+                            const stepsAboveBottom = localStashStepsAboveBottom(stack, i);
+                            pieceY =
+                                contentY
+                                + (rowMaxSteps - stepsAboveBottom) * stepPx
+                                + LOCAL_STASH_PIECE_BASE_Y_FRAC * cellsize
+                                + cellsize / 2;
+                        }
                         const use = usePieceAt({
                             svg: nested,
                             piece,
@@ -4833,7 +4862,7 @@ export abstract class RendererBase {
                         slotX += hpad;
                     }
                 }
-                contentY += cellsize + rowLayers * stackOffset;
+                contentY += rowBandHeight;
                 if (iRow < stackRows.length - 1) {
                     contentY += piecesAreaVerticalGap(hpad, this.cellsize);
                 }

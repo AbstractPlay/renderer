@@ -204,7 +204,6 @@ export class StackingExpandingRenderer extends RendererBase {
             this.localStashArea(stashBox, {
                 startY: boardBottom + this.cellsize / 2,
                 padding: 0,
-                stackLayerOffset: 0.35,
             });
 
             // if there's a board backfill, it needs to be done before rotation
