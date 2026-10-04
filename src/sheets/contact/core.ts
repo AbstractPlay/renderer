@@ -473,7 +473,7 @@ registerHollowOutlineToken("hex-flat", (canvas: SVGContainer) => {
         .stroke({width: 5, color: "black"})
         .fill("none")
         .attr("data-slot-fill", "fill")
-        .attr("data-slot-stroke", "fill");
+        .attr("data-slot-stroke", "border");
     const vbx = Math.min(...hex.corners.map(pt => pt.x));
     const vby = Math.min(...hex.corners.map(pt => pt.y));
     const vbWidth = hex.corners[1].x - hex.corners[4].x;
@@ -491,7 +491,7 @@ registerHollowOutlineToken("hex-pointy", (canvas: SVGContainer) => {
         .stroke({width: 5, color: "black"})
         .fill("none")
         .attr("data-slot-fill", "fill")
-        .attr("data-slot-stroke", "fill");
+        .attr("data-slot-stroke", "border");
     const vbx = Math.min(...hex.corners.map(pt => pt.x));
     const vby = Math.min(...hex.corners.map(pt => pt.y));
     const vbWidth = hex.corners[0].x - hex.corners[4].x;
@@ -767,7 +767,7 @@ registerHollowOutlineToken("meeple", (canvas: SVGContainer) => {
         .stroke({width: 5, color: "black"})
         .fill("none")
         .attr("data-slot-fill", "fill")
-        .attr("data-slot-stroke", "fill");
+        .attr("data-slot-stroke", "border");
     group.viewbox(36, 39.236, 440, 440);
     return group;
 });

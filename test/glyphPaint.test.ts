@@ -86,10 +86,10 @@ describe("glyphPaint", () => {
             );
         });
 
-        it("hex-flat and meeple: legacy colour vs paint.fill", () => {
-            for (const name of ["hex-flat", "meeple"] as const) {
-                const legacy = renderLegendGlyphs([{ name, colour: 1 }]);
-                const paint = renderLegendGlyphs([{ name, paint: { fill: 1 } }]);
+        it("hex-flat, hex-pointy, and meeple: legacy colour2 matches paint.border", () => {
+            for (const name of ["hex-flat", "hex-pointy", "meeple"] as const) {
+                const legacy = renderLegendGlyphs([{ name, colour2: 2 }]);
+                const paint = renderLegendGlyphs([{ name, paint: { border: 2 } }]);
                 expect(normalizeSvgForGlyphCompare(legacy, { lenientOpacity: true })).to.equal(
                     normalizeSvgForGlyphCompare(paint, { lenientOpacity: true }),
                     name,
