@@ -46,80 +46,106 @@
   "legend": {
     "P1": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "P1X": [
       {
         "name": "piece",
-        "colour": 1
+        "paint": {
+          "fill": 1
+        }
       },
       {
         "name": "meeple",
-        "colour": "#fff",
         "scale": 0.75,
-        "opacity": 0.25
+        "paint": {
+          "fill": {
+            "colour": "#fff",
+            "opacity": 0.25
+          }
+        }
       }
     ],
     "P2": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "P2X": [
       {
         "name": "piece",
-        "colour": 2
+        "paint": {
+          "fill": 2
+        }
       },
       {
         "name": "meeple",
-        "colour": "#fff",
         "scale": 0.75,
-        "opacity": 0.25
+        "paint": {
+          "fill": {
+            "colour": "#fff",
+            "opacity": 0.25
+          }
+        }
       }
     ],
     "G": {
       "name": "cube",
-      "colour": 3,
-      "scale": 0.75
+      "scale": 0.75,
+      "paint": {
+        "fill": 3
+      }
     },
     "Y": {
       "name": "cube",
-      "colour": {
-        "func": "lighten",
-        "colour": 3,
-        "ds": 3,
-        "dl": 1
-      },
-      "scale": 0.75
+      "scale": 0.75,
+      "paint": {
+        "fill": {
+          "func": "lighten",
+          "colour": 3,
+          "ds": 3,
+          "dl": 1
+        }
+      }
     },
     "P": {
       "name": "cube",
-      "colour": {
-        "func": "lighten",
-        "colour": 3,
-        "ds": 6,
-        "dl": 2
-      },
-      "scale": 0.75
+      "scale": 0.75,
+      "paint": {
+        "fill": {
+          "func": "lighten",
+          "colour": 3,
+          "ds": 6,
+          "dl": 2
+        }
+      }
     },
     "O": {
       "name": "cube",
-      "colour": {
-        "func": "lighten",
-        "colour": 3,
-        "ds": -1.5,
-        "dl": -0.5
-      },
-      "scale": 0.75
+      "scale": 0.75,
+      "paint": {
+        "fill": {
+          "func": "lighten",
+          "colour": 3,
+          "ds": -1.5,
+          "dl": -0.5
+        }
+      }
     },
     "B": {
       "name": "cube",
-      "colour": {
-        "func": "lighten",
-        "colour": 3,
-        "ds": -2.5,
-        "dl": -1.5
-      },
-      "scale": 0.75
+      "scale": 0.75,
+      "paint": {
+        "fill": {
+          "func": "lighten",
+          "colour": 3,
+          "ds": -2.5,
+          "dl": -1.5
+        }
+      }
     }
   },
   "pieces": "B,O,G,Y,P\n-,-,-,-,-,-\n-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-,-\n-,-,-,-,-,-,-\n-,-,-,-,-,-"

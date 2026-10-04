@@ -7,15 +7,21 @@
   "legend": {
     "A": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "X": {
       "name": "piecepack-number-void",
-      "colour": "_context_strokes"
+      "paint": {
+        "fill": "_context_strokes"
+      }
     }
   },
   "pieces": "--BABA-A-\nB-------B\nA--ABA---\nB-----B-B\nA---X---A\nBB--A----\nA-----B-A\nBB------B\n--AA---A-",

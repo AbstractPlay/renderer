@@ -3,44 +3,68 @@ import { expect } from "chai";
 import fs from "node:fs";
 
 function extractGlyphBlock(source: string, glyphName: string): string {
-    const marker = `sheet.glyphs.set("${glyphName}"`;
-    const start = source.indexOf(marker);
+    const markers = [
+        `registerDuotoneGlyph(sheet, "${glyphName}"`,
+        `registerDiscFrameGlyph(sheet, "${glyphName}"`,
+        `sheet.glyphs.set("${glyphName}"`,
+    ];
+    let start = -1;
+    for (const marker of markers) {
+        const idx = source.indexOf(marker);
+        if (idx !== -1) {
+            start = idx;
+            break;
+        }
+    }
     expect(start).to.be.greaterThan(-1, `missing glyph ${glyphName}`);
-    const end = source.indexOf("\n});", start);
-    expect(end).to.be.greaterThan(start, `unterminated glyph ${glyphName}`);
-    return source.slice(start, end);
+    const tail = source.slice(start);
+    const returnIdx = tail.indexOf("return symbol;");
+    expect(returnIdx).to.be.greaterThan(-1, `unterminated glyph ${glyphName}`);
+    const end = tail.indexOf("\n});", returnIdx);
+    expect(end).to.be.greaterThan(returnIdx, `unterminated glyph ${glyphName}`);
+    return tail.slice(0, end);
 }
 
 /**
  * Regression guards for Wikimedia fairy-chess solid glyph emit rules.
- * Champion T bars must stay stroke2 (open paths with relative h/v segments).
+ * Champion T bars must stay border-slot strokes (open paths with relative h/v segments).
  */
 describe("Wikimedia fairy chess import", () => {
-    it("champion solid T uses data-playerstroke2", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+    it("champion solid T uses border slot stroke", () => {
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-champion-solid-traditional");
         expect(block).to.include("M18.5 19h8");
         expect(block).to.include("M22.5 19v12");
-        expect(block).to.match(/M18\.5 19h8[\s\S]*data-playerstroke2/);
-        expect(block).to.match(/M22\.5 19v12[\s\S]*data-playerstroke2/);
+        expect(block).to.match(/M18\.5 19h8[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
+        expect(block).to.match(/M22\.5 19v12[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
     });
 
-    it("giraffe solid horns stay black strokeOnly", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+    it("giraffe solid horns use border stroke slot", () => {
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-giraffe-solid-traditional");
-        expect(block).to.match(/m17\.6,4\.8[\s\S]*\.stroke\(\{color: "#000"/);
-        expect(block).to.match(/m22\.7,11[\s\S]*\.stroke\(\{color: "#000"/);
-        expect(block).not.to.match(/m17\.6,4\.8[\s\S]*data-playerstroke2/);
+        expect(block).to.match(/m17\.6,4\.8[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
+        expect(block).to.match(/m22\.7,11[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
     });
 
-    it("nightrider outline eye uses fill2 white on blindfold", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+    it("knight solid nose stroke uses border slot like mane highlight", () => {
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
+        const block = extractGlyphBlock(chessTs, "chess-knight-solid-traditional");
+        expect(block).to.match(/M 24\.55,10\.4[\s\S]*\.stroke\("none"\)/);
+        expect(block).to.match(
+            /M 15 15\.5 A 0\.5 1\.5[\s\S]*\.attr\("data-slot-stroke", "border"\)/,
+        );
+    });
+
+    it("nightrider outline eye uses border fill white on blindfold", () => {
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-nightrider-outline-traditional");
-        expect(block).to.match(/M15\.8 14\.751[\s\S]*data-playerfill2[\s\S]*\.fill\("#fff"\)/);
+        expect(block).to.match(
+            /M15\.8 14\.751[\s\S]*\.attr\("data-slot-fill", "border"\)[\s\S]*\.fill\("#fff"\)/,
+        );
     });
 
     it("nightrider solid scales to ~45px tile like knight", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-nightrider-solid-traditional");
         const vb = block.match(/symbol\.viewbox\(([^)]+)\)/);
         expect(vb).to.not.equal(null);
@@ -52,7 +76,7 @@ describe("Wikimedia fairy chess import", () => {
     });
 
     it("fairy traditional glyphs avoid oversized Wikimedia viewboxes", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const fairy = [
             "amazon", "archbishop", "boat", "centaur", "champion", "chancellor", "commoner",
             "dabbaba", "dragon", "elephant", "ferz", "fool", "giraffe", "mann", "nightrider",
@@ -73,18 +97,20 @@ describe("Wikimedia fairy chess import", () => {
     });
 
     it("boat solid hull has white fill with outer black stroke", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-boat-solid-traditional");
         const deckIdx = block.indexOf('m8.369 32.516 28.13.06');
         const deckEnd = block.indexOf("group.path(", deckIdx + 1);
         const deckBlock = block.slice(deckIdx, deckEnd);
         expect(deckBlock).to.include('fill("#fff")');
         expect(deckBlock).not.to.include('.stroke("none")');
-        expect(block).to.match(/m40\.979 26\.006[\s\S]*data-playerstroke2[\s\S]*stroke\(\{color: "#fff", width: 1\}/);
+        expect(block).to.match(
+            /m40\.979 26\.006[\s\S]*\.attr\("data-slot-stroke", "border"\)[\s\S]*stroke\(\{color: "#fff", width: 1\}/,
+        );
     });
 
     it("boat solid includes sail rigging ropes", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-boat-solid-traditional");
         expect(block).to.include("M7.543 25.209l17.42-17.07 14.85 17.67");
         expect(block).to.match(/group\.path\("M7\.543 25\.209l17\.42-17\.07 14\.85 17\.67"\)[\s\S]*?width: 0\.8/);
@@ -96,11 +122,11 @@ describe("Wikimedia fairy chess import", () => {
         expect(sailIdx).to.be.greaterThan(ropeIdx, "rigging sits under the sail fill");
         const ropeEnd = block.indexOf("width: 0.8", ropeIdx);
         expect(ropeEnd).to.be.greaterThan(ropeIdx);
-        expect(block.slice(ropeIdx, ropeEnd)).not.to.include("data-playerstroke2");
+        expect(block.slice(ropeIdx, ropeEnd)).to.include('.attr("data-slot-stroke", "border")');
     });
 
     it("short rook renders smaller than standard rook", () => {
-        const chessTs = fs.readFileSync("src/sheets/chess.ts", "utf8");
+        const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const maxDim = (name: string): number => {
             const block = extractGlyphBlock(chessTs, name);
             const vb = block.match(/symbol\.viewbox\(([^)]+)\)/)!;

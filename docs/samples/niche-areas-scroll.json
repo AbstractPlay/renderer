@@ -29,25 +29,37 @@
   "legend": {
     "A": {
       "name": "orb",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "orb",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     },
     "C": {
       "name": "circle",
-      "colour": 1,
       "scale": 1.15,
-      "opacity": 0.5
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 0.5
+        }
+      }
     },
     "D": {
       "name": "circle",
-      "colour": 2,
       "scale": 1.15,
-      "opacity": 0.5
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 0.5
+        }
+      }
     }
   },
   "pieces": "\n\n--A--BAB-\n----BBBBA\n----B-AA-\n----ABAB-\n---BABA--\n--BBABBB-\n---BAAA--\n\n\n------C-\n------C-\n\n-----C--\n---DDC--\n---DCD--\n\n\n\n\n\n\n----C--\n",

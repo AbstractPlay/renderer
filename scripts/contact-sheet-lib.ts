@@ -1,5 +1,6 @@
 import { createSVGWindow } from "svgdom";
 import { sheets } from "../src/sheets/index.js";
+import { buildGlyphSymbolForContactSheet } from "../src/renderers/glyphPreview.js";
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 
 /** SVG viewBox width (user units at 96 DPI baseline). */
@@ -133,7 +134,7 @@ export async function generateContactSheetSvg(): Promise<string> {
             const name = names[idx];
             const glyph = glyphs[idx];
             const tile = nstSheet.nested().size(tileSizeOuter, tileSizeOuter);
-            const symbol = glyph(tile, "#ccc");
+            const symbol = buildGlyphSymbolForContactSheet(name, glyph, tile);
 
             const used = tile.use(symbol).size(tileSizeInner, tileSizeInner);
             used.move(innerTL, innerTL);
@@ -172,19 +173,4 @@ export async function generateContactSheetSvg(): Promise<string> {
     canvas.rect(width, height).fill("#fff").back();
 
     return injectContactSheetFont(canvas.svg());
-}
-
-import { fileURLToPath } from "node:url";
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    generateContactSheetSvg()
-        .then((svg) => {
-            // tslint:disable-next-line: no-console
-            console.log(svg);
-        })
-        .catch((err) => {
-            // tslint:disable-next-line: no-console
-            console.error(err);
-            process.exit(1);
-        });
 }

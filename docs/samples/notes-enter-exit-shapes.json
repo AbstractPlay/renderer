@@ -7,7 +7,9 @@
   "legend": {
     "A": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     }
   },
   "pieces": "A\n--A",

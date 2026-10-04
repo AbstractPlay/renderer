@@ -29,13 +29,17 @@
   "legend": {
     "A": {
       "name": "orb",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "orb",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     }
   },
   "pieces": "\n\n--A--BAB-\n----BBBBA\n----B-AA-\n----ABAB-\n---BABA--\n--BBABBB-\n---BAAA--\n\n\n------A-\n------A-\n\n-----A--\n---BBA--\n---BAB--\n\n\n\n\n\n\n----A--\n"

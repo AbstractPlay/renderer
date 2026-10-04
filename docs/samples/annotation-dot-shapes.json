@@ -22,91 +22,121 @@
     "P1N": [
       {
         "name": "plane",
-        "colour": 1,
-        "rotate": -90
+        "rotate": -90,
+        "paint": {
+          "fill": 1
+        }
       },
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": 0,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       }
     ],
     "P1SE": [
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": 120,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": 60,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": 180,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "plane",
-        "colour": 1,
-        "rotate": 30
+        "rotate": 30,
+        "paint": {
+          "fill": 1
+        }
       }
     ],
     "P2S": [
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": 180,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": 120,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": 240,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "plane",
-        "colour": 2,
-        "rotate": 90
+        "rotate": 90,
+        "paint": {
+          "fill": 2
+        }
       }
     ],
     "P2NW": [
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": -60,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "wedge",
-        "colour": "#87CEEB",
         "rotate": -120,
-        "scale": 1.34
+        "scale": 1.34,
+        "paint": {
+          "fill": "#87CEEB"
+        }
       },
       {
         "name": "plane",
-        "colour": 2,
-        "rotate": -150
+        "rotate": -150,
+        "paint": {
+          "fill": 2
+        }
       }
     ],
     "cloud": {
       "name": "cloud",
-      "colour": "#ffffff",
-      "opacity": 0.7,
       "rotate": 270,
-      "scale": 1.5
+      "scale": 1.5,
+      "paint": {
+        "fill": {
+          "colour": "#ffffff",
+          "opacity": 0.7
+        }
+      }
     }
   },
   "pieces": "-,-,-,-,-\n-,-,-,-,-,-\n-,-,P1N,-,-,-,-\n-,P2NW,-,cloud,-,-,-,-\n-,-,-,-,P1SE,-,-,-,-\n-,-,P2S,-,-,-,-,-\n-,-,-,-,-,-,-\n-,-,-,-,-,-\n-,-,-,-,-",

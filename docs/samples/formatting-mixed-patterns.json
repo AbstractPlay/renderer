@@ -7,31 +7,41 @@
   "legend": {
     "P1": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "P2": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "FIXED": {
       "name": "piece",
-      "colour": "houndstooth"
+      "paint": {
+        "fill": "houndstooth"
+      }
     },
     "LIGHT": {
       "name": "piece",
-      "colour": {
-        "func": "lighten",
-        "colour": "microbial",
-        "ds": 0.15,
-        "dl": 0.1
+      "paint": {
+        "fill": {
+          "func": "lighten",
+          "colour": "microbial",
+          "ds": 0.15,
+          "dl": 0.1
+        }
       }
     },
     "CUSTOM": {
       "name": "piece",
-      "colour": {
-        "func": "custom",
-        "default": "chevrons",
-        "palette": 1
+      "paint": {
+        "fill": {
+          "func": "custom",
+          "default": "chevrons",
+          "palette": 1
+        }
       }
     }
   },

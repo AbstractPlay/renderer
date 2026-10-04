@@ -8,11 +8,15 @@
   "legend": {
     "A": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     }
   },
   "pieces": "-,-,-,-,-,-,-\nB,A,-,-,-,-,-\nBA,A,-,-,-,-,-\nA,B,AB,A,-,-,-\nAB,BA,B,B,-,-,-\n-,-,-,-,-,-,-\n-,-,-,-,-,-,-"

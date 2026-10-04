@@ -91,12 +91,18 @@
   "legend": {
     "B": {
       "name": "piece",
-      "colour": "#000",
-      "opacity": 0.5
+      "paint": {
+        "fill": {
+          "colour": "#000",
+          "opacity": 0.5
+        }
+      }
     },
     "W": {
       "name": "piece",
-      "colour": "#fff"
+      "paint": {
+        "fill": "#fff"
+      }
     }
   },
   "pieces": "WBWWWBWW\nBW--BW--\nWBBWWWBB\nWWBBWWWB\nWBWWWBWW\nBW--BW--\nWWBBWWBB\nWWWBWWWB\n",

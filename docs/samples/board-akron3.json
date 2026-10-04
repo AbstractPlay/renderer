@@ -29,55 +29,79 @@
   "legend": {
     "A": {
       "name": "orb3",
-      "colour": 1,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "orb3",
-      "colour": 2,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 2
+      }
     },
     "C": {
       "name": "orb3",
-      "colour": 3,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 3
+      }
     },
     "D": {
       "name": "orb3",
-      "colour": 4,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 4
+      }
     },
     "E": {
       "name": "orb3",
-      "colour": 5,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 5
+      }
     },
     "F": {
       "name": "orb3",
-      "colour": 6,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 6
+      }
     },
     "G": {
       "name": "orb3",
-      "colour": 7,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 7
+      }
     },
     "H": {
       "name": "orb3",
-      "colour": 8,
-      "scale": 1.19
+      "scale": 1.19,
+      "paint": {
+        "fill": 8
+      }
     },
     "Y": {
       "name": "circle",
-      "colour": 1,
       "scale": 1.15,
-      "opacity": 0.5
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 0.5
+        }
+      }
     },
     "Z": {
       "name": "circle",
-      "colour": 2,
       "scale": 1.15,
-      "opacity": 0.5
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 0.5
+        }
+      }
     }
   },
   "pieces": "_\n-ABBBAA\n-ABBABA\n-BAAAB-\n-ABBAB-\n-AA----\nCDEFGHB\n------\n---BA-\n----B-\n------\n------\n------",

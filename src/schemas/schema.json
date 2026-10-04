@@ -493,48 +493,45 @@
             ],
             "additionalProperties": false
         },
-        "glyph": {
-            "description": "An individual glyph with options, used in the `legend` property.",
+        "slotPaint": {
+            "description": "Per-slot paint override on sheet glyphs (name).",
             "type": "object",
             "properties": {
-                "name": {
-                    "description": "The name of the actual glyph. It may not contain any whitespace.",
-                    "type": "string",
-                    "pattern": "^\\S+$"
-                },
-                "text": {
-                    "description": "Mutually exclusive with `name`. In this case, the glyph is plain text, shrunk down to the appropriate size to fit in a cell. This is intended for very short strings, like numbers.",
-                    "type": "string"
-                },
                 "colour": {
-                    "description": "A hex colour, player number, named pattern, colour function, or gradient.",
+                    "description": "Fill or stroke colour for this slot (channel determined by sheet artwork).",
                     "anyOf": [
-                        {
-                            "$ref": "#/$defs/colourResolvable"
-                        },
-                        {
-                            "$ref": "#/$defs/gradient"
-                        }
+                        { "$ref": "#/$defs/colourResolvable" },
+                        { "$ref": "#/$defs/gradient" }
                     ]
                 },
-                "colour2": {
-                    "description": "A hex colour, player number, named pattern, colour function, or gradient.",
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/colourResolvable"
-                        },
-                        {
-                            "$ref": "#/$defs/gradient"
-                        }
-                    ]
-                },
+                "opacity": {
+                    "description": "Slot-local opacity multiplier (0–1).",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "paintEntry": {
+            "description": "Shorthand colour or structured slot paint.",
+            "anyOf": [
+                { "$ref": "#/$defs/colourResolvable" },
+                { "$ref": "#/$defs/gradient" },
+                { "$ref": "#/$defs/slotPaint" }
+            ]
+        },
+        "glyphLayerCommon": {
+            "description": "Transform and layer options shared by sheet and text legend glyphs.",
+            "type": "object",
+            "properties": {
                 "scale": {
                     "description": "A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.",
                     "type": "number",
                     "default": 1
                 },
                 "opacity": {
-                    "description": "A number between 0 and 1 indicating how opaque to render the glyph. A value of 0 means completely transparent.",
+                    "description": "Layer opacity multiplier on the placed glyph (0–1).",
                     "type": "number",
                     "minimum": 0,
                     "maximum": 1,
@@ -543,23 +540,14 @@
                 "rotate": {
                     "description": "A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.",
                     "anyOf": [
-                        {
-                            "type": "number",
-                            "minimum": -360,
-                            "maximum": 360
-                        },
-                        {
-                            "type": "null"
-                        }
+                        { "type": "number", "minimum": -360, "maximum": 360 },
+                        { "type": "null" }
                     ],
                     "default": 0
                 },
                 "orientation": {
-                    "description": "Determines how the piece (usually a text element) is reorientated after rotation is done. 'vertical' means it will always be reorientated vertically. Otherwise, it rotates along with everything else.",
-                    "enum": [
-                        "vertical",
-                        "fluid"
-                    ],
+                    "description": "Determines how the piece (usually a text element) is reorientated after rotation is done.",
+                    "enum": ["vertical", "fluid"],
                     "default": "fluid"
                 },
                 "flipx": {
@@ -577,35 +565,180 @@
                     "type": "object",
                     "properties": {
                         "relativeTo": {
-                            "description": "Nudge coordinate system. piece: composite/legend-nested axes (offset before this layer's rotate, scale, flip). glyph: this layer's local axes after rotate, scale, flip. When omitted, defaults to piece for text glyphs and glyph for sheet (name) glyphs.",
+                            "description": "Nudge coordinate system.",
                             "enum": ["piece", "glyph"]
                         },
-                        "dx": {
-                            "description": "Negative values move the glyph to the left.",
-                            "type": "number",
-                            "default": 0
-                        },
-                        "dy": {
-                            "description": "Negative values move the glyph up.",
-                            "type": "number",
-                            "default": 0
-                        }
+                        "dx": { "type": "number", "default": 0 },
+                        "dy": { "type": "number", "default": 0 }
                     },
                     "additionalProperties": false
+                }
+            },
+            "additionalProperties": true
+        },
+        "sheetGlyph": {
+            "description": "A named glyph from a sheet. Use paint (fill, border, …); colour/colour2 are deprecated aliases.",
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+                "scale": {
+                    "description": "A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.",
+                    "type": "number",
+                    "default": 1
+                },
+                "opacity": {
+                    "description": "Layer opacity multiplier on the placed glyph (0–1).",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "rotate": {
+                    "description": "A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.",
+                    "anyOf": [
+                        { "type": "number", "minimum": -360, "maximum": 360 },
+                        { "type": "null" }
+                    ],
+                    "default": 0
+                },
+                "orientation": {
+                    "description": "Determines how the piece (usually a text element) is reorientated after rotation is done.",
+                    "enum": ["vertical", "fluid"],
+                    "default": "fluid"
+                },
+                "flipx": {
+                    "description": "Flips x coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "flipy": {
+                    "description": "Flips the y coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "nudge": {
+                    "description": "The number of units to nudge the glyph from centre.",
+                    "type": "object",
+                    "properties": {
+                        "relativeTo": {
+                            "description": "Nudge coordinate system.",
+                            "enum": ["piece", "glyph"]
+                        },
+                        "dx": { "type": "number", "default": 0 },
+                        "dy": { "type": "number", "default": 0 }
+                    },
+                    "additionalProperties": false
+                },
+                "name": {
+                    "description": "The name of the actual glyph. It may not contain any whitespace.",
+                    "type": "string",
+                    "pattern": "^\\S+$"
+                },
+                "paint": {
+                    "description": "Per-slot colours for sheet artwork slots (fill, border, detail, …).",
+                    "type": "object",
+                    "additionalProperties": { "$ref": "#/$defs/paintEntry" }
+                },
+                "colour": {
+                    "deprecated": true,
+                    "description": "Deprecated on sheet glyphs — use paint.fill instead. Still accepted at runtime during the transition to per-slot paint.",
+                    "anyOf": [
+                        { "$ref": "#/$defs/colourResolvable" },
+                        { "$ref": "#/$defs/gradient" }
+                    ]
+                },
+                "colour2": {
+                    "deprecated": true,
+                    "description": "Deprecated on sheet glyphs — use paint.border (default secondary slot) or paint.detail where the glyph defines it (e.g. dice pips). Still accepted at runtime during the transition to per-slot paint.",
+                    "anyOf": [
+                        { "$ref": "#/$defs/colourResolvable" },
+                        { "$ref": "#/$defs/gradient" }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "textGlyph": {
+            "description": "Plain text overlay in a cell. Use colour (optional); omit colour for automatic contrast.",
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+                "scale": {
+                    "description": "A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.",
+                    "type": "number",
+                    "default": 1
+                },
+                "opacity": {
+                    "description": "Layer opacity multiplier on the placed glyph (0–1).",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "rotate": {
+                    "description": "A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.",
+                    "anyOf": [
+                        { "type": "number", "minimum": -360, "maximum": 360 },
+                        { "type": "null" }
+                    ],
+                    "default": 0
+                },
+                "orientation": {
+                    "description": "Determines how the piece (usually a text element) is reorientated after rotation is done.",
+                    "enum": ["vertical", "fluid"],
+                    "default": "fluid"
+                },
+                "flipx": {
+                    "description": "Flips x coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "flipy": {
+                    "description": "Flips the y coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "nudge": {
+                    "description": "The number of units to nudge the glyph from centre.",
+                    "type": "object",
+                    "properties": {
+                        "relativeTo": {
+                            "description": "Nudge coordinate system.",
+                            "enum": ["piece", "glyph"]
+                        },
+                        "dx": { "type": "number", "default": 0 },
+                        "dy": { "type": "number", "default": 0 }
+                    },
+                    "additionalProperties": false
+                },
+                "text": {
+                    "description": "Short text drawn in the cell (e.g. a numeral).",
+                    "type": "string"
+                },
+                "colour": {
+                    "description": "Text fill colour. When omitted, the renderer picks black or white for contrast.",
+                    "anyOf": [
+                        { "$ref": "#/$defs/colourResolvable" },
+                        { "$ref": "#/$defs/gradient" }
+                    ]
                 },
                 "fontFamily": {
                     "description": "Optional CSS font-family for text glyphs.",
                     "type": "string"
                 },
                 "fontWeight": {
-                    "description": "Optional CSS font-weight for text glyphs (e.g. 'bold', '700').",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
+                    "description": "Optional CSS font-weight for text glyphs.",
+                    "type": ["string", "number"]
                 }
             },
             "additionalProperties": false
+        },
+        "glyph": {
+            "description": "An individual glyph with options, used in the `legend` property.",
+            "oneOf": [
+                { "$ref": "#/$defs/sheetGlyph" },
+                { "$ref": "#/$defs/textGlyph" }
+            ]
         },
         "polymatrix": {
             "description": "Schema for the `matrix` part of a polyomino-related feature",

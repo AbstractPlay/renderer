@@ -6,11 +6,15 @@
   "legend": {
     "A": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     }
   },
   "pieces": [
@@ -27,7 +31,10 @@
     {
       "id": "child",
       "glyph": "A",
-      "parents": ["root-a", "root-b"]
+      "parents": [
+        "root-a",
+        "root-b"
+      ]
     }
   ]
 }

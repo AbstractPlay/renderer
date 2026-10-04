@@ -8,127 +8,225 @@
   "legend": {
     "X": {
       "name": "pyramid-up-small-3D",
-      "colour": "#000"
+      "paint": {
+        "fill": "#000"
+      }
     },
     "RD1": {
       "name": "pyramid-up-small-3D",
-      "colour": 1,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 1
+        }
+      }
     },
     "RD2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 1,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 1
+        }
+      }
     },
     "RD3": {
       "name": "pyramid-up-large-3D",
-      "colour": 1,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 1
+        }
+      }
     },
     "BU1": {
       "name": "pyramid-up-small-3D",
-      "colour": 2,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 1
+        }
+      }
     },
     "BU2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 2,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 1
+        }
+      }
     },
     "BU3": {
       "name": "pyramid-up-large-3D",
-      "colour": 2,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 1
+        }
+      }
     },
     "GN1": {
       "name": "pyramid-up-small-3D",
-      "colour": 3,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 3,
+          "opacity": 1
+        }
+      }
     },
     "GN2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 3,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 3,
+          "opacity": 1
+        }
+      }
     },
     "GN3": {
       "name": "pyramid-up-large-3D",
-      "colour": 3,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 3,
+          "opacity": 1
+        }
+      }
     },
     "YE1": {
       "name": "pyramid-up-small-3D",
-      "colour": 4,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 4,
+          "opacity": 1
+        }
+      }
     },
     "YE2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 4,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 4,
+          "opacity": 1
+        }
+      }
     },
     "YE3": {
       "name": "pyramid-up-large-3D",
-      "colour": 4,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 4,
+          "opacity": 1
+        }
+      }
     },
     "VT1": {
       "name": "pyramid-up-small-3D",
-      "colour": 5,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 5,
+          "opacity": 1
+        }
+      }
     },
     "VT2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 5,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 5,
+          "opacity": 1
+        }
+      }
     },
     "VT3": {
       "name": "pyramid-up-large-3D",
-      "colour": 5,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 5,
+          "opacity": 1
+        }
+      }
     },
     "OG1": {
       "name": "pyramid-up-small-3D",
-      "colour": 6,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 6,
+          "opacity": 1
+        }
+      }
     },
     "OG2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 6,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 6,
+          "opacity": 1
+        }
+      }
     },
     "OG3": {
       "name": "pyramid-up-large-3D",
-      "colour": 6,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 6,
+          "opacity": 1
+        }
+      }
     },
     "BN1": {
       "name": "pyramid-up-small-3D",
-      "colour": 7,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 7,
+          "opacity": 1
+        }
+      }
     },
     "BN2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 7,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 7,
+          "opacity": 1
+        }
+      }
     },
     "BN3": {
       "name": "pyramid-up-large-3D",
-      "colour": 7,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 7,
+          "opacity": 1
+        }
+      }
     },
     "PK1": {
       "name": "pyramid-up-small-3D",
-      "colour": 8,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 8,
+          "opacity": 1
+        }
+      }
     },
     "PK2": {
       "name": "pyramid-up-medium-3D",
-      "colour": 8,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 8,
+          "opacity": 1
+        }
+      }
     },
     "PK3": {
       "name": "pyramid-up-large-3D",
-      "colour": 8,
-      "opacity": 1
+      "paint": {
+        "fill": {
+          "colour": 8,
+          "opacity": 1
+        }
+      }
     }
   },
   "pieces": [

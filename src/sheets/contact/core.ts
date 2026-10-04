@@ -1,13 +1,10 @@
 import { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import type { ISheet } from "./ISheet.js";
+import { defineGlyph } from "../registry/defineGlyph.js";
+import type { SlotMeta } from "../registry/glyphDefinition.js";
+import type { ISheet } from "../ISheet.js";
 import { Orientation, defineHex } from "honeycomb-grid";
-import convert from "color-convert";
-
-const convert_rgb = convert.rgb;
-const convert_hex = convert.hex;
-import { lighten } from "../common/colours.js";
-import fnv from "fnv-plus";
-import { projectPoint } from "../common/plotting.js";
+import { projectPoint } from "../../common/plotting.js";
+import type { OrbShadingProfile } from "../../renderers/orbShading.js";
 
 const sheet: ISheet = {
     name: "core",
@@ -17,62 +14,176 @@ const sheet: ISheet = {
     glyphs: new Map<string, (canvas: SVGContainer) => SVGSymbol>(),
 };
 
+const orbFillSlot: SlotMeta = { channels: ["fill"] };
+const orbDetailSlot: SlotMeta = { channels: ["fill"] };
+
+function registerProceduralOrb(
+    name: OrbShadingProfile,
+    shadingProfile: OrbShadingProfile,
+    build: (canvas: SVGContainer) => SVGSymbol,
+): void {
+    const slots: Record<string, SlotMeta> = { fill: orbFillSlot };
+    if (name === "orb2" || name === "orb3") {
+        slots.detail = orbDetailSlot;
+    }
+    defineGlyph(
+        sheet.name,
+        name,
+        {
+            slots,
+            paintMode: "proceduralShaded",
+            shadingProfile,
+            build,
+        },
+        sheet.glyphs,
+    );
+}
+
+const slotOrca: Record<string, SlotMeta> = {
+    fill: { channels: ["fill"] },
+    detail: { channels: ["fill"] },
+};
+
+const slotFillBody: Record<string, SlotMeta> = {
+    fill: { channels: ["fill"] },
+    border: { channels: ["stroke"] },
+};
+
+const slotHollowOutline: Record<string, SlotMeta> = {
+    fill: { channels: ["fill", "stroke"] },
+    border: { channels: ["stroke"] },
+};
+
+function registerDiscToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(sheet.name, name, { slots: slotFillBody, build }, sheet.glyphs);
+}
+
+/** Hard-coded artwork; legend `paint` does not recolour the glyph. */
+function registerFixedToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(sheet.name, name, { paintMode: "fixed", build }, sheet.glyphs);
+}
+
+function registerFillOnlyToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(
+        sheet.name,
+        name,
+        { slots: { fill: { channels: ["fill"] } }, build },
+        sheet.glyphs,
+    );
+}
+
+function registerHollowOutlineToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(sheet.name, name, { slots: slotHollowOutline, build }, sheet.glyphs);
+}
+
+const slotStrokeAsFill: Record<string, SlotMeta> = {
+    fill: { channels: ["stroke"] },
+};
+
+const slotTraxDuotone: Record<string, SlotMeta> = {
+    fill: { channels: ["stroke"] },
+    detail: { channels: ["stroke"] },
+};
+
+const slotFillBorderWide: Record<string, SlotMeta> = {
+    fill: { channels: ["fill"] },
+    border: { channels: ["fill", "stroke"] },
+};
+
+function registerStrokeFillToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(sheet.name, name, { slots: slotStrokeAsFill, build }, sheet.glyphs);
+}
+
+function registerTraxToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(
+        sheet.name,
+        name,
+        { slots: slotTraxDuotone, colour2Slot: "detail", build },
+        sheet.glyphs,
+    );
+}
+
+function registerFillBorderWideToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(sheet.name, name, { slots: slotFillBorderWide, build }, sheet.glyphs);
+}
+
+/** Plane top-down art: player fill (bullseye), border ink, white detail, default-brown target rings. */
+const slotPlane: Record<string, SlotMeta> = {
+    fill: { channels: ["fill"] },
+    border: { channels: ["fill", "stroke"] },
+    detail: { channels: ["fill"] },
+    target: { channels: ["fill"] },
+};
+
+function registerPlaneToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
+    defineGlyph(sheet.name, name, { slots: slotPlane, build }, sheet.glyphs);
+}
+
 // Alphabetize by glyph name, please!
 // The element's root `id` must be the same as its map key.
 // Symbols must have a properly set `viewbox` for scaling to work correctly.
 
-sheet.glyphs.set("arrowhead", (canvas: SVGContainer) => {
+registerDiscToken("arrowhead", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     const border = 15;
     sym.path("M76.208,296.042l415.78,272.132c8.286,6.646,12.062,3.941,8.431-6.04L329.355,302.084 c-3.629-9.981-3.596-26.156,0.076-36.123l170.91-256.26c3.672-9.966-0.101-12.702-8.43-6.11L76.284,272.07 C67.958,278.661,67.921,289.395,76.208,296.042z")
         .rotate(90, 0, 0)
         .fill("black")
-        .attr("data-playerfill", true)
-        .stroke({width: border, color: "#000"});
+        .attr("data-slot-fill", "fill")
+        .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border");
     sym.viewbox(-572.816, 68.016, 573.817, 867.568);
     return sym;
 });
 
-sheet.glyphs.set("arrows-diag", (canvas: SVGContainer) => {
+registerFillBorderWideToken("arrows-diag", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     const group = sym.group();
     group.path("M4.712,69.854l-4.69,28.273c-0.086,0.512,0.082,1.034,0.449,1.401c0.002,0.003,0.002,0.003,0.002,0.003c0.37,0.368,0.893,0.535,1.406,0.447l28.197-4.765c0.594-0.1,1.081-0.525,1.264-1.1c0.185-0.572,0.031-1.202-0.396-1.628l-5.513-5.513l14.802-14.802c0.63-0.629,0.63-1.647,0-2.277l-10.2-10.201c-0.63-0.629-1.648-0.629-2.278,0L12.954,74.493l-5.515-5.515c-0.425-0.425-1.055-0.577-1.63-0.394C5.234,68.768,4.811,69.258,4.712,69.854z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     group.path("M95.288,30.146l4.69-28.273c0.085-0.512-0.083-1.034-0.449-1.4C99.527,0.47,99.527,0.47,99.527,0.47c-0.37-0.367-0.893-0.534-1.406-0.447L69.924,4.788c-0.594,0.1-1.081,0.525-1.265,1.1c-0.185,0.572-0.031,1.202,0.396,1.628l5.513,5.513L59.766,27.83c-0.629,0.629-0.629,1.648,0,2.278l10.2,10.201c0.63,0.629,1.648,0.629,2.278,0l14.802-14.802l5.515,5.515c0.425,0.425,1.056,0.578,1.63,0.394C94.766,31.232,95.19,30.742,95.288,30.146z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     group.path("M69.854,95.288l28.271,4.69c0.512,0.086,1.035-0.082,1.401-0.449c0.002-0.003,0.002-0.003,0.002-0.003c0.368-0.37,0.535-0.892,0.448-1.406l-4.765-28.196c-0.1-0.594-0.525-1.081-1.1-1.265c-0.572-0.185-1.202-0.031-1.628,0.396l-5.513,5.513L72.169,59.765c-0.628-0.628-1.647-0.628-2.277,0.001L59.691,69.967c-0.629,0.629-0.629,1.648,0,2.277l14.802,14.802l-5.515,5.515c-0.425,0.425-0.577,1.055-0.393,1.63C68.768,94.766,69.258,95.19,69.854,95.288z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     group.path("M30.146,4.712L1.874,0.022C1.361-0.064,0.84,0.104,0.473,0.471C0.47,0.474,0.47,0.474,0.47,0.474C0.103,0.844-0.064,1.366,0.023,1.88l4.766,28.197c0.1,0.593,0.525,1.081,1.099,1.264c0.573,0.186,1.202,0.032,1.629-0.395l5.513-5.513L27.83,40.234c0.63,0.63,1.648,0.63,2.278,0.001l10.201-10.201c0.63-0.63,0.63-1.648,0-2.278L25.507,12.954l5.515-5.515c0.424-0.425,0.577-1.056,0.394-1.63C31.232,5.234,30.742,4.81,30.146,4.712z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     sym.viewbox(-1, -1, 102, 102);
     return sym;
 });
 
-sheet.glyphs.set("arrows-orth", (canvas: SVGContainer) => {
+registerFillBorderWideToken("arrows-orth", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     const group = sym.group();
     group.path("M4.712,69.854l-4.69,28.273c-0.086,0.512,0.082,1.034,0.449,1.401c0.002,0.003,0.002,0.003,0.002,0.003c0.37,0.368,0.893,0.535,1.406,0.447l28.197-4.765c0.594-0.1,1.081-0.525,1.264-1.1c0.185-0.572,0.031-1.202-0.396-1.628l-5.513-5.513l14.802-14.802c0.63-0.629,0.63-1.647,0-2.277l-10.2-10.201c-0.63-0.629-1.648-0.629-2.278,0L12.954,74.493l-5.515-5.515c-0.425-0.425-1.055-0.577-1.63-0.394C5.234,68.768,4.811,69.258,4.712,69.854z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     group.path("M95.288,30.146l4.69-28.273c0.085-0.512-0.083-1.034-0.449-1.4C99.527,0.47,99.527,0.47,99.527,0.47c-0.37-0.367-0.893-0.534-1.406-0.447L69.924,4.788c-0.594,0.1-1.081,0.525-1.265,1.1c-0.185,0.572-0.031,1.202,0.396,1.628l5.513,5.513L59.766,27.83c-0.629,0.629-0.629,1.648,0,2.278l10.2,10.201c0.63,0.629,1.648,0.629,2.278,0l14.802-14.802l5.515,5.515c0.425,0.425,1.056,0.578,1.63,0.394C94.766,31.232,95.19,30.742,95.288,30.146z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     group.path("M69.854,95.288l28.271,4.69c0.512,0.086,1.035-0.082,1.401-0.449c0.002-0.003,0.002-0.003,0.002-0.003c0.368-0.37,0.535-0.892,0.448-1.406l-4.765-28.196c-0.1-0.594-0.525-1.081-1.1-1.265c-0.572-0.185-1.202-0.031-1.628,0.396l-5.513,5.513L72.169,59.765c-0.628-0.628-1.647-0.628-2.277,0.001L59.691,69.967c-0.629,0.629-0.629,1.648,0,2.277l14.802,14.802l-5.515,5.515c-0.425,0.425-0.577,1.055-0.393,1.63C68.768,94.766,69.258,95.19,69.854,95.288z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     group.path("M30.146,4.712L1.874,0.022C1.361-0.064,0.84,0.104,0.473,0.471C0.47,0.474,0.47,0.474,0.47,0.474C0.103,0.844-0.064,1.366,0.023,1.88l4.766,28.197c0.1,0.593,0.525,1.081,1.099,1.264c0.573,0.186,1.202,0.032,1.629-0.395l5.513-5.513L27.83,40.234c0.63,0.63,1.648,0.63,2.278,0.001l10.201-10.201c0.63-0.63,0.63-1.648,0-2.278L25.507,12.954l5.515-5.515c0.424-0.425,0.577-1.056,0.394-1.63C31.232,5.234,30.742,4.81,30.146,4.712z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .stroke("#000")
         .fill("#fff");
     group.rotate(45, 50, 50);
@@ -80,7 +191,7 @@ sheet.glyphs.set("arrows-orth", (canvas: SVGContainer) => {
     return sym;
 });
 
-sheet.glyphs.set("brick", (canvas: SVGContainer) => {
+registerFixedToken("brick", (canvas: SVGContainer) => {
     const group = canvas.symbol();
 
     group.rect(44, 44)
@@ -93,9 +204,11 @@ sheet.glyphs.set("brick", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("bricks", (canvas: SVGContainer) => {
+registerFixedToken("bricks", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    const defs = canvas.defs();
+    const defs = group.defs();
+    const patternId = "core-bricks-pattern";
+    const maskId = "core-bricks-mask";
     const pattern = defs.pattern(11, 10, function(add) {
         // Background
         add.rect(11, 10).fill("white");
@@ -116,9 +229,9 @@ sheet.glyphs.set("bricks", (canvas: SVGContainer) => {
             .radius(1.1)
             .fill("#8E1D1D");
     })
-    .id("brickPattern")
+    .id(patternId)
     .attr({ patternUnits: "userSpaceOnUse" });
-    const mask = defs.mask().id("mainMask");
+    const mask = defs.mask().id(maskId);
     mask.rect(42, 42)
         .move(4, 4)
         .radius(7)
@@ -126,7 +239,7 @@ sheet.glyphs.set("bricks", (canvas: SVGContainer) => {
 
     group.rect(50, 50)
         .fill(pattern)
-        .attr({ mask: "url(#mainMask)" });
+        .attr({ mask: `url(#${maskId})` });
 
     group.rect(44, 44)
         .move(3, 3)
@@ -138,20 +251,20 @@ sheet.glyphs.set("bricks", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("cannon-piece", (canvas: SVGContainer) => {
+registerDiscToken("cannon-piece", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.path("m 78.838853,129.34362 q 0.206705,0.20671 -0.124023,0.20671 -1.157549,1.03352 -2.893871,1.6123 l -0.578775,-0.95085 q 1.694982,-0.45475 2.893871,-1.48827 z m 4.175442,-6.49054 q 0.08268,0.20671 -0.289387,0.0827 -2.315097,0.24805 -4.960922,0.45475 l 0.04134,1.24024 h 5.70506 v 0.78547 H 81.56736 v 1.98437 h 2.604483 v 0.90951 h -9.260387 v -0.90951 h 2.149733 l -0.206705,-5.0436 0.950843,0.28939 q 2.521802,-0.33073 4.506171,-0.7028 z m -2.273756,4.54751 v -1.98437 h -2.893871 l 0.08268,1.98437 z m 0.248046,1.32292 q 1.157549,0.95084 3.100576,1.44693 l -0.454751,0.95084 q -1.860345,-0.45475 -3.26594,-1.69498 z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .stroke({width: 0})
         .fill("#000");
     group.viewbox(74.911456, 121.9229215, 9.260386999999994, 9.260386999999994);
     return group;
 });
 
-sheet.glyphs.set("cannon-town", (canvas: SVGContainer) => {
+registerDiscToken("cannon-town", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.path("m 85.389067,111.12552 v 4.87824 h -0.826821 v -0.2067 h -2.149732 v 1.11621 h 3.224599 v 0.78548 h -3.224599 v 1.24023 h 4.175442 v 0.78548 h -9.136364 v -0.78548 h 4.134101 v -1.24023 h -3.224599 v -0.78548 h 3.224599 v -1.11621 H 79.43596 v 0.37207 h -0.82682 v -5.04361 z m -3.803374,1.94303 V 111.911 H 79.43596 v 1.15755 z m 2.976553,0 V 111.911 h -2.149732 v 1.15755 z m -2.976553,1.94303 v -1.15755 H 79.43596 v 1.15755 z m 2.976553,-1.15755 h -2.149732 v 1.15755 h 2.149732 z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .stroke({width: 0})
         .fill("#000");
     // group.viewbox(77.451592, 110.856808, 9.136364, 9.136364);
@@ -160,46 +273,46 @@ sheet.glyphs.set("cannon-town", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("castle-solid", (canvas: SVGContainer) => {
+registerDiscToken("castle-solid", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     sym.polygon("490.292,206.918 490.292,223.389 470.426,222.2 470.426,205.159 445.158,202.911 445.158,220.692 421.903,219.321 421.903,200.833 392.126,198.184 392.126,217.541 364.55,215.884 364.55,195.745 328.973,192.567 328.973,246.543 512,246.543 512,208.847")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.polygon("328.973,367.491 512,339.487 512,255.401 328.973,255.401")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.polygon("147.474,220.489 119.871,222.139 119.871,202.782 90.104,205.438 90.104,223.899 66.845,225.298 66.845,207.489 41.595,209.737 41.595,226.805 21.711,227.988 21.711,211.517 0,213.445 0,251.121 183.048,251.121 183.048,197.165 147.474,200.323")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.polygon("0,344.085 183.048,372.076 183.048,260.006 0,260.006")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.polygon("294.164,151.59 270.14,151.59 270.14,130.385 241.871,130.385 241.871,151.59 217.844,151.59 217.844,130.385 189.575,130.385 189.575,179.858 198.058,179.858 217.844,179.858 241.871,179.858 270.14,179.858 294.164,179.858 322.435,179.858 322.435,151.59 322.435,130.385 294.164,130.385")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.path("M195.759,372.076l17.517,4.333c28.062,6.941,57.393,6.941,85.455,0l17.521-4.333V192.574H195.759V372.076z M245.402,223.722h21.202v40.277h-21.202V223.722z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.viewbox(-1, 129.385, 514, 253.23);
     return sym;
 });
 
-sheet.glyphs.set("chevron", (canvas: SVGContainer) => {
+registerDiscToken("chevron", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     // sym.rect(40, 40).move(513.5, 1200).fill("red");
     sym.path("M544.345,1213.39 L534.615,1202.6 C534.167,1202.15 533.57,1201.95 532.984,1201.99 C532.398,1201.95 531.802,1202.15 531.354,1202.6 L521.624,1213.39 C520.797,1214.22 520.797,1215.57 521.624,1216.4 C522.452,1217.23 523.793,1217.23 524.621,1216.4 L532.984,1207.13 L541.349,1216.4 C542.176,1217.23 543.518,1217.23 544.345,1216.4 C545.172,1215.57 545.172,1214.22 544.345,1213.39")
         .stroke("none")
         .fill({color: "#000", rule: "evenodd"})
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     sym.viewbox(513.5, 1200, 40, 40);
     return sym;
 });
 
-sheet.glyphs.set("circle", (canvas: SVGContainer) => {
+registerStrokeFillToken("circle", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 15;
     group.circle(sheet.cellsize)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .fill("none")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -207,7 +320,7 @@ sheet.glyphs.set("circle", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("cloud", (canvas: SVGContainer) => {
+registerFillBorderWideToken("cloud", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const cloud = group.group();
 
@@ -228,7 +341,8 @@ sheet.glyphs.set("cloud", (canvas: SVGContainer) => {
     `)
         .stroke({ width: 4, color: "#000" })
         .fill("#f7f7f7")
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border");
 
     // A couple of subtle interior puffs to give it character.
     cloud.path(`
@@ -238,6 +352,7 @@ sheet.glyphs.set("cloud", (canvas: SVGContainer) => {
     `)
         .stroke({ width: 4, color: "#000" })
         .fill("none")
+        .attr("data-slot-stroke", "border")
         .opacity(0.35);
 
     cloud.path(`
@@ -247,105 +362,109 @@ sheet.glyphs.set("cloud", (canvas: SVGContainer) => {
     `)
         .stroke({ width: 4, color: "#000" })
         .fill("none")
+        .attr("data-slot-stroke", "border")
         .opacity(0.35);
 
     group.viewbox(0, 0, 460, 460);
     return group;
 });
 
-sheet.glyphs.set("cross-diag", (canvas: SVGContainer) => {
+registerStrokeFillToken("cross-diag", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(-10, -10, 110, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.line(110, -10, -10, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
-sheet.glyphs.set("cross-omni", (canvas: SVGContainer) => {
+registerStrokeFillToken("cross-omni", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(-10, -10, 110, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.line(110, -10, -10, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.line(50, -10, 50, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.line(-10, 50, 110, 50)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
-sheet.glyphs.set("cross-orth", (canvas: SVGContainer) => {
+registerStrokeFillToken("cross-orth", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(50, -10, 50, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.line(-10, 50, 110, 50)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
-sheet.glyphs.set("cube", (canvas: SVGContainer) => {
+registerFillBorderWideToken("cube", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     const border = 5;
     sym.rect(100, 100)
        .stroke({color: "black", width: border, linecap: "butt", linejoin: "round"})
        .fill("white")
-       .attr("data-playerfill", true)
+       .attr("data-slot-fill", "fill")
+       .attr("data-slot-stroke", "border")
        .matrix(0.8660254037844387,-0.5,0,1,1.4210854715202004e-14,100);
     sym.rect(100, 100)
     .stroke({color: "black", width: border, linecap: "butt", linejoin: "round"})
     .fill("white")
-       .attr("data-playerfill", true)
+       .attr("data-slot-fill", "fill")
+       .attr("data-slot-stroke", "border")
        .matrix(0.8660254037844387,0.5,0,1,-86.60254037844386,50);
     sym.rect(100, 100)
     .stroke({color: "black", width: border, linecap: "butt", linejoin: "round"})
     .fill("white")
-       .attr("data-playerfill", true)
+       .attr("data-slot-fill", "fill")
+       .attr("data-slot-stroke", "border")
        .matrix(0.8660254037844387,0.49999999999999994,-0.8660254037844386,0.5000000000000001,0,0);
     sym.viewbox(-86.603 - border, 0 - border, 173.205 + (border * 2), 200 + (border * 2));
     return sym;
 });
 
-sheet.glyphs.set("dline-neg", (canvas: SVGContainer) => {
+registerStrokeFillToken("dline-neg", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(-10, -10, 110, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
-sheet.glyphs.set("dline-pos", (canvas: SVGContainer) => {
+registerStrokeFillToken("dline-pos", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(110, -10, -10, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
-sheet.glyphs.set("frog", (canvas: SVGContainer) => {
+registerDiscToken("frog", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     sym.path("M-316.84-317.352a.9.9 0 00-.55.18.9.9 0 00-.176 1.261l2.264 3.01-.62 1.885a2.27 2.27 0 00-.132.761.9.9 0 000 .026 2.37 2.37 0 002.355 2.3h2.061a.9.9 0 00.9-.9.9.9 0 00-.9-.9h-2.06c-.31 0-.541-.231-.553-.54a.473.473 0 01.023-.136.9.9 0 00.008-.023l.774-2.36a.9.9 0 00-.135-.82l-2.547-3.385a.9.9 0 00-.711-.36zm18.759 0a.9.9 0 00-.118.008.9.9 0 00-.593.351l-2.55 3.385a.9.9 0 00-.134.82l.774 2.36a.9.9 0 00.004.008c.017.05.024.103.023.156a.9.9 0 000 .018.538.538 0 01-.553.554.9.9 0 00-.006 0h-2.05a.9.9 0 00-.901.9.9.9 0 00.9.901h2.047a2.363 2.363 0 002.242-3.11l-.625-1.9 2.266-3.01a.9.9 0 00-.178-1.261.9.9 0 00-.548-.18zm-13.565 0a.9.9 0 00-.119.01.9.9 0 00-.592.35l-1.883 2.511.659.873a.9.9 0 01.134.82l-.127.389a.9.9 0 00.12-.129l2.537-3.383a.9.9 0 00-.18-1.261.9.9 0 00-.549-.18zm-2.527-.846a.9.9 0 00-.9.9v1.707l.833 1.11.965-1.287v-1.53a.9.9 0 00-.898-.9zm.709 5.682a.9.9 0 01-.047.054.9.9 0 00.047-.054zm.37 9.761a.9.9 0 00-.901.772l-.602 4.203a.9.9 0 00.762 1.02.9.9 0 001.02-.762l.603-4.203a.9.9 0 00-.764-1.02.9.9 0 00-.117-.01zm.04.004a.9.9 0 01.078.006.9.9 0 00-.078-.006zm-.58.17a.9.9 0 00-.035.028.9.9 0 01.035-.028zm-.139.123l-2.965 2.965a.9.9 0 000 1.272.9.9 0 001.274 0l1.086-1.086.383-2.676a.9.9 0 01.222-.475zm.719-.293a.9.9 0 01.078.006.9.9 0 00-.078-.006zm-.19.008l-4.181.6a.9.9 0 00-.764 1.02.9.9 0 001.02.763l1.517-.219 1.88-1.879a.9.9 0 01.032-.033.9.9 0 01.01-.008.9.9 0 01.06-.054.9.9 0 01.036-.028.9.9 0 01.069-.045.9.9 0 01.019-.011.9.9 0 01.088-.043.9.9 0 01.018-.008.9.9 0 01.105-.036.9.9 0 01.092-.019zm.274 0a.9.9 0 01.1.02.9.9 0 00-.1-.02zm.273.088a.9.9 0 01.045.024.9.9 0 00-.045-.024zm.194.133a.9.9 0 01.043.04.9.9 0 00-.043-.04zm.14.158a.9.9 0 01.037.059.9.9 0 00-.037-.059zm.037.059a.9.9 0 01.053.107.9.9 0 00-.053-.107zm.053.107a.9.9 0 01.037.112.9.9 0 01.022.105.9.9 0 01.002.01.9.9 0 000-.012.9.9 0 00-.06-.215zm.06.227a.9.9 0 000 .002.9.9 0 010 .23.9.9 0 000-.232zm-1.843-4.203c-.086 0-.173.01-.258.023-.34.054-.661.209-.916.461a.9.9 0 00-.01.01 1.683 1.683 0 00-.174 2.14l.707 1.006 1.463-.208.008-.002a.9.9 0 01.004 0 .9.9 0 01.012-.002.9.9 0 01.078-.006.9.9 0 01.027-.002.9.9 0 01.032.002.9.9 0 01.029.002.9.9 0 01.078.006.9.9 0 01.006.002.9.9 0 01.1.019.9.9 0 01.01.002.9.9 0 01.074.025.9.9 0 01.017.006.9.9 0 01.006.002.9.9 0 01.014.006.9.9 0 01.043.022.9.9 0 01.01.006.9.9 0 01.045.023.9.9 0 01.008.004.9.9 0 01.08.053.9.9 0 01.008.006.9.9 0 01.01.008.9.9 0 01.02.018.9.9 0 01.023.021.9.9 0 01.008.006l-1.158-1.649 2.705 1.344a.9.9 0 001.205-.406.9.9 0 00-.404-1.205l-3.149-1.567a1.671 1.671 0 00-.76-.175zm-.322 6.867l-.006.006-.078.584zm1.691.892l-.129.893a.9.9 0 01-.183.428.9.9 0 00.193-.444zm11.947-7.76a1.673 1.673 0 00-.76.176l-3.148 1.567a.9.9 0 00-.404 1.205.9.9 0 001.205.406l2.705-1.344-1.26 1.793a.9.9 0 00-.154.64l.566 4.194a.9.9 0 001.014.77.9.9 0 00.77-1.014l-.52-3.843 1.344-1.915a1.683 1.683 0 00-.174-2.14.9.9 0 00-.01-.01 1.675 1.675 0 00-.916-.463v.002a1.727 1.727 0 00-.258-.023zm-1.56 3.659a.9.9 0 00-.028.025.9.9 0 00-.199.97l-.029-.212a.9.9 0 01.154-.639zm1.795.576l-.221.315.314 2.324 1.08 1.08a.9.9 0 001.274 0 .9.9 0 000-1.272zm.416-.594l-.416.594 1.361 1.361 1.518.22a.9.9 0 001.02-.765.9.9 0 00-.763-1.019zm-2.252.059a.9.9 0 00-.059.068.9.9 0 01.059-.068zm-.07.082a.9.9 0 00-.057.086.9.9 0 01.056-.086zm-.06.088a.9.9 0 00-.05.103.9.9 0 01.05-.103zm-.05.103a.9.9 0 00-.037.11.9.9 0 01.037-.11zm-.037.11a.9.9 0 00-.025.11.9.9 0 00.056.468v-.006a.9.9 0 000-.002.9.9 0 01-.031-.57zm1.937-16.106a.9.9 0 00-.9.9v4.231a.9.9 0 000 .014.9.9 0 01.18-.555l1.619-2.15v-1.54a.9.9 0 00-.899-.9zm-.896 5.205a.9.9 0 00.006.055.9.9 0 01-.006-.055zm.018.116a.9.9 0 00.02.072.9.9 0 01-.02-.072zm-1.65-4.475a.9.9 0 00-.55.18.9.9 0 00-.18 1.261l2.45 3.266-.035-.107a.9.9 0 01-.006-.018l-.006-.018a.9.9 0 01-.004-.017.9.9 0 01-.02-.073.9.9 0 01-.012-.06.9.9 0 01-.006-.055.9.9 0 01-.004-.06.9.9 0 010-.014v-2.701l-.917-1.225a.9.9 0 00-.711-.36zm-4.2-.018a3.39 3.39 0 00-.303.01c-1.591.122-3.176 1.43-3.172 3.436a3.243 3.243 0 000 .43.9.9 0 00.008.074 3.175 3.175 0 01-.588 2.398.9.9 0 00-.006.006 6.456 6.456 0 00-.728 1.287h.5a.9.9 0 01.9.9.9.9 0 01-.9.901h-.973c-.03.273-.045.55-.04.826 0 .519.06 1.025.171 1.51l2.332 1.16a.9.9 0 01.184.121c-.547-.73-.889-1.702-.889-2.799a.9.9 0 000-.013 4.678 4.678 0 01.899-2.83l-.006.006a4.976 4.976 0 00.931-3.684c0-.01 0-.02-.002-.03a1.436 1.436 0 01.002-.185.9.9 0 00.002-.074c-.008-1.14.695-1.582 1.514-1.644a2.36 2.36 0 01.303-.004c.695.036 1.293.413 1.44 1.396.019.165.02.332 0 .496a4.977 4.977 0 00.927 3.746c.3.41.53.864.681 1.342a.9.9 0 01-.023-.203.9.9 0 01.9-.9h.631a6.466 6.466 0 00-.744-1.31.9.9 0 00-.002-.003 3.175 3.175 0 01-.59-2.412.9.9 0 00.004-.031c.041-.321.041-.646 0-.967a.9.9 0 00-.002-.016c-.274-1.87-1.85-2.917-3.36-2.94zm3.223 8.897c.126.437.188.893.183 1.353a.9.9 0 000 .01c0 1.102-.352 2.085-.912 2.82a.9.9 0 01.207-.142l2.332-1.16a6.72 6.72 0 00.174-1.512 6.427 6.427 0 00-.04-.787h-1.103a.9.9 0 01-.841-.582zm-.893 4.385c-.632.726-1.48 1.164-2.379 1.164-.892 0-1.734-.426-2.363-1.137a.9.9 0 01.017.834.9.9 0 01-1.205.406l-.2-.1c.942 1.101 2.26 1.797 3.751 1.797 1.49 0 2.806-.696 3.748-1.794l-.197.097a.9.9 0 01-1.205-.406.9.9 0 01.033-.861zm-2.191-11.48a2.36 2.36 0 00-.303.003c-.819.063-1.522.505-1.514 1.645a.9.9 0 01-.002.074 1.435 1.435 0 00-.002.185l.002.03a4.976 4.976 0 01-.931 3.683l.006-.006a4.678 4.678 0 00-.899 2.83.9.9 0 010 .014c0 1.097.342 2.069.889 2.799a.9.9 0 01.203.25c.63.711 1.47 1.137 2.363 1.137.899 0 1.748-.439 2.38-1.164a.9.9 0 01.163-.202c.56-.735.912-1.718.912-2.82a.9.9 0 010-.01 4.688 4.688 0 00-.183-1.353.9.9 0 01-.035-.116 4.652 4.652 0 00-.682-1.341 4.977 4.977 0 01-.928-3.747c.021-.164.02-.331 0-.496-.146-.983-.744-1.36-1.44-1.396z")
         .fill("black")
         .stroke("none")
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     sym.viewbox(-318.198, -318.198, 21.601, 21.447);
     return sym;
 });
 
-sheet.glyphs.set("hex-flat", (canvas: SVGContainer) => {
+registerHollowOutlineToken("hex-flat", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group();
     const pHex = defineHex({orientation: Orientation.FLAT, dimensions: 100});
@@ -353,8 +472,8 @@ sheet.glyphs.set("hex-flat", (canvas: SVGContainer) => {
     group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .stroke({width: 5, color: "black"})
         .fill("none")
-        .attr("data-context-border", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "fill");
     const vbx = Math.min(...hex.corners.map(pt => pt.x));
     const vby = Math.min(...hex.corners.map(pt => pt.y));
     const vbWidth = hex.corners[1].x - hex.corners[4].x;
@@ -363,7 +482,7 @@ sheet.glyphs.set("hex-flat", (canvas: SVGContainer) => {
     return symbol;
 });
 
-sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
+registerHollowOutlineToken("hex-pointy", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group();
     const pHex = defineHex({orientation: Orientation.POINTY, dimensions: 100});
@@ -371,8 +490,8 @@ sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
     group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .stroke({width: 5, color: "black"})
         .fill("none")
-        .attr("data-context-border", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "fill");
     const vbx = Math.min(...hex.corners.map(pt => pt.x));
     const vby = Math.min(...hex.corners.map(pt => pt.y));
     const vbWidth = hex.corners[0].x - hex.corners[4].x;
@@ -381,7 +500,7 @@ sheet.glyphs.set("hex-pointy", (canvas: SVGContainer) => {
     return symbol;
 });
 
-sheet.glyphs.set("hex-pointy-m123", (canvas: SVGContainer) => {
+registerHollowOutlineToken("hex-pointy-m123", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group();
     const pHex = defineHex({orientation: Orientation.POINTY, dimensions: {width: 230.6667, height: 266.351}});
@@ -390,115 +509,115 @@ sheet.glyphs.set("hex-pointy-m123", (canvas: SVGContainer) => {
         .move(230.6667, 0)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     let pts = poly.array();
     // 3-4, 4-5, 5-0, 0-1
     group.line(...pts[3], ...pts[4])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[4], ...pts[5])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[5], ...pts[0])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[0], ...pts[1])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .move(115.33, 200)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     pts = poly.array();
     // 3-4, 4-5
     group.line(...pts[3], ...pts[4])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[4], ...pts[5])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .move(346, 200)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     pts = poly.array();
     // 5-0, 0-1
     group.line(...pts[5], ...pts[0])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[0], ...pts[1])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .move(0, 400)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     pts = poly.array();
     // 1-5
     group.line(...pts[1], ...pts[2])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[2], ...pts[3])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
         group.line(...pts[3], ...pts[4])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[4], ...pts[5])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .move(230.6667, 400)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     pts = poly.array();
     // 1-2, 2-3
     group.line(...pts[1], ...pts[2])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[2], ...pts[3])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .move(461.6667, 400)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     pts = poly.array();
     // 5-0, 0-3
     group.line(...pts[5], ...pts[0])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[0], ...pts[1])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[1], ...pts[2])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[2], ...pts[3])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     symbol.viewbox(0, -1, 692, 800);
     return symbol;
 });
 
-sheet.glyphs.set("hex-pointy-m21", (canvas: SVGContainer) => {
+registerHollowOutlineToken("hex-pointy-m21", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group();
     const pHex = defineHex({orientation: Orientation.POINTY, dimensions: {width: 230.6667, height: 266.351}});
@@ -507,96 +626,96 @@ sheet.glyphs.set("hex-pointy-m21", (canvas: SVGContainer) => {
         .move(115.33, 200)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     let pts = poly.array();
     // 2-3, 3-4, 4-5, 5-0
     group.line(...pts[2], ...pts[3])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[3], ...pts[4])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[4], ...pts[5])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[5], ...pts[0])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .move(346, 200)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     pts = poly.array();
     // 4-5, 5-0, 0-1, 1-2
     group.line(...pts[4], ...pts[5])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[5], ...pts[0])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[0], ...pts[1])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[1], ...pts[2])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     poly = group.polygon(hex.corners.map(({x,y}) => `${x},${y}`).join(" "))
         .move(230.6667, 400)
         .stroke({width: 5, color: "none"})
         .fill("none")
-        .attr("data-playerstroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "fill")
+        .attr("data-slot-fill", "fill");
     pts = poly.array();
     // 0 - 4
     group.line(...pts[0], ...pts[1])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[1], ...pts[2])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[2], ...pts[3])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
     group.line(...pts[3], ...pts[4])
         .stroke({width: 5, color: "#000", linecap: "round", linejoin: "round"})
-        .attr("data-context-border", true);
+        .attr("data-slot-stroke", "border");
 
     symbol.viewbox(0, -1, 692, 800);
     return symbol;
 });
 
-sheet.glyphs.set("hline", (canvas: SVGContainer) => {
+registerStrokeFillToken("hline", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(-10, 50, 110, 50)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
-sheet.glyphs.set("house", (canvas: SVGContainer) => {
+registerFillBorderWideToken("house", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const house = group.group();
     house.rect(66.07, 21.700001).x(0.70999998).y(17.610001)
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     house.polygon("61.74,0.5 6.78,0.5 0.71,17.61 66.78,17.61")
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     group.viewbox(-6.2550000100000025, -39.689998, 80, 80);
     return group;
 });
 
-sheet.glyphs.set("humpback", (canvas: SVGContainer) => {
+registerDiscToken("humpback", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group()
         .translate(-1.2598957,-39.034928)
@@ -604,296 +723,182 @@ sheet.glyphs.set("humpback", (canvas: SVGContainer) => {
     group.path("M 174.76747 130.62698 C 172.65279 130.58883 169.35984 131.47715 165.63218 132.97434 C 158.17679 135.96867 149.21236 141.17828 140.18426 142.44164 C 128.42111 144.08768 116.44175 139.02606 107.65465 135.77668 C 103.44402 134.21963 99.925399 133.19469 98.441482 133.07818 C 98.444082 133.14137 98.436182 133.11688 98.441482 133.19158 C 98.442848 133.21069 98.540645 133.70344 99.504488 134.60164 C 100.46833 135.49984 102.14996 136.61798 104.30851 137.72097 C 108.62559 139.92697 114.79714 142.13052 121.28517 144.18508 C 127.77319 146.23963 134.5924 148.16916 140.44523 150.01932 C 146.29811 151.86944 150.99006 153.37639 154.31076 155.74014 C 165.23335 163.5152 176.4449 177.27096 183.07066 191.83041 C 186.38356 199.11017 188.5418 206.60135 188.65212 213.78462 C 188.76245 220.96788 186.66523 227.98658 181.47615 233.27533 C 178.5637 236.24373 175.12539 238.14319 171.5279 237.44127 C 167.93038 236.73938 165.75423 234.07599 163.99805 231.2518 C 160.4856 225.60334 157.85231 217.49068 154.02929 209.29076 C 150.2063 201.09079 145.35304 193.03741 138.5433 187.94183 C 131.73356 182.84628 123.01392 180.2838 109.67819 183.33457 C 96.148505 186.4296 79.579055 190.79203 65.562092 197.48839 C 56.509551 201.81308 48.692166 207.07744 43.211649 213.40615 C 56.164914 218.41824 71.125124 217.38278 84.742648 216.64435 C 92.18 216.24105 99.180011 215.92384 105.44393 217.14033 C 111.70783 218.35683 117.51957 221.54196 120.643 227.63922 C 125.19756 236.53026 130.39747 238.85238 134.59324 239.55499 C 138.78897 240.2576 141.78697 239.09044 141.78697 239.09044 A 4.0046649 4.0046649 0 0 1 146.97219 241.36538 A 4.0046649 4.0046649 0 0 1 144.69589 246.5506 C 144.69589 246.5506 139.64042 248.52201 133.26926 247.45511 C 126.8981 246.38825 119.01686 242.03191 113.51348 231.28869 C 111.60789 227.56879 108.75719 225.94232 103.91637 225.0022 C 99.075568 224.06209 92.528191 224.24415 85.175774 224.64285 C 71.184542 225.40155 54.144543 226.89952 38.514203 220.14079 C 37.715961 221.64473 37.031246 223.19473 36.494766 224.80271 C 32.176519 237.74569 34.414653 254.32793 40.898451 269.81512 C 47.38225 285.30236 58.053708 299.59096 69.389186 307.97128 C 87.858806 321.62591 115.8947 330.75645 141.72412 330.83957 C 140.28121 328.09809 138.9533 325.17143 137.57867 322.25764 C 135.17124 317.15506 136.04324 311.24768 137.57047 304.68936 C 139.0977 298.13102 141.6234 290.88268 144.14116 283.77903 C 146.6589 276.67534 149.17216 269.71402 150.67222 264.04237 C 152.17229 258.37075 152.12991 253.9263 151.75162 253.14042 A 4.0046649 4.0046649 0 0 1 153.62349 247.79533 A 4.0046649 4.0046649 0 0 1 156.68408 247.62317 A 4.0046649 4.0046649 0 0 1 158.96858 249.66584 C 161.31291 254.53609 160.06118 259.86346 158.41385 266.09187 C 156.76653 272.32027 154.19542 279.38718 151.69014 286.45567 C 149.18484 293.52416 146.74807 300.59107 145.37085 306.50521 C 143.99366 312.41934 144.02171 317.14342 144.82296 318.84181 C 148.03142 325.64284 151.45372 332.1336 153.82981 334.20484 C 155.01785 335.24046 155.20125 335.23222 155.8875 335.026 C 156.57377 334.81978 158.3698 333.64015 160.62321 330.31899 C 164.80443 324.15662 167.49864 311.70901 168.69003 301.07951 C 169.88135 290.45 169.84594 281.63525 169.84594 281.63525 A 4.0046649 4.0046649 0 0 1 173.8329 277.61141 A 4.0046649 4.0046649 0 0 1 177.85401 281.59973 C 177.85401 281.59973 177.89699 290.83765 176.6489 301.97309 C 175.76942 309.81996 174.37896 318.60144 171.57845 326.14349 C 175.98197 324.58167 180.13817 322.65318 183.91642 320.26006 C 195.68404 312.80653 210.03164 297.77921 220.50403 281.24585 C 230.97641 264.71246 237.40945 246.62474 235.24948 233.74262 C 233.40932 222.76794 220.22806 212.37862 206.22451 201.7773 C 199.22269 196.47666 192.16392 191.08739 186.57803 185.04521 C 180.99219 179.00308 176.75959 172.1128 176.30732 164.06383 C 175.91055 157.00267 178.16782 150.97 179.44578 145.86567 C 180.72379 140.76135 181.18769 137.0488 178.87466 133.02216 C 177.68917 130.95835 176.88211 130.66518 174.76747 130.62698 z M 136.04565 215.12909 C 136.41257 215.12075 136.78385 215.13813 137.15784 215.18238 C 140.14976 215.53634 142.40572 217.54005 143.60419 219.8525 C 144.80266 222.16493 145.1691 224.90214 144.70545 227.74169 C 144.24181 230.58124 143.01273 233.12819 141.11883 235.07479 C 139.22494 237.0214 136.41285 238.42648 133.42092 238.07252 C 130.429 237.71856 128.17304 235.71348 126.97457 233.40103 C 125.7761 231.08859 125.40693 228.35276 125.87058 225.5132 C 126.33422 222.67365 127.56603 220.12534 129.45993 218.17874 C 131.11708 216.47546 133.47717 215.18745 136.04565 215.12909 z M 135.8243 223.0907 C 135.74444 223.1009 135.54548 223.17153 135.15753 223.57028 C 134.64026 224.10195 134.04132 225.15708 133.82946 226.45461 C 133.6176 227.75212 133.856 228.90546 134.18334 229.53705 C 134.51067 230.16866 134.70019 230.16142 134.71211 230.16283 C 134.72399 230.16424 134.90396 230.21492 135.42123 229.68325 C 135.93851 229.15158 136.53745 228.0978 136.74931 226.80029 C 136.96117 225.50276 136.72276 224.34807 136.39543 223.71648 C 136.06809 223.08487 135.87857 223.09211 135.86666 223.0907 C 135.86369 223.09035 135.85092 223.0873 135.8243 223.0907 z")
         .fill("white")
         .stroke("none")
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     group.path("M 174.9123 122.61891 C 170.77793 122.54431 166.75787 123.89031 162.64674 125.5415 C 154.42452 128.84384 145.61129 133.59226 139.07207 134.50736 C 130.47339 135.71059 119.3833 131.5764 110.43104 128.26596 C 105.9549 126.61075 102.1864 125.09851 98.336275 125.00453 C 96.411211 124.95753 94.027305 125.41647 92.338082 127.24394 C 90.648856 129.07143 90.28871 131.48741 90.451179 133.76134 C 90.650513 136.5514 92.216559 138.75819 94.043263 140.46046 C 95.869967 142.16275 98.107846 143.54542 100.6645 144.85185 C 105.77784 147.46471 112.21681 149.71432 118.86677 151.82014 C 125.51671 153.92596 132.35967 155.86299 138.03092 157.65574 C 143.70219 159.44849 148.39851 161.36307 149.6666 162.26574 C 158.99378 168.9051 169.80199 182.01201 175.77992 195.14786 C 178.76886 201.7158 180.55762 208.27929 180.64406 213.90759 C 180.73046 219.53588 179.27299 224.08406 175.75806 227.66654 C 173.74398 229.7193 173.08557 229.58422 173.06092 229.57941 C 173.03622 229.57441 172.06489 229.05989 170.79827 227.023 C 168.26504 222.94921 165.34424 214.60522 161.28861 205.90635 C 157.23301 197.2075 151.88396 187.92149 143.34185 181.52964 C 134.79974 175.1378 123.0207 172.06619 107.89103 175.52735 C 94.161865 178.66805 77.109322 183.09588 62.109374 190.26186 C 47.109426 197.42786 33.840297 207.45191 28.896599 222.26954 C 23.689258 237.87736 26.505573 256.17657 33.509333 272.90576 C 40.513092 289.63497 51.762386 304.89858 64.628888 314.4108 C 86.098237 330.28311 117.82331 340.0142 147.02958 338.73969 C 147.52168 339.26906 148.0314 339.77484 148.56807 340.24266 C 151.00361 342.3657 154.67301 343.75511 158.19114 342.69795 C 161.36415 341.74448 163.92052 339.41983 166.43148 335.96877 A 4.0046649 4.0046649 0 0 0 166.69518 336.0084 C 174.41155 334.08843 181.69468 331.14684 188.2026 327.02477 C 201.54001 318.57695 216.21993 302.97621 227.2701 285.53066 C 238.32027 268.08511 245.90517 248.84456 243.15097 232.41864 C 240.50366 216.63013 224.99983 205.94521 211.05859 195.39107 C 204.08796 190.11402 197.35717 184.90579 192.45872 179.60721 C 187.5603 174.30865 184.61339 169.11374 184.30446 163.61568 C 184.02295 158.60583 185.7966 153.474 187.21474 147.80996 C 188.63289 142.14589 189.52865 135.48788 185.81972 129.03111 C 183.42415 124.86065 179.04665 122.69349 174.9123 122.61891 z M 174.76747 130.62698 C 176.88213 130.66518 177.68917 130.95835 178.87466 133.02216 C 181.18769 137.04882 180.72379 140.76133 179.44578 145.86567 C 178.1678 150.97002 175.91055 157.00265 176.30732 164.06383 C 176.75959 172.1128 180.99217 179.00306 186.57803 185.04521 C 192.16392 191.08739 199.22269 196.47664 206.22451 201.7773 C 220.2281 212.37864 233.40932 222.76792 235.24948 233.74262 C 237.40947 246.62478 230.97643 264.71244 220.50403 281.24585 C 210.03162 297.77925 195.68406 312.80651 183.91642 320.26006 C 180.13817 322.65318 175.98197 324.58167 171.57845 326.14349 C 174.37896 318.60144 175.7694 309.81998 176.6489 301.97309 C 177.89699 290.83763 177.85401 281.59973 177.85401 281.59973 A 4.0046649 4.0046649 0 0 0 173.8329 277.61141 A 4.0046649 4.0046649 0 0 0 169.84594 281.63525 C 169.84594 281.63525 169.88137 290.44998 168.69003 301.07951 C 167.49864 311.70903 164.80445 324.1566 160.62321 330.31899 C 158.3698 333.64015 156.57377 334.81978 155.8875 335.026 C 155.20123 335.23222 155.01785 335.24046 153.82981 334.20484 C 151.45372 332.1336 148.03144 325.64284 144.82296 318.84181 C 144.02171 317.14342 143.99364 312.41936 145.37085 306.50521 C 146.74807 300.59105 149.18484 293.52418 151.69014 286.45567 C 154.19544 279.38716 156.76653 272.32029 158.41385 266.09187 C 160.06118 259.86344 161.31291 254.53611 158.96858 249.66584 A 4.0046649 4.0046649 0 0 0 156.68408 247.62317 A 4.0046649 4.0046649 0 0 0 153.62349 247.79533 A 4.0046649 4.0046649 0 0 0 151.75162 253.14042 C 152.12991 253.9263 152.17229 258.37073 150.67222 264.04237 C 149.17216 269.71402 146.65892 276.67534 144.14116 283.77903 C 141.6234 290.8827 139.0977 298.13102 137.57047 304.68936 C 136.04324 311.2477 135.17124 317.15504 137.57867 322.25764 C 138.9533 325.17143 140.28121 328.09809 141.72412 330.83957 C 115.89466 330.75645 87.858844 321.62593 69.389186 307.97128 C 58.053686 299.59094 47.382262 285.30238 40.898451 269.81512 C 34.414641 254.32789 32.176511 237.74571 36.494766 224.80271 C 37.031246 223.19473 37.715959 221.64473 38.514203 220.14079 C 54.144573 226.89954 71.184514 225.40155 85.175774 224.64285 C 92.528205 224.24415 99.075556 224.06209 103.91637 225.0022 C 108.75719 225.94232 111.60789 227.56879 113.51348 231.28869 C 119.01688 242.03193 126.89808 246.38823 133.26926 247.45511 C 139.64044 248.52201 144.69589 246.5506 144.69589 246.5506 A 4.0046649 4.0046649 0 0 0 146.97219 241.36538 A 4.0046649 4.0046649 0 0 0 141.78697 239.09044 C 141.78697 239.09044 138.78899 240.2576 134.59324 239.55499 C 130.39747 238.85238 125.19758 236.53028 120.643 227.63922 C 117.51957 221.54196 111.70785 218.35683 105.44393 217.14033 C 99.180001 215.92384 92.180016 216.24105 84.742648 216.64435 C 71.125098 217.38278 56.16494 218.41826 43.211649 213.40615 C 48.692176 207.07744 56.509531 201.8131 65.562092 197.48839 C 79.579083 190.79201 96.148481 186.42962 109.67819 183.33457 C 123.01394 180.2838 131.73354 182.84626 138.5433 187.94183 C 145.35306 193.03741 150.20628 201.09079 154.02929 209.29076 C 157.85231 217.4907 160.4856 225.60334 163.99805 231.2518 C 165.75425 234.07601 167.93038 236.73936 171.5279 237.44127 C 175.12541 238.14319 178.5637 236.24373 181.47615 233.27533 C 186.66523 227.98656 188.76245 220.9679 188.65212 213.78462 C 188.5418 206.60133 186.38356 199.11017 183.07066 191.83041 C 176.44488 177.27092 165.23337 163.5152 154.31076 155.74014 C 150.99006 153.37637 146.29811 151.86946 140.44523 150.01932 C 134.59238 148.16916 127.77321 146.23963 121.28517 144.18508 C 114.79712 142.13052 108.62561 139.92697 104.30851 137.72097 C 102.14996 136.61798 100.46833 135.49984 99.504488 134.60164 C 98.540643 133.70344 98.442848 133.21069 98.441482 133.19158 C 98.436182 133.11688 98.444082 133.14137 98.441482 133.07818 C 99.925401 133.19469 103.444 134.21963 107.65465 135.77668 C 116.44177 139.02606 128.42109 144.08768 140.18426 142.44164 C 149.21238 141.17826 158.17679 135.96869 165.63218 132.97434 C 169.35986 131.47715 172.65279 130.58883 174.76747 130.62698 z")
         .fill("black")
-        .stroke("none");
+        .stroke("none")
+        .attr("data-slot-fill", "border");
     group.path("m 137.15773,215.18142 c -2.99193,-0.35396 -5.80391,1.05076 -7.6978,2.99737 -1.8939,1.9466 -3.12617,4.49488 -3.58982,7.33443 -0.46365,2.83956 -0.0942,5.57536 1.10432,7.88781 1.19846,2.31245 3.45383,4.31666 6.44575,4.67062 2.99193,0.35396 5.8039,-1.05076 7.69779,-2.99737 1.8939,-1.94659 3.12393,-4.49317 3.58758,-7.33273 0.46364,-2.83955 0.0964,-5.57706 -1.10207,-7.8895 -1.19847,-2.31245 -3.45383,-4.31667 -6.44575,-4.67063 z m -1.29138,7.90893 c 0.0119,0.001 0.20107,-0.005 0.5284,0.62643 0.32734,0.63159 0.56642,1.78598 0.35456,3.08351 -0.21186,1.29752 -0.81141,2.35074 -1.32868,2.8824 -0.51728,0.53168 -0.69718,0.48143 -0.70907,0.48003 -0.0119,-0.001 -0.20107,0.005 -0.5284,-0.62643 -0.32734,-0.63158 -0.56674,-1.78406 -0.35488,-3.08157 0.21186,-1.29753 0.81173,-2.35267 1.329,-2.88434 0.51727,-0.53167 0.69719,-0.48143 0.70907,-0.48003 z")
         .fill("black")
-        .stroke("none");
+        .stroke("none")
+        .attr("data-slot-fill", "border");
     symbol.viewbox(8.0985, 7.34, 83.374, 83.374);
     return symbol;
 });
 
-sheet.glyphs.set("katanas", (canvas: SVGContainer) => {
+registerDiscToken("katanas", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     sym.path("M37.895,37.511c-2.133-1.492-3.155-2.271-5.113-3.878c-0.32,0.472-0.693,0.936-1.135,1.347c-0.291,0.269-0.604,0.507-0.928,0.728c-0.229,0.156-0.463,0.285-0.699,0.414c2.154,1.818,3.285,2.696,5.652,4.377c0.881,0.586,2.121,0.377,2.729-0.459C39.011,39.206,38.765,38.077,37.895,37.511z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.path("M31.782,32.547c0.033-0.051,0.074-0.1,0.107-0.152c0.25-0.4,0.463-0.803,0.612-1.186c0.173-0.443,0.284-0.846,0.345-1.147c0.062-0.298,0.072-0.493,0.072-0.493s-0.195,0.012-0.492,0.073c-0.302,0.06-0.703,0.171-1.148,0.344c-0.514,0.2-1.061,0.509-1.592,0.886c-0.164-0.121-0.334-0.229-0.496-0.353c-2.02-1.533-3.941-3.176-5.788-4.896c-0.734,0.761-1.491,1.512-2.267,2.252c2.012,1.867,4.131,3.617,6.371,5.213c-0.318,0.479-0.58,0.964-0.757,1.422c-0.172,0.445-0.282,0.848-0.342,1.148c-0.062,0.299-0.072,0.494-0.072,0.494s0.195-0.01,0.494-0.072c0.302-0.059,0.705-0.17,1.149-0.342c0.375-0.146,0.769-0.365,1.162-0.613c0.222-0.141,0.444-0.279,0.662-0.444c0.307-0.233,0.607-0.481,0.885-0.759C31.111,33.498,31.472,33.026,31.782,32.547z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.path("M4.691,7.622c0.175,0.265,0.354,0.535,0.537,0.811c3.65,5.515,7.659,10.931,12.23,15.783c0.758-0.724,1.513-1.472,2.262-2.241c-3.486-3.659-6.683-7.6-9.646-11.707C9.209,9.069,8.465,7.886,7.751,6.812C6.412,5.091,5.1,3.437,3.619,1.793C3.317,1.458,2.185,0.58,2.094,0.102C2.096,0.111,2.266,1,2.722,2.495C3.22,4.128,3.646,6.241,4.691,7.622z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.polygon("38.248,0 38.244,0.006 38.657,0.084")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.path("M9.184,34.981c-0.442-0.411-0.815-0.875-1.135-1.347c-1.958,1.608-2.981,2.386-5.114,3.878c-0.867,0.566-1.113,1.693-0.506,2.529c0.374,0.514,0.988,0.791,1.611,0.791c0.388,0,0.78-0.108,1.118-0.334c2.367-1.68,3.498-2.558,5.653-4.375c-0.235-0.129-0.47-0.258-0.7-0.414C9.788,35.489,9.473,35.25,9.184,34.981z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.path("M22.688,24.942c4.859-5.033,9.082-10.718,12.916-16.509c0.183-0.276,0.361-0.547,0.537-0.811c1.045-1.381,1.47-3.494,1.969-5.127c0.457-1.496,0.627-2.384,0.628-2.393c-0.091,0.479-1.224,1.356-1.525,1.691c-1.481,1.644-2.793,3.297-4.132,5.019c-0.714,1.074-1.458,2.258-2.322,3.457c-3.16,4.379-6.582,8.569-10.342,12.429c-0.743,0.762-1.502,1.51-2.273,2.245c-2.065,1.968-4.22,3.845-6.503,5.578c-0.162,0.123-0.331,0.233-0.495,0.353c-0.532-0.377-1.08-0.686-1.592-0.885c-0.444-0.174-0.847-0.285-1.148-0.345c-0.298-0.062-0.493-0.073-0.493-0.073s0.011,0.195,0.073,0.493c0.059,0.302,0.171,0.703,0.344,1.147c0.149,0.383,0.363,0.785,0.613,1.186c0.032,0.053,0.073,0.102,0.107,0.153c0.311,0.478,0.672,0.95,1.094,1.374c0.277,0.277,0.577,0.525,0.884,0.759c0.217,0.165,0.441,0.304,0.663,0.444c0.393,0.248,0.786,0.467,1.162,0.613c0.445,0.172,0.848,0.283,1.149,0.342c0.298,0.062,0.494,0.072,0.494,0.072s-0.01-0.195-0.072-0.494c-0.059-0.301-0.17-0.705-0.342-1.148c-0.178-0.457-0.438-0.943-0.758-1.419c2.511-1.79,4.865-3.775,7.093-5.898C21.186,26.457,21.947,25.709,22.688,24.942z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#000");
     sym.viewbox(1.094, -1, 38.645, 42.832);
     return sym;
 });
 
-sheet.glyphs.set("meeple", (canvas: SVGContainer) => {
+registerHollowOutlineToken("meeple", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const meeple = group.group();
     meeple.path("M256 54.99c-27 0-46.418 14.287-57.633 32.23-10.03 16.047-14.203 34.66-15.017 50.962-30.608 15.135-64.515 30.394-91.815 45.994-14.32 8.183-26.805 16.414-36.203 25.26C45.934 218.28 39 228.24 39 239.99c0 5 2.44 9.075 5.19 12.065 2.754 2.99 6.054 5.312 9.812 7.48 7.515 4.336 16.99 7.95 27.412 11.076 15.483 4.646 32.823 8.1 47.9 9.577-14.996 25.84-34.953 49.574-52.447 72.315C56.65 378.785 39 403.99 39 431.99c0 4-.044 7.123.31 10.26.355 3.137 1.256 7.053 4.41 10.156 3.155 3.104 7.017 3.938 10.163 4.28 3.146.345 6.315.304 10.38.304h111.542c8.097 0 14.026.492 20.125-3.43 6.1-3.92 8.324-9.275 12.67-17.275l.088-.16.08-.166s9.723-19.77 21.324-39.388c5.8-9.808 12.097-19.576 17.574-26.498 2.74-3.46 5.304-6.204 7.15-7.754.564-.472.82-.56 1.184-.76.363.2.62.288 1.184.76 1.846 1.55 4.41 4.294 7.15 7.754 5.477 6.922 11.774 16.69 17.574 26.498 11.6 19.618 21.324 39.387 21.324 39.387l.08.165.088.16c4.346 8 6.55 13.323 12.61 17.254 6.058 3.93 11.974 3.45 19.957 3.45H448c4 0 7.12.043 10.244-.304 3.123-.347 6.998-1.21 10.12-4.332 3.12-3.122 3.984-6.997 4.33-10.12.348-3.122.306-6.244.306-10.244 0-28-17.65-53.205-37.867-79.488-17.493-22.74-37.45-46.474-52.447-72.315 15.077-1.478 32.417-4.93 47.9-9.576 10.422-3.125 19.897-6.74 27.412-11.075 3.758-2.168 7.058-4.49 9.81-7.48 2.753-2.99 5.192-7.065 5.192-12.065 0-11.75-6.934-21.71-16.332-30.554-9.398-8.846-21.883-17.077-36.203-25.26-27.3-15.6-61.207-30.86-91.815-45.994-.814-16.3-4.988-34.915-15.017-50.96C302.418 69.276 283 54.99 256 54.99z")
         .stroke({width: 5, color: "black"})
         .fill("none")
-        .attr("data-context-border", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "fill");
     group.viewbox(36, 39.236, 440, 440);
     return group;
 });
 
 // orb with no highlights
-sheet.glyphs.set("orb", (canvas: SVGContainer, color?:string) => {
-    if (color === undefined) { color = "#fff"; }
-    const rgb = convert_hex.rgb(color);
-    let col = lighten(rgb, 3, 1);
-    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    col = lighten(rgb, 4, -1);
-    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+registerProceduralOrb("orb", "orb", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    fnv.seed("aprender_orb4");
-    const colorhash = fnv.hash(color);
-    const radialGradient = group.gradient('radial', (add) => {
-        add.stop({offset: 0, color: color1});
-        add.stop({offset: 1, color: color2});
-    })
-    .attr({
-        cx: 273,
-        cy: 202,
-        r: 310,
-        fx: 315,
-        fy: 142,
-        gradientUnits: "userSpaceOnUse"
-    }).id('radialGradient-' + colorhash.hex());
     group.circle(488)
-        .fill(radialGradient)
+        .attr("data-slot-fill", "fill")
+        .fill("none")
         .center(250, 250);
     group.viewbox(0, 0, 500, 500);
     return group;
 });
 
-// // Original "orb" tweaked abit.
-// sheet.glyphs.set("orb0", (canvas: SVGContainer, color?: string) => {
-//     if (color === undefined) { color = "#fff"; }
-//     const group = canvas.symbol();
-//     const gradient = group.gradient("radial", (add) => {
-//         add.stop({offset: 0, color: "666"});
-//         add.stop({offset: 1, color: "white"});
-//     });
-//     gradient.from(25, 25).to(40, 40).radius(60).attr({gradientUnits: "userSpaceOnUse"});
-//     const rect = group.rect(sheet.cellsize, sheet.cellsize).fill(gradient);
-//     const mask = group.mask().add(rect);
-//     const border = 0;
-//     group.circle(sheet.cellsize)
-//         .fill(color)
-//         .stroke({width: border, color: "#000"})
-//         .center(sheet.cellsize / 2, sheet.cellsize / 2);
-//     const circle = group.circle(sheet.cellsize)
-//         .attr("data-playerfill", true)
-//         .fill(color)
-//         .stroke({width: border, color: "#000"})
-//         .center(sheet.cellsize / 2, sheet.cellsize / 2);
-//     circle.maskWith(mask);
-//     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
-//     return group;
-// });
-
 // orb with three small highlights
-sheet.glyphs.set("orb1", (canvas: SVGContainer, color?:string) => {
-    if (color === undefined) { color = "#fff"; }
-    const rgb = convert_hex.rgb(color);
-    let col = lighten(rgb, 3, 1);
-    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    col = lighten(rgb, 4, -1);
-    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+registerProceduralOrb("orb1", "orb1", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    fnv.seed("aprender_orb1");
-    const colorhash = fnv.hash(color);
-    const radialGradient = group.gradient('radial', (add) => {
-        add.stop({offset: 0, color: color1});
-        add.stop({offset: 1, color: color2});
-    })
-    .attr({
-        cx: 238,
-        cy: 234,
-        r: 319,
-        fx: 260,
-        fy: 57,
-        gradientUnits: "userSpaceOnUse"
-    }).id('radialGradient-' + colorhash.hex());
-    const radialGradient2 = group.gradient('radial', (add) => {
-        add.stop({offset: "0%", color: "white"});
-        add.stop({offset: "20%", color: "white"});
-        add.stop({offset: "100%", color: "white", opacity: 0});
-    })
-    .attr({
-        cx: "50%",
-        cy: "50%",
-        r: "50%",
-        fx: "50%",
-        fy: "50%"
-    }).id('radialGradient2-' + colorhash.hex());
-    const radialGradient3 = group.gradient('radial', (add) => {
-        add.stop({offset: "0%", color: "white"});
-        add.stop({offset: "40%", color: "white"});
-        add.stop({offset: "100%", color: "white", opacity: 0});
-    })
-    .attr({
-        cx: "50%",
-        cy: "50%",
-        r: "50%",
-        fx: "50%",
-        fy: "50%"
-    }).id('radialGradient3-' + colorhash.hex());
     group.circle(500)
-        .fill(radialGradient)
+        .attr("data-slot-fill", "fill")
+        .fill("none")
         .center(250, 250);
     group.circle(60)
-        .fill(radialGradient2)
+        .attr("data-orb-specular", "2")
+        .fill("none")
         .center(260, 57);
     group.circle(50)
-        .fill(radialGradient2)
+        .attr("data-orb-specular", "2")
+        .fill("none")
         .center(317, 234);
     group.circle(40)
-        .fill(radialGradient3)
+        .attr("data-orb-specular", "3")
+        .fill("none")
         .center(212, 183);
     group.viewbox(0, 0, 500, 500);
     return group;
 });
 
 // orb with one big highlight
-sheet.glyphs.set("orb2", (canvas: SVGContainer, color?:string) => {
-    if (color === undefined) { color = "#fff"; }
-    const rgb = convert_hex.rgb(color);
-    let col = lighten(rgb, 3, 1);
-    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    col = lighten(rgb, 4, -1);
-    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    col = lighten(rgb, 3, 2.5);
-    const color3 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+registerProceduralOrb("orb2", "orb2", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    fnv.seed("aprender");
-    const colorhash = fnv.hash(color);
-    const radialGradient = group.gradient('radial', (add) => {
-        add.stop({offset: 0, color: color1});
-        add.stop({offset: 1, color: color2});
-    })
-    .attr({
-        cx: 250,
-        cy: 250,
-        r: 260,
-        fx: 250,
-        fy: 0,
-        gradientUnits: "userSpaceOnUse"
-    }).id('radialGradient-' + colorhash.hex());
     group.circle(474)
-        .fill(radialGradient)
-        .center(250, 250).rotate(-15, 250, 250).scale(1.055, 250, 250);
+        .attr("data-slot-fill", "fill")
+        .fill("none")
+        .center(250, 250)
+        .rotate(-15, 250, 250)
+        .scale(1.055, 250, 250);
     group.path("m 250,29.76036708 C 208.03927425,29.76036708 149.00322961999998,46.34446681 138.92567018,90.91210835 129.79170578553774,131.3067349850691 214.44670241,137.34815697 250,137.34815697 285.55329759,137.34815697 370.2082942144622,131.3067349850691 361.07432982,90.91210835 350.99677038,46.34446681  291.96072575,29.76036708 250,29.76036708 Z")
-        .fill(color3).rotate(-15, 250, 250).scale(1.055, 250, 250);
+        .attr("data-slot-fill", "detail")
+        .fill("none")
+        .rotate(-15, 250, 250)
+        .scale(1.055, 250, 250);
     group.viewbox(0, 0, 500, 500);
     return group;
 });
 
 // orb with big "rectangular" highlight
-sheet.glyphs.set("orb3", (canvas: SVGContainer, color?:string) => {
-    if (color === undefined) { color = "#fff"; }
-    const rgb = convert_hex.rgb(color);
-    let col = lighten(rgb, 3, 1);
-    const color1 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    col = lighten(rgb, 4, -1);
-    const color2 = '#' + convert_rgb.hex(col[0], col[1], col[2])
-    col = lighten(rgb, 3, 2.5);
-    const color3 = '#' + convert_rgb.hex(col[0], col[1], col[2])
+registerProceduralOrb("orb3", "orb3", (canvas: SVGContainer) => {
     const group = canvas.symbol();
-    fnv.seed("aprender_orb3");
-    const colorhash = fnv.hash(color);
-    const radialGradient = group.gradient('radial', (add) => {
-        add.stop({offset: 0, color: color1});
-        add.stop({offset: 1, color: color2});
-    })
-    .attr({
-        cx: 273,
-        cy: 202,
-        r: 310,
-        fx: 315,
-        fy: 142,
-        gradientUnits: "userSpaceOnUse"
-    }).id('radialGradient-' + colorhash.hex());
     group.circle(488)
-        .fill(radialGradient)
+        .attr("data-slot-fill", "fill")
+        .fill("none")
         .center(250, 250);
     group.path("m 246.84401,101.87487 c 49.7662,7.31974 95.67026,30.17926 123.93914,62.74526 -7.92756,17.26713 -28.73365,45.93875 -41.19813,60.50436 -25.77963,-20.97825 -70.89709,-42.49219 -107.21856,-54.81591 4.81312,-19.48619 15.36723,-49.03013 24.47755,-68.43371 z")
-        .fill(color3);
+        .attr("data-slot-fill", "detail")
+        .fill("none");
     group.viewbox(0, 0, 500, 500);
     return group;
 });
 
-sheet.glyphs.set("orca", (canvas: SVGContainer, color?: string) => {
-    // if (color === undefined) { color = "#fff"; }
-    // const rgb = convert_hex.rgb(color);
-    // const col = darken(rgb, 3, 1);
-    // const contrast = '#' + convert_rgb.hex(col[0], col[1], col[2]);
-    color = "#fff";
-    const contrast = "#000";
-    const symbol = canvas.symbol();
-    symbol.path("m 12.779531,42.31432 c 11.33529,5.581201 26.599599,-2.046907 30.403686,5.379061 3.804079,7.425966 9.89518,5.05149 9.89518,5.05149 l 4.5838,3.246346 c 2.059459,4.27847 -7.782935,21.00749 -5.355956,26.15194 0.894719,1.89658 1.921532,3.9625 2.816871,5.4179 C 44.28576,88.276477 32.14032,84.439577 24.24631,78.603557 15.092768,71.836357 7.6658,56.249667 11.268516,45.451348 11.59945,44.56263 12.036376,43.577603 12.779531,42.31432 Z")
-        .fill(color)
-        .stroke("none")
-        .attr("data-playerfill", true);
-    symbol.path("m 50.719223,42.357639 c -1.126149,-0.133229 -2.185026,0.395068 -2.89881,1.128716 -0.713783,0.733648 -1.178208,1.694414 -1.353106,2.765558 -0.174897,1.071144 -0.03588,2.103301 0.415809,2.97483 0.451688,0.87153 1.30118,1.625597 2.427328,1.758826 1.126149,0.13323 2.185027,-0.395067 2.89881,-1.128715 0.713783,-0.733648 1.178208,-1.694415 1.353106,-2.765558 0.174898,-1.071144 0.03588,-2.103301 -0.415808,-2.97483 -0.451689,-0.87153 -1.301181,-1.625598 -2.427329,-1.758827 z m -0.483442,2.960791 c 0.0099,0.0012 0.08569,0.0031 0.211079,0.245033 0.125392,0.241944 0.214924,0.68159 0.134336,1.175145 -0.08059,0.493554 -0.307578,0.895755 -0.50573,1.099421 -0.198152,0.203667 -0.271334,0.185996 -0.281265,0.184821 -0.0099,-0.0012 -0.08601,-0.0011 -0.211393,-0.243105 -0.125392,-0.241943 -0.214925,-0.68159 -0.134338,-1.175144 0.08059,-0.493555 0.30758,-0.895755 0.505731,-1.099422 0.198152,-0.203667 0.271649,-0.187924 0.28158,-0.186749 z")
-        .fill(color)
-        .stroke("none")
-        .attr("data-playerfill", true);
-    symbol.path("M 64.94539 10.347689 C 63.740187 10.325948 61.578425 11.155269 59.255815 12.201322 C 56.933204 13.247375 54.421022 14.458252 51.863501 14.81615 C 47.420284 15.437896 42.891755 13.526047 39.568127 12.296924 C 37.940532 11.695016 36.580117 11.300343 36.039144 11.271663 C 36.035784 11.320763 36.055565 11.209442 36.064465 11.334192 C 36.065343 11.346484 36.10453 11.53561 36.470642 11.876794 C 36.836754 12.21798 37.474095 12.641083 38.291203 13.058634 C 39.925418 13.89374 42.260971 14.726773 44.7151 15.503963 C 47.16923 16.281153 49.7479 17.011385 51.961169 17.711064 C 54.174441 18.410742 55.948997 18.981871 57.20116 19.873206 C 61.329311 22.811745 65.567544 28.013402 68.072331 33.517334 C 69.324722 36.269299 70.140073 39.100548 70.181763 41.814502 C 70.22345 44.528457 69.432399 47.178644 67.472884 49.17581 C 66.373 50.296822 65.076831 51.010449 63.722725 50.746257 C 63.553463 50.713232 63.39236 50.668767 63.239034 50.613965 C 62.165747 50.230351 61.465072 49.345408 60.884656 48.412032 C 59.557987 46.278603 58.561716 43.209845 57.115377 40.107629 C 55.669037 37.005413 53.832422 33.958616 51.253719 32.029053 C 48.675017 30.09949 45.371176 29.128835 40.324154 30.283423 C 39.245133 30.53026 38.112168 30.804088 36.952783 31.101461 C 36.581157 31.196791 36.193672 31.310646 35.816418 31.411519 C 35.014768 31.625869 34.211889 31.84067 33.393827 32.081246 C 32.9227 32.219819 32.448678 32.379515 31.975309 32.527214 C 31.238243 32.757188 30.501396 32.986251 29.766142 33.239315 C 28.793927 33.573998 27.827515 33.927952 26.876396 34.3054 C 26.637905 34.400042 26.399623 34.494765 26.163261 34.592204 C 25.890391 34.7047 25.618928 34.818534 25.349357 34.934819 C 25.030327 35.072433 24.715265 35.213995 24.401611 35.357015 C 24.147094 35.473078 23.893489 35.58976 23.643001 35.709448 C 23.33647 35.855909 23.035847 36.007047 22.73608 36.159033 C 22.480628 36.288558 22.224886 36.418165 21.974886 36.551774 C 21.686609 36.70584 21.406157 36.865538 21.125842 37.02513 C 20.885684 37.161866 20.643919 37.297164 20.410124 37.438025 C 20.125524 37.609489 19.852517 37.787959 19.578133 37.965641 C 19.362625 38.105205 19.142974 38.242308 18.934245 38.385771 C 18.658817 38.575074 18.398623 38.772992 18.135844 38.969198 C 17.944851 39.111809 17.747141 39.250762 17.563269 39.397078 C 17.295812 39.609903 17.047822 39.832061 16.796391 40.052852 C 16.637084 40.192746 16.467784 40.327773 16.315283 40.470915 C 15.927016 40.835367 15.559529 41.209958 15.218709 41.595911 C 15.217124 41.597706 15.215126 41.599283 15.213542 41.601078 C 14.858535 42.003476 14.530343 42.417431 14.232206 42.843896 L 14.097847 43.074373 A 1.5 1.5 0 0 1 12.044743 43.609224 A 1.5 1.5 0 0 1 11.509892 41.556637 L 11.659237 41.300838 A 1.60016 1.60016 0 0 0 11.400854 41.50341 C 10.612366 42.843754 10.126676 43.934361 9.7699463 44.89235 A 1.60016 1.60016 0 0 0 9.7503092 44.94506 C 7.7713458 50.876552 8.8440662 57.815328 11.498523 64.155774 C 14.152978 70.49622 18.412615 76.280513 23.295219 79.890214 C 31.401535 85.883191 43.489857 89.750426 54.614237 89.18267 C 54.55346 89.116979 54.486605 89.059636 54.427686 88.991467 C 54.372352 88.928455 54.316023 88.867159 54.261804 88.801815 C 54.06916 88.565141 53.888015 88.315309 53.712484 88.060775 C 53.629503 87.943555 53.539895 87.839591 53.458752 87.718677 A 1.5 1.5 0 0 1 53.441182 87.63186 A 1.5 1.5 0 0 1 53.260315 86.730623 A 1.5 1.5 0 0 1 53.314058 86.470174 A 1.5 1.5 0 0 1 53.78018 85.770475 A 1.5 1.5 0 0 1 53.869063 85.636633 A 1.5 1.5 0 0 1 53.997221 85.610795 A 1.5 1.5 0 0 1 54.918095 85.425793 A 1.5 1.5 0 0 1 55.063306 85.455766 A 1.5 1.5 0 0 1 55.991931 86.07795 C 56.067766 86.193355 56.142409 86.296392 56.216207 86.397827 C 56.263993 86.46193 56.31182 86.527775 56.3578 86.585929 C 56.491095 86.757309 56.619228 86.908288 56.740206 87.036031 C 56.785238 87.083116 56.828653 87.127484 56.870947 87.168323 C 56.987671 87.282279 57.097114 87.378677 57.194442 87.45306 C 57.232714 87.481349 57.269871 87.509041 57.303996 87.531091 C 57.370993 87.576368 57.43068 87.611765 57.482796 87.637028 C 57.544175 87.663937 57.607637 87.69207 57.640409 87.693355 C 57.821429 87.700411 58.491976 87.453765 59.570524 85.917753 A 1.50015 1.50015 0 0 1 59.635636 85.873311 C 61.216057 83.534418 62.233485 78.83533 62.683512 74.820239 C 63.134219 70.799087 63.119145 67.463066 63.119145 67.463066 A 1.5 1.5 0 0 1 64.61311 65.957214 A 1.5 1.5 0 0 1 66.118962 67.45118 C 66.118962 67.45118 66.135639 70.943427 65.663692 75.154069 C 65.3301 78.130347 64.801204 81.462165 63.736161 84.318368 C 63.740621 84.316746 63.745139 84.31534 63.749597 84.313717 C 64.353803 84.093764 64.944057 83.851463 65.523132 83.598515 C 65.785948 83.481988 66.052468 83.369781 66.307064 83.246598 C 66.518065 83.146055 66.72033 83.03989 66.924597 82.934989 C 67.441698 82.665804 67.950996 82.39104 68.413912 82.097831 C 72.867437 79.276977 78.294103 73.590778 82.255961 67.335942 C 86.217819 61.081105 88.654007 54.237928 87.835982 49.359261 C 87.138537 45.199701 82.147828 41.2712 76.85164 37.261808 C 74.203546 35.257111 71.53505 33.217349 69.423669 30.933512 C 67.31229 28.649677 65.713561 26.049521 65.542769 23.009965 C 65.392916 20.343051 66.245083 18.060389 66.728743 16.128731 C 67.212404 14.197073 67.389048 12.787117 66.511702 11.259778 C 66.061231 10.475551 65.748999 10.362189 64.94539 10.347689 z M 50.300806 42.337984 C 50.438929 42.334856 50.578616 42.340968 50.719385 42.357621 C 51.84553 42.49085 52.694938 43.24516 53.146627 44.116687 C 53.598312 44.988213 53.737003 46.020044 53.562105 47.091182 C 53.387207 48.162322 52.922999 49.12326 52.209216 49.856905 C 51.495436 50.59055 50.436831 51.118748 49.310685 50.985518 C 48.18454 50.852292 47.334614 50.098499 46.882926 49.226969 C 46.43124 48.355443 46.292551 47.323098 46.467448 46.251957 C 46.642346 45.180816 47.106557 44.21988 47.820337 43.486235 C 48.444895 42.844293 49.333942 42.359881 50.300806 42.337984 z M 13.599687 44.282568 C 19.386997 46.566136 25.666825 46.16684 30.884937 45.909859 C 33.722027 45.770139 36.253068 45.713515 38.11757 46.075741 C 39.982073 46.437965 41.057862 47.052287 41.760242 48.423401 C 43.851817 52.506377 46.86026 54.174284 49.293115 54.581681 C 50.851639 54.842667 51.974485 54.657121 52.746134 54.46851 L 56.230676 56.937093 C 56.321066 57.403023 56.318876 58.814132 55.80693 60.74978 C 55.241156 62.888935 54.290729 65.519614 53.338346 68.206689 C 52.385962 70.893767 51.428827 73.63724 50.849609 76.124552 C 50.270394 78.611866 49.931825 80.859791 50.859428 82.825952 C 51.354369 83.875105 51.906223 84.836988 52.445378 85.874862 C 42.708282 85.861583 32.123162 82.436388 25.197428 77.316211 C 20.926519 74.158733 16.895967 68.765467 14.449247 62.921224 C 12.005903 57.085041 11.168482 50.841968 12.783199 45.978072 C 12.963562 45.495824 13.314442 44.85789 13.599687 44.282568 z M 50.21554 45.318681 C 50.181391 45.323304 50.102671 45.352483 49.954057 45.505233 C 49.755906 45.7089 49.529251 46.110838 49.448661 46.60439 C 49.368074 47.097944 49.457628 47.53757 49.58302 47.779513 C 49.708403 48.021515 49.784477 48.021709 49.794377 48.022909 C 49.804308 48.024084 49.877347 48.041574 50.075496 47.837907 C 50.273648 47.634241 50.500819 47.232303 50.581409 46.738749 C 50.661997 46.245197 50.572442 45.805571 50.44705 45.563627 C 50.321661 45.321694 50.245593 45.319881 50.235693 45.318681 C 50.233211 45.318387 50.226923 45.31714 50.21554 45.318681 z")
-        .fill(contrast)
-        .attr("data-playerfill2", true)
-        .stroke("none");
-    symbol.path("M 65.000167 7.3494222 C 62.660168 7.3072096 60.371537 8.4099562 58.025399 9.4666056 C 55.679259 10.523255 53.305816 11.585738 51.447506 11.845789 C 48.189611 12.301671 43.992812 10.734619 40.60734 9.4826253 C 38.914604 8.8566285 37.490732 8.2856081 36.039144 8.2501424 C 35.313351 8.2324095 34.416503 8.4064081 33.781401 9.0935018 C 33.146298 9.7805955 33.009043 10.689262 33.070333 11.547099 C 33.145363 12.597271 33.734441 13.428091 34.423739 14.070459 C 35.113036 14.712826 35.959686 15.236553 36.925911 15.730306 C 38.858362 16.717811 41.293923 17.568892 43.808695 18.365287 C 46.323468 19.161682 48.911577 19.894211 51.056832 20.572388 C 53.202086 21.250563 54.977326 21.972387 55.460697 22.316467 C 58.991281 24.829641 63.079635 29.788945 65.341748 34.759635 C 66.472804 37.24498 67.150755 39.730023 67.183496 41.861528 C 67.216236 43.993032 66.662318 45.716071 65.329862 47.074129 C 64.566473 47.852181 64.312695 47.805859 64.296851 47.802767 C 64.281011 47.799667 63.911733 47.599957 63.431787 46.828149 C 62.471894 45.284536 61.36754 42.129096 59.834074 38.840007 C 58.300608 35.550916 56.278605 32.042229 53.051025 29.627132 C 49.823447 27.212036 45.375463 26.051264 39.656494 27.35957 C 30.569169 29.43839 17.550303 32.82349 11.753805 41.146326 A 1.50015 1.50015 0 0 0 11.691276 41.246061 L 11.509892 41.556637 A 1.5 1.5 0 0 0 12.044743 43.609224 A 1.5 1.5 0 0 0 14.097847 43.074373 L 14.232206 42.843896 C 18.998139 36.026527 31.375746 32.330464 40.324154 30.283423 C 45.371181 29.128834 48.675014 30.099488 51.253719 32.029053 C 53.832425 33.958618 55.669036 37.00541 57.115377 40.107629 C 58.561718 43.209848 59.557986 46.278601 60.884656 48.412032 C 61.54799 49.478748 62.368619 50.482062 63.722725 50.746257 C 65.076832 51.01045 66.372999 50.296823 67.472884 49.17581 C 69.432401 47.178642 70.22345 44.52846 70.181763 41.814502 C 70.140073 39.100545 69.324724 36.269302 68.072331 33.517334 C 65.567542 28.013397 61.329315 22.811748 57.20116 19.873206 C 55.948996 18.981871 54.174443 18.410743 51.961169 17.711064 C 49.747897 17.011385 47.169232 16.281154 44.7151 15.503963 C 42.260968 14.726772 39.92542 13.89374 38.291203 13.058634 C 37.474094 12.641082 36.836754 12.21798 36.470642 11.876794 C 36.10453 11.535609 36.065343 11.346484 36.064465 11.334192 C 36.055565 11.209442 36.035784 11.320763 36.039144 11.271663 C 36.580118 11.300343 37.94053 11.695016 39.568127 12.296924 C 42.891758 13.526048 47.42028 15.437897 51.863501 14.81615 C 54.421025 14.458252 56.933202 13.247376 59.255815 12.201322 C 61.578428 11.155268 63.740186 10.325948 64.94539 10.347689 C 65.749 10.362189 66.06123 10.47555 66.511702 11.259778 C 67.389048 12.787119 67.212404 14.197071 66.728743 16.128731 C 66.245082 18.060391 65.392915 20.343048 65.542769 23.009965 C 65.713561 26.049524 67.312287 28.649674 69.423669 30.933512 C 71.535052 33.217351 74.203544 35.257109 76.85164 37.261808 C 82.147833 41.271204 87.138536 45.199697 87.835982 49.359261 C 88.654008 54.237933 86.217823 61.081099 82.255961 67.335942 C 78.294099 73.590785 72.867442 79.276974 68.413912 82.097831 C 67.057284 82.957112 65.426359 83.704418 63.736161 84.318884 C 64.801318 81.462578 65.330082 78.130507 65.663692 75.154069 C 66.135639 70.943423 66.118962 67.45118 66.118962 67.45118 A 1.5 1.5 0 0 0 64.61311 65.957214 A 1.5 1.5 0 0 0 63.119145 67.463066 C 63.119145 67.463066 63.134219 70.799083 62.683512 74.820239 C 62.233484 78.835334 61.216058 83.534415 59.635636 85.873311 A 1.50015 1.50015 0 0 0 59.570524 85.917753 C 58.491975 87.453766 57.821429 87.700411 57.640409 87.693355 C 57.607637 87.69207 57.544175 87.663937 57.482796 87.637028 C 57.43068 87.611765 57.370993 87.576368 57.303996 87.531091 C 57.269871 87.509041 57.232714 87.481349 57.194442 87.45306 C 57.097114 87.378677 56.987671 87.282279 56.870947 87.168323 C 56.828653 87.127484 56.785238 87.083116 56.740206 87.036031 C 56.619228 86.908288 56.491095 86.757309 56.3578 86.585929 C 56.31182 86.527775 56.263993 86.46193 56.216207 86.397827 C 56.142409 86.296392 56.067766 86.193355 55.991931 86.07795 A 1.5 1.5 0 0 0 55.063306 85.455766 A 1.5 1.5 0 0 0 54.918095 85.425793 A 1.5 1.5 0 0 0 53.997221 85.610795 A 1.5 1.5 0 0 0 53.869063 85.636633 A 1.5 1.5 0 0 0 53.78018 85.770475 A 1.5 1.5 0 0 0 53.314058 86.470174 A 1.5 1.5 0 0 0 53.260315 86.730623 A 1.5 1.5 0 0 0 53.441182 87.63186 A 1.5 1.5 0 0 0 53.458752 87.718677 C 53.539895 87.839591 53.629503 87.943555 53.712484 88.060775 C 53.888015 88.31531 54.06916 88.565141 54.261804 88.801815 C 54.316023 88.867159 54.372352 88.928455 54.427686 88.991467 C 54.814575 89.439085 55.239489 89.83724 55.728898 90.134033 C 55.733376 90.13678 55.737848 90.139572 55.742334 90.142301 C 55.900859 90.237627 56.066278 90.321887 56.238428 90.394999 C 56.268636 90.407986 56.298801 90.421048 56.329378 90.43324 C 56.484197 90.494291 56.64528 90.544817 56.812036 90.585685 C 56.853517 90.595761 56.894944 90.605992 56.937093 90.614624 C 57.069145 90.642238 57.203849 90.665808 57.343787 90.679736 C 57.397404 90.685074 57.451217 90.684396 57.505017 90.686971 C 57.511463 90.687255 57.51716 90.689303 57.523621 90.689555 C 57.529097 90.689768 57.534171 90.688335 57.53964 90.688521 C 58.372831 90.719314 59.221038 90.428643 59.943111 89.921643 C 60.595839 89.463333 61.185511 88.841952 61.771423 88.046305 C 64.658189 87.310097 67.597993 86.164778 70.019499 84.63101 C 75.061004 81.437731 80.612937 75.538029 84.791207 68.941528 C 88.969477 62.345029 91.835563 55.069196 90.794975 48.863167 C 89.795202 42.900534 83.934702 38.860904 78.661865 34.869189 C 76.025447 32.873331 73.481042 30.903807 71.627153 28.898494 C 69.773264 26.893182 68.654008 24.924047 68.536902 22.83995 C 68.430225 20.94144 69.102493 18.99866 69.638643 16.857369 C 70.174793 14.716078 70.513338 12.20345 69.113094 9.7658122 C 68.209165 8.1921611 66.560026 7.3775615 65.000167 7.3494222 z")
-        .fill(color)
-        .stroke("none")
-        .attr("data-playerfill", true);
-    symbol.viewbox(8.775, 7.113, 82.234, 82.234);
-    return symbol;
-});
+defineGlyph(
+    sheet.name,
+    "orca",
+    {
+        slots: slotOrca,
+        colour2Slot: "detail",
+        build(canvas: SVGContainer) {
+            const color = "#fff";
+            const contrast = "#000";
+            const symbol = canvas.symbol();
+            symbol.path("m 12.779531,42.31432 c 11.33529,5.581201 26.599599,-2.046907 30.403686,5.379061 3.804079,7.425966 9.89518,5.05149 9.89518,5.05149 l 4.5838,3.246346 c 2.059459,4.27847 -7.782935,21.00749 -5.355956,26.15194 0.894719,1.89658 1.921532,3.9625 2.816871,5.4179 C 44.28576,88.276477 32.14032,84.439577 24.24631,78.603557 15.092768,71.836357 7.6658,56.249667 11.268516,45.451348 11.59945,44.56263 12.036376,43.577603 12.779531,42.31432 Z")
+                .fill(color)
+                .stroke("none")
+                .attr("data-slot-fill", "fill");
+            symbol.path("m 50.719223,42.357639 c -1.126149,-0.133229 -2.185026,0.395068 -2.89881,1.128716 -0.713783,0.733648 -1.178208,1.694414 -1.353106,2.765558 -0.174897,1.071144 -0.03588,2.103301 0.415809,2.97483 0.451688,0.87153 1.30118,1.625597 2.427328,1.758826 1.126149,0.13323 2.185027,-0.395067 2.89881,-1.128715 0.713783,-0.733648 1.178208,-1.694415 1.353106,-2.765558 0.174898,-1.071144 0.03588,-2.103301 -0.415808,-2.97483 -0.451689,-0.87153 -1.301181,-1.625598 -2.427329,-1.758827 z m -0.483442,2.960791 c 0.0099,0.0012 0.08569,0.0031 0.211079,0.245033 0.125392,0.241944 0.214924,0.68159 0.134336,1.175145 -0.08059,0.493554 -0.307578,0.895755 -0.50573,1.099421 -0.198152,0.203667 -0.271334,0.185996 -0.281265,0.184821 -0.0099,-0.0012 -0.08601,-0.0011 -0.211393,-0.243105 -0.125392,-0.241943 -0.214925,-0.68159 -0.134338,-1.175144 0.08059,-0.493555 0.30758,-0.895755 0.505731,-1.099422 0.198152,-0.203667 0.271649,-0.187924 0.28158,-0.186749 z")
+                .fill(color)
+                .stroke("none")
+                .attr("data-slot-fill", "fill");
+            symbol.path("M 64.94539 10.347689 C 63.740187 10.325948 61.578425 11.155269 59.255815 12.201322 C 56.933204 13.247375 54.421022 14.458252 51.863501 14.81615 C 47.420284 15.437896 42.891755 13.526047 39.568127 12.296924 C 37.940532 11.695016 36.580117 11.300343 36.039144 11.271663 C 36.035784 11.320763 36.055565 11.209442 36.064465 11.334192 C 36.065343 11.346484 36.10453 11.53561 36.470642 11.876794 C 36.836754 12.21798 37.474095 12.641083 38.291203 13.058634 C 39.925418 13.89374 42.260971 14.726773 44.7151 15.503963 C 47.16923 16.281153 49.7479 17.011385 51.961169 17.711064 C 54.174441 18.410742 55.948997 18.981871 57.20116 19.873206 C 61.329311 22.811745 65.567544 28.013402 68.072331 33.517334 C 69.324722 36.269299 70.140073 39.100548 70.181763 41.814502 C 70.22345 44.528457 69.432399 47.178644 67.472884 49.17581 C 66.373 50.296822 65.076831 51.010449 63.722725 50.746257 C 63.553463 50.713232 63.39236 50.668767 63.239034 50.613965 C 62.165747 50.230351 61.465072 49.345408 60.884656 48.412032 C 59.557987 46.278603 58.561716 43.209845 57.115377 40.107629 C 55.669037 37.005413 53.832422 33.958616 51.253719 32.029053 C 48.675017 30.09949 45.371176 29.128835 40.324154 30.283423 C 39.245133 30.53026 38.112168 30.804088 36.952783 31.101461 C 36.581157 31.196791 36.193672 31.310646 35.816418 31.411519 C 35.014768 31.625869 34.211889 31.84067 33.393827 32.081246 C 32.9227 32.219819 32.448678 32.379515 31.975309 32.527214 C 31.238243 32.757188 30.501396 32.986251 29.766142 33.239315 C 28.793927 33.573998 27.827515 33.927952 26.876396 34.3054 C 26.637905 34.400042 26.399623 34.494765 26.163261 34.592204 C 25.890391 34.7047 25.618928 34.818534 25.349357 34.934819 C 25.030327 35.072433 24.715265 35.213995 24.401611 35.357015 C 24.147094 35.473078 23.893489 35.58976 23.643001 35.709448 C 23.33647 35.855909 23.035847 36.007047 22.73608 36.159033 C 22.480628 36.288558 22.224886 36.418165 21.974886 36.551774 C 21.686609 36.70584 21.406157 36.865538 21.125842 37.02513 C 20.885684 37.161866 20.643919 37.297164 20.410124 37.438025 C 20.125524 37.609489 19.852517 37.787959 19.578133 37.965641 C 19.362625 38.105205 19.142974 38.242308 18.934245 38.385771 C 18.658817 38.575074 18.398623 38.772992 18.135844 38.969198 C 17.944851 39.111809 17.747141 39.250762 17.563269 39.397078 C 17.295812 39.609903 17.047822 39.832061 16.796391 40.052852 C 16.637084 40.192746 16.467784 40.327773 16.315283 40.470915 C 15.927016 40.835367 15.559529 41.209958 15.218709 41.595911 C 15.217124 41.597706 15.215126 41.599283 15.213542 41.601078 C 14.858535 42.003476 14.530343 42.417431 14.232206 42.843896 L 14.097847 43.074373 A 1.5 1.5 0 0 1 12.044743 43.609224 A 1.5 1.5 0 0 1 11.509892 41.556637 L 11.659237 41.300838 A 1.60016 1.60016 0 0 0 11.400854 41.50341 C 10.612366 42.843754 10.126676 43.934361 9.7699463 44.89235 A 1.60016 1.60016 0 0 0 9.7503092 44.94506 C 7.7713458 50.876552 8.8440662 57.815328 11.498523 64.155774 C 14.152978 70.49622 18.412615 76.280513 23.295219 79.890214 C 31.401535 85.883191 43.489857 89.750426 54.614237 89.18267 C 54.55346 89.116979 54.486605 89.059636 54.427686 88.991467 C 54.372352 88.928455 54.316023 88.867159 54.261804 88.801815 C 54.06916 88.565141 53.888015 88.315309 53.712484 88.060775 C 53.629503 87.943555 53.539895 87.839591 53.458752 87.718677 A 1.5 1.5 0 0 1 53.441182 87.63186 A 1.5 1.5 0 0 1 53.260315 86.730623 A 1.5 1.5 0 0 1 53.314058 86.470174 A 1.5 1.5 0 0 1 53.78018 85.770475 A 1.5 1.5 0 0 1 53.869063 85.636633 A 1.5 1.5 0 0 1 53.997221 85.610795 A 1.5 1.5 0 0 1 54.918095 85.425793 A 1.5 1.5 0 0 1 55.063306 85.455766 A 1.5 1.5 0 0 1 55.991931 86.07795 C 56.067766 86.193355 56.142409 86.296392 56.216207 86.397827 C 56.263993 86.46193 56.31182 86.527775 56.3578 86.585929 C 56.491095 86.757309 56.619228 86.908288 56.740206 87.036031 C 56.785238 87.083116 56.828653 87.127484 56.870947 87.168323 C 56.987671 87.282279 57.097114 87.378677 57.194442 87.45306 C 57.232714 87.481349 57.269871 87.509041 57.303996 87.531091 C 57.370993 87.576368 57.43068 87.611765 57.482796 87.637028 C 57.544175 87.663937 57.607637 87.69207 57.640409 87.693355 C 57.821429 87.700411 58.491976 87.453765 59.570524 85.917753 A 1.50015 1.50015 0 0 1 59.635636 85.873311 C 61.216057 83.534418 62.233485 78.83533 62.683512 74.820239 C 63.134219 70.799087 63.119145 67.463066 63.119145 67.463066 A 1.5 1.5 0 0 1 64.61311 65.957214 A 1.5 1.5 0 0 1 66.118962 67.45118 C 66.118962 67.45118 66.135639 70.943427 65.663692 75.154069 C 65.3301 78.130347 64.801204 81.462165 63.736161 84.318368 C 63.740621 84.316746 63.745139 84.31534 63.749597 84.313717 C 64.353803 84.093764 64.944057 83.851463 65.523132 83.598515 C 65.785948 83.481988 66.052468 83.369781 66.307064 83.246598 C 66.518065 83.146055 66.72033 83.03989 66.924597 82.934989 C 67.441698 82.665804 67.950996 82.39104 68.413912 82.097831 C 72.867437 79.276977 78.294103 73.590778 82.255961 67.335942 C 86.217819 61.081105 88.654007 54.237928 87.835982 49.359261 C 87.138537 45.199701 82.147828 41.2712 76.85164 37.261808 C 74.203546 35.257111 71.53505 33.217349 69.423669 30.933512 C 67.31229 28.649677 65.713561 26.049521 65.542769 23.009965 C 65.392916 20.343051 66.245083 18.060389 66.728743 16.128731 C 67.212404 14.197073 67.389048 12.787117 66.511702 11.259778 C 66.061231 10.475551 65.748999 10.362189 64.94539 10.347689 z M 50.300806 42.337984 C 50.438929 42.334856 50.578616 42.340968 50.719385 42.357621 C 51.84553 42.49085 52.694938 43.24516 53.146627 44.116687 C 53.598312 44.988213 53.737003 46.020044 53.562105 47.091182 C 53.387207 48.162322 52.922999 49.12326 52.209216 49.856905 C 51.495436 50.59055 50.436831 51.118748 49.310685 50.985518 C 48.18454 50.852292 47.334614 50.098499 46.882926 49.226969 C 46.43124 48.355443 46.292551 47.323098 46.467448 46.251957 C 46.642346 45.180816 47.106557 44.21988 47.820337 43.486235 C 48.444895 42.844293 49.333942 42.359881 50.300806 42.337984 z M 13.599687 44.282568 C 19.386997 46.566136 25.666825 46.16684 30.884937 45.909859 C 33.722027 45.770139 36.253068 45.713515 38.11757 46.075741 C 39.982073 46.437965 41.057862 47.052287 41.760242 48.423401 C 43.851817 52.506377 46.86026 54.174284 49.293115 54.581681 C 50.851639 54.842667 51.974485 54.657121 52.746134 54.46851 L 56.230676 56.937093 C 56.321066 57.403023 56.318876 58.814132 55.80693 60.74978 C 55.241156 62.888935 54.290729 65.519614 53.338346 68.206689 C 52.385962 70.893767 51.428827 73.63724 50.849609 76.124552 C 50.270394 78.611866 49.931825 80.859791 50.859428 82.825952 C 51.354369 83.875105 51.906223 84.836988 52.445378 85.874862 C 42.708282 85.861583 32.123162 82.436388 25.197428 77.316211 C 20.926519 74.158733 16.895967 68.765467 14.449247 62.921224 C 12.005903 57.085041 11.168482 50.841968 12.783199 45.978072 C 12.963562 45.495824 13.314442 44.85789 13.599687 44.282568 z M 50.21554 45.318681 C 50.181391 45.323304 50.102671 45.352483 49.954057 45.505233 C 49.755906 45.7089 49.529251 46.110838 49.448661 46.60439 C 49.368074 47.097944 49.457628 47.53757 49.58302 47.779513 C 49.708403 48.021515 49.784477 48.021709 49.794377 48.022909 C 49.804308 48.024084 49.877347 48.041574 50.075496 47.837907 C 50.273648 47.634241 50.500819 47.232303 50.581409 46.738749 C 50.661997 46.245197 50.572442 45.805571 50.44705 45.563627 C 50.321661 45.321694 50.245593 45.319881 50.235693 45.318681 C 50.233211 45.318387 50.226923 45.31714 50.21554 45.318681 z")
+                .fill(contrast)
+                .attr("data-slot-fill", "detail")
+                .stroke("none");
+            symbol.path("M 65.000167 7.3494222 C 62.660168 7.3072096 60.371537 8.4099562 58.025399 9.4666056 C 55.679259 10.523255 53.305816 11.585738 51.447506 11.845789 C 48.189611 12.301671 43.992812 10.734619 40.60734 9.4826253 C 38.914604 8.8566285 37.490732 8.2856081 36.039144 8.2501424 C 35.313351 8.2324095 34.416503 8.4064081 33.781401 9.0935018 C 33.146298 9.7805955 33.009043 10.689262 33.070333 11.547099 C 33.145363 12.597271 33.734441 13.428091 34.423739 14.070459 C 35.113036 14.712826 35.959686 15.236553 36.925911 15.730306 C 38.858362 16.717811 41.293923 17.568892 43.808695 18.365287 C 46.323468 19.161682 48.911577 19.894211 51.056832 20.572388 C 53.202086 21.250563 54.977326 21.972387 55.460697 22.316467 C 58.991281 24.829641 63.079635 29.788945 65.341748 34.759635 C 66.472804 37.24498 67.150755 39.730023 67.183496 41.861528 C 67.216236 43.993032 66.662318 45.716071 65.329862 47.074129 C 64.566473 47.852181 64.312695 47.805859 64.296851 47.802767 C 64.281011 47.799667 63.911733 47.599957 63.431787 46.828149 C 62.471894 45.284536 61.36754 42.129096 59.834074 38.840007 C 58.300608 35.550916 56.278605 32.042229 53.051025 29.627132 C 49.823447 27.212036 45.375463 26.051264 39.656494 27.35957 C 30.569169 29.43839 17.550303 32.82349 11.753805 41.146326 A 1.50015 1.50015 0 0 0 11.691276 41.246061 L 11.509892 41.556637 A 1.5 1.5 0 0 0 12.044743 43.609224 A 1.5 1.5 0 0 0 14.097847 43.074373 L 14.232206 42.843896 C 18.998139 36.026527 31.375746 32.330464 40.324154 30.283423 C 45.371181 29.128834 48.675014 30.099488 51.253719 32.029053 C 53.832425 33.958618 55.669036 37.00541 57.115377 40.107629 C 58.561718 43.209848 59.557986 46.278601 60.884656 48.412032 C 61.54799 49.478748 62.368619 50.482062 63.722725 50.746257 C 65.076832 51.01045 66.372999 50.296823 67.472884 49.17581 C 69.432401 47.178642 70.22345 44.52846 70.181763 41.814502 C 70.140073 39.100545 69.324724 36.269302 68.072331 33.517334 C 65.567542 28.013397 61.329315 22.811748 57.20116 19.873206 C 55.948996 18.981871 54.174443 18.410743 51.961169 17.711064 C 49.747897 17.011385 47.169232 16.281154 44.7151 15.503963 C 42.260968 14.726772 39.92542 13.89374 38.291203 13.058634 C 37.474094 12.641082 36.836754 12.21798 36.470642 11.876794 C 36.10453 11.535609 36.065343 11.346484 36.064465 11.334192 C 36.055565 11.209442 36.035784 11.320763 36.039144 11.271663 C 36.580118 11.300343 37.94053 11.695016 39.568127 12.296924 C 42.891758 13.526048 47.42028 15.437897 51.863501 14.81615 C 54.421025 14.458252 56.933202 13.247376 59.255815 12.201322 C 61.578428 11.155268 63.740186 10.325948 64.94539 10.347689 C 65.749 10.362189 66.06123 10.47555 66.511702 11.259778 C 67.389048 12.787119 67.212404 14.197071 66.728743 16.128731 C 66.245082 18.060391 65.392915 20.343048 65.542769 23.009965 C 65.713561 26.049524 67.312287 28.649674 69.423669 30.933512 C 71.535052 33.217351 74.203544 35.257109 76.85164 37.261808 C 82.147833 41.271204 87.138536 45.199697 87.835982 49.359261 C 88.654008 54.237933 86.217823 61.081099 82.255961 67.335942 C 78.294099 73.590785 72.867442 79.276974 68.413912 82.097831 C 67.057284 82.957112 65.426359 83.704418 63.736161 84.318884 C 64.801318 81.462578 65.330082 78.130507 65.663692 75.154069 C 66.135639 70.943423 66.118962 67.45118 66.118962 67.45118 A 1.5 1.5 0 0 0 64.61311 65.957214 A 1.5 1.5 0 0 0 63.119145 67.463066 C 63.119145 67.463066 63.134219 70.799083 62.683512 74.820239 C 62.233484 78.835334 61.216058 83.534415 59.635636 85.873311 A 1.50015 1.50015 0 0 0 59.570524 85.917753 C 58.491975 87.453766 57.821429 87.700411 57.640409 87.693355 C 57.607637 87.69207 57.544175 87.663937 57.482796 87.637028 C 57.43068 87.611765 57.370993 87.576368 57.303996 87.531091 C 57.269871 87.509041 57.232714 87.481349 57.194442 87.45306 C 57.097114 87.378677 56.987671 87.282279 56.870947 87.168323 C 56.828653 87.127484 56.785238 87.083116 56.740206 87.036031 C 56.619228 86.908288 56.491095 86.757309 56.3578 86.585929 C 56.31182 86.527775 56.263993 86.46193 56.216207 86.397827 C 56.142409 86.296392 56.067766 86.193355 55.991931 86.07795 A 1.5 1.5 0 0 0 55.063306 85.455766 A 1.5 1.5 0 0 0 54.918095 85.425793 A 1.5 1.5 0 0 0 53.997221 85.610795 A 1.5 1.5 0 0 0 53.869063 85.636633 A 1.5 1.5 0 0 0 53.78018 85.770475 A 1.5 1.5 0 0 0 53.314058 86.470174 A 1.5 1.5 0 0 0 53.260315 86.730623 A 1.5 1.5 0 0 0 53.441182 87.63186 A 1.5 1.5 0 0 0 53.458752 87.718677 C 53.539895 87.839591 53.629503 87.943555 53.712484 88.060775 C 53.888015 88.31531 54.06916 88.565141 54.261804 88.801815 C 54.316023 88.867159 54.372352 88.928455 54.427686 88.991467 C 54.814575 89.439085 55.239489 89.83724 55.728898 90.134033 C 55.733376 90.13678 55.737848 90.139572 55.742334 90.142301 C 55.900859 90.237627 56.066278 90.321887 56.238428 90.394999 C 56.268636 90.407986 56.298801 90.421048 56.329378 90.43324 C 56.484197 90.494291 56.64528 90.544817 56.812036 90.585685 C 56.853517 90.595761 56.894944 90.605992 56.937093 90.614624 C 57.069145 90.642238 57.203849 90.665808 57.343787 90.679736 C 57.397404 90.685074 57.451217 90.684396 57.505017 90.686971 C 57.511463 90.687255 57.51716 90.689303 57.523621 90.689555 C 57.529097 90.689768 57.534171 90.688335 57.53964 90.688521 C 58.372831 90.719314 59.221038 90.428643 59.943111 89.921643 C 60.595839 89.463333 61.185511 88.841952 61.771423 88.046305 C 64.658189 87.310097 67.597993 86.164778 70.019499 84.63101 C 75.061004 81.437731 80.612937 75.538029 84.791207 68.941528 C 88.969477 62.345029 91.835563 55.069196 90.794975 48.863167 C 89.795202 42.900534 83.934702 38.860904 78.661865 34.869189 C 76.025447 32.873331 73.481042 30.903807 71.627153 28.898494 C 69.773264 26.893182 68.654008 24.924047 68.536902 22.83995 C 68.430225 20.94144 69.102493 18.99866 69.638643 16.857369 C 70.174793 14.716078 70.513338 12.20345 69.113094 9.7658122 C 68.209165 8.1921611 66.560026 7.3775615 65.000167 7.3494222 z")
+                .fill(color)
+                .stroke("none")
+                .attr("data-slot-fill", "fill");
+            symbol.viewbox(8.775, 7.113, 82.234, 82.234);
+            return symbol;
+        },
+    },
+    sheet.glyphs,
+);
 
-sheet.glyphs.set("palace", (canvas: SVGContainer) => {
+registerFillBorderWideToken("palace", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const palace = group.group();
     palace.polygon("64.94,33.45 33.35,13.89 33.35,0.93 61.38,19.52")
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     palace.polygon("0.86,33.45 33.35,13.89 33.35,0.93 5.38,18.86")
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     palace.polygon("64.94,57.38 64.94,33.45 33.35,13.89 0.86,33.45 0.86,57.38")
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     group.viewbox(-7.1000000000000005, -21.619999999999997, 80, 80);
     return group;
 });
 
-sheet.glyphs.set("piece", (canvas: SVGContainer) => {
+registerDiscToken("piece", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.circle(sheet.cellsize)
-        .attr("data-context-border", true)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -901,11 +906,11 @@ sheet.glyphs.set("piece", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("piece-borderless", (canvas: SVGContainer) => {
+registerFillOnlyToken("piece-borderless", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 0;
     group.circle(sheet.cellsize)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#fff")
         .stroke({width: border, color: "#000", opacity: 0})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -913,54 +918,56 @@ sheet.glyphs.set("piece-borderless", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("piece-chariot", (canvas: SVGContainer) => {
+registerDiscToken("piece-chariot", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.circle(sheet.cellsize - border)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle(sheet.cellsize * 0.7)
         .fill("none")
         .stroke({width: border * 2, color: "#000"})
-        .attr("data-playerstroke2", true)
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle (border * 2)
         .fill("none")
         .stroke({width: border / 4, color: "#000"})
-        .attr("data-playerstroke2", true)
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
 
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("piece-cog", (canvas: SVGContainer) => {
+registerFillBorderWideToken("piece-cog", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 2;
     group.path("M19.19 3.757A1 1 0 0018.22 3h-4.44a1 1 0 00-.97.757l-.66 2.644a1 1 0 01-.47.623l-1.291.747a1 1 0 01-.776.095l-2.62-.75a1 1 0 00-1.142.462l-2.219 3.844a1 1 0 00.171 1.219l1.96 1.895a1 1 0 01.305.719v1.49a1 1 0 01-.305.72l-1.96 1.894a1 1 0 00-.17 1.22l2.218 3.843a1 1 0 001.141.461l2.61-.746a1 1 0 01.793.106l.963.584a1 1 0 01.43.54l.984 2.95a1 1 0 00.949.683h4.558a1 1 0 00.949-.684l.982-2.947a1 1 0 01.435-.542l.982-.587a1 1 0 01.79-.103l2.59.745a1 1 0 001.142-.461l2.222-3.848a1 1 0 00-.166-1.214l-1.933-1.896a1 1 0 01-.3-.713v-1.5a1 1 0 01.3-.713l1.933-1.896a1 1 0 00.166-1.214l-2.222-3.848a1 1 0 00-1.142-.46l-2.6.747a1 1 0 01-.774-.093l-1.31-.75a1 1 0 01-.474-.625l-.66-2.64z")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
-        .stroke({color: "#000", width: border, linejoin: "round"});
+        .stroke({color: "#000", width: border, linejoin: "round"})
+        .attr("data-slot-stroke", "border");
     group.circle(5)
         .center(16, 16)
         .attr("data-context-background", true)
-        .attr("data-playerfill2", true)
+        .attr("data-slot-fill", "border")
         .fill("#000")
-        .stroke("none")
+        .stroke("none");
     group.viewbox(2, 1, 29, 29);
     return group;
 });
 
-sheet.glyphs.set("piece-dashed", (canvas: SVGContainer) => {
+registerDiscToken("piece-dashed", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.circle(sheet.cellsize)
-        .attr("data-context-border", true)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .fill("#fff")
         .stroke({width: border, color: "#000", dasharray: "12"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -968,26 +975,27 @@ sheet.glyphs.set("piece-dashed", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("piece-horse", (canvas: SVGContainer) => {
+registerDiscToken("piece-horse", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.circle(sheet.cellsize - border)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.circle(sheet.cellsize * 0.7)
         .fill("none")
         .stroke({width: border * 2, color: "#000", dasharray: "10"})
-        .attr("data-playerstroke2", true)
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
 
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("piece-pentagon", (canvas: SVGContainer) => {
+registerDiscToken("piece-pentagon", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const border = 5;
     const R = 100;
@@ -998,10 +1006,11 @@ sheet.glyphs.set("piece-pentagon", (canvas: SVGContainer) => {
         pts.push([x,y]);
     }
     symbol.polygon(pts)
-        .attr("data_contest-border", true)
-        .attr("data-playerfill", true)
+        .attr("data-context-border", true)
+        .attr("data-slot-fill", "fill")
         .fill("#fff")
-        .stroke({width: border, color: "#000"});
+        .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border");
 
     const minX = Math.min(...pts.map(([x,]) => x));
     const maxX = Math.max(...pts.map(([x,]) => x));
@@ -1014,12 +1023,12 @@ sheet.glyphs.set("piece-pentagon", (canvas: SVGContainer) => {
     return symbol;
 });
 
-sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
+registerDiscToken("piece-square", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 2;
     group.rect(sheet.cellsize, sheet.cellsize)
-        .attr("data-playerfill", true)
-        .attr("data-context-border", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .fill("#fff")
         .stroke({width: border, color: "#000"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -1027,11 +1036,11 @@ sheet.glyphs.set("piece-square", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("piece-square-borderless", (canvas: SVGContainer) => {
+registerFillOnlyToken("piece-square-borderless", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 0;
     group.rect(sheet.cellsize, sheet.cellsize)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#fff")
         .stroke({width: border, color: "#000", opacity: 0})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -1039,12 +1048,12 @@ sheet.glyphs.set("piece-square-borderless", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("piece-square-dashed", (canvas: SVGContainer) => {
+registerDiscToken("piece-square-dashed", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.rect(sheet.cellsize, sheet.cellsize)
-        .attr("data-playerfill", true)
-        .attr("data-context-border", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .fill("#fff")
         .stroke({width: border, color: "#000", dasharray: "12"})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
@@ -1052,38 +1061,39 @@ sheet.glyphs.set("piece-square-dashed", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("piece-square-single", (canvas: SVGContainer) => {
+registerDiscToken("piece-square-single", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     const shorten = sheet.cellsize * 0.1;
     group.rect(sheet.cellsize, sheet.cellsize)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .fill("#fff")
         .stroke({width: 0})
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.line(`${shorten},0 ${sheet.cellsize - shorten},0`)
-         .attr("data-context-border", true)
+         .attr("data-slot-stroke", "border")
          .stroke({width: border, color: "#000"});
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("piece-triangle", (canvas: SVGContainer) => {
+registerDiscToken("piece-triangle", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const cellsize = 180;
     const halfcell = cellsize / 2;
     const height = 175;
     const base = 100;
     group.polygon(`${halfcell},${halfcell - height / 2} ${(halfcell) - (base / 2)},${halfcell + height / 2} ${(halfcell) + (base / 2)},${halfcell + height / 2}`)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .stroke({width: 5, color: "#000"})
-        .fill("#fff");
+        .fill("#fff")
+        .attr("data-slot-stroke", "border");
     group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
 
-sheet.glyphs.set("piece-triangle-dot", (canvas: SVGContainer) => {
+registerFillBorderWideToken("piece-triangle-dot", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const cellsize = 180;
     const halfcell = cellsize / 2;
@@ -1098,100 +1108,125 @@ sheet.glyphs.set("piece-triangle-dot", (canvas: SVGContainer) => {
     const cx = (x1 + x2 + x3) / 3;
     const cy = (y1 + y2 + y3) / 3;
     group.polygon(`${x1},${y1} ${x2},${y2} ${x3},${y3}`)
-        .attr("data-playerfill", true)
-        .attr("data-context-border", true)
+        .attr("data-slot-fill", "fill")
         .stroke({width: 5, color: "#000"})
-        .fill("#fff");
+        .fill("#fff")
+        .attr("data-slot-stroke", "border");
     group.circle(base / 3)
-        .attr("data-context-fill", true)
-        .attr("data-playerfill2", true)
+        .attr("data-slot-fill", "border")
         .fill("#000")
         .center(cx, cy);
     group.viewbox(0, 0, cellsize, cellsize);
     return group;
 });
 
-sheet.glyphs.set("plane", (canvas: SVGContainer) => {
+registerPlaneToken("plane", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const plane = group.group();
+    const borderStroke = {width: 2, color: "#000"};
     plane.path("m 250,400.26793 -18.06198,26.55853 c 0,0 -5.19828,7.27758 -15.78388,7.37211 -10.5856,0.0945 -25.61337,-1.03968 -31.18971,-3.68606 -5.57634,-2.64639 -9.16788,-6.99405 -9.73497,-12.66492 -0.56709,-5.67084 -0.94514,-5.10376 0,-12.47587 0.94514,-7.37211 10.39657,-12.75943 10.39657,-12.75943 l 27.59817,-12.28685 29.77199,-12.4759 -13.70457,-206.23014 6.616,-81.28227 11.43623,0.283543 V 69.846046 h 2.65468 M 250,400.26793 l 18.06198,26.55853 c 0,0 5.19828,7.27758 15.78388,7.37211 10.5856,0.0945 25.61337,-1.03968 31.18971,-3.68606 5.57634,-2.64639 9.16788,-6.99405 9.73497,-12.66492 0.56709,-5.67084 0.94514,-5.10376 0,-12.47587 -0.94514,-7.37211 -10.39657,-12.75943 -10.39657,-12.75943 l -27.59817,-12.28685 -29.77199,-12.4759 13.70457,-206.23014 -6.616,-81.28227 -11.43623,0.283543 V 69.846046 h -2.65468")
-        .stroke({width: 2, color: "#000"})
-        .attr("data-playerfill", true);
+        .stroke(borderStroke)
+        .fill("none")
+        .attr("data-slot-stroke", "border");
     plane.path("m 250,186.59406 h -15.95545 l -17.5099,21.65346 h -77.25742 v -21.5198 H 40.232673 c 0,0 -0.534654,-22.05446 3.20792,-34.48515 3.742576,-12.43069 5.88119,-25.5297 21.78713,-26.06435 15.90594,-0.53466 184.770807,0 184.770807,0 M 250,186.59406 h 15.95545 l 17.5099,21.65346 h 77.25742 v -21.5198 h 99.04456 c 0,0 0.53465,-22.05446 -3.20792,-34.48515 -3.74258,-12.43069 -5.88119,-25.5297 -21.78713,-26.06435 -15.90594,-0.53466 -184.77081,0 -184.77081,0")
-        .stroke({width: 2, color: "#000"})
-        .attr("data-playerfill", true);
+        .stroke(borderStroke)
+        .fill("none")
+        .attr("data-slot-stroke", "border");
     plane.path("m 139.27723,208.24752 v -21.5198 H 40.232673 c 0,0 -3.074257,25.5297 12.698019,26.19802 15.772278,0.66832 86.346538,-4.67822 86.346538,-4.67822 z m 221.44554,0 v -21.5198 h 99.04456 c 0,0 3.07425,25.5297 -12.69802,26.19802 -15.77228,0.66832 -86.34654,-4.67822 -86.34654,-4.67822 z")
-        .stroke({width: 2, color: "#000"})
-        .attr("data-playerfill", true)
+        .stroke(borderStroke)
+        .fill("none")
+        .attr("data-slot-stroke", "border");
     plane.path("m 208.49847,65.895125 41.50005,1.058333 v 2.892588 l -41.50005,1.058333 z m 83.00306,0 -41.50005,1.058333 v 2.892588 l 41.50005,1.058333 z")
-        .stroke({width: 2, color: "#000"})
-        .fill("#000");
+        .stroke(borderStroke)
+        .fill("#000")
+        .attr("data-slot-fill", "border")
+        .attr("data-slot-stroke", "border");
     plane.path("m 213.03517,110.0146 h 4.53668 v 15.89347 h -4.53668 z m 73.92966,0 h -4.53668 v 15.89347 h 4.53668 z")
-        .stroke({width: 2, color: "#000"})
-        .fill("#000");
+        .stroke(borderStroke)
+        .fill("#000")
+        .attr("data-slot-fill", "border")
+        .attr("data-slot-stroke", "border");
     plane.circle(16)
         .center(200, 410)
-        .stroke({width: 2, color: "#000"})
-        .fill("#fff");
+        .stroke(borderStroke)
+        .fill("#fff")
+        .attr("data-slot-fill", "detail")
+        .attr("data-slot-stroke", "border");
     plane.circle(16)
         .center(300, 410)
-        .stroke({width: 2, color: "#000"})
-        .fill("#fff");
+        .stroke(borderStroke)
+        .fill("#fff")
+        .attr("data-slot-fill", "detail")
+        .attr("data-slot-stroke", "border");
     plane.circle(48)
         .center(363, 157)
-        .stroke({width: 2, color: "#000"})
-        .fill("#9c5a3c");
+        .stroke(borderStroke)
+        .fill("#9c5a3c")
+        .attr("data-slot-fill", "target")
+        .attr("data-slot-stroke", "border");
     plane.circle(48)
         .center(137, 157)
-        .stroke({width: 2, color: "#000"})
-        .fill("#9c5a3c");
+        .stroke(borderStroke)
+        .fill("#9c5a3c")
+        .attr("data-slot-fill", "target")
+        .attr("data-slot-stroke", "border");
     plane.circle(32)
         .center(363, 157)
-        .stroke({width: 2, color: "#000"})
-        .fill("#fff");
+        .stroke(borderStroke)
+        .fill("#fff")
+        .attr("data-slot-fill", "detail")
+        .attr("data-slot-stroke", "border");
     plane.circle(32)
         .center(137, 157)
-        .stroke({width: 2, color: "#000"})
-        .fill("#fff");
+        .stroke(borderStroke)
+        .fill("#fff")
+        .attr("data-slot-fill", "detail")
+        .attr("data-slot-stroke", "border");
     plane.circle(16)
         .center(363, 157)
-        .stroke({width: 2, color: "#000"})
-        .fill("#ed1c24");
+        .stroke(borderStroke)
+        .fill("#ed1c24")
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border");
     plane.circle(16)
         .center(137, 157)
-        .stroke({width: 2, color: "#000"})
-        .fill("#ed1c24");
+        .stroke(borderStroke)
+        .fill("#ed1c24")
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border");
     group.viewbox(20, 20, 460, 460);
     return group;
 });
 
-sheet.glyphs.set("ring-01", (canvas: SVGContainer) => {
+registerDiscToken("ring-01", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.circle(sheet.cellsize * 0.3)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("ring-02", (canvas: SVGContainer) => {
+registerDiscToken("ring-02", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     group.circle(sheet.cellsize * 0.65)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("ring-12", (canvas: SVGContainer) => {
+registerDiscToken("ring-12", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     const hole = group.circle(sheet.cellsize * 0.3)
@@ -1202,22 +1237,23 @@ sheet.glyphs.set("ring-12", (canvas: SVGContainer) => {
     const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
     const mask = group.mask().add(bg).add(hole);
     group.circle(sheet.cellsize * 0.65)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.3)
-        .attr("data-context-border", true)
-        .fill({color: "#fff", opacity: 0})
+        .fill("none")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("ring-13", (canvas: SVGContainer) => {
+registerDiscToken("ring-13", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     const hole = group.circle(sheet.cellsize * 0.3)
@@ -1228,22 +1264,23 @@ sheet.glyphs.set("ring-13", (canvas: SVGContainer) => {
     const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
     const mask = group.mask().add(bg).add(hole);
     group.circle(sheet.cellsize)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.3)
-        .attr("data-context-border", true)
-        .fill({color: "#fff", opacity: 0})
+        .fill("none")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("ring-23", (canvas: SVGContainer) => {
+registerDiscToken("ring-23", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const border = 5;
     const hole = group.circle(sheet.cellsize * 0.65)
@@ -1254,123 +1291,125 @@ sheet.glyphs.set("ring-23", (canvas: SVGContainer) => {
     const bg = group.rect(sheet.cellsize + border, sheet.cellsize + border).move(border / 2 * -1, border / 2 * -1).fill("#fff");
     const mask = group.mask().add(bg).add(hole);
     group.circle(sheet.cellsize)
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-border", true)
         .fill("#fff")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2)
         .maskWith(mask);
     group.circle(sheet.cellsize * 0.65)
-        .attr("data-context-border", true)
-        .fill({color: "#fff", opacity: 0})
+        .fill("none")
         .stroke({width: border, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(sheet.cellsize / 2, sheet.cellsize / 2);
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
 
-sheet.glyphs.set("sphere-spiral", (canvas: SVGContainer) => {
+registerDiscToken("sphere-spiral", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const sphere = group.group();
     sphere.circle().cx(210.5).cy(210.5).radius(200)
         .stroke({width: 5, color: "black"})
-        .fill("none")
-        .attr("data-context-border", true)
-        .attr("data-playerfill", true);
+        .fill("#fff")
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border");
     sphere.path("M255.55 405.36c-35.749 7.858-73.367 6.139-108.22-5.092m167.92-19.631c-49.05 27.441-109.02 32.427-162.93 18.068-23.251-5.986-45.237-16.405-64.686-30.473m268.16-20.862c-35.076 32.734-83.252 47.924-130.47 50.353-52.85 2.354-107.76-10.846-150.17-43.395-9.533-7.546-17.938-16.147-25.736-25.455m338.45-26.274c-19.622 33.291-53.486 55.792-89.458 68.217-48.883 17.101-102.98 18.343-152.96 5.15-41.172-10.98-81.07-32.744-106.73-67.507-6.847-9.275-11.85-19.34-16.324-29.931m379.59-12.008c-11.304 28.949-33.936 52.201-60.396 67.913-41.8 25.205-91.676 34.761-140.09 32.718-47.849-2.427-95.914-16.694-134.63-45.515-25.398-19.504-46.513-46.428-53.193-78.283l-.97-3.644m396.18-11.924c-4.841 23.535-17.54 44.808-34.672 61.489-32.824 31.618-77.391 48.446-122.03 54.483-51.714 6.666-105.74-.631-152.71-23.702-31.582-15.7-60.497-39.497-76.358-71.505-7.839-15.258-11.467-32.063-12.037-49.141m395.46-28.104c3.44 21.926-.457 44.727-11.272 64.133-18.271 33.084-51.067 55.847-85.775 69.187-51.58 19.912-109.46 21.782-162.79 7.924-40.561-10.931-79.692-31.96-105.93-65.454-17.927-23.385-28.042-53.574-23.504-83.085l.397-4.174m377.4-25.704c8.345 24.193 6.99 51.682-5.187 74.343-15.488 31.155-45.102 52.817-76.348 66.587-52.527 22.102-112.67 24.811-167.36 9.284-39.276-11.16-77.313-32.762-100.87-66.866-18.198-25.643-24.767-59.756-14.595-89.819 1.709-7.223 5.807-13.596 8.632-20.413m328.27-20.447c15.439 20.262 24.25 46.355 19.699 71.838-5.751 34.641-31.935 62.235-61.625 79.061-46.445 26.056-102.51 32.539-154.46 22.61-43.271-8.265-86.32-29.103-112.53-65.559-17.491-24.374-23.858-56.955-13.685-85.538 5.591-17.098 16.356-31.894 28.837-44.671m256.16-14.371c23.24 17.696 42.024 44.313 42.08 74.456.514 31.152-19.085 59.055-43.712 76.573-43.524 30.486-100.05 38.52-151.65 28.967-39.963-7.638-80.244-26.952-103.31-61.639-17.376-24.994-19.944-59.526-5.06-86.295 13.022-25.355 36.986-43.271 62.394-55.067m141.61-6.799c32.579 11.124 64.873 32.846 76.207 66.84 8.96 26.974-1.601 57.232-22.053 76.067-32.052 30.781-78.77 41.655-122.17 38.963-41.496-3.024-84.994-19.351-109.95-54.18-15.735-22.005-18.498-52.761-4.818-76.434 19.035-34.366 58.007-52.474 95.581-57.934 42.845-5.775 90.425 3.075 122.46 33.813 17.07 16.814 25.956 43.305 16.504 66.205-12.519 31.554-45.874 48.939-77.66 55.14-42.789 7.838-91.506-1.137-122.69-33.208-17.052-17.801-23.676-46.173-11.423-68.384 16.297-31.279 52.682-46.416 86.407-48.77 33.832-2.368 71.755 7.153 93.237 35.138 12.854 16.914 12.131 42.077-2.127 57.928-23.35 27.197-63.264 34.301-97.119 27.277-25.265-5.291-52.663-21.167-58.129-48.307-4.853-24.18 14.572-45.76 35.8-54.177C200.24 23.9 239.16 26.002 262.876 49.782c12.424 12.344 12.531 33.848-.35 45.922-23.364 22.258-64.275 23.307-88.762 2.303-12.354-10.191-13.797-30.612-1.233-41.251 17.168-15.857 48.004-17.888 64.956-.751 9.527 9.354 2.823 25.231-9 28.67-11.478 4.756-30.15 3.256-34.358-10.471-1.632-9.618 14.527-15.942 19.14-7.483.08 1.48-1.48 2.402-2.803 2.362")
         .stroke({width: 2, color: "black"})
-        .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .fill("none")
     group.viewbox(0, 0, 421, 421);
     return group;
 });
 
-sheet.glyphs.set("star-outline", (canvas: SVGContainer) => {
+registerFillBorderWideToken("star-outline", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     sym.path("M11.2691 4.41115C11.5006 3.89177 11.6164 3.63208 11.7776 3.55211C11.9176 3.48263 12.082 3.48263 12.222 3.55211C12.3832 3.63208 12.499 3.89177 12.7305 4.41115L14.5745 8.54808C14.643 8.70162 14.6772 8.77839 14.7302 8.83718C14.777 8.8892 14.8343 8.93081 14.8982 8.95929C14.9705 8.99149 15.0541 9.00031 15.2213 9.01795L19.7256 9.49336C20.2911 9.55304 20.5738 9.58288 20.6997 9.71147C20.809 9.82316 20.8598 9.97956 20.837 10.1342C20.8108 10.3122 20.5996 10.5025 20.1772 10.8832L16.8125 13.9154C16.6877 14.0279 16.6252 14.0842 16.5857 14.1527C16.5507 14.2134 16.5288 14.2807 16.5215 14.3503C16.5132 14.429 16.5306 14.5112 16.5655 14.6757L17.5053 19.1064C17.6233 19.6627 17.6823 19.9408 17.5989 20.1002C17.5264 20.2388 17.3934 20.3354 17.2393 20.3615C17.0619 20.3915 16.8156 20.2495 16.323 19.9654L12.3995 17.7024C12.2539 17.6184 12.1811 17.5765 12.1037 17.56C12.0352 17.5455 11.9644 17.5455 11.8959 17.56C11.8185 17.5765 11.7457 17.6184 11.6001 17.7024L7.67662 19.9654C7.18404 20.2495 6.93775 20.3915 6.76034 20.3615C6.60623 20.3354 6.47319 20.2388 6.40075 20.1002C6.31736 19.9408 6.37635 19.6627 6.49434 19.1064L7.4341 14.6757C7.46898 14.5112 7.48642 14.429 7.47814 14.3503C7.47081 14.2807 7.44894 14.2134 7.41394 14.1527C7.37439 14.0842 7.31195 14.0279 7.18708 13.9154L3.82246 10.8832C3.40005 10.5025 3.18884 10.3122 3.16258 10.1342C3.13978 9.97956 3.19059 9.82316 3.29993 9.71147C3.42581 9.58288 3.70856 9.55304 4.27406 9.49336L8.77835 9.01795C8.94553 9.00031 9.02911 8.99149 9.10139 8.95929C9.16534 8.93081 9.2226 8.8892 9.26946 8.83718C9.32241 8.77839 9.35663 8.70162 9.42508 8.54808L11.2691 4.41115Z")
         .stroke({width: 1, linecap: "round", linejoin: "round", color: "#000"})
         .fill("#fff")
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border");
     sym.viewbox(1.657, 2, 20.685, 19.868);
     return sym;
 });
 
-sheet.glyphs.set("star-solid", (canvas: SVGContainer) => {
+registerDiscToken("star-solid", (canvas: SVGContainer) => {
     const sym = canvas.symbol();
     sym.path("M11.2691 4.41115C11.5006 3.89177 11.6164 3.63208 11.7776 3.55211C11.9176 3.48263 12.082 3.48263 12.222 3.55211C12.3832 3.63208 12.499 3.89177 12.7305 4.41115L14.5745 8.54808C14.643 8.70162 14.6772 8.77839 14.7302 8.83718C14.777 8.8892 14.8343 8.93081 14.8982 8.95929C14.9705 8.99149 15.0541 9.00031 15.2213 9.01795L19.7256 9.49336C20.2911 9.55304 20.5738 9.58288 20.6997 9.71147C20.809 9.82316 20.8598 9.97956 20.837 10.1342C20.8108 10.3122 20.5996 10.5025 20.1772 10.8832L16.8125 13.9154C16.6877 14.0279 16.6252 14.0842 16.5857 14.1527C16.5507 14.2134 16.5288 14.2807 16.5215 14.3503C16.5132 14.429 16.5306 14.5112 16.5655 14.6757L17.5053 19.1064C17.6233 19.6627 17.6823 19.9408 17.5989 20.1002C17.5264 20.2388 17.3934 20.3354 17.2393 20.3615C17.0619 20.3915 16.8156 20.2495 16.323 19.9654L12.3995 17.7024C12.2539 17.6184 12.1811 17.5765 12.1037 17.56C12.0352 17.5455 11.9644 17.5455 11.8959 17.56C11.8185 17.5765 11.7457 17.6184 11.6001 17.7024L7.67662 19.9654C7.18404 20.2495 6.93775 20.3915 6.76034 20.3615C6.60623 20.3354 6.47319 20.2388 6.40075 20.1002C6.31736 19.9408 6.37635 19.6627 6.49434 19.1064L7.4341 14.6757C7.46898 14.5112 7.48642 14.429 7.47814 14.3503C7.47081 14.2807 7.44894 14.2134 7.41394 14.1527C7.37439 14.0842 7.31195 14.0279 7.18708 13.9154L3.82246 10.8832C3.40005 10.5025 3.18884 10.3122 3.16258 10.1342C3.13978 9.97956 3.19059 9.82316 3.29993 9.71147C3.42581 9.58288 3.70856 9.55304 4.27406 9.49336L8.77835 9.01795C8.94553 9.00031 9.02911 8.99149 9.10139 8.95929C9.16534 8.93081 9.2226 8.8892 9.26946 8.83718C9.32241 8.77839 9.35663 8.70162 9.42508 8.54808L11.2691 4.41115Z")
         .stroke({width: 1, linecap: "round", linejoin: "round", color: "#000"})
         .fill("#000")
-        .attr("data-playerfill", true)
-        .attr("data-playerstroke", true);
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border");
     sym.viewbox(1.657, 2, 20.685, 19.868);
     return sym;
 });
 
-sheet.glyphs.set("tower", (canvas: SVGContainer) => {
+registerFillBorderWideToken("tower", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const tower = group.group();
     tower.polygon("32.5,0.9 60.05,18.12 64.61,32.12 32.5,12.23")
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     tower.polygon("32.5,0.9 4.94,17.46 0.83,32.12 32.5,12.23")
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     tower.polygon("64.61,32.12 32.5,12.23 0.83,32.12 0.83,78.46 64.61,78.46")
         .stroke({width: 1, color: "black"})
         .fill("none")
         .attr("data-context-stroke", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-stroke", "border");
     group.viewbox(-7.279999999999999, -0.540000000000012, 80, 80);
     return group;
 });
 
-sheet.glyphs.set("trax-corners", (canvas: SVGContainer) => {
+registerTraxToken("trax-corners", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.path("M 50,0 A 50 50 0 0 1 0,50")
         .stroke({width: 20, color: "gray"})
         .fill("none")
-        .attr("data-playerstroke", true);
+        .attr("data-slot-stroke", "fill");
     group.path("M 50,100 A 50 50 0 0 1 100,50")
         .stroke({width: 20, color: "black"})
         .fill("none")
-        .attr("data-playerstroke2", true);
+        .attr("data-slot-stroke", "detail");
     group.viewbox(0, 0, 100, 100);
     return group;
 });
 
-sheet.glyphs.set("trax-plus", (canvas: SVGContainer) => {
+registerTraxToken("trax-plus", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(50, 0, 50, 100)
         .stroke({width: 20, color: "gray"})
         .fill("none")
-        .attr("data-playerstroke", true);
+        .attr("data-slot-stroke", "fill");
     group.line(0, 50, 100, 50)
         .stroke({width: 20, color: "black"})
         .fill("none")
-        .attr("data-playerstroke2", true);
+        .attr("data-slot-stroke", "detail");
     group.viewbox(0, 0, 100, 100);
     return group;
 });
 
-sheet.glyphs.set("vline", (canvas: SVGContainer) => {
+registerStrokeFillToken("vline", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     group.line(50, -10, 50, 110)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-stroke", "fill")
         .stroke({width: 15, color: "#000"})
     group.viewbox(0,0,100,100);
     return group;
 });
 
 // Hex wedge - equilateral triangle with one vertex at the center
-sheet.glyphs.set("wedge", (canvas: SVGContainer) => {
+registerDiscToken("wedge", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     symbol.polygon("50,50 93.30127,25 93.30127,75")
-        .attr("data-playerfill", true)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "fill")
         .fill("#fff")
         .stroke({ width: 1, linejoin: "round" });
     symbol.viewbox(0, 0, 100, 100);
@@ -1378,11 +1417,11 @@ sheet.glyphs.set("wedge", (canvas: SVGContainer) => {
 });
 
 // Half hex wedge - top half of wedge
-sheet.glyphs.set("wedge-bottom-half", (canvas: SVGContainer) => {
+registerDiscToken("wedge-bottom-half", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     symbol.polygon("50,50 93.30127,25 93.30127,50")
-        .attr("data-playerfill", true)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .fill("#fff")
         .stroke({ width: 1, linejoin: "round" });
     symbol.viewbox(0, 0, 100, 100);
@@ -1390,24 +1429,25 @@ sheet.glyphs.set("wedge-bottom-half", (canvas: SVGContainer) => {
 });
 
 // Half hex wedge - top half of wedge
-sheet.glyphs.set("wedge-top-half", (canvas: SVGContainer) => {
+registerDiscToken("wedge-top-half", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     symbol.polygon("50,50 93.30127,50 93.30127,75")
-        .attr("data-playerfill", true)
-        .attr("data-playerstroke", true)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
         .fill("#fff")
         .stroke({ width: 1, linejoin: "round" });
     symbol.viewbox(0, 0, 100, 100);
     return symbol;
 });
 
-sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
+registerDiscToken("wyke-1", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -1415,13 +1455,14 @@ sheet.glyphs.set("wyke-1", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
+registerDiscToken("wyke-2", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -1430,13 +1471,14 @@ sheet.glyphs.set("wyke-2", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
+registerDiscToken("wyke-3", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -1446,13 +1488,14 @@ sheet.glyphs.set("wyke-3", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
+registerDiscToken("wyke-4", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
@@ -1463,13 +1506,14 @@ sheet.glyphs.set("wyke-4", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
+registerDiscToken("wyke-5", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     const filledsym = group.symbol();
@@ -1477,7 +1521,7 @@ sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
         .fill({color: "#fff", opacity: 0.25})
         .stroke({width: 0, color: "black"})
         .attr("data-context-fill", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     filledsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
     group.use(rectsym).size(50, 50).dx(50);
@@ -1488,13 +1532,14 @@ sheet.glyphs.set("wyke-5", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
+registerDiscToken("wyke-6", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     const filledsym = group.symbol();
@@ -1502,7 +1547,7 @@ sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
         .fill({color: "#fff", opacity: 0.25})
         .stroke({width: 0, color: "black"})
         .attr("data-context-fill", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     filledsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
     group.use(rectsym).size(50, 50).dx(50);
@@ -1514,13 +1559,14 @@ sheet.glyphs.set("wyke-6", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
+registerDiscToken("wyke-7", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const rectsym = group.symbol().addClass(`_wyke-internal`);
     rectsym.rect(50, 50)
         .fill("none")
-        .attr("data-playerfill", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-context-stroke", true)
+        .attr("data-slot-stroke", "border")
         .stroke({width: 1, color: "black"})
     rectsym.viewbox(-1, -1, 52, 52);
     const filledsym = group.symbol();
@@ -1528,7 +1574,7 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
         .fill({color: "#fff", opacity: 0.25})
         .stroke({width: 0, color: "black"})
         .attr("data-context-fill", true)
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     filledsym.viewbox(-1, -1, 52, 52);
     group.use(rectsym).size(50, 50);
     group.use(rectsym).size(50, 50).dx(50);
@@ -1541,42 +1587,42 @@ sheet.glyphs.set("wyke-7", (canvas: SVGContainer) => {
     return group;
 });
 
-sheet.glyphs.set("x", (canvas: SVGContainer) => {
+registerStrokeFillToken("x", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const stroke = 8;
     group.line(stroke, stroke, sheet.cellsize - stroke, sheet.cellsize - stroke)
         .stroke({ width: stroke, color: "#000", linecap: "round" })
         .attr("data-context-stroke", true)
-        .attr("data-playerstroke", true);
+        .attr("data-slot-stroke", "fill");
     group.line(sheet.cellsize - stroke, stroke, stroke, sheet.cellsize - stroke)
         .stroke({ width: stroke, color: "#000", linecap: "round" })
         .attr("data-context-stroke", true)
-        .attr("data-playerstroke", true);
+        .attr("data-slot-stroke", "fill");
     group.viewbox(0, 0, sheet.cellsize, sheet.cellsize);
     return group;
 });
 
-sheet.glyphs.set("yinyang", (canvas: SVGContainer) => {
+registerFillBorderWideToken("yinyang", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     symbol.circle(63)
-        .attr("data-context-border", true)
         .fill("none")
         .stroke({width: 4, color: "#000"})
+        .attr("data-slot-stroke", "border")
         .center(32, 32);
     symbol.path("M53.2 10.8c11.7 11.7 11.7 30.7 0 42.4c-5.9 5.9-15.4 5.9-21.2 0S26.1 37.9 32 32c5.9-5.9 5.9-15.4 0-21.2s-15.4-5.9-21.2 0C22.5-.9 41.5-.9 53.2 10.8")
         .fill("#fff")
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     symbol.path("M10.8 53.2C-.9 41.5-.9 22.5 10.8 10.8c5.9-5.9 15.4-5.9 21.2 0c5.9 5.9 5.9 15.4 0 21.2s-5.9 15.4 0 21.2s15.4 5.9 21.2 0c-11.7 11.7-30.7 11.7-42.4 0")
         .fill("#000")
-        .attr("data-playerfill2", true);
+        .attr("data-slot-fill", "border");
     symbol.circle(11.2)
         .center(42.6, 42.6)
         .fill("#000")
-        .attr("data-playerfill2", true);
+        .attr("data-slot-fill", "border");
     symbol.circle(11.2)
         .center(21.4, 21.4)
         .fill("#fff")
-        .attr("data-playerfill", true);
+        .attr("data-slot-fill", "fill");
     symbol.viewbox(-2, -2, 68, 68);
     return symbol;
 });

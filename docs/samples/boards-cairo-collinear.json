@@ -50,13 +50,17 @@
   "legend": {
     "A": {
       "name": "piece",
-      "colour": 1,
-      "scale": 0.75
+      "scale": 0.75,
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "piece",
-      "colour": 2,
-      "scale": 0.75
+      "scale": 0.75,
+      "paint": {
+        "fill": 2
+      }
     }
   },
   "pieces": "-,AB"

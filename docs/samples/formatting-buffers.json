@@ -11,16 +11,22 @@
   "legend": {
     "A1": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "B1": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "X12": [
       {
         "name": "piece",
-        "colour": 1
+        "paint": {
+          "fill": 1
+        }
       },
       {
         "text": "12",
@@ -31,7 +37,9 @@
     "Y12": [
       {
         "name": "piece",
-        "colour": 2
+        "paint": {
+          "fill": 2
+        }
       },
       {
         "text": "12",

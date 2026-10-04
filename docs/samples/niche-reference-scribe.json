@@ -8,8 +8,14 @@
     "tileSpacing": 1,
     "reference": {
       "layout": "sidebar",
-      "sides": ["left", "right"],
-      "source": ["scribe-chart-left", "scribe-chart-right"],
+      "sides": [
+        "left",
+        "right"
+      ],
+      "source": [
+        "scribe-chart-left",
+        "scribe-chart-right"
+      ],
       "rotateWithBoard": false,
       "gap": 1,
       "styles": {
@@ -23,8 +29,18 @@
     }
   },
   "legend": {
-    "P": { "name": "piece", "colour": 1 },
-    "O": { "name": "piece", "colour": 2 }
+    "P": {
+      "name": "piece",
+      "paint": {
+        "fill": 1
+      }
+    },
+    "O": {
+      "name": "piece",
+      "paint": {
+        "fill": 2
+      }
+    }
   },
   "pieces": "---------\n---------\n---------\n---------\n---------\n---------\n---------\n---------\n---------"
 }

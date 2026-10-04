@@ -64,18 +64,24 @@
   "legend": {
     "H": {
       "name": "hex-pointy-m21",
-      "colour": "#999",
-      "scale": 1.87
+      "scale": 1.87,
+      "paint": {
+        "fill": "#999"
+      }
     },
     "A": {
       "name": "hex-pointy-m123",
-      "colour": 1,
-      "scale": 1.87
+      "scale": 1.87,
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "hex-pointy-m123",
-      "colour": 2,
-      "scale": 1.87
+      "scale": 1.87,
+      "paint": {
+        "fill": 2
+      }
     }
   },
   "pieces": "-HHHH--\n-HHHHH-\nBHHAHH-\nHBHBBHH\nHHAAHB-\n-HHHHH-\n-HHHH--\n_\n_\n--A\n--A"

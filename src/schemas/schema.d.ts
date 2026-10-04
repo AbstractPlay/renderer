@@ -6,6 +6,14 @@
  */
 
 /**
+ * An individual glyph with options, used in the `legend` property.
+ */
+export type Glyph = SheetGlyph | TextGlyph;
+/**
+ * Shorthand colour or structured slot paint.
+ */
+export type PaintEntry = ColourResolvable | Gradient | SlotPaint;
+/**
  * Any colour value the renderer can resolve: player number, literal colour or pattern, or a colour function.
  */
 export type ColourResolvable = PositiveInteger | ColourLiteral | Colourfuncs;
@@ -531,31 +539,15 @@ export interface APRenderRep {
   annotations?: (AnnotationBasic | AnnotationSowing | AnnotationHomeworlds | AnnotationFreespace | AnnotationTree)[];
 }
 /**
- * An individual glyph with options, used in the `legend` property.
+ * A named glyph from a sheet. Use paint (fill, border, …); colour/colour2 are deprecated aliases.
  */
-export interface Glyph {
-  /**
-   * The name of the actual glyph. It may not contain any whitespace.
-   */
-  name?: string;
-  /**
-   * Mutually exclusive with `name`. In this case, the glyph is plain text, shrunk down to the appropriate size to fit in a cell. This is intended for very short strings, like numbers.
-   */
-  text?: string;
-  /**
-   * A hex colour, player number, named pattern, colour function, or gradient.
-   */
-  colour?: ColourResolvable | Gradient;
-  /**
-   * A hex colour, player number, named pattern, colour function, or gradient.
-   */
-  colour2?: ColourResolvable | Gradient;
+export interface SheetGlyph {
   /**
    * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
    */
   scale?: number;
   /**
-   * A number between 0 and 1 indicating how opaque to render the glyph. A value of 0 means completely transparent.
+   * Layer opacity multiplier on the placed glyph (0–1).
    */
   opacity?: number;
   /**
@@ -563,7 +555,7 @@ export interface Glyph {
    */
   rotate?: number | null;
   /**
-   * Determines how the piece (usually a text element) is reorientated after rotation is done. 'vertical' means it will always be reorientated vertically. Otherwise, it rotates along with everything else.
+   * Determines how the piece (usually a text element) is reorientated after rotation is done.
    */
   orientation?: "vertical" | "fluid";
   /**
@@ -579,26 +571,32 @@ export interface Glyph {
    */
   nudge?: {
     /**
-     * Nudge coordinate system. piece: composite/legend-nested axes (offset before this layer's rotate, scale, flip). glyph: this layer's local axes after rotate, scale, flip. When omitted, defaults to piece for text glyphs and glyph for sheet (name) glyphs.
+     * Nudge coordinate system.
      */
     relativeTo?: "piece" | "glyph";
-    /**
-     * Negative values move the glyph to the left.
-     */
     dx?: number;
-    /**
-     * Negative values move the glyph up.
-     */
     dy?: number;
   };
   /**
-   * Optional CSS font-family for text glyphs.
+   * The name of the actual glyph. It may not contain any whitespace.
    */
-  fontFamily?: string;
+  name: string;
   /**
-   * Optional CSS font-weight for text glyphs (e.g. 'bold', '700').
+   * Per-slot colours for sheet artwork slots (fill, border, detail, …).
    */
-  fontWeight?: string | number;
+  paint?: {
+    [k: string]: PaintEntry;
+  };
+  /**
+   * @deprecated
+   * Deprecated on sheet glyphs — use paint.fill instead. Still accepted at runtime during the transition to per-slot paint.
+   */
+  colour?: ColourResolvable | Gradient;
+  /**
+   * @deprecated
+   * Deprecated on sheet glyphs — use paint.border (default secondary slot) or paint.detail where the glyph defines it (e.g. dice pips). Still accepted at runtime during the transition to per-slot paint.
+   */
+  colour2?: ColourResolvable | Gradient;
 }
 /**
  * This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.
@@ -664,6 +662,75 @@ export interface GradientStop {
    */
   colour: ColourResolvable;
   opacity?: number;
+}
+/**
+ * Per-slot paint override on sheet glyphs (name).
+ */
+export interface SlotPaint {
+  /**
+   * Fill or stroke colour for this slot (channel determined by sheet artwork).
+   */
+  colour?: ColourResolvable | Gradient;
+  /**
+   * Slot-local opacity multiplier (0–1).
+   */
+  opacity?: number;
+}
+/**
+ * Plain text overlay in a cell. Use colour (optional); omit colour for automatic contrast.
+ */
+export interface TextGlyph {
+  /**
+   * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
+   */
+  scale?: number;
+  /**
+   * Layer opacity multiplier on the placed glyph (0–1).
+   */
+  opacity?: number;
+  /**
+   * A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.
+   */
+  rotate?: number | null;
+  /**
+   * Determines how the piece (usually a text element) is reorientated after rotation is done.
+   */
+  orientation?: "vertical" | "fluid";
+  /**
+   * Flips x coordinates
+   */
+  flipx?: boolean;
+  /**
+   * Flips the y coordinates
+   */
+  flipy?: boolean;
+  /**
+   * The number of units to nudge the glyph from centre.
+   */
+  nudge?: {
+    /**
+     * Nudge coordinate system.
+     */
+    relativeTo?: "piece" | "glyph";
+    dx?: number;
+    dy?: number;
+  };
+  /**
+   * Short text drawn in the cell (e.g. a numeral).
+   */
+  text: string;
+  /**
+   * Text fill colour. When omitted, the renderer picks black or white for contrast.
+   */
+  colour?: ColourResolvable | Gradient;
+  /**
+   * Optional CSS font-family for text glyphs.
+   */
+  fontFamily?: string;
+  /**
+   * Optional CSS font-weight for text glyphs.
+   */
+  fontWeight?: string | number;
 }
 /**
  * Sheet glyphs on cube faces (`cube` and cube lintels). Keys use intrinsic N/E/S/W + top.

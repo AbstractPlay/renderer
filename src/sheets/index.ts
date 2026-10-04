@@ -1,24 +1,41 @@
-import { ChessSheet } from "./chess.js";
-import { CoreSheet } from "./core.js";
-import { DiceSheet } from "./dice.js";
-import type { ISheet } from "./ISheet.js";
-import { LooneySheet } from "./looney.js";
-import { PiecepackSheet } from "./piecepack.js";
-import { StreetcarSheet } from "./streetcar.js";
-import { NatoSheet } from "./nato.js";
-import { DecktetSheet } from "./decktet.js";
-import { ArimaaSheet } from "./arimaa.js";
-import { GnosticaSheet } from "./gnostica.js";
-import { ExperimentalSheet } from "./experimental.js";
-import { DominoSheet } from "./dominoes.js";
 import { Box } from "@svgdotjs/svg.js";
+import type { ISheet } from "./ISheet.js";
+import {
+    ArimaaSheet,
+    ChessSheet,
+    contactSheets,
+    CoreSheet,
+    DecktetSheet,
+    DiceSheet,
+    DominoSheet,
+    ExperimentalSheet,
+    GnosticaSheet,
+    LooneySheet,
+    NatoSheet,
+    PiecepackSheet,
+    StreetcarSheet,
+} from "./contact/index.js";
 
-export { CoreSheet, ChessSheet, DiceSheet, LooneySheet, PiecepackSheet, StreetcarSheet, NatoSheet, DecktetSheet, ArimaaSheet, GnosticaSheet, ExperimentalSheet, DominoSheet };
+export {
+    ArimaaSheet,
+    ChessSheet,
+    CoreSheet,
+    DecktetSheet,
+    DiceSheet,
+    DominoSheet,
+    ExperimentalSheet,
+    GnosticaSheet,
+    LooneySheet,
+    NatoSheet,
+    PiecepackSheet,
+    StreetcarSheet,
+};
 export type { ISheet };
+export { defineGlyph } from "./registry/defineGlyph.js";
+export type { GlyphDefinition, GlyphDefinitionMeta, SlotMeta } from "./registry/glyphDefinition.js";
 
 const sheets = new Map<string, ISheet>();
-// Manually add each sheet to the following array
-[CoreSheet, ChessSheet, DiceSheet, DominoSheet, LooneySheet, PiecepackSheet, StreetcarSheet, NatoSheet, DecktetSheet, ArimaaSheet, GnosticaSheet, ExperimentalSheet].forEach((sheet) => {
+contactSheets.forEach((sheet) => {
     if (sheets.has(sheet.name)) {
         throw new Error("The sheet name '" + sheet.name + "' has already been used. Duplicates are not allowed.");
     }
@@ -68,4 +85,4 @@ export const calcViewBox = (box: Box, minSize?: number, alignment: "N"|"E"|"S"|"
     }
 
     return [x, y, maxSize, maxSize];
-}
+};

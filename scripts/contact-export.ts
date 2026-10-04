@@ -6,7 +6,7 @@ import {
     CONTACT_SHEET_FONT_FAMILY,
     CONTACT_SHEET_VIEWBOX_WIDTH,
     generateContactSheetSvg,
-} from "./contact.js";
+} from "./contact-sheet-lib.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 

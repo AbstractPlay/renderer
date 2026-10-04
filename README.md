@@ -18,7 +18,7 @@ The API and schema are documented on the [docs site](https://docs.abstractplay.c
 
 ## Contributing
 
-If you want to create a new set of graphics, see [Adding pieces](https://docs.abstractplay.com/renderer/adding-pieces/) and the [contact sheet](https://docs.abstractplay.com/renderer/contact-sheet/) for existing piece names. After changing glyph sheets, run `npm run contact-sheet` and commit `docs/contact-sheet.svg` and `contact.png`.
+If you want to create a new set of graphics, see [Adding pieces](https://docs.abstractplay.com/renderer/adding-pieces/) and the [contact sheet](https://docs.abstractplay.com/renderer/contact-sheet/) for existing piece names. After changing glyph sheets, run `npm run regenerate-glyphs` and commit the updated contact sheet, catalog, and related docs outputs.
 
 New renderer features should include a **playground snippet** so the public demo and cross-browser tests stay current. Edit [`test/fixtures/playground-samples.json`](test/fixtures/playground-samples.json) and commit the JSON — the playground and Playwright harness import it directly. See [Playground samples and browser tests](https://docs.abstractplay.com/renderer/playground-samples/) for the full workflow.
 

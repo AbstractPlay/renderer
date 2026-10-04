@@ -42,13 +42,13 @@ const glyphNamesFromEntry = (entry: LegendEntry | undefined): string[] => {
     if (Array.isArray(entry)) {
         const names: string[] = [];
         for (const part of entry) {
-            if (isGlyphRecord(part) && part.name !== undefined) {
+            if (isGlyphRecord(part) && "name" in part) {
                 names.push(part.name);
             }
         }
         return names;
     }
-    if (isGlyphRecord(entry) && entry.name !== undefined) {
+    if (isGlyphRecord(entry) && "name" in entry) {
         return [entry.name];
     }
     return [];

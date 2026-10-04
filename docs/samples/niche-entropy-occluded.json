@@ -11,31 +11,45 @@
   "legend": {
     "RD": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "BU": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "GN": {
       "name": "piece",
-      "colour": 3
+      "paint": {
+        "fill": 3
+      }
     },
     "YE": {
       "name": "piece",
-      "colour": 4
+      "paint": {
+        "fill": 4
+      }
     },
     "VT": {
       "name": "piece",
-      "colour": 5
+      "paint": {
+        "fill": 5
+      }
     },
     "OG": {
       "name": "piece",
-      "colour": 6
+      "paint": {
+        "fill": 6
+      }
     },
     "BN": {
       "name": "piece",
-      "colour": 7
+      "paint": {
+        "fill": 7
+      }
     }
   },
   "pieces": ",,,,VT,OG,,,OG,,VT,,,\n,,,,,,,,,,,,BU,\n,,OG,,YE,,,,YE,,OG,,,\n,,,,GN,,,,,,,,YE,\n,,OG,,BU,,BU,,BU,BU,GN,,,OG\n,,,,,,YE,,,,,,,\n,,,BU,,,,,,,,,,",

@@ -2,7 +2,9 @@
 
 The `legend` maps keys used in `pieces` to visual definitions. Each entry is either a **sheet piece name** (like `piece` or `meeple`), a **glyph object** with transforms and colours, or an **array of glyph objects** composited into one piece.
 
-Player-owned pieces should set `colour` to a player number (`1`, `2`, …) so user colour settings apply. Use hex colours or colour functions only when the colour is fixed.
+**Sheet glyphs** (`name`) use optional **`paint`** — a map of slot names to colours (`fill`, `border`, and where the glyph defines them, `detail`). See [Glyph paint slots](/renderer/glyph-slots/) for per-glyph slot lists. **Text glyphs** (`text`) keep optional **`colour`** and **`opacity`** only; they do not use `paint`.
+
+Player-owned sheet pieces should set `paint.fill` to a player number (`1`, `2`, …) so user colour settings apply. Use hex colours or colour functions only when the colour is fixed.
 
 See the [contact sheet](/renderer/contact-sheet/) for every available sheet piece name.
 
@@ -11,16 +13,28 @@ See the [contact sheet](/renderer/contact-sheet/) for every available sheet piec
 A legend entry can be a plain string (the sheet piece name) or an object with `name` and optional properties:
 
 ```json
-"P1": { "name": "piece", "colour": 1 }
+"P1": { "name": "piece", "paint": { "fill": 1 } }
 ```
+
+Legacy **`colour`** / **`colour2`** on sheet glyphs still render the same way during the transition (`colour2` maps to `border` on most pieces and `detail` on dice pips). New JSON should prefer **`paint`**.
 
 *Example games:* [Arimaa](https://play.abstractplay.com/games/arimaa), [Go](https://play.abstractplay.com/games/go)
 
 {% renderWidget "samples/pieces-simple.json" %}
 
+### Border and duotone paint
+
+Use **`paint.border`** for a second player colour on rims and outlines (disc tokens, chess, arimaa). On dice, **`paint.detail`** recolours pips; the die face uses **`paint.fill`**.
+
+{% renderWidget "samples/pieces-border.json" %}
+
+{% renderWidget "samples/pieces-duotone.json" %}
+
+{% renderWidget "samples/pieces-dice-pips.json" %}
+
 ## Composite glyphs
 
-An array of glyph objects is drawn **bottom to top** — the first entry sits underneath later ones. Each layer can have its own `name`, `colour`, `scale`, `rotate`, and other properties. Layers without a `colour` keep the artwork from the sheet.
+An array of glyph objects is drawn **bottom to top** — the first entry sits underneath later ones. Each layer can have its own `name`, `paint`, `scale`, `rotate`, and other properties. Sheet layers without `paint` keep the artwork from the sheet. Text layers may omit `colour` so the renderer picks black or white for contrast against the layer below.
 
 *Example games:* [Alfred's Wyke](https://play.abstractplay.com/games/wyke), [Cannon](https://play.abstractplay.com/games/cannon)
 
@@ -28,7 +42,7 @@ An array of glyph objects is drawn **bottom to top** — the first entry sits un
 
 ## Gradients
 
-`colour` and `colour2` accept linear gradients with `stops` and optional `x1`/`y1`/`x2`/`y2` (0–1, relative to the glyph bounds).
+`paint` slot values (and text **`colour`**) accept linear gradients with `stops` and optional `x1`/`y1`/`x2`/`y2` (0–1, relative to the glyph bounds).
 
 {% renderWidget "samples/pieces-gradients.json" %}
 
@@ -100,7 +114,7 @@ When a player assigns a **pattern** to a palette slot (for accessibility), colou
 | `bestContrast` | `fg` entry | Ignore pattern entries; if all `fg` values are patterns, use `_context_strokes`. |
 | `custom` | either branch | Resolves to hex or pattern directly. |
 
-Pattern player slots apply to fills (`data-playerfill`). Strokes on those elements fall back to `_context_strokes`.
+Pattern player slots apply to **`paint.fill`** on sheet glyphs (and to text **`colour`**). Strokes on those elements fall back to `_context_strokes`.
 
 ### Patterns as colours
 
@@ -109,7 +123,7 @@ Named patterns are valid **colour** values anywhere a hex string or player numbe
 `microbial`, `chevrons`, `honeycomb`, `triangles`, `wavy`, `slant`, `dots`, `starsWhite`, `cross`, `houndstooth`
 
 ```json
-"PATTERN": { "name": "piece", "colour": "dots" }
+"PATTERN": { "name": "piece", "paint": { "fill": "dots" } }
 ```
 
 Use `custom` to offer a pattern default while still honouring player palette overrides:
@@ -165,10 +179,11 @@ Each glyph object in the legend supports these properties. `name` and `text` are
 | --- | --- | --- | --- |
 | `name` | string | — | Sheet piece id (no whitespace). Searched across loaded glyph sheets. |
 | `text` | string | — | Short text rendered as a glyph instead of sheet artwork. |
-| `colour` | colour | — | Primary fill (or player colour when a number). Applied to elements tagged `data-playerfill`. |
-| `colour2` | colour | — | Secondary fill for elements tagged `data-playerfill2`. |
+| `paint` | object | — | **Sheet glyphs only.** Map of slot name → colour (see [Glyph paint slots](/renderer/glyph-slots/)). |
+| `colour` | colour | — | **Text glyphs** (or legacy sheet shim). Primary fill; sheet **`name`** entries should use `paint.fill` instead. |
+| `colour2` | colour | — | **Legacy** second tone on sheet glyphs; prefer `paint.border` or `paint.detail`. |
 | `scale` | number | `1` | Proportional size; values below 1 shrink, above 1 enlarge. |
-| `opacity` | number | `1` | 0 (transparent) to 1 (opaque); applied to player-tagged fills and strokes. |
+| `opacity` | number | `1` | Layer multiplier on the placed glyph (0–1). With legacy **`colour`** only, opacity tints **`paint.fill`**; with explicit **`paint`**, opacity applies to the whole layer. |
 | `rotate` | number \| null | `0` | Degrees, −360 to 360. Negative is counter-clockwise. |
 | `orientation` | `"fluid"` \| `"vertical"` | `"fluid"` | After rotation, `"vertical"` keeps text upright. |
 | `flipx` | boolean | `false` | Mirror horizontally. With **`fluid`** (default sheet glyphs), flip is in piece/board coordinates and rotates with the board. With **`vertical`** or text glyphs, flip is relative to the **screen** (left/right stays fixed when `board.rotate` changes). |

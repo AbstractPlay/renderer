@@ -143,15 +143,21 @@
   "legend": {
     "A": {
       "name": "piece",
-      "colour": "#666"
+      "paint": {
+        "fill": "#666"
+      }
     },
     "B": {
       "name": "piece",
-      "colour": "#fff"
+      "paint": {
+        "fill": "#fff"
+      }
     },
     "C": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     }
   },
   "pieces": "-,-,-,-,-,-\n-,A,A,A,A,A,-\n-,A,-,-,-,-,A,-\n-,A,-,-,B,-,-,A,-\n-,A,-,B,B,B,B,-,A,-\n-,A,-,-,B,C,B,-,-,A,-\n-,A,-,B,B,B,B,-,A,-\n-,A,-,-,B,-,-,A,-\n-,A,-,-,-,-,A,-\n-,A,A,A,A,A,-\n-,-,-,-,-,-"

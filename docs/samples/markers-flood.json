@@ -40,11 +40,15 @@
   "legend": {
     "A": {
       "name": "meeple",
-      "colour": "#fff"
+      "paint": {
+        "fill": "#fff"
+      }
     },
     "B": {
       "name": "meeple",
-      "colour": "#000"
+      "paint": {
+        "fill": "#000"
+      }
     }
   },
   "pieces": "_\n_\n-A--B-\n---A---\n--B---\n_\n_"

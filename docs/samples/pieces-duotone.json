@@ -1,0 +1,24 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 4,
+    "height": 4
+  },
+  "legend": {
+    "W": {
+      "name": "chess-king-solid-traditional",
+      "paint": {
+        "fill": 1,
+        "border": 2
+      }
+    },
+    "B": {
+      "name": "chess-king-solid-traditional",
+      "paint": {
+        "fill": 2,
+        "border": 1
+      }
+    }
+  },
+  "pieces": "BBBB\nBBBB\nWWWW\nWWWW"
+}

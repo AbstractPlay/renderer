@@ -8,7 +8,9 @@
   "legend": {
     "SPACER": {
       "name": "piece-square-borderless",
-      "colour": "_context_background"
+      "paint": {
+        "fill": "_context_background"
+      }
     },
     "A1": [
       [

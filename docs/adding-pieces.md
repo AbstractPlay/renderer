@@ -4,10 +4,10 @@ This page is for **renderer contributors** adding new basic pieces — the named
 
 ## Overview
 
-1. Add the SVG artwork as a **symbol** in the appropriate sheet file under `src/sheets/`.
-2. Register the sheet in `src/sheets/index.ts` if you created a new sheet.
+1. Add the SVG artwork as a **symbol** in the appropriate sheet file under `src/sheets/contact/`.
+2. Register the sheet in `src/sheets/contact/index.ts` if you created a new sheet.
 3. Run tests (`npm test`).
-4. Update `docs/contact-sheet.svg` manually (see below).
+4. Regenerate committed glyph artifacts (contact sheet + slot catalog — see below).
 5. Open a PR.
 
 ## Choose a sheet
@@ -23,58 +23,81 @@ Piece names must be unique **within the search path** for a render. The renderer
 
 ## Define a piece
 
-Each sheet file exports an `ISheet` with a `glyphs` map. Every entry is a function that returns an SVG `symbol`:
+Each sheet file exports an `ISheet` whose `glyphs` map uses **`defineGlyph`** so slot metadata stays next to the builder ([`designing-glyphs`](/renderer/designing-glyphs/) for full detail):
 
 ```typescript
-sheet.glyphs.set("piece", (canvas: SVGContainer) => {
-    const group = canvas.symbol();
-    group.circle(sheet.cellsize)
-        .attr("data-playerfill", true)
-        .attr("data-context-border", true)
-        .fill("#fff")
-        .stroke({ width: 5, color: "#000" })
-        .center(sheet.cellsize / 2, sheet.cellsize / 2);
-    group.viewbox(-2.5, -2.5, sheet.cellsize + 5, sheet.cellsize + 5);
-    return group;
+import { defineGlyph } from "../registry/defineGlyph.js";
+
+const TOKEN_SLOTS = {
+    fill: { channels: ["fill"], description: "Primary player colour." },
+    border: { channels: ["stroke"], description: "Outline or rim." },
+} as const;
+
+defineGlyph(sheet, "piece", {
+    slots: TOKEN_SLOTS,
+    colour2Slot: "border",
+    build(canvas) {
+        const group = canvas.symbol();
+        group
+            .circle(sheet.cellsize)
+            .attr("data-slot-fill", "fill")
+            .attr("data-context-border", true)
+            .fill("#fff")
+            .stroke({ width: 5, color: "#000" })
+            .center(sheet.cellsize / 2, sheet.cellsize / 2);
+        group.viewbox(-2.5, -2.5, sheet.cellsize + 5, sheet.cellsize + 5);
+        return group;
+    },
 });
 ```
 
 ### Rules
 
-- **Alphabetize** `sheet.glyphs.set(...)` calls by piece name (enforced by tests).
+- **Alphabetize** `defineGlyph` / `sheet.glyphs.set(...)` calls by piece name (enforced by tests).
 - **No hard-coded symbol ids** in sheet SVG — the renderer assigns ids when composing legends.
 - Set a **`viewbox`** on every symbol (or `data-cellsize` on the root) so scaling works.
-- Use **`data-playerfill`** on shapes that should receive `colour` / player colours.
-- Use **`data-playerfill2`** / **`data-playerstroke2`** for a second colour (`colour2`).
-- Use **`data-context-*`** for theme-driven strokes and fills:
+- Bind legend **`paint`** with **`data-slot-fill`** / **`data-slot-stroke`** (slot names `fill`, `border`, `detail`, …).
+- Use **`data-context-*`** for theme-driven defaults until legend paint overrides:
 
 | Attribute | Maps to colour context |
 | --- | --- |
 | `data-context-fill` | `fill` |
 | `data-context-background` | `background` |
 | `data-context-stroke` | `strokes` |
-| `data-context-border` | `borders` |
+| `data-context-border` | `borders` (stroke on **`border`** slot) |
+| `data-context-border-fill` | `borders` (fill channel on **`border`** slot) |
 | `data-context-board` | `board` |
 
-Some glyphs accept a colour argument `(canvas, color) => symbol` for two-tone sheet art; most use the data attributes above.
+**One-arg builders only** — pass `(canvas) => symbol`. Player colours come from legend **`paint`**, not builder arguments (orbs use procedural shading in the renderer).
+
+Do **not** add new `data-playerfill*` attrs; slot bindings are required on contact-sheet glyphs.
 
 ### New sheet checklist
 
-1. Create `src/sheets/mySheet.ts` implementing `ISheet` (`name`, `description`, `cellsize`, `glyphs`).
-2. Import and append it to the array in `src/sheets/index.ts`.
+1. Create `src/sheets/contact/mySheet.ts` implementing `ISheet` (`name`, `description`, `cellsize`, `glyphs`).
+2. Import and append it to `contactSheets` in `src/sheets/contact/index.ts`.
 3. Add the sheet id to the default `sheets` list in `src/renderers/_base.ts` if games should load it by default; otherwise document that games must pass it in render options.
 
-## Update the contact sheet
+## Regenerate glyph artifacts
 
-After adding or renaming pieces, regenerate the visual reference and commit both outputs:
+After adding, renaming, or retagging pieces (including `paint` / slot attributes), run:
 
 ```bash
-npm run contact-sheet
+npm run regenerate-glyphs
 ```
 
-This writes `docs/contact-sheet.svg` (full resolution, for the docs site), `docs/fonts/dejavu-sans.ttf` (label font), and `contact.png` (96 DPI raster for the GitHub README). Labels use **DejaVu Sans**, bundled as TTF so resvg renders text reliably on all platforms. Set `CONTACT_SHEET_DPI=72` for a smaller PNG if you prefer.
+This runs `contact-sheet`, `glyph-catalog`, and the **glyph paint slot audit** (uniform `paint.fill` / `paint.border` / `paint.detail` at player 1 — fails if any ink is not recoloured except `paintMode: fixed`, procedural orbs, or optional slots such as `target`). Then commit the updated files:
 
-CI will fail if sheet sources change without updating these committed files.
+| Output | Purpose |
+| --- | --- |
+| `docs/contact-sheet.svg`, `docs/fonts/dejavu-sans.ttf`, `contact.png` | Visual name reference ([contact sheet](/renderer/contact-sheet/)); PNG is 96 DPI for the GitHub README |
+| `src/sheets/registry/glyph-slots.catalog.json`, `docs/glyph-slots.md` | Slot registry for `paint` and the [Glyph paint slots](/renderer/glyph-slots/) doc |
+
+Labels on the contact sheet use **DejaVu Sans**, bundled as TTF so resvg renders text reliably on all platforms. Set `CONTACT_SHEET_DPI=72` before `regenerate-glyphs` for a smaller PNG if you prefer.
+
+CI runs `npm run verify-glyphs`, which regenerates these outputs and fails if anything would change in git.
+
+Individual commands remain available: `npm run contact-sheet`, `npm run glyph-catalog`, `npm run glyph-paint-audit`. For local debugging only, add `-- --write` to export failure SVGs under `.test-artifacts/glyph-paint-audit/` (CI lists offending glyphs in the error only).
 
 ## Verify
 

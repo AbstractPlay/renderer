@@ -4,6 +4,8 @@
   { "slug": "boards" },
   { "slug": "customization", "title": "User customization" },
   { "slug": "glyphs" },
+  { "slug": "glyph-slots", "title": "Glyph paint slots" },
+  { "slug": "designing-glyphs", "title": "Designing sheet glyphs" },
   { "slug": "contact-sheet", "title": "Contact sheet" },
   { "slug": "adding-pieces", "title": "Adding pieces" },
   { "slug": "formatting" },

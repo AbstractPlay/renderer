@@ -1,5 +1,7 @@
 {
-  "options": ["hide-labels"],
+  "options": [
+    "hide-labels"
+  ],
   "board": {
     "style": "squares",
     "width": 5,
@@ -14,88 +16,122 @@
   "legend": {
     "A0": {
       "name": "d6-empty",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A1": {
       "name": "d6-1",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A2": {
       "name": "d6-2",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A3": {
       "name": "d6-3",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A4": {
       "name": "d6-4",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A5": {
       "name": "d6-5",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A6": {
       "name": "d6-6",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A7": {
       "name": "d6-7",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A8": {
       "name": "d6-8",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "A9": {
       "name": "d6-9",
-      "colour": 1,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 1
+      }
     },
     "B0": {
       "name": "d6-empty",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     },
     "B1": {
       "name": "d6-1",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     },
     "B2": {
       "name": "d6-2",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     },
     "B3": {
       "name": "d6-3",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     },
     "B4": {
       "name": "d6-4",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     },
     "B5": {
       "name": "d6-5",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     },
     "B6": {
       "name": "d6-6",
-      "colour": 2,
-      "scale": 1.15
+      "scale": 1.15,
+      "paint": {
+        "fill": 2
+      }
     }
   },
   "pieces": "A1,A2,-,A4,A7\n-,A3,B1,-,A8,-\n-,A5,A6,-,A9"

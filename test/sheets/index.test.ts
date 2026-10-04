@@ -4,9 +4,11 @@ import readline from "node:readline";
 import { sheets } from "../../src/sheets";
 
 describe("Glyph sheets", () => {
+    const contactDir = "src/sheets/contact/";
+
     it ("sheet names should match the file name", () => {
         fs
-            .readdirSync("src/sheets/")
+            .readdirSync(contactDir)
             .filter((file: string) => (file.indexOf(".") !== 0) && (! file.startsWith("index")) && (file.slice(-3) === ".ts"))
             .forEach((file: string) => {
                 const root = file.slice(0, -3);
@@ -42,10 +44,10 @@ describe("Glyph sheets", () => {
         const reGlyph: RegExp = /^sheet\.glyphs\.set\("(\S+)"/;
 
         fs
-            .readdirSync("src/sheets/")
+            .readdirSync(contactDir)
             .filter((file: string) => (file.indexOf(".") !== 0) && (file.slice(-3) === ".ts"))
             .forEach((file: string) => {
-                const full = "src/sheets/" + file;
+                const full = contactDir + file;
 
                 const rl = readline.createInterface({
                     crlfDelay: Infinity,

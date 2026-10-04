@@ -15,10 +15,27 @@
   },
   "legend": {
     "custom-ref": [
-      { "name": "piece", "colour": 1, "scale": 0.6 },
-      { "name": "piece", "colour": 2, "scale": 0.4 }
+      {
+        "name": "piece",
+        "scale": 0.6,
+        "paint": {
+          "fill": 1
+        }
+      },
+      {
+        "name": "piece",
+        "scale": 0.4,
+        "paint": {
+          "fill": 2
+        }
+      }
     ],
-    "X": { "name": "piece", "colour": 1 }
+    "X": {
+      "name": "piece",
+      "paint": {
+        "fill": 1
+      }
+    }
   },
   "pieces": "X---\n----\n----\n----"
 }

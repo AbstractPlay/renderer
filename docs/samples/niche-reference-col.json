@@ -31,8 +31,18 @@
     }
   },
   "legend": {
-    "A": { "name": "piece", "colour": 1 },
-    "B": { "name": "piece", "colour": 2 }
+    "A": {
+      "name": "piece",
+      "paint": {
+        "fill": 1
+      }
+    },
+    "B": {
+      "name": "piece",
+      "paint": {
+        "fill": 2
+      }
+    }
   },
   "pieces": "-----\n------\n---A---\n----B--\n------\n---A---\n------\n-----"
 }

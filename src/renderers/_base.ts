@@ -2,7 +2,7 @@ import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle,
 import { Grid } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids/index.js";
-import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, AreaVolcanoStash, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
+import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, AreaVolcanoStash, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
 import {
     buildLocalStashRows,
     LOCAL_STASH_PIECE_BASE_Y_FRAC,
@@ -20,6 +20,28 @@ import { sheets } from "../sheets/index.js";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting.js";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionCenterYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
 import { glyph2uid, x2uid } from "../common/glyph2uid.js";
+import {
+    applySlotDefaults,
+    applySlotPaint,
+    applyTextGlyphFill,
+    collectPatternsFromGlyphPaint,
+    normalizeGlyphPaint,
+    paintFingerprint,
+    paintColourValue,
+    paintMapAfterProceduralShading,
+    playerIndexFromSheetGlyph,
+    resolvedPaintBaseHex,
+    symbolHasSlotBindings,
+    type GlyphPaintApplier,
+    type TextGlyphFillContext,
+} from "./glyphPaint.js";
+import {
+    knownPaintSlotNames,
+    proceduralShadingProfile,
+    resolveColour2SlotForGlyph,
+} from "../sheets/registry/glyphRegistry.js";
+import { getGlyphDefinitionMeta } from "../sheets/registry/defineGlyph.js";
+import { applyProceduralShadedPaint, isOrbShadingProfile } from "./orbShading.js";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys.js";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours.js";
@@ -673,6 +695,35 @@ export abstract class RendererBase {
         });
     }
 
+    protected applyContextStylesToGlyphSymbol(got: SVGSymbol): void {
+        const contextStroke = this.options.colourContext.strokes;
+        const contextFill = this.options.colourContext.fill;
+        const contextBorder = this.options.colourContext.borders;
+        const contextBackground = this.options.colourContext.background;
+        const contextBoard = this.options.colourContext.board;
+        /** Sheet-encoded `data-context-*` defaults apply even on slotted art; slot paint overwrites after. */
+        got.find("[data-context-fill=true]").each(function (this: SVGElement) {
+            this.fill(contextFill);
+        });
+        got.find("[data-context-background=true]").each(function (this: SVGElement) {
+            this.fill(contextBackground);
+        });
+        got.find("[data-context-stroke=true]").each(function (this: SVGElement) {
+            this.stroke(contextStroke);
+        });
+        got.find("[data-context-border=true]").each(function (this: SVGElement) {
+            this.stroke(contextBorder);
+        });
+        got.find("[data-context-border-fill=true]").each(function (this: SVGElement) {
+            this.fill(contextBorder);
+        });
+        if (contextBoard !== undefined) {
+            got.find("[data-context-board=true]").each(function (this: SVGElement) {
+                this.fill(contextBoard);
+            });
+        }
+    }
+
     /**
      * Colours a named slot (`data-ref-fill` / `data-ref-stroke`) on board reference artwork.
      */
@@ -820,11 +871,7 @@ export abstract class RendererBase {
             if (sheet !== undefined) {
                 const func = sheet.glyphs.get(glyph);
                 if (func !== undefined) {
-                    if (func.length === 1) {
-                        return (func as (svg: Svg) => SVGSymbol)(canvas.defs() as Svg);
-                    } else {
-                        return (func as (svg: Svg, color: string) => SVGSymbol)(canvas.defs() as Svg, player ? this.options.colours[player - 1] : "");
-                    }
+                    return (func as (svg: Svg) => SVGSymbol)(canvas.defs() as Svg);
                 }
             } else {
                 throw new Error("Could not load the glyph sheet '" + s + "'");
@@ -872,14 +919,18 @@ export abstract class RendererBase {
             // Whether this glyph that was already built in this layer
             let shared = false;
             if (("name" in g) && (g.name !== undefined)) {
-                let player: number | undefined;
-                if (g.colour !== undefined && typeof g.colour === "number") {
-                    player = g.colour;
+                let resolvedGlyphName = g.name;
+                if (this.options.glyphmap.length > 0) {
+                    const mapIdx = this.options.glyphmap.findIndex(t => t[0] === g.name);
+                    if (mapIdx >= 0) {
+                        resolvedGlyphName = this.options.glyphmap[mapIdx][1];
+                    }
                 }
-                // This should identify the glyph.
+                const colour2Slot = resolveColour2SlotForGlyph(resolvedGlyphName, this.options.sheets);
+                const normalized = normalizeGlyphPaint(g, colour2Slot)!;
+                const player = playerIndexFromSheetGlyph(g, normalized);
                 const cacheKey = [
-                    g.name, player ?? "", g.opacity ?? 1, layout,
-                    x2uid([g.colour ?? null, g.colour2 ?? null]),
+                    resolvedGlyphName, layout, paintFingerprint(normalized.paint),
                 ].join("\u0000");
                 const already = this.glyphCache.get(cacheKey);
                 if (already !== undefined) {
@@ -940,64 +991,100 @@ export abstract class RendererBase {
             }
 
             if (!shared) {
-                const contextStroke = this.options.colourContext.strokes;
-                const contextFill = this.options.colourContext.fill;
-                const contextBorder = this.options.colourContext.borders;
-                const contextBackground = this.options.colourContext.background;
-                const contextBoard = this.options.colourContext.board;
-                got.find("[data-context-fill=true]").each(function(this: SVGElement) { this.fill(contextFill); });
-                got.find("[data-context-background=true]").each(function(this: SVGElement) { this.fill(contextBackground); });
-                got.find("[data-context-stroke=true]").each(function(this: SVGElement) { this.stroke(contextStroke); });
-                got.find("[data-context-border=true]").each(function(this: SVGElement) { this.stroke(contextBorder); });
-                got.find("[data-context-border-fill=true]").each(function(this: SVGElement) { this.fill(contextBorder); });
-                if (contextBoard !== undefined) {
-                    got.find("[data-context-board=true]").each(function(this: SVGElement) { this.fill(contextBoard); });
-                }
+                const slotted = symbolHasSlotBindings(got);
+                const paintApplier: GlyphPaintApplier = {
+                    resolveFill: this.resolveFill.bind(this),
+                    applyPlayerFillTargets: this.applyPlayerFillTargets.bind(this),
+                    isPatternSVGElement: this.isPatternSVGElement.bind(this),
+                };
 
-                let sheetCellSize = got.viewbox().height;
-                if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
-                    sheetCellSize = got.attr("data-cellsize") as number;
-                    if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
-                        throw new Error(`The glyph you requested (${opts.legendKey}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                if (("name" in g) && (g.name !== undefined)) {
+                    let resolvedGlyphName = g.name;
+                    if (this.options.glyphmap.length > 0) {
+                        const mapIdx = this.options.glyphmap.findIndex(t => t[0] === g.name);
+                        if (mapIdx >= 0) {
+                            resolvedGlyphName = this.options.glyphmap[mapIdx][1];
+                        }
                     }
-                }
+                    const colour2Slot = resolveColour2SlotForGlyph(resolvedGlyphName, this.options.sheets);
+                    const normalized = normalizeGlyphPaint(g, colour2Slot)!;
+                    const knownSlots = knownPaintSlotNames(resolvedGlyphName, this.options.sheets);
+                    applySlotDefaults(got, normalized.paint, (symbol) => {
+                        this.applyContextStylesToGlyphSymbol(symbol);
+                    });
 
-                let opacity = 1;
-                if (g.opacity !== undefined) {
-                    opacity = g.opacity;
-                }
+                    let sheetCellSize = got.viewbox().height;
+                    if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                        sheetCellSize = got.attr("data-cellsize") as number;
+                        if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                            throw new Error(`The glyph you requested (${opts.legendKey}) does not contain the necessary information for scaling. Please use a different sheet or contact the administrator.`);
+                        }
+                    }
 
-                const colourVals = [g.colour, g.colour2];
-                for (let i = 0; i < colourVals.length; i++) {
-                    const colourVal = colourVals[i];
-                    const suffix = i > 0 ? (i + 1).toString() : "";
-                    if (colourVal !== undefined) {
-                        const resolved = this.resolveFill(colourVal as string | number | Gradient | Colourfuncs, "#000", { scale: sheetCellSize });
-                        this.applyPlayerFillTargets(got, suffix, resolved, opacity);
-                    } else if ("text" in g && g.text !== undefined) {
-                        let darkest = contextBackground;
-                        for (let j = idx - 1; j >= 0; j--) {
-                            const prev = glyphs[j];
-                            if ("colour" in prev && prev.colour !== undefined) {
-                                darkest = this.resolveColour(prev.colour) as string;
-                                break;
+                    const shadingProfile = proceduralShadingProfile(resolvedGlyphName);
+                    let slotPaint = normalized.paint;
+                    if (shadingProfile !== undefined && isOrbShadingProfile(shadingProfile)) {
+                        const baseHex = resolvedPaintBaseHex(normalized.paint, paintApplier.resolveFill);
+                        let detailOverride: string | undefined;
+                        if (normalized.paint.detail !== undefined) {
+                            const detailVal = paintColourValue(normalized.paint.detail);
+                            if (detailVal !== undefined) {
+                                const resolvedDetail = paintApplier.resolveFill(
+                                    detailVal as number | string | Gradient | Colourfuncs,
+                                    "#000",
+                                );
+                                if (typeof resolvedDetail === "string") {
+                                    detailOverride = resolvedDetail;
+                                }
                             }
                         }
-                        const func: FunctionBestContrast = {
-                            func: "bestContrast",
-                            bg: darkest,
-                            fg: ["#000", "#fff"],
-                        };
-                        const normColour = this.resolveColour(func, "#000");
-                        // @ts-expect-error (poor SVGjs typing)
-                        got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({color: normColour, opacity}); });
-                        // @ts-expect-error (poor SVGjs typing)
-                        got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({color: normColour, opacity}); });
-                    } else if (opacity < 1) {
-                        got.find(`[data-playerfill${suffix}=true]`).each(function(this: SVGElement) { this.fill({opacity}); });
-                        got.find(`[data-playerstroke${suffix}=true]`).each(function(this: SVGElement) { this.stroke({opacity}); });
+                        applyProceduralShadedPaint(got, shadingProfile, baseHex, detailOverride);
+                        slotPaint = paintMapAfterProceduralShading(normalized.paint, shadingProfile);
+                    }
+
+                    let glyphPaintMode: string | undefined;
+                    for (const sheetName of this.options.sheets) {
+                        const sheetMeta = getGlyphDefinitionMeta(sheetName, resolvedGlyphName);
+                        if (sheetMeta !== undefined) {
+                            glyphPaintMode = sheetMeta.paintMode;
+                            break;
+                        }
+                    }
+
+                    if (glyphPaintMode !== "fixed") {
+                        applySlotPaint(got, slotPaint, paintApplier, {
+                            sheetCellSize,
+                            colour2Slot,
+                            slotted,
+                            glyphName: resolvedGlyphName,
+                            knownSlots,
+                        });
+                    }
+                } else if (("text" in g) && (g.text !== undefined)) {
+                    applyTextGlyphFill(got, g, glyphs, idx, {
+                        resolveColour: this.resolveColour.bind(this) as TextGlyphFillContext["resolveColour"],
+                        resolveFill: this.resolveFill.bind(this),
+                        applyPlayerFillTargets: this.applyPlayerFillTargets.bind(this),
+                        contextBackground: this.options.colourContext.background,
+                    });
+                }
+            } else if (("name" in g) && (g.name !== undefined)) {
+                this.applyContextStylesToGlyphSymbol(got);
+            }
+
+            let layerOpacity = 1;
+            if (("name" in g) && (g.name !== undefined)) {
+                let resolvedGlyphName = g.name;
+                if (this.options.glyphmap.length > 0) {
+                    const mapIdx = this.options.glyphmap.findIndex(t => t[0] === g.name);
+                    if (mapIdx >= 0) {
+                        resolvedGlyphName = this.options.glyphmap[mapIdx][1];
                     }
                 }
+                const colour2Slot = resolveColour2SlotForGlyph(resolvedGlyphName, this.options.sheets);
+                layerOpacity = normalizeGlyphPaint(g, colour2Slot)!.layerOpacity;
+            } else if (g.opacity !== undefined) {
+                layerOpacity = g.opacity;
             }
 
             let factor = baseScale;
@@ -1046,6 +1133,10 @@ export abstract class RendererBase {
                 ? parent.use(got).height(layerIsoFaceDrawSize).width(layerIsoFaceDrawSize)
                     .x(layerIsoFaceX).y(layerIsoFaceY)
                 : parent.use(got).height(cellsize).width(cellsize).x(-cellsize / 2).y(-cellsize / 2);
+
+            if (layerOpacity < 1) {
+                use.opacity(layerOpacity);
+            }
 
             const boardRotation = this.getRotation();
             const legendEmbedRotation =
@@ -1140,7 +1231,7 @@ export abstract class RendererBase {
         }
         const values: Array<number | string | Gradient | Colourfuncs | undefined> = [];
         for (const g of glyphs) {
-            values.push(g.colour, g.colour2);
+            values.push(...collectPatternsFromGlyphPaint(g));
         }
         this.preloadPatternsFromColourValues(values);
     }
@@ -1173,7 +1264,7 @@ export abstract class RendererBase {
                     glyphs = node as [Glyph, ...Glyph[]];
                 }
                 for (const e of glyphs) {
-                    preloadValues.push(e.colour, e.colour2);
+                    preloadValues.push(...collectPatternsFromGlyphPaint(e));
                 }
             }
             this.preloadPatternsFromColourValues(preloadValues);
@@ -5120,7 +5211,10 @@ export abstract class RendererBase {
             return [{ name: entry }];
         }
         if (!Array.isArray(entry)) {
-            return [entry];
+            if (typeof entry === "object" && entry !== null && "piece" in entry) {
+                return null;
+            }
+            return [entry as Glyph];
         }
         if (entry.length === 0) {
             return null;

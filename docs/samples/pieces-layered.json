@@ -8,7 +8,9 @@
     "A": [
       {
         "name": "piece",
-        "colour": 1
+        "paint": {
+          "fill": 1
+        }
       },
       {
         "name": "cannon-piece",
@@ -18,7 +20,9 @@
     "B": [
       {
         "name": "piece-square",
-        "colour": 1
+        "paint": {
+          "fill": 1
+        }
       },
       {
         "name": "cannon-town",
@@ -28,7 +32,9 @@
     "Y": [
       {
         "name": "piece",
-        "colour": 2
+        "paint": {
+          "fill": 2
+        }
       },
       {
         "name": "cannon-piece",
@@ -39,7 +45,9 @@
     "Z": [
       {
         "name": "piece-square",
-        "colour": 2
+        "paint": {
+          "fill": 2
+        }
       },
       {
         "name": "cannon-town",

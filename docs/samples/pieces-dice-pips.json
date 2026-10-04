@@ -1,0 +1,26 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 4,
+    "height": 2
+  },
+  "legend": {
+    "A": {
+      "name": "d6-5",
+      "paint": {
+        "fill": 1,
+        "detail": 2
+      },
+      "scale": 1.1
+    },
+    "B": {
+      "name": "d6-5",
+      "paint": {
+        "fill": 2,
+        "detail": 1
+      },
+      "scale": 1.1
+    }
+  },
+  "pieces": "AA--\n--BB"
+}

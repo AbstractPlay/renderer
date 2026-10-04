@@ -116,27 +116,39 @@
   "legend": {
     "A": {
       "name": "piece",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "B": {
       "name": "piece-chariot",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "C": {
       "name": "sphere-spiral",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "X": {
       "name": "piece",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "Y": {
       "name": "piece-chariot",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "Z": {
       "name": "sphere-spiral",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     }
   },
   "pieces": "------XX\n------XX\n_\n----Z---\n---C----\n_\nAA------\nAA------"

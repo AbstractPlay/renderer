@@ -57,111 +57,183 @@
   "legend": {
     "R1": {
       "name": "pyramid-flat-small",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "ghostR1": {
       "name": "pyramid-flat-small",
-      "colour": 1,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 0.25
+        }
+      }
     },
     "R2": {
       "name": "pyramid-flat-medium",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "ghostR2": {
       "name": "pyramid-flat-medium",
-      "colour": 1,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 0.25
+        }
+      }
     },
     "R3": {
       "name": "pyramid-flat-large",
-      "colour": 1
+      "paint": {
+        "fill": 1
+      }
     },
     "ghostR3": {
       "name": "pyramid-flat-large",
-      "colour": 1,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 1,
+          "opacity": 0.25
+        }
+      }
     },
     "B1": {
       "name": "pyramid-flat-small",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "ghostB1": {
       "name": "pyramid-flat-small",
-      "colour": 2,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 0.25
+        }
+      }
     },
     "B2": {
       "name": "pyramid-flat-medium",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "ghostB2": {
       "name": "pyramid-flat-medium",
-      "colour": 2,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 0.25
+        }
+      }
     },
     "B3": {
       "name": "pyramid-flat-large",
-      "colour": 2
+      "paint": {
+        "fill": 2
+      }
     },
     "ghostB3": {
       "name": "pyramid-flat-large",
-      "colour": 2,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 2,
+          "opacity": 0.25
+        }
+      }
     },
     "G1": {
       "name": "pyramid-flat-small",
-      "colour": 3
+      "paint": {
+        "fill": 3
+      }
     },
     "ghostG1": {
       "name": "pyramid-flat-small",
-      "colour": 3,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 3,
+          "opacity": 0.25
+        }
+      }
     },
     "G2": {
       "name": "pyramid-flat-medium",
-      "colour": 3
+      "paint": {
+        "fill": 3
+      }
     },
     "ghostG2": {
       "name": "pyramid-flat-medium",
-      "colour": 3,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 3,
+          "opacity": 0.25
+        }
+      }
     },
     "G3": {
       "name": "pyramid-flat-large",
-      "colour": 3
+      "paint": {
+        "fill": 3
+      }
     },
     "ghostG3": {
       "name": "pyramid-flat-large",
-      "colour": 3,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 3,
+          "opacity": 0.25
+        }
+      }
     },
     "Y1": {
       "name": "pyramid-flat-small",
-      "colour": 4
+      "paint": {
+        "fill": 4
+      }
     },
     "ghostY1": {
       "name": "pyramid-flat-small",
-      "colour": 4,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 4,
+          "opacity": 0.25
+        }
+      }
     },
     "Y2": {
       "name": "pyramid-flat-medium",
-      "colour": 4
+      "paint": {
+        "fill": 4
+      }
     },
     "ghostY2": {
       "name": "pyramid-flat-medium",
-      "colour": 4,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 4,
+          "opacity": 0.25
+        }
+      }
     },
     "Y3": {
       "name": "pyramid-flat-large",
-      "colour": 4
+      "paint": {
+        "fill": 4
+      }
     },
     "ghostY3": {
       "name": "pyramid-flat-large",
-      "colour": 4,
-      "opacity": 0.25
+      "paint": {
+        "fill": {
+          "colour": 4,
+          "opacity": 0.25
+        }
+      }
     },
     "D1": {
       "text": "1",

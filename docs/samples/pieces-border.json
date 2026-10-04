@@ -1,0 +1,24 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 6,
+    "height": 4
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "paint": {
+        "fill": 1,
+        "border": 2
+      }
+    },
+    "B": {
+      "name": "piece-borderless",
+      "paint": {
+        "fill": 1,
+        "border": 2
+      }
+    }
+  },
+  "pieces": "----BB\n----BB\n----AA\n----AA"
+}

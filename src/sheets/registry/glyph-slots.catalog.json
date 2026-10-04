@@ -1,0 +1,5813 @@
+{
+  "version": 1,
+  "generated": "2026-10-04T00:29:50.354Z",
+  "glyphs": {
+    "core:arrowhead": {
+      "sheet": "core",
+      "name": "arrowhead",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:arrows-diag": {
+      "sheet": "core",
+      "name": "arrows-diag",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:arrows-orth": {
+      "sheet": "core",
+      "name": "arrows-orth",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:brick": {
+      "sheet": "core",
+      "name": "brick",
+      "slots": {},
+      "paintMode": "fixed"
+    },
+    "core:bricks": {
+      "sheet": "core",
+      "name": "bricks",
+      "slots": {},
+      "paintMode": "fixed"
+    },
+    "core:cannon-piece": {
+      "sheet": "core",
+      "name": "cannon-piece",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:cannon-town": {
+      "sheet": "core",
+      "name": "cannon-town",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:castle-solid": {
+      "sheet": "core",
+      "name": "castle-solid",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:chevron": {
+      "sheet": "core",
+      "name": "chevron",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:circle": {
+      "sheet": "core",
+      "name": "circle",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:cloud": {
+      "sheet": "core",
+      "name": "cloud",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:cross-diag": {
+      "sheet": "core",
+      "name": "cross-diag",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:cross-omni": {
+      "sheet": "core",
+      "name": "cross-omni",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:cross-orth": {
+      "sheet": "core",
+      "name": "cross-orth",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:cube": {
+      "sheet": "core",
+      "name": "cube",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:dline-neg": {
+      "sheet": "core",
+      "name": "dline-neg",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:dline-pos": {
+      "sheet": "core",
+      "name": "dline-pos",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:frog": {
+      "sheet": "core",
+      "name": "frog",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:hex-flat": {
+      "sheet": "core",
+      "name": "hex-flat",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:hex-pointy": {
+      "sheet": "core",
+      "name": "hex-pointy",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:hex-pointy-m123": {
+      "sheet": "core",
+      "name": "hex-pointy-m123",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:hex-pointy-m21": {
+      "sheet": "core",
+      "name": "hex-pointy-m21",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:hline": {
+      "sheet": "core",
+      "name": "hline",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:house": {
+      "sheet": "core",
+      "name": "house",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:humpback": {
+      "sheet": "core",
+      "name": "humpback",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:katanas": {
+      "sheet": "core",
+      "name": "katanas",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:meeple": {
+      "sheet": "core",
+      "name": "meeple",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:orb": {
+      "sheet": "core",
+      "name": "orb",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border",
+      "paintMode": "proceduralShaded",
+      "shadingProfile": "orb"
+    },
+    "core:orb1": {
+      "sheet": "core",
+      "name": "orb1",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border",
+      "paintMode": "proceduralShaded",
+      "shadingProfile": "orb1"
+    },
+    "core:orb2": {
+      "sheet": "core",
+      "name": "orb2",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Interior accent, ink, or pips (not the outer rim)."
+        }
+      },
+      "colour2Slot": "border",
+      "paintMode": "proceduralShaded",
+      "shadingProfile": "orb2"
+    },
+    "core:orb3": {
+      "sheet": "core",
+      "name": "orb3",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Interior accent, ink, or pips (not the outer rim)."
+        }
+      },
+      "colour2Slot": "border",
+      "paintMode": "proceduralShaded",
+      "shadingProfile": "orb3"
+    },
+    "core:orca": {
+      "sheet": "core",
+      "name": "orca",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Interior accent, ink, or pips (not the outer rim)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "core:palace": {
+      "sheet": "core",
+      "name": "palace",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece": {
+      "sheet": "core",
+      "name": "piece",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-borderless": {
+      "sheet": "core",
+      "name": "piece-borderless",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-chariot": {
+      "sheet": "core",
+      "name": "piece-chariot",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-cog": {
+      "sheet": "core",
+      "name": "piece-cog",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-dashed": {
+      "sheet": "core",
+      "name": "piece-dashed",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-horse": {
+      "sheet": "core",
+      "name": "piece-horse",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-pentagon": {
+      "sheet": "core",
+      "name": "piece-pentagon",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-square": {
+      "sheet": "core",
+      "name": "piece-square",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-square-borderless": {
+      "sheet": "core",
+      "name": "piece-square-borderless",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-square-dashed": {
+      "sheet": "core",
+      "name": "piece-square-dashed",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-square-single": {
+      "sheet": "core",
+      "name": "piece-square-single",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-triangle": {
+      "sheet": "core",
+      "name": "piece-triangle",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-triangle-dot": {
+      "sheet": "core",
+      "name": "piece-triangle-dot",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:plane": {
+      "sheet": "core",
+      "name": "plane",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Interior accent, ink, or pips (not the outer rim)."
+        },
+        "target": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Fixed target ring (plane engine cowlings; default brown unless paint.target is set)."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:ring-01": {
+      "sheet": "core",
+      "name": "ring-01",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:ring-02": {
+      "sheet": "core",
+      "name": "ring-02",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:ring-12": {
+      "sheet": "core",
+      "name": "ring-12",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:ring-13": {
+      "sheet": "core",
+      "name": "ring-13",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:ring-23": {
+      "sheet": "core",
+      "name": "ring-23",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:sphere-spiral": {
+      "sheet": "core",
+      "name": "sphere-spiral",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:star-outline": {
+      "sheet": "core",
+      "name": "star-outline",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:star-solid": {
+      "sheet": "core",
+      "name": "star-solid",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:tower": {
+      "sheet": "core",
+      "name": "tower",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:trax-corners": {
+      "sheet": "core",
+      "name": "trax-corners",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Interior accent, ink, or pips (not the outer rim)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "core:trax-plus": {
+      "sheet": "core",
+      "name": "trax-plus",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Interior accent, ink, or pips (not the outer rim)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "core:vline": {
+      "sheet": "core",
+      "name": "vline",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wedge": {
+      "sheet": "core",
+      "name": "wedge",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wedge-bottom-half": {
+      "sheet": "core",
+      "name": "wedge-bottom-half",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wedge-top-half": {
+      "sheet": "core",
+      "name": "wedge-top-half",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wyke-1": {
+      "sheet": "core",
+      "name": "wyke-1",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wyke-2": {
+      "sheet": "core",
+      "name": "wyke-2",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wyke-3": {
+      "sheet": "core",
+      "name": "wyke-3",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wyke-4": {
+      "sheet": "core",
+      "name": "wyke-4",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wyke-5": {
+      "sheet": "core",
+      "name": "wyke-5",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wyke-6": {
+      "sheet": "core",
+      "name": "wyke-6",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:wyke-7": {
+      "sheet": "core",
+      "name": "wyke-7",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:x": {
+      "sheet": "core",
+      "name": "x",
+      "slots": {
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:yinyang": {
+      "sheet": "core",
+      "name": "yinyang",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-amazon-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-amazon-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-amazon-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-amazon-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-archbishop-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-archbishop-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-archbishop-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-archbishop-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-outline-line": {
+      "sheet": "chess",
+      "name": "chess-bishop-outline-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-outline-millenia": {
+      "sheet": "chess",
+      "name": "chess-bishop-outline-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-outline-montreal": {
+      "sheet": "chess",
+      "name": "chess-bishop-outline-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-bishop-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-solid-line": {
+      "sheet": "chess",
+      "name": "chess-bishop-solid-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-solid-millenia": {
+      "sheet": "chess",
+      "name": "chess-bishop-solid-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-solid-montreal": {
+      "sheet": "chess",
+      "name": "chess-bishop-solid-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-bishop-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-bishop-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-boat-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-boat-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-boat-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-boat-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-centaur-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-centaur-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-centaur-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-centaur-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-champion-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-champion-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-champion-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-champion-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-chancellor-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-chancellor-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-chancellor-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-chancellor-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-commoner-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-commoner-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-commoner-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-commoner-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-dabbaba-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-dabbaba-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-dabbaba-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-dabbaba-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-dragon-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-dragon-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-dragon-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-dragon-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-elephant-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-elephant-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-elephant-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-elephant-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-ex-solid-line": {
+      "sheet": "chess",
+      "name": "chess-ex-solid-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-ex-solid-millenia": {
+      "sheet": "chess",
+      "name": "chess-ex-solid-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-ferz-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-ferz-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-ferz-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-ferz-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-fool-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-fool-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-fool-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-fool-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-giraffe-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-giraffe-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-giraffe-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-giraffe-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-outline-line": {
+      "sheet": "chess",
+      "name": "chess-king-outline-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-outline-millenia": {
+      "sheet": "chess",
+      "name": "chess-king-outline-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-outline-montreal": {
+      "sheet": "chess",
+      "name": "chess-king-outline-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-king-outline-traditional",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-solid-line": {
+      "sheet": "chess",
+      "name": "chess-king-solid-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-solid-millenia": {
+      "sheet": "chess",
+      "name": "chess-king-solid-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-solid-montreal": {
+      "sheet": "chess",
+      "name": "chess-king-solid-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-king-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-king-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-outline-line": {
+      "sheet": "chess",
+      "name": "chess-knight-outline-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-outline-millenia": {
+      "sheet": "chess",
+      "name": "chess-knight-outline-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-outline-montreal": {
+      "sheet": "chess",
+      "name": "chess-knight-outline-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-knight-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-solid-line": {
+      "sheet": "chess",
+      "name": "chess-knight-solid-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-solid-millenia": {
+      "sheet": "chess",
+      "name": "chess-knight-solid-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-solid-montreal": {
+      "sheet": "chess",
+      "name": "chess-knight-solid-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-knight-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-knight-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-mann-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-mann-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-mann-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-mann-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-nightrider-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-nightrider-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-nightrider-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-nightrider-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-outline-line": {
+      "sheet": "chess",
+      "name": "chess-pawn-outline-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-outline-millenia": {
+      "sheet": "chess",
+      "name": "chess-pawn-outline-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-outline-montreal": {
+      "sheet": "chess",
+      "name": "chess-pawn-outline-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-pawn-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-solid-line": {
+      "sheet": "chess",
+      "name": "chess-pawn-solid-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-solid-millenia": {
+      "sheet": "chess",
+      "name": "chess-pawn-solid-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-solid-montreal": {
+      "sheet": "chess",
+      "name": "chess-pawn-solid-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-pawn-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-pawn-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-outline-line": {
+      "sheet": "chess",
+      "name": "chess-queen-outline-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-outline-millenia": {
+      "sheet": "chess",
+      "name": "chess-queen-outline-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-outline-montreal": {
+      "sheet": "chess",
+      "name": "chess-queen-outline-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-queen-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-solid-line": {
+      "sheet": "chess",
+      "name": "chess-queen-solid-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-solid-millenia": {
+      "sheet": "chess",
+      "name": "chess-queen-solid-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-solid-montreal": {
+      "sheet": "chess",
+      "name": "chess-queen-solid-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-queen-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-queen-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-outline-line": {
+      "sheet": "chess",
+      "name": "chess-rook-outline-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-outline-millenia": {
+      "sheet": "chess",
+      "name": "chess-rook-outline-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-outline-montreal": {
+      "sheet": "chess",
+      "name": "chess-rook-outline-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-rook-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-solid-line": {
+      "sheet": "chess",
+      "name": "chess-rook-solid-line",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-solid-millenia": {
+      "sheet": "chess",
+      "name": "chess-rook-solid-millenia",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-solid-montreal": {
+      "sheet": "chess",
+      "name": "chess-rook-solid-montreal",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-rook-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-rook-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-short-rook-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-short-rook-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-short-rook-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-short-rook-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-unicorn-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-unicorn-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-unicorn-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-unicorn-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-wazir-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-wazir-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-wazir-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-wazir-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-wizard-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-wizard-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-wizard-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-wizard-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-zebra-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-zebra-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-zebra-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-zebra-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:piece-janggi": {
+      "sheet": "chess",
+      "name": "piece-janggi",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:piece-shogi": {
+      "sheet": "chess",
+      "name": "piece-shogi",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dice:d6-1": {
+      "sheet": "dice",
+      "name": "d6-1",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-10": {
+      "sheet": "dice",
+      "name": "d6-10",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-11": {
+      "sheet": "dice",
+      "name": "d6-11",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-12": {
+      "sheet": "dice",
+      "name": "d6-12",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-13": {
+      "sheet": "dice",
+      "name": "d6-13",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-14": {
+      "sheet": "dice",
+      "name": "d6-14",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-15": {
+      "sheet": "dice",
+      "name": "d6-15",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-16": {
+      "sheet": "dice",
+      "name": "d6-16",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-2": {
+      "sheet": "dice",
+      "name": "d6-2",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-3": {
+      "sheet": "dice",
+      "name": "d6-3",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-4": {
+      "sheet": "dice",
+      "name": "d6-4",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-5": {
+      "sheet": "dice",
+      "name": "d6-5",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-6": {
+      "sheet": "dice",
+      "name": "d6-6",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-7": {
+      "sheet": "dice",
+      "name": "d6-7",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-8": {
+      "sheet": "dice",
+      "name": "d6-8",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-9": {
+      "sheet": "dice",
+      "name": "d6-9",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dice:d6-empty": {
+      "sheet": "dice",
+      "name": "d6-empty",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Die face pips."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "dominoes:tile-01": {
+      "sheet": "dominoes",
+      "name": "tile-01",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-02": {
+      "sheet": "dominoes",
+      "name": "tile-02",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-03": {
+      "sheet": "dominoes",
+      "name": "tile-03",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-04": {
+      "sheet": "dominoes",
+      "name": "tile-04",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-05": {
+      "sheet": "dominoes",
+      "name": "tile-05",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-06": {
+      "sheet": "dominoes",
+      "name": "tile-06",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-07": {
+      "sheet": "dominoes",
+      "name": "tile-07",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-08": {
+      "sheet": "dominoes",
+      "name": "tile-08",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-09": {
+      "sheet": "dominoes",
+      "name": "tile-09",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-10": {
+      "sheet": "dominoes",
+      "name": "tile-10",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-11": {
+      "sheet": "dominoes",
+      "name": "tile-11",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-12": {
+      "sheet": "dominoes",
+      "name": "tile-12",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-13": {
+      "sheet": "dominoes",
+      "name": "tile-13",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-14": {
+      "sheet": "dominoes",
+      "name": "tile-14",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "dominoes:tile-15": {
+      "sheet": "dominoes",
+      "name": "tile-15",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Domino pip dots."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-flat-large": {
+      "sheet": "looney",
+      "name": "pyramid-flat-large",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-flat-medium": {
+      "sheet": "looney",
+      "name": "pyramid-flat-medium",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-flat-small": {
+      "sheet": "looney",
+      "name": "pyramid-flat-small",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-flattened-large": {
+      "sheet": "looney",
+      "name": "pyramid-flattened-large",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-flattened-medium": {
+      "sheet": "looney",
+      "name": "pyramid-flattened-medium",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-flattened-small": {
+      "sheet": "looney",
+      "name": "pyramid-flattened-small",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-large": {
+      "sheet": "looney",
+      "name": "pyramid-up-large",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-large-3D": {
+      "sheet": "looney",
+      "name": "pyramid-up-large-3D",
+      "slots": {
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer outline (default black)."
+        },
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "3D pyramid silhouette (inner stroke, default white)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-large-upscaled": {
+      "sheet": "looney",
+      "name": "pyramid-up-large-upscaled",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-medium": {
+      "sheet": "looney",
+      "name": "pyramid-up-medium",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-medium-3D": {
+      "sheet": "looney",
+      "name": "pyramid-up-medium-3D",
+      "slots": {
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer outline (default black)."
+        },
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "3D pyramid silhouette (inner stroke, default white)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-medium-upscaled": {
+      "sheet": "looney",
+      "name": "pyramid-up-medium-upscaled",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-small": {
+      "sheet": "looney",
+      "name": "pyramid-up-small",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-small-3D": {
+      "sheet": "looney",
+      "name": "pyramid-up-small-3D",
+      "slots": {
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer outline (default black)."
+        },
+        "fill": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "3D pyramid silhouette (inner stroke, default white)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "looney:pyramid-up-small-upscaled": {
+      "sheet": "looney",
+      "name": "pyramid-up-small-upscaled",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke",
+            "fill"
+          ],
+          "description": "Outline, pip marks, and guides (default black)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-misc-coin-back": {
+      "sheet": "piecepack",
+      "name": "piecepack-misc-coin-back",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Ink line work."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-misc-tile-back": {
+      "sheet": "piecepack",
+      "name": "piecepack-misc-tile-back",
+      "slots": {
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Background behind cutouts."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "piecepack:piecepack-number-0": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-0",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-1": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-1",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-2": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-2",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-3": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-3",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-4": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-4",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-5": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-5",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-6": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-6",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-7": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-7",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-8": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-8",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-9": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-9",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-number-void": {
+      "sheet": "piecepack",
+      "name": "piecepack-number-void",
+      "slots": {
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Background behind cutouts."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "piecepack:piecepack-suit-anchors": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-anchors",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-clubs": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-clubs",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-crowns": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-crowns",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Ink line work."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-diamonds": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-diamonds",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Ink line work."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-fleurdelis": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-fleurdelis",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-hearts": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-hearts",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Ink line work."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-moons": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-moons",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-spades": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-spades",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-stars": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-stars",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Ink line work."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "piecepack:piecepack-suit-suns": {
+      "sheet": "piecepack",
+      "name": "piecepack-suit-suns",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "streetcar:cube-cat-plant": {
+      "sheet": "streetcar",
+      "name": "cube-cat-plant",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "streetcar:cube-lamp-cat": {
+      "sheet": "streetcar",
+      "name": "cube-lamp-cat",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "streetcar:cube-person-lamp": {
+      "sheet": "streetcar",
+      "name": "cube-person-lamp",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "streetcar:cube-plant-person": {
+      "sheet": "streetcar",
+      "name": "cube-plant-person",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "streetcar:streetcar-house": {
+      "sheet": "streetcar",
+      "name": "streetcar-house",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "nato:nato-artillery": {
+      "sheet": "nato",
+      "name": "nato-artillery",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "nato:nato-artillery-towed": {
+      "sheet": "nato",
+      "name": "nato-artillery-towed",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "nato:nato-cavalry": {
+      "sheet": "nato",
+      "name": "nato-cavalry",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "nato:nato-cavalry-heavy": {
+      "sheet": "nato",
+      "name": "nato-cavalry-heavy",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "nato:nato-infantry": {
+      "sheet": "nato",
+      "name": "nato-infantry",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "nato:nato-infantry-light": {
+      "sheet": "nato",
+      "name": "nato-infantry-light",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "nato:nato-infantry-special": {
+      "sheet": "nato",
+      "name": "nato-infantry-special",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-0": {
+      "sheet": "decktet",
+      "name": "decktet-0",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-1": {
+      "sheet": "decktet",
+      "name": "decktet-1",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-2": {
+      "sheet": "decktet",
+      "name": "decktet-2",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-3": {
+      "sheet": "decktet",
+      "name": "decktet-3",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-4": {
+      "sheet": "decktet",
+      "name": "decktet-4",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-5": {
+      "sheet": "decktet",
+      "name": "decktet-5",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-6": {
+      "sheet": "decktet",
+      "name": "decktet-6",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-7": {
+      "sheet": "decktet",
+      "name": "decktet-7",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-8": {
+      "sheet": "decktet",
+      "name": "decktet-8",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-9": {
+      "sheet": "decktet",
+      "name": "decktet-9",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-court": {
+      "sheet": "decktet",
+      "name": "decktet-court",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-crown": {
+      "sheet": "decktet",
+      "name": "decktet-crown",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-knots": {
+      "sheet": "decktet",
+      "name": "decktet-knots",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-leaves": {
+      "sheet": "decktet",
+      "name": "decktet-leaves",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-moons": {
+      "sheet": "decktet",
+      "name": "decktet-moons",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-pawn": {
+      "sheet": "decktet",
+      "name": "decktet-pawn",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Decktet rank, court, crown, and pawn ink."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-suns": {
+      "sheet": "decktet",
+      "name": "decktet-suns",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-waves": {
+      "sheet": "decktet",
+      "name": "decktet-waves",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "decktet:decktet-wyrms": {
+      "sheet": "decktet",
+      "name": "decktet-wyrms",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "arimaa:arimaa-camel": {
+      "sheet": "arimaa",
+      "name": "arimaa-camel",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "arimaa:arimaa-cat": {
+      "sheet": "arimaa",
+      "name": "arimaa-cat",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "arimaa:arimaa-dog": {
+      "sheet": "arimaa",
+      "name": "arimaa-dog",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "arimaa:arimaa-elephant": {
+      "sheet": "arimaa",
+      "name": "arimaa-elephant",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "arimaa:arimaa-horse": {
+      "sheet": "arimaa",
+      "name": "arimaa-horse",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "arimaa:arimaa-rabbit": {
+      "sheet": "arimaa",
+      "name": "arimaa-rabbit",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "gnostica:gnostica-allSuits": {
+      "sheet": "gnostica",
+      "name": "gnostica-allSuits",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-cardQuestion": {
+      "sheet": "gnostica",
+      "name": "gnostica-cardQuestion",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-chameleon": {
+      "sheet": "gnostica",
+      "name": "gnostica-chameleon",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-cup": {
+      "sheet": "gnostica",
+      "name": "gnostica-cup",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-cupQuestion": {
+      "sheet": "gnostica",
+      "name": "gnostica-cupQuestion",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-cupWild": {
+      "sheet": "gnostica",
+      "name": "gnostica-cupWild",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-fly": {
+      "sheet": "gnostica",
+      "name": "gnostica-fly",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-hand": {
+      "sheet": "gnostica",
+      "name": "gnostica-hand",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-handCycle": {
+      "sheet": "gnostica",
+      "name": "gnostica-handCycle",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-handTrade": {
+      "sheet": "gnostica",
+      "name": "gnostica-handTrade",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-star": {
+      "sheet": "gnostica",
+      "name": "gnostica-star",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-starCycle": {
+      "sheet": "gnostica",
+      "name": "gnostica-starCycle",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-sword": {
+      "sheet": "gnostica",
+      "name": "gnostica-sword",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-swordCycle": {
+      "sheet": "gnostica",
+      "name": "gnostica-swordCycle",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-tip": {
+      "sheet": "gnostica",
+      "name": "gnostica-tip",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-transform": {
+      "sheet": "gnostica",
+      "name": "gnostica-transform",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-wand": {
+      "sheet": "gnostica",
+      "name": "gnostica-wand",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "gnostica:gnostica-wandWild": {
+      "sheet": "gnostica",
+      "name": "gnostica-wandWild",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "detail": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Secondary player colour (legacy colour2)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Outline and decorative ink."
+        }
+      },
+      "colour2Slot": "detail"
+    },
+    "experimental:ball": {
+      "sheet": "experimental",
+      "name": "ball",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:crab": {
+      "sheet": "experimental",
+      "name": "crab",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:crown": {
+      "sheet": "experimental",
+      "name": "crown",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:dragon": {
+      "sheet": "experimental",
+      "name": "dragon",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:head": {
+      "sheet": "experimental",
+      "name": "head",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:hummingbird": {
+      "sheet": "experimental",
+      "name": "hummingbird",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:moth": {
+      "sheet": "experimental",
+      "name": "moth",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:owl": {
+      "sheet": "experimental",
+      "name": "owl",
+      "slots": {
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        },
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:phoenix": {
+      "sheet": "experimental",
+      "name": "phoenix",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "experimental:squid": {
+      "sheet": "experimental",
+      "name": "squid",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    }
+  }
+}

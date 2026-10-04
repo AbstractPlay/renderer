@@ -6,17 +6,17 @@ temp/
 test/browser/APRender.min.js
 test-results/
 playwright-report/
+.test-artifacts/
 .vscode
 .serverless
 
 # bin folder, except tracked scripts
 bin/*
-!bin/contact.ts
-!bin/contact-export.ts
 !bin/export.ts
 !bin/sync-playground-samples.mjs
 !bin/extract-playground-samples.mjs
 !bin/refactor-playground-samples.mjs
+!bin/migrate-glyph-paint.ts
 
 # scratch files in the root
 scratch.*
