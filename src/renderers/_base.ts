@@ -21,6 +21,7 @@ import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOff
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionCenterYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
 import { glyph2uid, x2uid } from "../common/glyph2uid.js";
 import {
+    applyFillSlotFillChannelOpacity,
     applySlotDefaults,
     applySlotPaint,
     applyTextGlyphFill,
@@ -29,6 +30,7 @@ import {
     paintFingerprint,
     paintColourValue,
     paintMapAfterProceduralShading,
+    paintSlotOpacity,
     playerIndexFromSheetGlyph,
     resolvedPaintBaseHex,
     symbolHasSlotBindings,
@@ -1039,6 +1041,11 @@ export abstract class RendererBase {
                             }
                         }
                         applyProceduralShadedPaint(got, shadingProfile, baseHex, detailOverride);
+                        const fillOpacity =
+                            normalized.paint.fill !== undefined ? paintSlotOpacity(normalized.paint.fill) : 1;
+                        if (fillOpacity !== 1) {
+                            applyFillSlotFillChannelOpacity(got, "fill", fillOpacity, colour2Slot);
+                        }
                         slotPaint = paintMapAfterProceduralShading(normalized.paint, shadingProfile);
                     }
 

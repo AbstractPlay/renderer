@@ -231,6 +231,31 @@ function applyResolvedFill(
     el.fill({ color: fill, opacity });
 }
 
+function applyPresentationFillOpacity(el: SVGElement, opacity: number): void {
+    const node = el.node as Element | undefined;
+    if (node !== undefined && typeof node.setAttribute === "function") {
+        node.setAttribute("fill-opacity", String(opacity));
+    }
+}
+
+/** Legacy fill-slot opacity with no colour: tint authored fill on fill-channel bindings only. */
+export function applyFillSlotFillChannelOpacity(
+    got: SVGSymbol,
+    slot: string,
+    opacity: number,
+    colour2Slot: Colour2Slot = "border",
+): void {
+    const { fill: fillSels } = findBindings(slot, colour2Slot);
+    for (const sel of fillSels) {
+        if (sel.startsWith("[data-playerfill") || sel.startsWith("[data-context-border-fill")) {
+            continue;
+        }
+        got.find(sel).each(function (this: SVGElement) {
+            applyPresentationFillOpacity(this, opacity);
+        });
+    }
+}
+
 function applyResolvedStroke(
     el: SVGElement,
     fill: ResolvedFill,
@@ -298,10 +323,28 @@ export function applySlotPaint(
             warnUnknownPaintSlot(opts.glyphName, slot, opts.knownSlots);
         }
         const colourVal = paintColourValue(entry);
-        if (colourVal === undefined) {
+        const slotOpacity = paintSlotOpacity(entry);
+        const opacityOnly =
+            colourVal === undefined && isSlotPaintObject(entry) && entry.opacity !== undefined;
+
+        if (colourVal === undefined && !opacityOnly) {
             continue;
         }
-        const slotOpacity = paintSlotOpacity(entry);
+
+        if (opacityOnly) {
+            if (opts.slotted) {
+                applyFillSlotFillChannelOpacity(got, slot, slotOpacity, opts.colour2Slot);
+            } else {
+                const legacySuffix = legacyFillSuffixForSlot(slot, opts.colour2Slot);
+                if (legacySuffix !== null) {
+                    got.find(`[data-playerfill${legacySuffix}=true]`).each(function (this: SVGElement) {
+                        applyPresentationFillOpacity(this, slotOpacity);
+                    });
+                }
+            }
+            continue;
+        }
+
         const resolved = ctx.resolveFill(colourVal as number | string | Gradient | Colourfuncs, "#000", {
             scale: opts.sheetCellSize,
         });

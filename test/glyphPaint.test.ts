@@ -40,6 +40,12 @@ function renderLegendGlyphs(glyphs: Glyph[], sheets: string[] = ["core", "chess"
 
 describe("glyphPaint", () => {
     describe("normalizeGlyphPaint", () => {
+        it("maps legacy opacity alone onto paint.fill", () => {
+            const norm = normalizeGlyphPaint({ name: "piece", opacity: 0.5 })!;
+            expect(norm.paint.fill).to.deep.equal({ opacity: 0.5 });
+            expect(norm.layerOpacity).to.equal(1);
+        });
+
         it("shims colour and colour2 to fill and border", () => {
             const norm = normalizeGlyphPaint({
                 name: "piece",
@@ -127,6 +133,11 @@ describe("glyphPaint", () => {
             );
         });
 
+        it("legacy opacity without colour tints fill-slot defaults", () => {
+            const svg = renderLegendGlyphs([{ name: "piece-borderless", opacity: 0.9 }]);
+            expect(svg).to.match(/fill-opacity="0\.9"|opacity="0\.9"/);
+        });
+
         it("legacy glyph opacity applies to fill slot, not the placed use", () => {
             const legacy = renderLegendGlyphs([
                 { name: "piece", colour: 1, opacity: 0.5 },
@@ -212,6 +223,11 @@ describe("glyphPaint", () => {
             const svg = draw.svg();
             expect(svg).to.match(/<circle\b[^>]*\bfill="#8844aa"/);
             expect(svg).to.match(/<rect\b[^>]*\bfill="#e31a1c"/);
+        });
+
+        it("orb: legacy colour and opacity sets fill-opacity on procedural sphere", () => {
+            const svg = renderLegendGlyphs([{ name: "orb", colour: 1, opacity: 0.5 }], ["core"]);
+            expect(svg).to.match(/fill-opacity="0\.5"|opacity="0\.5"/);
         });
 
         for (const name of ["orb", "orb1", "orb2", "orb3"] as const) {
