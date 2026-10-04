@@ -5,6 +5,26 @@ import { warnUnknownPaintSlot } from "../sheets/registry/glyphRegistry.js";
 
 type ResolvedFill = string | SVGGradient | SVGElement;
 
+/**
+ * Schema `colourfuncs` are objects with a string `func` discriminator (`$defs/colourfuncs`).
+ * No per-function allowlist — new schema funcs are recognized automatically.
+ */
+export function isColourfuncs(val: unknown): val is Colourfuncs {
+    if (typeof val !== "object" || val === null || Array.isArray(val)) {
+        return false;
+    }
+    if (isGradientPaint(val)) {
+        return false;
+    }
+    const func = (val as { func?: unknown }).func;
+    return typeof func === "string";
+}
+
+/** Linear/radial gradient paint value (not a slot wrapper). */
+export function isGradientPaint(val: unknown): val is Gradient {
+    return typeof val === "object" && val !== null && !Array.isArray(val) && "stops" in val;
+}
+
 /** Default mapping for legacy colour2 / data-playerfill2 during transition. */
 export type Colour2Slot = "border" | "detail";
 
@@ -31,7 +51,13 @@ export function isTextGlyph(g: Glyph): g is TextGlyph {
 }
 
 function isSlotPaintObject(val: unknown): val is SlotPaintObject {
-    return typeof val === "object" && val !== null && !Array.isArray(val) && ("colour" in val || "opacity" in val);
+    if (typeof val !== "object" || val === null || Array.isArray(val)) {
+        return false;
+    }
+    if (isColourfuncs(val) || isGradientPaint(val)) {
+        return false;
+    }
+    return "colour" in val || "opacity" in val;
 }
 
 /**
@@ -74,6 +100,8 @@ export function normalizeSheetGlyphPaint(
             const existingFill = paint.fill;
             if (existingFill === undefined) {
                 paint.fill = { opacity: g.opacity };
+            } else if (isColourfuncs(existingFill) || isGradientPaint(existingFill)) {
+                paint.fill = { colour: existingFill, opacity: g.opacity };
             } else if (isSlotPaintObject(existingFill)) {
                 paint.fill = { ...existingFill, opacity: g.opacity };
             } else {
@@ -90,10 +118,16 @@ export function paintFingerprint(paint: NormalizedPaintMap): string {
 }
 
 export function paintColourValue(entry: PaintValue): ColourResolvable | Gradient | undefined {
+    if (isColourfuncs(entry) || isGradientPaint(entry)) {
+        return entry;
+    }
+    if (typeof entry === "number" || typeof entry === "string") {
+        return entry;
+    }
     if (isSlotPaintObject(entry)) {
         return entry.colour;
     }
-    return entry;
+    return undefined;
 }
 
 export function paintSlotOpacity(entry: PaintValue): number {
@@ -325,7 +359,11 @@ export function applySlotPaint(
         const colourVal = paintColourValue(entry);
         const slotOpacity = paintSlotOpacity(entry);
         const opacityOnly =
-            colourVal === undefined && isSlotPaintObject(entry) && entry.opacity !== undefined;
+            colourVal === undefined &&
+            !isColourfuncs(entry) &&
+            !isGradientPaint(entry) &&
+            isSlotPaintObject(entry) &&
+            entry.opacity !== undefined;
 
         if (colourVal === undefined && !opacityOnly) {
             continue;

@@ -1,5 +1,7 @@
 import type { Glyph } from "../schemas/schema.js";
 import {
+    isColourfuncs,
+    isGradientPaint,
     normalizeSheetGlyphPaint,
     type NormalizedPaintMap,
     type PaintValue,
@@ -44,6 +46,9 @@ function isTextGlyphObject(obj: Record<string, unknown>): boolean {
 }
 
 function slotPaintHasOpacity(val: PaintValue): boolean {
+    if (isColourfuncs(val) || isGradientPaint(val)) {
+        return false;
+    }
     return (
         typeof val === "object" &&
         val !== null &&

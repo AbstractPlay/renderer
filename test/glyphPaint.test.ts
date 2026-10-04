@@ -7,7 +7,9 @@ import { DefaultRenderer } from "../src/renderers/default.js";
 import type { APRenderRep, Glyph } from "../src/schemas/schema.js";
 import schema from "../src/schemas/schema.json" with { type: "json" };
 import {
+    isColourfuncs,
     normalizeGlyphPaint,
+    paintColourValue,
     paintFingerprint,
     priorCompositeLayerTint,
 } from "../src/renderers/glyphPaint.js";
@@ -59,6 +61,58 @@ describe("glyphPaint", () => {
 
         it("does not run for text glyphs", () => {
             expect(normalizeGlyphPaint({ text: "1", colour: 1 })).to.equal(undefined);
+        });
+
+        it("does not treat flatten colour func as slot { opacity } wrapper", () => {
+            const flatten = {
+                func: "flatten" as const,
+                fg: "_context_fill" as const,
+                bg: "_context_background" as const,
+                opacity: 0.5,
+            };
+            const norm = normalizeGlyphPaint({
+                name: "piece-square-borderless",
+                colour: flatten,
+            })!;
+            expect(norm.paint.fill).to.deep.equal(flatten);
+            expect(paintColourValue(norm.paint.fill!)).to.deep.equal(flatten);
+            expect(isColourfuncs(norm.paint.fill)).to.equal(true);
+        });
+
+        it("passes all colourfuncs through paintColourValue unchanged", () => {
+            const samples: Array<{ label: string; value: unknown }> = [
+                {
+                    label: "flatten",
+                    value: {
+                        func: "flatten",
+                        fg: "_context_fill",
+                        bg: "_context_background",
+                        opacity: 0.5,
+                    },
+                },
+                {
+                    label: "lighten",
+                    value: { func: "lighten", colour: 1, ds: 0, dl: -2 },
+                },
+                {
+                    label: "bestContrast",
+                    value: { func: "bestContrast", fg: [1, 2], bg: "_context_background" },
+                },
+                {
+                    label: "custom",
+                    value: { func: "custom", palette: 1, default: "_context_strokes" },
+                },
+            ];
+            for (const { label, value } of samples) {
+                expect(isColourfuncs(value), label).to.equal(true);
+                expect(paintColourValue(value as never)).to.deep.equal(value);
+            }
+        });
+
+        it("recognizes schema colourfuncs by func discriminator without an allowlist", () => {
+            const future = { func: "futureColourFuncFromSchema", operand: 1, opacity: 0.25 };
+            expect(isColourfuncs(future)).to.equal(true);
+            expect(paintColourValue(future as never)).to.deep.equal(future);
         });
 
         it("maps legacy glyph opacity to paint.fill only", () => {
@@ -155,6 +209,18 @@ describe("glyphPaint", () => {
         it("legacy opacity without colour tints fill-slot defaults", () => {
             const svg = renderLegendGlyphs([{ name: "piece-borderless", opacity: 0.9 }]);
             expect(svg).to.match(/fill-opacity="0\.9"|opacity="0\.9"/);
+        });
+
+        it("piece-square-borderless: flatten legacy colour resolves to blended fill", () => {
+            const flatten = {
+                func: "flatten" as const,
+                fg: "_context_fill" as const,
+                bg: "_context_background" as const,
+                opacity: 0.5,
+            };
+            const svg = renderLegendGlyphs([{ name: "piece-square-borderless", colour: flatten }]);
+            expect(svg).not.to.match(/fill="#fff"/);
+            expect(svg).to.match(/fill="#[0-9a-f]{6}"/i);
         });
 
         it("legacy glyph opacity applies to fill slot, not the placed use", () => {
