@@ -703,13 +703,15 @@ registerFillBorderWideToken("house", (canvas: SVGContainer) => {
     const house = group.group();
     house.rect(66.07, 21.700001).x(0.70999998).y(17.610001)
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     house.polygon("61.74,0.5 6.78,0.5 0.71,17.61 66.78,17.61")
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     group.viewbox(-6.2550000100000025, -39.689998, 80, 80);
     return group;
@@ -876,18 +878,21 @@ registerFillBorderWideToken("palace", (canvas: SVGContainer) => {
     const palace = group.group();
     palace.polygon("64.94,33.45 33.35,13.89 33.35,0.93 61.38,19.52")
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     palace.polygon("0.86,33.45 33.35,13.89 33.35,0.93 5.38,18.86")
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     palace.polygon("64.94,57.38 64.94,33.45 33.35,13.89 0.86,33.45 0.86,57.38")
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     group.viewbox(-7.1000000000000005, -21.619999999999997, 80, 80);
     return group;
@@ -1353,18 +1358,21 @@ registerFillBorderWideToken("tower", (canvas: SVGContainer) => {
     const tower = group.group();
     tower.polygon("32.5,0.9 60.05,18.12 64.61,32.12 32.5,12.23")
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     tower.polygon("32.5,0.9 4.94,17.46 0.83,32.12 32.5,12.23")
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     tower.polygon("64.61,32.12 32.5,12.23 0.83,32.12 0.83,78.46 64.61,78.46")
         .stroke({width: 1, color: "black"})
-        .fill("none")
+        .fill("white")
         .attr("data-context-stroke", true)
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     group.viewbox(-7.279999999999999, -0.540000000000012, 80, 80);
     return group;

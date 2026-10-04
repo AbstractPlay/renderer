@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-04T02:29:15.870Z",
+  "generated": "2026-10-04T18:35:44.767Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -389,18 +389,18 @@
       "sheet": "core",
       "name": "house",
       "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
         "border": {
           "channels": [
             "fill",
             "stroke"
           ],
           "description": "Secondary outline, rim, or theme border band."
-        },
-        "fill": {
-          "channels": [
-            "fill"
-          ],
-          "description": "Primary player colour (body or main silhouette)."
         }
       },
       "colour2Slot": "border"
@@ -558,18 +558,18 @@
       "sheet": "core",
       "name": "palace",
       "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
         "border": {
           "channels": [
             "fill",
             "stroke"
           ],
           "description": "Secondary outline, rim, or theme border band."
-        },
-        "fill": {
-          "channels": [
-            "fill"
-          ],
-          "description": "Primary player colour (body or main silhouette)."
         }
       },
       "colour2Slot": "border"
@@ -1000,18 +1000,18 @@
       "sheet": "core",
       "name": "tower",
       "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
         "border": {
           "channels": [
             "fill",
             "stroke"
           ],
           "description": "Secondary outline, rim, or theme border band."
-        },
-        "fill": {
-          "channels": [
-            "fill"
-          ],
-          "description": "Primary player colour (body or main silhouette)."
         }
       },
       "colour2Slot": "border"
@@ -5753,18 +5753,18 @@
       "sheet": "experimental",
       "name": "owl",
       "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
         "border": {
           "channels": [
             "fill",
             "stroke"
           ],
           "description": "Secondary outline, rim, or theme border band."
-        },
-        "fill": {
-          "channels": [
-            "fill"
-          ],
-          "description": "Primary player colour (body or main silhouette)."
         }
       },
       "colour2Slot": "border"

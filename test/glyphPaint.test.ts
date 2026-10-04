@@ -103,6 +103,25 @@ describe("glyphPaint", () => {
             }
         });
 
+        it("house, palace, and tower: legacy colour matches paint.fill", () => {
+            for (const name of ["house", "palace", "tower"] as const) {
+                const legacy = renderLegendGlyphs([{ name, colour: 1 }]);
+                const paint = renderLegendGlyphs([{ name, paint: { fill: 1 } }]);
+                expect(normalizeSvgForGlyphCompare(legacy, { lenientOpacity: true })).to.equal(
+                    normalizeSvgForGlyphCompare(paint, { lenientOpacity: true }),
+                    name,
+                );
+            }
+        });
+
+        it("experimental owl: legacy colour matches paint.fill", () => {
+            const legacy = renderLegendGlyphs([{ name: "owl", colour: 1 }], ["experimental"]);
+            const paint = renderLegendGlyphs([{ name: "owl", paint: { fill: 1 } }], ["experimental"]);
+            expect(normalizeSvgForGlyphCompare(legacy, { lenientOpacity: true })).to.equal(
+                normalizeSvgForGlyphCompare(paint, { lenientOpacity: true }),
+            );
+        });
+
         it("piece: colour+colour2 matches paint fill+border", () => {
             const legacy = renderLegendGlyphs([{ name: "piece", colour: 1, colour2: 2 }]);
             const paint = renderLegendGlyphs([{ name: "piece", paint: { fill: 1, border: 2 } }]);

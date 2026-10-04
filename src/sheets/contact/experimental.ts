@@ -525,13 +525,35 @@ registerDuotoneGlyph(sheet, "moth", (canvas: SVGContainer) => {
 });
 
 registerDuotoneGlyph(sheet, "owl", (canvas: SVGContainer) => {
-    const sym = canvas.symbol()
+    const sym = canvas.symbol();
     const stroke: StrokeData = {
         color: "black",
         miterlimit: 10,
         width: 2,
-    }
-    sym.path("M17.74,7.24v3.83A11.48,11.48,0,0,1,6.26,22.54h0V7.24")
+    };
+    const bodyPath = "M17.74,7.24v3.83A11.48,11.48,0,0,1,6.26,22.54h0V7.24";
+    const earLeft = "M3.39,1.5h0A3.83,3.83,0,0,0,7.22,5.33h1A3.82,3.82,0,0,1,12,9.15h0";
+    const earRight = "M20.61,1.5h0a3.83,3.83,0,0,1-3.83,3.83h-1A3.82,3.82,0,0,0,12,9.15h0";
+    const fillWhite = { color: "#fff", opacity: 1, rule: "evenodd" as const };
+
+    sym.path(bodyPath)
+        .attr("data-slot-fill", "fill")
+        .fill(fillWhite)
+        .stroke("none");
+    sym.circle(5.74 * 2).center(12, 7.24)
+        .attr("data-slot-fill", "fill")
+        .fill("#fff")
+        .stroke("none");
+    sym.path(earLeft)
+        .attr("data-slot-fill", "fill")
+        .fill(fillWhite)
+        .stroke("none");
+    sym.path(earRight)
+        .attr("data-slot-fill", "fill")
+        .fill(fillWhite)
+        .stroke("none");
+
+    sym.path(bodyPath)
         .stroke(stroke)
         .fill("none")
         .attr("data-slot-stroke", "border");
@@ -539,11 +561,11 @@ registerDuotoneGlyph(sheet, "owl", (canvas: SVGContainer) => {
         .stroke(stroke)
         .fill("none")
         .attr("data-slot-stroke", "border");
-    sym.path("M3.39,1.5h0A3.83,3.83,0,0,0,7.22,5.33h1A3.82,3.82,0,0,1,12,9.15h0")
+    sym.path(earLeft)
         .stroke(stroke)
         .fill("none")
         .attr("data-slot-stroke", "border");
-    sym.path("M20.61,1.5h0a3.83,3.83,0,0,1-3.83,3.83h-1A3.82,3.82,0,0,0,12,9.15h0")
+    sym.path(earRight)
         .stroke(stroke)
         .fill("none")
         .attr("data-slot-stroke", "border");

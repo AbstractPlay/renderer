@@ -127,7 +127,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `hex-pointy-m123` | fill (fill+stroke), border (stroke) | — |
 | core | `hex-pointy-m21` | fill (fill+stroke), border (stroke) | — |
 | core | `hline` | fill (stroke) | — |
-| core | `house` | border (fill+stroke), fill (fill) | — |
+| core | `house` | fill (fill), border (fill+stroke) | — |
 | core | `humpback` | fill (fill), border (stroke) | — |
 | core | `katanas` | fill (fill), border (stroke) | — |
 | core | `meeple` | fill (fill+stroke), border (stroke) | — |
@@ -136,7 +136,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `orb2` | fill (fill), detail (fill) | shaded sphere (set `paint.fill` only) |
 | core | `orb3` | fill (fill), detail (fill) | shaded sphere (set `paint.fill` only) |
 | core | `orca` | fill (fill), detail (fill) | — |
-| core | `palace` | border (fill+stroke), fill (fill) | — |
+| core | `palace` | fill (fill), border (fill+stroke) | — |
 | core | `piece` | fill (fill), border (stroke) | — |
 | core | `piece-borderless` | fill (fill) | — |
 | core | `piece-chariot` | fill (fill), border (stroke) | — |
@@ -159,7 +159,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `sphere-spiral` | fill (fill), border (stroke) | — |
 | core | `star-outline` | fill (fill), border (fill+stroke) | — |
 | core | `star-solid` | fill (fill), border (stroke) | — |
-| core | `tower` | border (fill+stroke), fill (fill) | — |
+| core | `tower` | fill (fill), border (fill+stroke) | — |
 | core | `trax-corners` | fill (stroke), detail (stroke) | — |
 | core | `trax-plus` | fill (stroke), detail (stroke) | — |
 | core | `vline` | fill (stroke) | — |
@@ -233,7 +233,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | experimental | `head` | fill (fill), border (fill+stroke) | — |
 | experimental | `hummingbird` | fill (fill), border (fill+stroke) | — |
 | experimental | `moth` | fill (fill), border (fill+stroke) | — |
-| experimental | `owl` | border (fill+stroke), fill (fill) | — |
+| experimental | `owl` | fill (fill), border (fill+stroke) | — |
 | experimental | `phoenix` | fill (fill), border (fill+stroke) | — |
 | experimental | `squid` | fill (fill), border (fill+stroke) | — |
 | gnostica | `gnostica-allSuits` | border (fill+stroke), fill (fill), detail (fill) | — |
