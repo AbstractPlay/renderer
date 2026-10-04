@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-04T00:55:25.702Z",
+  "generated": "2026-10-04T01:54:28.822Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -815,6 +815,12 @@
       "sheet": "core",
       "name": "plane",
       "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
         "border": {
           "channels": [
             "fill",
@@ -833,12 +839,6 @@
             "fill"
           ],
           "description": "Fixed target ring (plane engine cowlings; default brown unless paint.target is set)."
-        },
-        "fill": {
-          "channels": [
-            "fill"
-          ],
-          "description": "Primary player colour (body or main silhouette)."
         }
       },
       "colour2Slot": "border"

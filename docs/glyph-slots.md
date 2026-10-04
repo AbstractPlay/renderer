@@ -150,7 +150,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `piece-square-single` | fill (fill), border (stroke) | — |
 | core | `piece-triangle` | fill (fill), border (stroke) | — |
 | core | `piece-triangle-dot` | fill (fill), border (fill+stroke) | — |
-| core | `plane` | border (fill+stroke), detail (fill), target (fill), fill (fill) | — |
+| core | `plane` | fill (fill), border (fill+stroke), detail (fill), target (fill) | — |
 | core | `ring-01` | fill (fill), border (stroke) | — |
 | core | `ring-02` | fill (fill), border (stroke) | — |
 | core | `ring-12` | fill (fill), border (stroke) | — |
