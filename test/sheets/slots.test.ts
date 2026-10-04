@@ -219,6 +219,7 @@ function assertCatalogSheetRegistry(
             expect(slotNamesOnSymbol(symbol).has("target")).to.equal(true);
             expect(slotNamesOnSymbol(symbol).has("detail")).to.equal(true);
             expect(slotNamesOnSymbol(symbol).has("border")).to.equal(true);
+            expect(symbol.find('[data-slot-fill="fill"]').length, "plane fill slot").to.be.greaterThan(2);
         }
         return;
     }

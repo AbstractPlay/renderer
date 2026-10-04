@@ -107,7 +107,7 @@ function registerFillBorderWideToken(name: string, build: (canvas: SVGContainer)
     defineGlyph(sheet.name, name, { slots: slotFillBorderWide, build }, sheet.glyphs);
 }
 
-/** Plane top-down art: player fill (bullseye), border ink, white detail, default-brown target rings. */
+/** Plane top-down art: player fill (wings, fuselage, nose bullseyes), border ink, white detail, brown target rings. */
 const slotPlane: Record<string, SlotMeta> = {
     fill: { channels: ["fill"] },
     border: { channels: ["fill", "stroke"] },
@@ -1126,15 +1126,18 @@ registerPlaneToken("plane", (canvas: SVGContainer) => {
     const borderStroke = {width: 2, color: "#000"};
     plane.path("m 250,400.26793 -18.06198,26.55853 c 0,0 -5.19828,7.27758 -15.78388,7.37211 -10.5856,0.0945 -25.61337,-1.03968 -31.18971,-3.68606 -5.57634,-2.64639 -9.16788,-6.99405 -9.73497,-12.66492 -0.56709,-5.67084 -0.94514,-5.10376 0,-12.47587 0.94514,-7.37211 10.39657,-12.75943 10.39657,-12.75943 l 27.59817,-12.28685 29.77199,-12.4759 -13.70457,-206.23014 6.616,-81.28227 11.43623,0.283543 V 69.846046 h 2.65468 M 250,400.26793 l 18.06198,26.55853 c 0,0 5.19828,7.27758 15.78388,7.37211 10.5856,0.0945 25.61337,-1.03968 31.18971,-3.68606 5.57634,-2.64639 9.16788,-6.99405 9.73497,-12.66492 0.56709,-5.67084 0.94514,-5.10376 0,-12.47587 -0.94514,-7.37211 -10.39657,-12.75943 -10.39657,-12.75943 l -27.59817,-12.28685 -29.77199,-12.4759 13.70457,-206.23014 -6.616,-81.28227 -11.43623,0.283543 V 69.846046 h -2.65468")
         .stroke(borderStroke)
-        .fill("none")
+        .fill("#ed1c24")
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     plane.path("m 250,186.59406 h -15.95545 l -17.5099,21.65346 h -77.25742 v -21.5198 H 40.232673 c 0,0 -0.534654,-22.05446 3.20792,-34.48515 3.742576,-12.43069 5.88119,-25.5297 21.78713,-26.06435 15.90594,-0.53466 184.770807,0 184.770807,0 M 250,186.59406 h 15.95545 l 17.5099,21.65346 h 77.25742 v -21.5198 h 99.04456 c 0,0 0.53465,-22.05446 -3.20792,-34.48515 -3.74258,-12.43069 -5.88119,-25.5297 -21.78713,-26.06435 -15.90594,-0.53466 -184.77081,0 -184.77081,0")
         .stroke(borderStroke)
-        .fill("none")
+        .fill("#ed1c24")
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     plane.path("m 139.27723,208.24752 v -21.5198 H 40.232673 c 0,0 -3.074257,25.5297 12.698019,26.19802 15.772278,0.66832 86.346538,-4.67822 86.346538,-4.67822 z m 221.44554,0 v -21.5198 h 99.04456 c 0,0 3.07425,25.5297 -12.69802,26.19802 -15.77228,0.66832 -86.34654,-4.67822 -86.34654,-4.67822 z")
         .stroke(borderStroke)
-        .fill("none")
+        .fill("#ed1c24")
+        .attr("data-slot-fill", "fill")
         .attr("data-slot-stroke", "border");
     plane.path("m 208.49847,65.895125 41.50005,1.058333 v 2.892588 l -41.50005,1.058333 z m 83.00306,0 -41.50005,1.058333 v 2.892588 l 41.50005,1.058333 z")
         .stroke(borderStroke)

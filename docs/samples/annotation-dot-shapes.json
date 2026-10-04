@@ -46,7 +46,7 @@
         }
       },
       {
-        "name": "wedge",
+        "name": "wedge-top-half",
         "rotate": 60,
         "scale": 1.34,
         "paint": {
@@ -54,7 +54,7 @@
         }
       },
       {
-        "name": "wedge",
+        "name": "wedge-bottom-half",
         "rotate": 180,
         "scale": 1.34,
         "paint": {
