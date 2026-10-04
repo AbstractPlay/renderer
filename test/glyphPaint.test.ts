@@ -97,7 +97,7 @@ describe("glyphPaint", () => {
             }
         });
 
-        it("piece: colour+colour2 matches paint fill+border (B1 slotted)", () => {
+        it("piece: colour+colour2 matches paint fill+border", () => {
             const legacy = renderLegendGlyphs([{ name: "piece", colour: 1, colour2: 2 }]);
             const paint = renderLegendGlyphs([{ name: "piece", paint: { fill: 1, border: 2 } }]);
             expect(normalizeSvgForGlyphCompare(legacy, { lenientOpacity: true })).to.equal(
@@ -182,6 +182,63 @@ describe("glyphPaint", () => {
             const textTag = svg.match(/<text[\s\S]*?<\/text>/)?.[0] ?? "";
             expect(textTag).to.include("7");
             expect(textTag).to.match(/fill="#(fff|ffffff)"/);
+        });
+
+        it("d6-1: detail slot uses context fill when colour2 / paint.detail omitted", () => {
+            const draw = makeDraw();
+            const renderer = new DefaultRenderer();
+            renderer.render(
+                {
+                    board: { style: "squares", width: 1, height: 1 },
+                    legend: { A: { name: "d6-1", colour: 1 } },
+                    pieces: "A",
+                },
+                draw,
+                {
+                    contextGlobal: true,
+                    coloursGlobal: false,
+                    showAnnotations: false,
+                    sheets: ["dice"],
+                    colourContext: {
+                        background: "#ffffff",
+                        fill: "#8844aa",
+                        strokes: "#000000",
+                        borders: "#000000",
+                        labels: "#000000",
+                        annotations: "#000000",
+                    },
+                },
+            );
+            const svg = draw.svg();
+            expect(svg).to.match(/<circle\b[^>]*\bfill="#8844aa"/);
+            expect(svg).to.match(/<rect\b[^>]*\bfill="#e31a1c"/);
+        });
+
+        for (const name of ["orb", "orb1", "orb2", "orb3"] as const) {
+            it(`${name}: legacy colour matches paint.fill`, () => {
+                const orbOpts = { lenientOpacity: true, lenientGradientIds: true } as const;
+                const legacy = normalizeSvgForGlyphCompare(
+                    renderLegendGlyphs([{ name, colour: 1 }], ["core"]),
+                    orbOpts,
+                );
+                const paint = normalizeSvgForGlyphCompare(
+                    renderLegendGlyphs([{ name, paint: { fill: 1 } }], ["core"]),
+                    orbOpts,
+                );
+                expect(legacy).to.equal(paint);
+            });
+        }
+
+        it("orca: colour+colour2 maps to fill+detail", () => {
+            const legacy = normalizeSvgForGlyphCompare(
+                renderLegendGlyphs([{ name: "orca", colour: 1, colour2: 2 }], ["core"]),
+                { lenientOpacity: true },
+            );
+            const paint = normalizeSvgForGlyphCompare(
+                renderLegendGlyphs([{ name: "orca", paint: { fill: 1, detail: 2 } }], ["core"]),
+                { lenientOpacity: true },
+            );
+            expect(legacy).to.equal(paint);
         });
     });
 

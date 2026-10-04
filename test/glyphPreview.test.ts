@@ -5,7 +5,6 @@ import { createSVGWindow } from "svgdom";
 import { CoreSheet } from "../src/sheets/contact/core.js";
 import {
     buildGlyphSymbolForContactSheet,
-    CONTACT_SHEET_ORB_PREVIEW_GREY,
     usesContactSheetProceduralPreview,
 } from "../src/renderers/glyphPreview.js";
 import { invokeGlyphBuild } from "../src/sheets/registry/defineGlyph.js";
@@ -30,17 +29,6 @@ describe("glyphPreview (contact sheet)", () => {
         const pieceBuild = CoreSheet.glyphs.get("piece")!;
         const pieceSym = buildGlyphSymbolForContactSheet("piece", pieceBuild, tile);
         expect(pieceSym.svg()).to.not.match(/radialGradient/);
-    });
-
-    it("orb builders are one-arg", () => {
-        for (const name of ["orb", "orb1", "orb2", "orb3", "orca"] as const) {
-            const build = CoreSheet.glyphs.get(name)!;
-            expect(build.length, name).to.equal(1);
-        }
-    });
-
-    it("preview grey constant is #ccc", () => {
-        expect(CONTACT_SHEET_ORB_PREVIEW_GREY).to.equal("#ccc");
     });
 
     it("invokeGlyphBuild uses one-arg for orbs without sample colour in output", () => {

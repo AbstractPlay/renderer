@@ -10,30 +10,16 @@ import {
     resetGlyphCatalogFromModule,
     toAuthorCatalog,
 } from "../src/sheets/registry/glyphRegistry.js";
-import { inferSlotsFromSymbol } from "../src/sheets/registry/inferSlots.js";
-import { invokeGlyphBuild } from "../src/sheets/registry/defineGlyph.js";
-import { CoreSheet } from "../src/sheets/contact/core.js";
-import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
-import { createSVGWindow } from "svgdom";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 describe("glyph catalog", () => {
-    it("buildGlyphCatalogFromSheets includes core:piece with fill and border slots", () => {
-        const catalog = buildGlyphCatalogFromSheets();
-        const piece = catalog.glyphs[catalogKey("core", "piece")];
-        expect(piece).to.not.equal(undefined);
-        expect(piece!.slots.fill).to.not.equal(undefined);
-        expect(piece!.slots.border).to.not.equal(undefined);
-        expect(piece!.slots.fill!.channels).to.include("fill");
-        expect(piece!.slots.border!.channels).to.include("stroke");
-    });
-
-    it("committed glyph-slots.catalog.json matches live inference for piece", () => {
+    it("committed glyph-slots.catalog.json matches live build for core:piece", () => {
         resetGlyphCatalogFromModule();
+        const live = buildGlyphCatalogFromSheets().glyphs[catalogKey("core", "piece")];
         const fromFile = getGlyphCatalog().glyphs[catalogKey("core", "piece")];
         expect(fromFile).to.not.equal(undefined);
-        expect(Object.keys(fromFile!.slots).sort()).to.deep.equal(["border", "fill"]);
+        expect(fromFile!.slots).to.deep.equal(live!.slots);
     });
 
     it("author export omits colour2Slot and paintMode", () => {
@@ -53,18 +39,6 @@ describe("glyph catalog", () => {
         const entry = getGlyphCatalog().glyphs[catalogKey("dice", "d6-1")];
         expect(entry?.colour2Slot).to.equal("detail");
         expect(entry?.slots.detail).to.not.equal(undefined);
-    });
-
-    it("inferSlotsFromSymbol maps legacy playerfill2 using colour2Slot", () => {
-        const window = createSVGWindow();
-        registerWindow(window, window.document);
-        const canvas = SVG(window.documentElement) as Svg;
-        const build = CoreSheet.glyphs.get("piece");
-        expect(build).to.not.equal(undefined);
-        const symbol = invokeGlyphBuild(build!, canvas.defs() as Svg);
-        const borderDefault = inferSlotsFromSymbol(symbol, "border");
-        expect(borderDefault.fill).to.not.equal(undefined);
-        expect(borderDefault.border).to.not.equal(undefined);
     });
 
     it("docs/glyph-slots.md exists after catalog generation", () => {

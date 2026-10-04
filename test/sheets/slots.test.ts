@@ -45,7 +45,7 @@ const SHEETS_BY_NAME: Record<string, ISheet> = {
 
 const DUOTONE_SHEETS = new Set<string>(["chess", "arimaa", "experimental"]);
 
-/** Every sheet that registers glyphs through defineGlyph (post Phase B5). */
+/** Every sheet that registers glyphs through defineGlyph. */
 const SLOTTED_SHEET_NAMES = [
     "core",
     "chess",

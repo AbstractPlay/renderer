@@ -1,5 +1,9 @@
 import { expect } from "chai";
 import "mocha";
+import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
+import { createSVGWindow } from "svgdom";
+import { DefaultRenderer } from "../src/renderers/default.js";
+import type { APRenderRep } from "../src/schemas/schema.js";
 import {
     DEFAULT_SHEET_SEARCH_ORDER,
     findLegendGlyphPaintViolations,
@@ -7,6 +11,21 @@ import {
     migrateRenderJson,
     migrateSheetGlyphInPlace,
 } from "../src/tools/migrateGlyphPaint.js";
+import { normalizeSvgForGlyphCompare } from "./helpers/normalizeSvgForGlyphCompare.js";
+
+function renderRep(rep: APRenderRep, sheets: string[]): string {
+    const window = createSVGWindow();
+    registerWindow(window, window.document);
+    const draw = SVG(window.document.documentElement) as Svg;
+    const renderer = new DefaultRenderer();
+    renderer.render(rep, draw, {
+        contextGlobal: true,
+        coloursGlobal: false,
+        showAnnotations: false,
+        sheets,
+    });
+    return draw.svg();
+}
 
 describe("migrateGlyphPaint scope", () => {
     it("migrates named legend glyphs only", () => {
@@ -99,5 +118,23 @@ describe("migrateGlyphPaint scope", () => {
         const violations = findLegendGlyphPaintViolations(rep);
         expect(violations).to.have.length(1);
         expect(violations[0]!.path).to.equal("legend.A.colour");
+    });
+
+    it("migrated chess duotone render matches legacy colour JSON", () => {
+        const rep: APRenderRep = {
+            board: { style: "squares", width: 1, height: 1 },
+            legend: {
+                X: { name: "chess-king-solid-traditional", colour: 1, colour2: 2 },
+            },
+            pieces: "X",
+        };
+        const legacy = JSON.parse(JSON.stringify(rep)) as APRenderRep;
+        const migrated = JSON.parse(JSON.stringify(rep)) as APRenderRep;
+        migrateRenderJson(migrated);
+        const legacySvg = renderRep(legacy, ["chess"]);
+        const migratedSvg = renderRep(migrated, ["chess"]);
+        expect(normalizeSvgForGlyphCompare(migratedSvg, { lenientOpacity: true })).to.equal(
+            normalizeSvgForGlyphCompare(legacySvg, { lenientOpacity: true }),
+        );
     });
 });
