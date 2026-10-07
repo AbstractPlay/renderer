@@ -3,6 +3,7 @@ import { GridPoints, rectOfRects, IPoint, Poly } from "../grids/index.js";
 import { APRenderRep, type Polypiece, type AreaPieces as IPiecesArea, type AreaPolyomino as IPolyArea } from "../schemas/schema.js";
 import { IRendererOptionsIn, RendererBase } from "./_base.js";
 import { usePieceAt } from "../common/plotting.js";
+import { areaTitleBand, measureAreaTitle, placeAreaTitleInBand } from "../common/areaLabelText.js";
 import { labelDisplayText } from "../common/renderLabel.js";
 import { x2uid } from "../common/glyph2uid.js";
 import { squares } from "../boards/index.js";
@@ -155,7 +156,11 @@ export class PolyominoRenderer extends RendererBase {
                     const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                     const cellsize = this.cellsize; //  * 0.75;
                     const areaWidth = cellsize * desiredWidth;
-                    const areaHeight = (textHeight * 2) + (cellsize * numRows);
+                    const areaLabelText = labelDisplayText(area.label);
+                    const labelFill = this.options.colourContext.strokes;
+                    const areaLabelMeasure = measureAreaTitle(this.rootSvg, areaLabelText, textHeight, labelFill);
+                    const titleBand = areaTitleBand(areaLabelMeasure.height, textHeight);
+                    const areaHeight = titleBand + (cellsize * numRows);
                     let markWidth = 0;
                     let markColour: string|undefined;
                     if ( ("ownerMark" in area) && (area.ownerMark !== undefined) ) {
@@ -178,7 +183,7 @@ export class PolyominoRenderer extends RendererBase {
                             throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                         }
                         const newx = col * cellsize;
-                        const newy = (textHeight * 2) + (row * cellsize);
+                        const newy = titleBand + (row * cellsize);
                         const use = nested.use(piece).size(cellsize, cellsize).move(newx, newy).scale(0.75, 0.75, newx + (cellsize / 2), newy + (cellsize / 2));
                         // const use = usePieceAt(nested, piece, cellsize, newx, newy, 1);
                         if (this.options.boardClick !== undefined) {
@@ -192,27 +197,25 @@ export class PolyominoRenderer extends RendererBase {
                         // nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
                     }
 
-                    // Add area label
-                    const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
-                    const txtWidth = tmptxt.bbox().w;
-                    tmptxt.remove();
-                    nested.width(Math.max(areaWidth, txtWidth));
-                    const txt = nested.text(labelDisplayText(area.label)).addClass(`aprender-area-label`).attr("dy", "0.55em");
-                    txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
-                        .attr("dominant-baseline", "middle")
-                        .move(0, 0);
+                    const { textWidth: areaLabelWidth } = placeAreaTitleInBand(this.rootSvg, nested, areaLabelText, {
+                        fontSize: textHeight,
+                        fill: labelFill,
+                    });
+                    nested.width(Math.max(areaWidth, areaLabelWidth));
 
-                    // Now place the whole group below the board
-                    // const placed = this.rootSvg.use(nested);
                     nested.move(box.x, placeY);
-                    placeY += nested.bbox().height + (this.cellsize * 0.5);
+                    placeY += areaHeight + 2 + (this.cellsize * 0.5);
                 } else {
                     const numRows = 5;
                     const desiredWidth = 5;
                     const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                     const cellsize = this.cellsize;
                     const areaWidth = cellsize * desiredWidth;
-                    const areaHeight = (textHeight * 2) + (cellsize * numRows);
+                    const polyLabelText = labelDisplayText(area.label);
+                    const polyLabelFill = this.options.colourContext.strokes;
+                    const polyLabelMeasure = measureAreaTitle(this.rootSvg, polyLabelText, textHeight, polyLabelFill);
+                    const polyTitleBand = areaTitleBand(polyLabelMeasure.height, textHeight);
+                    const areaHeight = polyTitleBand + (cellsize * numRows);
                     const nested = this.rootSvg.nested().id(`_polyomino`).size(areaWidth+2, areaHeight+2).viewbox(-1 - 5, -1, areaWidth+2+10, areaHeight+2);
                     if ("background" in area && area.background !== undefined) {
                         // @ts-expect-error (poor SVGjs typing)
@@ -235,7 +238,7 @@ export class PolyominoRenderer extends RendererBase {
                         }
                         piece.find("path").each(e => e.stroke(this.options.colourContext.strokes));
                         const newx = i * cellsize;
-                        const newy = (textHeight * 2);
+                        const newy = polyTitleBand;
                         nested.use(piece).size(cellsize, cellsize).move(newx, newy).scale(0.75, 0.75, newx + (cellsize / 2), newy + (cellsize / 2));
                         // const use = usePieceAt(nested, piece, cellsize, newx, newy, 1);
                         const handler = nested.rect(cellsize, cellsize).move(newx, newy).stroke("none").fill({color: "#fff", opacity: 0});
@@ -255,22 +258,16 @@ export class PolyominoRenderer extends RendererBase {
                     const poly = this.rootSvg.defs().nested().id(`_polyomino-area-${uid}`).viewbox(0, 0, realwidth, realheight);
                     this.buildPoly(poly, area.matrix, {divided: true, tlmark: true});
                     // place it
-                    nested.use(poly).size(areaWidth, cellsize * (numRows - 1)).move(0, (textHeight * 2) + cellsize);
+                    nested.use(poly).size(areaWidth, cellsize * (numRows - 1)).move(0, polyTitleBand + cellsize);
 
-                    // Add area label
-                    const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes});
-                    const txtWidth = tmptxt.bbox().w;
-                    tmptxt.remove();
-                    nested.width(Math.max(areaWidth, txtWidth));
-                    const txt = nested.text(labelDisplayText(area.label)).addClass(`aprender-area-label`).attr("dy", "0.55em");
-                    txt.font({size: textHeight, anchor: "start", fill: this.options.colourContext.strokes})
-                        .attr("dominant-baseline", "middle")
-                        .move(0, 0);
+                    const { textWidth: polyLabelWidth } = placeAreaTitleInBand(this.rootSvg, nested, polyLabelText, {
+                        fontSize: textHeight,
+                        fill: polyLabelFill,
+                    });
+                    nested.width(Math.max(areaWidth, polyLabelWidth));
 
-                    // Now place the whole group below the board
-                    // const placed = this.rootSvg.use(nested);
                     nested.move(box.x, placeY);
-                    placeY += nested.bbox().height + (this.cellsize * 0.33);
+                    placeY += areaHeight + 2 + (this.cellsize * 0.33);
                 }
             }
         }

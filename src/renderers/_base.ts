@@ -18,7 +18,8 @@ import {
 } from "../common/localStashArea.js";
 import { sheets } from "../sheets/index.js";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting.js";
-import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionCenterYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
+import { areaTitleBand, measureAreaTitle, placeAreaTitleInBand, placeTextInkTop } from "../common/areaLabelText.js";
+import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionTextYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
 import { glyph2uid, x2uid } from "../common/glyph2uid.js";
 import {
     applyFillSlotFillChannelOpacity,
@@ -4678,8 +4679,15 @@ export abstract class RendererBase {
                 const textHeight = this.cellsize / 3; // 10; // the allowance for the label
                 const cellsize = this.cellsize * 0.75;
                 const boardCellsize = this.cellsize;
+                let labelColour = this.options.colourContext.labels;
+                if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
+                    labelColour = this.resolveColour(this.json.board.labelColour) as string;
+                }
+                const areaLabelText = labelDisplayText(area.label);
+                const areaLabelMeasure = measureAreaTitle(this.rootSvg, areaLabelText, textHeight, labelColour);
+                const titleBand = areaTitleBand(areaLabelMeasure.height, textHeight);
                 let areaWidth = 0;
-                let areaHeight = textHeight * 2;
+                let areaHeight = titleBand;
                 for (let i = 0; i < pieceRows.length; i++) {
                     const row = pieceRows[i];
                     let rowWidth = 0;
@@ -4723,10 +4731,6 @@ export abstract class RendererBase {
                     // @ts-expect-error (poor SVGjs typing)
                     nested.rect(areaWidth,areaHeight).fill(this.resolveMarkerFill(area.background, 1));
                 }
-                let labelColour = this.options.colourContext.labels;
-                if ( (this.json.board !== null) && ("labelColour" in this.json.board) && (this.json.board.labelColour !== undefined) ) {
-                    labelColour = this.resolveColour(this.json.board.labelColour) as string;
-                }
                 const entryCaptionSize = boardCellsize / 4;
                 for (let iRow = 0; iRow < pieceRows.length; iRow++) {
                     const row = pieceRows[iRow];
@@ -4735,7 +4739,7 @@ export abstract class RendererBase {
                     for (const iPiece of row) {
                         rowHeight = Math.max(rowHeight, piecesAreaSlotHeight(area.pieces[iPiece], cellsize, boardCellsize));
                     }
-                    const slotTop = (textHeight * 2) + pieceRows.slice(0, iRow).reduce((sum, prevRow) => {
+                    const slotTop = titleBand + pieceRows.slice(0, iRow).reduce((sum, prevRow) => {
                         let prevHeight = cellsize;
                         for (const iPiece of prevRow) {
                             prevHeight = Math.max(prevHeight, piecesAreaSlotHeight(area.pieces[iPiece], cellsize, boardCellsize));
@@ -4781,17 +4785,20 @@ export abstract class RendererBase {
                         }
                         const caption = piecesAreaCaption(entry);
                         if (caption.text !== undefined) {
-                            const captionY = piecesAreaCaptionCenterYFromSlotTop(slotTop, entry, cellsize, boardCellsize)!;
+                            const captionY = piecesAreaCaptionTextYFromSlotTop(slotTop, entry, cellsize, boardCellsize)!;
                             const captionFont = {
                                 size: entryCaptionSize,
                                 anchor: "middle" as const,
                                 fill: labelColour,
                             };
-                            // Text.move aligns bbox origin; with text-anchor middle use amove (anchor x/y).
-                            const captionEl = nested.text(caption.text).addClass("aprender-pieces-entry-label");
-                            captionEl.font(captionFont)
-                                .attr("dominant-baseline", "central")
-                                .amove(pieceCenterX, captionY);
+                            const captionEl = placeTextInkTop(
+                                nested,
+                                caption.text,
+                                pieceCenterX,
+                                captionY,
+                                captionFont,
+                                "aprender-pieces-entry-label",
+                            );
                             if (rotation !== 0) {
                                 rotate(captionEl, rotation, pieceCenterX, pieceCenterY);
                             }
@@ -4809,25 +4816,17 @@ export abstract class RendererBase {
                     // nested.line(markWidth * -1, 0, markWidth * -1, nested.bbox().height).stroke({width: markWidth, color: markColour});
                 }
 
-                // Add area label
-                const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({size: textHeight, anchor: "start", fill: labelColour});
-                const txtWidth = tmptxt.bbox().w;
-                tmptxt.remove();
-                // set the actual width of the nested svg
+                const { textWidth: areaLabelWidth } = placeAreaTitleInBand(this.rootSvg, nested, areaLabelText, {
+                    fontSize: textHeight,
+                    fill: labelColour,
+                });
                 const {x: vbx, y:vby, w: vbw, h: vbh} = nested.viewbox();
-                const realWidth = Math.max(vbw, txtWidth);
+                const realWidth = Math.max(vbw, areaLabelWidth);
                 nested.width(realWidth);
                 nested.viewbox(vbx, vby, realWidth, vbh);
-                const txt = nested.text(labelDisplayText(area.label)).addClass(`aprender-area-label`);
-                txt.font({size: textHeight, anchor: "start", fill: labelColour})
-                    .attr("dy", "0.55em")
-                    .attr("dominant-baseline", "middle")
-                    .move(0, 0);
 
-                // Now place the whole group below the board
-                // const placed = this.rootSvg.use(nested);
                 nested.move(box.x, placeY);
-                placeY += nested.bbox().height + (this.cellsize * 0.5);
+                placeY += areaHeight + 2 + (this.cellsize * 0.5);
             }
         }
         return {newY: placeY, width: finalWidth};
@@ -4898,14 +4897,16 @@ export abstract class RendererBase {
                 hpad = this.cellsize * area.spacing;
             }
             const stackRows = buildLocalStashRows(area.stash.length, desiredWidth);
-            const textBand = textHeight;
+            const stashLabelText = labelDisplayText(area.label);
+            const stashLabelMeasure = measureAreaTitle(this.rootSvg, stashLabelText, textHeight, labelColour);
+            const titleBand = areaTitleBand(stashLabelMeasure.height, textHeight);
             const legend = this.json.legend;
             const rowBandHeights = stackRows.map((row) => {
                 const rowSpan = localStashRowStackSpanPx(area.stash, row, legend, layerOffsetFrac, cellsize);
                 return cellsize + rowSpan;
             });
             let areaWidth = 0;
-            let areaHeight = textBand + rowBandHeights.reduce((sum, h) => sum + h, 0);
+            let areaHeight = titleBand + rowBandHeights.reduce((sum, h) => sum + h, 0);
             for (const row of stackRows) {
                 let rowWidth = 0;
                 for (let c = 0; c < row.length; c++) {
@@ -4931,7 +4932,7 @@ export abstract class RendererBase {
             } else {
                 finalWidth = Math.max(finalWidth, fullWidth);
             }
-            let contentY = textBand;
+            let contentY = titleBand;
             for (let iRow = 0; iRow < stackRows.length; iRow++) {
                 const row = stackRows[iRow];
                 const rowMaxSteps = localStashRowMaxSteps(area.stash, row);
@@ -4996,26 +4997,16 @@ export abstract class RendererBase {
                     contentY += piecesAreaVerticalGap(hpad, this.cellsize);
                 }
             }
-            const tmptxt = this.rootSvg.text(labelDisplayText(area.label)).font({
-                size: textHeight,
-                anchor: "start",
+            const { textWidth: stashLabelWidth } = placeAreaTitleInBand(this.rootSvg, nested, stashLabelText, {
+                fontSize: textHeight,
                 fill: labelColour,
             });
-            const txtWidth = tmptxt.bbox().w;
-            tmptxt.remove();
             const { x: vbx, y: vby, w: vbw, h: vbh } = nested.viewbox();
-            const realWidth = Math.max(vbw, txtWidth);
+            const realWidth = Math.max(vbw, stashLabelWidth);
             nested.width(realWidth);
             nested.viewbox(vbx, vby, realWidth, vbh);
-            nested
-                .text(labelDisplayText(area.label))
-                .addClass("aprender-area-label")
-                .font({ size: textHeight, anchor: "start", fill: labelColour })
-                .attr("dy", "0.55em")
-                .attr("dominant-baseline", "middle")
-                .move(0, 0);
             nested.move(box.x, placeY);
-            placeY += nested.bbox().height + this.cellsize * 0.5;
+            placeY += areaHeight + 2 + this.cellsize * 0.5;
         }
         return { newY: placeY, width: finalWidth };
     }

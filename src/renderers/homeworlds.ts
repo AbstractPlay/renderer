@@ -4,6 +4,7 @@ import { rectOfRects } from "../grids/index.js";
 import type { IPoint } from "../grids/_base.js";
 import { APRenderRep, AreaHWStash } from "../schemas/schema.js";
 import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import { placeAreaTitleAt } from "../common/areaLabelText.js";
 import { usePieceAt } from "../common/plotting.js";
 
 type Seat = "N" | "E" | "S" | "W";
@@ -557,15 +558,12 @@ export class HomeworldsRenderer extends RendererBase {
             sysLabel += ` (${sys.seat})`;
         }
         const fontsize = labelHeight;
-        nested.text(sysLabel)
-            .font({
-                anchor: "start",
-                fill: this.contrastColour,
-                size: fontsize,
-            })
-            .attr("dy", "0.55em")
-            .attr("dominant-baseline", "middle")
-            .move(realX + 5, realY + 2);
+        placeAreaTitleAt(this.rootSvg!, nested, sysLabel, {
+            fontSize: fontsize,
+            fill: this.contrastColour,
+            x: realX + 5,
+            y: realY + 2,
+        });
 
         return nested;
     }

@@ -2,6 +2,7 @@
 import { StrokeData, Svg } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids/index.js";
 import { APRenderRep } from "../schemas/schema.js";
+import { placeAreaTitleAt } from "../common/areaLabelText.js";
 import { IRendererOptionsIn, RendererBase } from "./_base.js";
 
 type Seat = "N" | "E" | "S" | "W";
@@ -464,15 +465,12 @@ export class HomeworldsOrigRenderer extends RendererBase {
         // Add name
         // nested.text(name).move(grid[0][0].x, grid[0][0].y).fill("#fff");
         const fontsize = 12;
-        nested.text(name)
-            .font({
-                anchor: "start",
-                fill: "#fff",
-                size: fontsize,
-            })
-            .attr("dy", "0.55em")
-            .attr("dominant-baseline", "middle")
-            .move(5, 5);
+        placeAreaTitleAt(this.rootSvg!, nested, name, {
+            fontSize: fontsize,
+            fill: "#fff",
+            x: 5,
+            y: 5,
+        });
 
         return nested;
     }

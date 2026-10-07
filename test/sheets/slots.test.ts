@@ -185,6 +185,22 @@ function assertDiceRegistry(name: string, symbol: ReturnType<typeof buildSheetGl
     });
 }
 
+/** Runtime defineGlyph slot metadata must match the committed catalog for this glyph. */
+function assertRegistrySlotsMatchCatalog(sheetName: string, name: string): void {
+    const meta = getGlyphDefinitionMeta(sheetName, name);
+    const entry = getGlyphCatalog().glyphs[catalogKey(sheetName, name)];
+    expect(entry, `catalog entry for ${sheetName}:${name}`).to.not.equal(undefined);
+    expect(meta?.slots, `${sheetName}:${name} registry slots`).to.not.equal(undefined);
+    const catalogSlotNames = Object.keys(entry!.slots).sort();
+    const registrySlotNames = Object.keys(meta!.slots!).sort();
+    expect(registrySlotNames, `${sheetName}:${name} registry slot names`).to.deep.equal(catalogSlotNames);
+    for (const slot of catalogSlotNames) {
+        expect(meta!.slots![slot]?.channels, `${sheetName}:${name}.${slot} channels`).to.deep.equal(
+            entry!.slots[slot].channels,
+        );
+    }
+}
+
 function assertCatalogSheetRegistry(
     sheetName: SlottedSheetName,
     name: string,
@@ -195,7 +211,7 @@ function assertCatalogSheetRegistry(
         expect(meta.slots, `${sheetName}:${name} fixed glyph slots`).to.equal(undefined);
         return;
     }
-    expect(meta?.slots?.fill, `${sheetName}:${name} registry`).to.not.equal(undefined);
+    assertRegistrySlotsMatchCatalog(sheetName, name);
 
     if (sheetName === "core") {
         if (meta?.paintMode === "proceduralShaded") {

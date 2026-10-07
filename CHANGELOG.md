@@ -18,6 +18,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Fixed
 
+- **Pieces / `localStash` area labels and entry captions:** Tried to fix browser engine discrepancies by using direct dimension probing instead of relying on consistent application of baseline metrics. Slightly less performant, but not noticeable.
 - **Legacy glyph `opacity` without `colour`:** `fill-opacity` is applied to fill-channel slot bindings on authored defaults (regression from slot paint migration).
 - **Procedural orbs (`orb`–`orb3`):** legacy `opacity` on `paint.fill` is applied as `fill-opacity` on the shaded sphere after gradients are built (was dropped when `fill` was removed from post-shading slot paint).
 - **Legacy `colour` colourfuncs (`flatten`, `lighten`, `bestContrast`, `custom`):** slot paint no longer treats colourfunc objects as `{ opacity }`-only slot wrappers when they include an `opacity` field; they are always passed to `resolveFill` (e.g. Decktet hidden `cUNKNOWN` card backs).

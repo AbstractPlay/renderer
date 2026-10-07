@@ -8,8 +8,24 @@ export const DOMINO_HAND_PIECE_SCALE = 0.85;
 /** Legend composites are authored for a 500-unit cell (see `usePieceAt`). */
 const LEGEND_CELL_SIZE = 500;
 
+/** Default legend `<svg>` height for circular tokens (500×√2 user units). */
+const DEFAULT_LEGEND_SYMBOL_HEIGHT = LEGEND_CELL_SIZE * Math.SQRT2;
+
+/**
+ * Half of the rendered `<use>` height for hand pieces at `scalingFactor` 1, matching `usePieceAt`.
+ */
+export const piecesAreaPieceVisualHalf = (
+    ordinaryCellsize: number,
+    scalingFactor = 1,
+): number => {
+    return (ordinaryCellsize / LEGEND_CELL_SIZE) * scalingFactor * DEFAULT_LEGEND_SYMBOL_HEIGHT / 2;
+};
+
 /** Vertical band for optional entry caption text, as a fraction of board cell size. */
 export const PIECES_AREA_CAPTION_BAND = 0.25;
+
+/** Gap between piece body and entry caption ink, as a fraction of board cell size. */
+export const PIECES_AREA_CAPTION_GAP = 0.04;
 
 export type PiecesAreaEntry = AreaPieces["pieces"][number];
 
@@ -48,6 +64,10 @@ export const piecesAreaCaptionBandSize = (boardCellsize: number): number => {
     return boardCellsize * PIECES_AREA_CAPTION_BAND;
 };
 
+export const piecesAreaCaptionGapSize = (boardCellsize: number): number => {
+    return boardCellsize * PIECES_AREA_CAPTION_GAP;
+};
+
 export const piecesAreaBodyHeight = (
     entry: PiecesAreaEntry,
     ordinaryCellsize: number,
@@ -69,12 +89,24 @@ export const piecesAreaSlotWidth = (entry: PiecesAreaEntry, ordinaryCellsize: nu
 };
 
 export const piecesAreaSlotHeight = (entry: PiecesAreaEntry, ordinaryCellsize: number, boardCellsize: number): number => {
-    const body = piecesAreaBodyHeight(entry, ordinaryCellsize, boardCellsize);
-    const { text } = piecesAreaCaption(entry);
-    if (text === undefined) {
-        return body;
+    if (isDominoTileRef(entry)) {
+        const { text } = piecesAreaCaption(entry);
+        if (text === undefined) {
+            return boardCellsize;
+        }
+        return boardCellsize + piecesAreaCaptionBandSize(boardCellsize);
     }
-    return body + piecesAreaCaptionBandSize(boardCellsize);
+    const visualHeight = piecesAreaPieceVisualHalf(ordinaryCellsize) * 2;
+    const { text, textPosition } = piecesAreaCaption(entry);
+    if (text === undefined) {
+        return visualHeight;
+    }
+    const band = piecesAreaCaptionBandSize(boardCellsize);
+    const gap = piecesAreaCaptionGapSize(boardCellsize);
+    if (textPosition === "above") {
+        return band + visualHeight;
+    }
+    return visualHeight + gap + band;
 };
 
 /** Y coordinate of the piece (or domino tile) vertical centre within a slot. */
@@ -84,19 +116,30 @@ export const piecesAreaPieceCenterYFromSlotTop = (
     ordinaryCellsize: number,
     boardCellsize: number,
 ): number => {
-    const body = piecesAreaBodyHeight(entry, ordinaryCellsize, boardCellsize);
+    if (isDominoTileRef(entry)) {
+        const { text, textPosition } = piecesAreaCaption(entry);
+        if (text === undefined) {
+            return slotTop + boardCellsize / 2;
+        }
+        const band = piecesAreaCaptionBandSize(boardCellsize);
+        if (textPosition === "above") {
+            return slotTop + band + boardCellsize / 2;
+        }
+        return slotTop + boardCellsize / 2;
+    }
+    const half = piecesAreaPieceVisualHalf(ordinaryCellsize);
     const { text, textPosition } = piecesAreaCaption(entry);
     if (text === undefined) {
-        return slotTop + body / 2;
+        return slotTop + half;
     }
     const band = piecesAreaCaptionBandSize(boardCellsize);
     if (textPosition === "above") {
-        return slotTop + band + body / 2;
+        return slotTop + band + half;
     }
-    return slotTop + body / 2;
+    return slotTop + half;
 };
 
-/** Y coordinate for caption text centre, or undefined when the entry has no caption. */
+/** Y coordinate for caption text centre (legacy layout midpoint), or undefined when there is no caption. */
 export const piecesAreaCaptionCenterYFromSlotTop = (
     slotTop: number,
     entry: PiecesAreaEntry,
@@ -107,12 +150,40 @@ export const piecesAreaCaptionCenterYFromSlotTop = (
     if (text === undefined) {
         return undefined;
     }
-    const body = piecesAreaBodyHeight(entry, ordinaryCellsize, boardCellsize);
+    const half = isDominoTileRef(entry)
+        ? boardCellsize / 2
+        : piecesAreaPieceVisualHalf(ordinaryCellsize);
     const band = piecesAreaCaptionBandSize(boardCellsize);
+    const gap = piecesAreaCaptionGapSize(boardCellsize);
     if (textPosition === "above") {
         return slotTop + band / 2;
     }
-    return slotTop + body + band / 2;
+    const visualBottom = slotTop + half * 2;
+    return visualBottom + gap + band / 2;
+};
+
+/**
+ * Ink-top Y for entry captions (see `placeTextInkTop`), or undefined when there is no caption.
+ */
+export const piecesAreaCaptionTextYFromSlotTop = (
+    slotTop: number,
+    entry: PiecesAreaEntry,
+    ordinaryCellsize: number,
+    boardCellsize: number,
+): number | undefined => {
+    const { text, textPosition } = piecesAreaCaption(entry);
+    if (text === undefined) {
+        return undefined;
+    }
+    const gap = piecesAreaCaptionGapSize(boardCellsize);
+    if (textPosition === "above") {
+        return slotTop + gap;
+    }
+    const half = isDominoTileRef(entry)
+        ? boardCellsize / 2
+        : piecesAreaPieceVisualHalf(ordinaryCellsize);
+    const centerY = piecesAreaPieceCenterYFromSlotTop(slotTop, entry, ordinaryCellsize, boardCellsize);
+    return centerY + half + gap;
 };
 
 /** Top edge Y for a domino tile group within a slot. */

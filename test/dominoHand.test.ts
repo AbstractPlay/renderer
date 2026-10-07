@@ -2,7 +2,7 @@ import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
-import { dominoClickPayload, buildPiecesAreaRows, piecesAreaCaptionCenterYFromSlotTop, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, shouldRotateAreaPieces } from "../src/common/dominoHand";
+import { dominoClickPayload, buildPiecesAreaRows, piecesAreaCaptionCenterYFromSlotTop, piecesAreaCaptionTextYFromSlotTop, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, shouldRotateAreaPieces } from "../src/common/dominoHand";
 import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
 import { APRenderRep, AreaPieces } from "../src/schemas/schema";
@@ -341,6 +341,16 @@ describe("domino hand area", () => {
         expect(captionY).to.be.lessThan(pieceY);
     });
 
+    it("should anchor below captions under the piece body with a gap", () => {
+        const boardCellsize = 40;
+        const ordinaryCellsize = boardCellsize * 0.75;
+        const slotTop = 30;
+        const entry = { piece: "A", text: "1", textPosition: "below" as const };
+        const anchorY = piecesAreaCaptionTextYFromSlotTop(slotTop, entry, ordinaryCellsize, boardCellsize)!;
+        const pieceCenter = piecesAreaPieceCenterYFromSlotTop(slotTop, entry, ordinaryCellsize, boardCellsize);
+        expect(anchorY).to.be.greaterThan(pieceCenter);
+    });
+
     it("should render entry captions above or below hand pieces", () => {
         const draw = makeDraw();
         const renderer = new DefaultRenderer();
@@ -365,9 +375,11 @@ describe("domino hand area", () => {
         let labelAboveCy: number | undefined;
         let labelBelowX: number | undefined;
         let labelAboveX: number | undefined;
+        let labelBelow: Svg | undefined;
         labels.forEach((node) => {
             const t = node.text();
             if (t === "1") {
+                labelBelow = node as Svg;
                 labelBelowCy = node.bbox().cy;
                 labelBelowX = Number(node.attr("x"));
             } else if (t === "2") {
@@ -381,6 +393,15 @@ describe("domino hand area", () => {
         expect(labelAboveX).to.not.equal(undefined);
         expect(labelBelowCy!).to.be.greaterThan(useA.bbox().cy);
         expect(labelAboveCy!).to.be.lessThan(useB.bbox().cy);
+        expect(labelBelow).to.not.equal(undefined);
+        expect(labelBelow!.attr("dominant-baseline")).to.equal("text-before-edge");
+        const areaTitle = piecesArea.findOne(".aprender-area-label");
+        expect(areaTitle).to.not.equal(null);
+        if (areaTitle !== null) {
+            expect(areaTitle.attr("dy")).to.equal(undefined);
+            expect(areaTitle.attr("dominant-baseline")).to.equal("text-before-edge");
+            expect(Number(areaTitle.attr("y"))).to.be.lessThan(useA.bbox().cy);
+        }
         // Same slot spacing as hand uses; caption x is pieceCenterX (amove), use x is pieceCenterX - halfSize.
         expect(labelAboveX! - labelBelowX!).to.be.closeTo(useB.x() - useA.x(), 0.5);
         expect(labelBelowX! - useA.x()).to.be.closeTo(labelAboveX! - useB.x(), 0.5);

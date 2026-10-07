@@ -76,7 +76,16 @@ function registerHemisphereDiscToken(
     split: "tb" | "lr",
     build: (canvas: SVGContainer, split: "tb" | "lr") => SVGSymbol,
 ): void {
-    defineGlyph(sheet.name, name, { slots, build: (canvas) => build(canvas, split) }, sheet.glyphs);
+    defineGlyph(
+        sheet.name,
+        name,
+        {
+            slots,
+            colour2Slot: "border",
+            build: (canvas: SVGContainer) => build(canvas, split),
+        },
+        sheet.glyphs,
+    );
 }
 
 function buildPieceHemisphereDisc(canvas: SVGContainer, split: "tb" | "lr"): SVGSymbol {
@@ -444,23 +453,35 @@ registerStrokeFillToken("cross-diag", (canvas: SVGContainer) => {
     return group;
 });
 
-registerStrokeFillToken("cross-omni", (canvas: SVGContainer) => {
-    const group = canvas.symbol();
-    group.line(-10, -10, 110, 110)
-        .attr("data-slot-stroke", "fill")
-        .stroke({width: 15, color: "#000"})
-    group.line(110, -10, -10, 110)
-        .attr("data-slot-stroke", "fill")
-        .stroke({width: 15, color: "#000"})
-    group.line(50, -10, 50, 110)
-        .attr("data-slot-stroke", "fill")
-        .stroke({width: 15, color: "#000"})
-    group.line(-10, 50, 110, 50)
-        .attr("data-slot-stroke", "border")
-        .stroke({width: 15, color: "#000"})
-    group.viewbox(0,0,100,100);
-    return group;
-});
+defineGlyph(
+    sheet.name,
+    "cross-omni",
+    {
+        slots: {
+            fill: { channels: ["stroke"] },
+            border: { channels: ["stroke"] },
+        },
+        colour2Slot: "border",
+        build: (canvas: SVGContainer) => {
+            const group = canvas.symbol();
+            group.line(-10, -10, 110, 110)
+                .attr("data-slot-stroke", "fill")
+                .stroke({width: 15, color: "#000"});
+            group.line(110, -10, -10, 110)
+                .attr("data-slot-stroke", "fill")
+                .stroke({width: 15, color: "#000"});
+            group.line(50, -10, 50, 110)
+                .attr("data-slot-stroke", "fill")
+                .stroke({width: 15, color: "#000"});
+            group.line(-10, 50, 110, 50)
+                .attr("data-slot-stroke", "border")
+                .stroke({width: 15, color: "#000"});
+            group.viewbox(0, 0, 100, 100);
+            return group;
+        },
+    },
+    sheet.glyphs,
+);
 
 registerStrokeFillToken("cross-orth", (canvas: SVGContainer) => {
     const group = canvas.symbol();
