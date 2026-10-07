@@ -28,7 +28,13 @@ export function isGradientPaint(val: unknown): val is Gradient {
 /** Default mapping for legacy colour2 / data-playerfill2 during transition. */
 export type Colour2Slot = "border" | "detail";
 
-export type PaintValue = ColourResolvable | Gradient | SlotPaintObject;
+export type PaintValue = ColourResolvable | Gradient | SlotPaintObject | "auto";
+
+/** Font size used when building text glyph symbols (see RendererBase composite loop). */
+export const TEXT_GLYPH_BASE_FONT_SIZE = 17;
+
+/** Outline stroke width as a fraction of {@link TEXT_GLYPH_BASE_FONT_SIZE}. */
+export const TEXT_GLYPH_OUTLINE_STROKE_WIDTH_RATIO = 2 / 17;
 
 export interface SlotPaintObject {
     colour?: ColourResolvable | Gradient;
@@ -75,6 +81,38 @@ export function normalizeGlyphPaint(
     return normalizeSheetGlyphPaint(g, colour2Slot);
 }
 
+export function isTextPaintBorderAuto(entry: unknown): entry is "auto" {
+    return entry === "auto";
+}
+
+/** Text legend layers — same opacity rules as sheet glyphs (no colour2). */
+export function normalizeTextGlyphPaint(g: TextGlyph): NormalizedSheetGlyph {
+    const hasExplicitPaint = g.paint !== undefined;
+    const paint: NormalizedPaintMap = hasExplicitPaint ? { ...g.paint } : {};
+    if (g.colour !== undefined && paint.fill === undefined) {
+        paint.fill = g.colour;
+    }
+
+    let layerOpacity = 1;
+    if (g.opacity !== undefined) {
+        if (hasExplicitPaint) {
+            layerOpacity = g.opacity;
+        } else {
+            const existingFill = paint.fill;
+            if (existingFill === undefined) {
+                paint.fill = { opacity: g.opacity };
+            } else if (isColourfuncs(existingFill) || isGradientPaint(existingFill)) {
+                paint.fill = { colour: existingFill, opacity: g.opacity };
+            } else if (isSlotPaintObject(existingFill)) {
+                paint.fill = { ...existingFill, opacity: g.opacity };
+            } else {
+                paint.fill = { colour: existingFill, opacity: g.opacity };
+            }
+        }
+    }
+    return { paint, layerOpacity };
+}
+
 export function normalizeSheetGlyphPaint(
     g: Glyph,
     colour2Slot: Colour2Slot = "border",
@@ -118,6 +156,9 @@ export function paintFingerprint(paint: NormalizedPaintMap): string {
 }
 
 export function paintColourValue(entry: PaintValue): ColourResolvable | Gradient | undefined {
+    if (isTextPaintBorderAuto(entry)) {
+        return undefined;
+    }
     if (isColourfuncs(entry) || isGradientPaint(entry)) {
         return entry;
     }
@@ -131,6 +172,9 @@ export function paintColourValue(entry: PaintValue): ColourResolvable | Gradient
 }
 
 export function paintSlotOpacity(entry: PaintValue): number {
+    if (isTextPaintBorderAuto(entry)) {
+        return 1;
+    }
     if (isSlotPaintObject(entry) && entry.opacity !== undefined) {
         return entry.opacity;
     }
@@ -201,8 +245,15 @@ export function priorCompositeLayerTint(
             if (prev.colour !== undefined) {
                 return resolveColour(prev.colour as ColourResolvable | Gradient | Colourfuncs, contextBackground) as string;
             }
-        } else if (isTextGlyph(prev) && prev.colour !== undefined) {
-            return resolveColour(prev.colour as ColourResolvable | Gradient | Colourfuncs, contextBackground) as string;
+        } else if (isTextGlyph(prev)) {
+            const norm = normalizeTextGlyphPaint(prev);
+            const fill = norm.paint.fill;
+            if (fill !== undefined) {
+                const c = paintColourValue(fill);
+                if (c !== undefined) {
+                    return resolveColour(c as ColourResolvable | Gradient | Colourfuncs, contextBackground) as string;
+                }
+            }
         }
     }
     return contextBackground;
@@ -438,7 +489,91 @@ export interface TextGlyphFillContext {
         opts?: { scale?: number },
     ) => ResolvedFill;
     applyPlayerFillTargets: (got: SVGSymbol, suffix: string, fill: ResolvedFill, opacity: number) => void;
+    isPatternSVGElement: (fill: ResolvedFill) => boolean;
     contextBackground: string;
+}
+
+function bestContrastFillColour(
+    bg: string,
+    resolveColour: TextGlyphFillContext["resolveColour"],
+): string {
+    const func: FunctionBestContrast = {
+        func: "bestContrast",
+        bg,
+        fg: ["#000", "#fff"],
+    };
+    return resolveColour(func, "#000") as string;
+}
+
+function oppositeContrastHex(
+    fillHex: string,
+    resolveColour: TextGlyphFillContext["resolveColour"],
+): string {
+    const lower = fillHex.toLowerCase();
+    if (lower === "#fff" || lower === "#ffffff") {
+        return "#000";
+    }
+    if (lower === "#000" || lower === "#000000") {
+        return "#fff";
+    }
+    return bestContrastFillColour(fillHex, resolveColour);
+}
+
+function resolvedFillToString(fill: ResolvedFill): string | undefined {
+    if (typeof fill === "string") {
+        return fill;
+    }
+    return undefined;
+}
+
+function applyTextElementFill(
+    el: SVGElement,
+    fill: ResolvedFill,
+    opacity: number,
+    isPattern: (f: ResolvedFill) => boolean,
+): void {
+    if (isPattern(fill)) {
+        // @ts-expect-error (poor SVGjs typing)
+        el.fill(fill);
+        if (opacity < 1) {
+            el.opacity(opacity);
+        }
+        return;
+    }
+    if (typeof fill === "object") {
+        el.fill(fill);
+        return;
+    }
+    el.fill({ color: fill, opacity });
+}
+
+function applyTextElementStroke(
+    el: SVGElement,
+    stroke: ResolvedFill,
+    opacity: number,
+    strokeWidth: number,
+    isPattern: (f: ResolvedFill) => boolean,
+): void {
+    const node = el.node as Element | undefined;
+    if (node !== undefined && typeof node.setAttribute === "function") {
+        node.setAttribute("stroke-linejoin", "round");
+        node.setAttribute("paint-order", "stroke fill");
+        node.setAttribute("stroke-width", String(strokeWidth));
+    }
+    if (isPattern(stroke)) {
+        // @ts-expect-error (poor SVGjs typing)
+        el.stroke(stroke);
+        if (opacity < 1) {
+            el.opacity(opacity);
+        }
+        return;
+    }
+    if (typeof stroke === "object") {
+        // @ts-expect-error (poor SVGjs typing)
+        el.stroke(stroke);
+        return;
+    }
+    el.stroke({ color: stroke, opacity });
 }
 
 /** Text glyph fill/stroke; layer opacity is applied on the placed `<use>`, not here. */
@@ -448,36 +583,115 @@ export function applyTextGlyphFill(
     glyphs: Glyph[],
     idx: number,
     ctx: TextGlyphFillContext,
+    opts?: { fontSize?: number },
 ): void {
     if (!isTextGlyph(g)) {
         return;
     }
-    if (g.colour !== undefined) {
-        const resolved = ctx.resolveFill(g.colour as number | string | Gradient | Colourfuncs, "#000");
-        ctx.applyPlayerFillTargets(got, "", resolved, 1);
+    const fontSize = opts?.fontSize ?? TEXT_GLYPH_BASE_FONT_SIZE;
+    const strokeWidth = fontSize * TEXT_GLYPH_OUTLINE_STROKE_WIDTH_RATIO;
+    const norm = normalizeTextGlyphPaint(g);
+    const hasExplicitPaint = g.paint !== undefined;
+    const borderEntry = norm.paint.border;
+    const fillEntry = norm.paint.fill;
+    const bg = priorCompositeLayerTint(glyphs, idx, ctx.resolveColour, ctx.contextBackground);
+
+    const autoContrastTriple =
+        hasExplicitPaint &&
+        g.colour === undefined &&
+        fillEntry === undefined &&
+        isTextPaintBorderAuto(borderEntry);
+    const noPaintNoColour = !hasExplicitPaint && g.colour === undefined;
+
+    const isPattern = ctx.isPatternSVGElement;
+
+    let outlineStroke: ResolvedFill | undefined;
+    let outlineStrokeOpacity = 1;
+    let fillOnly: ResolvedFill | undefined;
+    let fillOnlyOpacity = 1;
+
+    if (noPaintNoColour || autoContrastTriple) {
+        const contrast = bestContrastFillColour(bg, ctx.resolveColour);
+        fillOnly = contrast;
+        fillOnlyOpacity = 1;
+        if (isTextPaintBorderAuto(borderEntry)) {
+            outlineStroke = oppositeContrastHex(contrast, ctx.resolveColour);
+            outlineStrokeOpacity = 1;
+            fillOnly = contrast;
+        }
+    } else {
+        if (fillEntry !== undefined) {
+            const colourVal = paintColourValue(fillEntry);
+            if (colourVal !== undefined) {
+                fillOnly = ctx.resolveFill(
+                    colourVal as number | string | Gradient | Colourfuncs,
+                    "#000",
+                );
+                fillOnlyOpacity = paintSlotOpacity(fillEntry);
+            } else if (isSlotPaintObject(fillEntry) && fillEntry.opacity !== undefined && fillEntry.colour === undefined) {
+                fillOnlyOpacity = fillEntry.opacity;
+            }
+        }
+        if (borderEntry !== undefined) {
+            if (isTextPaintBorderAuto(borderEntry)) {
+                let fillHex =
+                    fillOnly !== undefined
+                        ? resolvedFillToString(fillOnly)
+                        : undefined;
+                if (fillHex === undefined) {
+                    fillHex = bestContrastFillColour(bg, ctx.resolveColour);
+                    if (fillOnly === undefined) {
+                        fillOnly = fillHex;
+                        fillOnlyOpacity = 1;
+                    }
+                }
+                outlineStroke = oppositeContrastHex(fillHex, ctx.resolveColour);
+                outlineStrokeOpacity = 1;
+            } else {
+                const borderVal = paintColourValue(borderEntry);
+                if (borderVal !== undefined) {
+                    outlineStroke = ctx.resolveFill(
+                        borderVal as number | string | Gradient | Colourfuncs,
+                        "#000",
+                    );
+                    outlineStrokeOpacity = paintSlotOpacity(borderEntry);
+                }
+            }
+        }
+    }
+
+    if (outlineStroke !== undefined && fillOnly !== undefined) {
+        got.find("text").each(function (this: SVGElement) {
+            applyTextElementStroke(this, outlineStroke!, outlineStrokeOpacity, strokeWidth, isPattern);
+            applyTextElementFill(this, fillOnly!, fillOnlyOpacity, isPattern);
+        });
         return;
     }
-    const darkest = priorCompositeLayerTint(glyphs, idx, ctx.resolveColour, ctx.contextBackground);
-    const func: FunctionBestContrast = {
-        func: "bestContrast",
-        bg: darkest,
-        fg: ["#000", "#fff"],
-    };
-    const normColour = ctx.resolveColour(func, "#000") as string;
-    got.find("text").each(function (this: SVGElement) {
-        this.fill({ color: normColour, opacity: 1 });
-    });
-    got.find("[data-playerstroke]").each(function (this: SVGElement) {
-        this.stroke({ color: normColour, opacity: 1 });
-    });
+
+    if (outlineStroke !== undefined && fillOnly === undefined) {
+        got.find("text").each(function (this: SVGElement) {
+            applyTextElementStroke(this, outlineStroke!, outlineStrokeOpacity, strokeWidth, isPattern);
+        });
+        return;
+    }
+
+    if (fillOnly !== undefined) {
+        if (typeof fillOnly === "string" && !isPattern(fillOnly)) {
+            ctx.applyPlayerFillTargets(got, "", fillOnly, fillOnlyOpacity);
+            return;
+        }
+        got.find("text").each(function (this: SVGElement) {
+            applyTextElementFill(this, fillOnly!, fillOnlyOpacity, isPattern);
+        });
+    }
 }
 
 export function collectPatternsFromGlyphPaint(g: Glyph): Array<number | string | Gradient | Colourfuncs | undefined> {
+    if (isTextGlyph(g)) {
+        return collectPaintColourValues(normalizeTextGlyphPaint(g).paint);
+    }
     const norm = normalizeGlyphPaint(g);
     if (norm === undefined) {
-        if (isTextGlyph(g) && g.colour !== undefined) {
-            return [g.colour];
-        }
         return [];
     }
     return collectPaintColourValues(norm.paint);

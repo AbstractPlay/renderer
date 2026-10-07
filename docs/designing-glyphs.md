@@ -7,7 +7,7 @@ Contributor guide for **contact-sheet artwork** referenced by `name` in game JSO
 1. **Build time (sheet):** geometry, default fills/strokes, and **slot bindings** (`data-slot-fill`, `data-slot-stroke`, optional `data-context-*` for theme defaults).
 2. **Render time (legend):** `paint.fill`, `paint.border`, `paint.detail`, … map to bound regions. Omitted slots keep sheet defaults.
 
-Text overlays (`text` in the legend) are **not** sheet glyphs — they use optional **`colour`** only; do not add slot attrs for text.
+Text overlays (`text` in the legend) are **not** sheet glyphs — authors set **`paint.fill`** / **`paint.border`** (or legacy **`colour`**) in JSON; the renderer draws SVG `<text>`, not slot attrs on sheet art.
 
 ## `defineGlyph`
 

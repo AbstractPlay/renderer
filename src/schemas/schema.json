@@ -589,6 +589,35 @@
                 { "$ref": "#/$defs/slotPaint" }
             ]
         },
+        "glyphPaintColour": {
+            "deprecated": true,
+            "description": "Deprecated — use paint.fill instead. Still accepted at runtime during the transition to per-slot paint.",
+            "anyOf": [
+                { "$ref": "#/$defs/colourResolvable" },
+                { "$ref": "#/$defs/gradient" }
+            ]
+        },
+        "sheetGlyphPaintMap": {
+            "description": "Per-slot colours for sheet artwork slots (fill, border, detail, …).",
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/paintEntry" }
+        },
+        "textPaintBorderEntry": {
+            "description": "Text outline colour, or \"auto\" to pair with automatic fill contrast (paint present, fill omitted, colour omitted).",
+            "anyOf": [
+                { "const": "auto" },
+                { "$ref": "#/$defs/paintEntry" }
+            ]
+        },
+        "textGlyphPaintMap": {
+            "description": "Per-slot colours for text overlays (fill and border only).",
+            "type": "object",
+            "properties": {
+                "fill": { "$ref": "#/$defs/paintEntry" },
+                "border": { "$ref": "#/$defs/textPaintBorderEntry" }
+            },
+            "additionalProperties": false
+        },
         "glyphLayerCommon": {
             "description": "Transform and layer options shared by sheet and text legend glyphs.",
             "type": "object",
@@ -642,7 +671,7 @@
                     "additionalProperties": false
                 }
             },
-            "additionalProperties": true
+            "additionalProperties": false
         },
         "sheetGlyph": {
             "description": "A named glyph from a sheet. Use paint (fill, border, …); colour/colour2 are deprecated aliases.",
@@ -702,19 +731,8 @@
                     "type": "string",
                     "pattern": "^\\S+$"
                 },
-                "paint": {
-                    "description": "Per-slot colours for sheet artwork slots (fill, border, detail, …).",
-                    "type": "object",
-                    "additionalProperties": { "$ref": "#/$defs/paintEntry" }
-                },
-                "colour": {
-                    "deprecated": true,
-                    "description": "Deprecated on sheet glyphs — use paint.fill instead. Still accepted at runtime during the transition to per-slot paint.",
-                    "anyOf": [
-                        { "$ref": "#/$defs/colourResolvable" },
-                        { "$ref": "#/$defs/gradient" }
-                    ]
-                },
+                "paint": { "$ref": "#/$defs/sheetGlyphPaintMap" },
+                "colour": { "$ref": "#/$defs/glyphPaintColour" },
                 "colour2": {
                     "deprecated": true,
                     "description": "Deprecated on sheet glyphs — use paint.border (default secondary slot) or paint.detail where the glyph defines it (e.g. dice pips). Still accepted at runtime during the transition to per-slot paint.",
@@ -727,7 +745,7 @@
             "additionalProperties": false
         },
         "textGlyph": {
-            "description": "Plain text overlay in a cell. Use colour (optional); omit colour for automatic contrast.",
+            "description": "Plain text overlay in a cell. Use paint.fill / paint.border (optional); legacy colour maps to fill. Omit fill and colour for automatic contrast; paint.border \"auto\" pairs contrast fill with an opposite outline.",
             "type": "object",
             "required": ["text"],
             "properties": {
@@ -783,13 +801,8 @@
                     "description": "Short text drawn in the cell (e.g. a numeral).",
                     "type": "string"
                 },
-                "colour": {
-                    "description": "Text fill colour. When omitted, the renderer picks black or white for contrast.",
-                    "anyOf": [
-                        { "$ref": "#/$defs/colourResolvable" },
-                        { "$ref": "#/$defs/gradient" }
-                    ]
-                },
+                "paint": { "$ref": "#/$defs/textGlyphPaintMap" },
+                "colour": { "$ref": "#/$defs/glyphPaintColour" },
                 "fontFamily": {
                     "description": "Optional CSS font-family for text glyphs.",
                     "type": "string"

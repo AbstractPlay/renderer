@@ -45,6 +45,14 @@ export type PatternName =
  */
 export type Colourfuncs = FunctionFlatten | FunctionBestContrast | FunctionLighten | FunctionCustom;
 /**
+ * Deprecated — use paint.fill instead. Still accepted at runtime during the transition to per-slot paint.
+ */
+export type GlyphPaintColour = ColourResolvable | Gradient;
+/**
+ * Text outline colour, or "auto" to pair with automatic fill contrast (paint present, fill omitted, colour omitted).
+ */
+export type TextPaintBorderEntry = "auto" | PaintEntry;
+/**
  * Schema for the `matrix` part of a polyomino-related feature
  */
 export type Polymatrix = (ColourResolvable | 0 | null)[][];
@@ -583,22 +591,19 @@ export interface SheetGlyph {
    * The name of the actual glyph. It may not contain any whitespace.
    */
   name: string;
-  /**
-   * Per-slot colours for sheet artwork slots (fill, border, detail, …).
-   */
-  paint?: {
-    [k: string]: PaintEntry;
-  };
-  /**
-   * @deprecated
-   * Deprecated on sheet glyphs — use paint.fill instead. Still accepted at runtime during the transition to per-slot paint.
-   */
-  colour?: ColourResolvable | Gradient;
+  paint?: SheetGlyphPaintMap;
+  colour?: GlyphPaintColour;
   /**
    * @deprecated
    * Deprecated on sheet glyphs — use paint.border (default secondary slot) or paint.detail where the glyph defines it (e.g. dice pips). Still accepted at runtime during the transition to per-slot paint.
    */
   colour2?: ColourResolvable | Gradient;
+}
+/**
+ * Per-slot colours for sheet artwork slots (fill, border, detail, …).
+ */
+export interface SheetGlyphPaintMap {
+  [k: string]: PaintEntry;
 }
 /**
  * This function returns the fully opaque colour that is equivalent to overlying the foreground colour with the given opacity over the background colour.
@@ -679,7 +684,7 @@ export interface SlotPaint {
   opacity?: number;
 }
 /**
- * Plain text overlay in a cell. Use colour (optional); omit colour for automatic contrast.
+ * Plain text overlay in a cell. Use paint.fill / paint.border (optional); legacy colour maps to fill. Omit fill and colour for automatic contrast; paint.border "auto" pairs contrast fill with an opposite outline.
  */
 export interface TextGlyph {
   /**
@@ -721,10 +726,8 @@ export interface TextGlyph {
    * Short text drawn in the cell (e.g. a numeral).
    */
   text: string;
-  /**
-   * Text fill colour. When omitted, the renderer picks black or white for contrast.
-   */
-  colour?: ColourResolvable | Gradient;
+  paint?: TextGlyphPaintMap;
+  colour?: GlyphPaintColour;
   /**
    * Optional CSS font-family for text glyphs.
    */
@@ -733,6 +736,13 @@ export interface TextGlyph {
    * Optional CSS font-weight for text glyphs.
    */
   fontWeight?: string | number;
+}
+/**
+ * Per-slot colours for text overlays (fill and border only).
+ */
+export interface TextGlyphPaintMap {
+  fill?: PaintEntry;
+  border?: TextPaintBorderEntry;
 }
 /**
  * Sheet glyphs on cube faces (`cube` and cube lintels). Keys use intrinsic N/E/S/W + top.

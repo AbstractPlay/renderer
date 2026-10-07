@@ -2,7 +2,7 @@
 
 The `legend` maps keys used in `pieces` to visual definitions. Each entry is either a **sheet piece name** (like `piece` or `meeple`), a **glyph object** with transforms and colours, or an **array of glyph objects** composited into one piece.
 
-**Sheet glyphs** (`name`) use optional **`paint`** — a map of slot names to colours (`fill`, `border`, and where the glyph defines them, `detail`). See [Glyph paint slots](/renderer/glyph-slots/) for per-glyph slot lists. **Text glyphs** (`text`) keep optional **`colour`** and **`opacity`** only; they do not use `paint`.
+**Sheet glyphs** (`name`) use optional **`paint`** — a map of slot names to colours (`fill`, `border`, and where the glyph defines them, `detail`). See [Glyph paint slots](/renderer/glyph-slots/) for per-glyph slot lists. **Text glyphs** (`text`) use the same **`paint`** model for **`fill`** and **`border`** (legacy **`colour`** maps to **`paint.fill`**). Omit both **`colour`** and **`paint.fill`** for automatic contrast against the layer below; **`paint.border`: `"auto"`** (with **`paint`** set and **`fill`** omitted) pairs that contrast fill with an opposite outline.
 
 Player-owned sheet pieces should set `paint.fill` to a player number (`1`, `2`, …) so user colour settings apply. Use hex colours or colour functions only when the colour is fixed.
 
@@ -42,7 +42,7 @@ An array of glyph objects is drawn **bottom to top** — the first entry sits un
 
 ## Gradients
 
-`paint` slot values (and text **`colour`**) accept linear gradients with `stops` and optional `x1`/`y1`/`x2`/`y2` (0–1, relative to the glyph bounds).
+`paint` slot values (and legacy text **`colour`**) accept linear gradients with `stops` and optional `x1`/`y1`/`x2`/`y2` (0–1, relative to the glyph bounds).
 
 {% renderWidget "samples/pieces-gradients.json" %}
 
@@ -114,7 +114,7 @@ When a player assigns a **pattern** to a palette slot (for accessibility), colou
 | `bestContrast` | `fg` entry | Ignore pattern entries; if all `fg` values are patterns, use `_context_strokes`. |
 | `custom` | either branch | Resolves to hex or pattern directly. |
 
-Pattern player slots apply to **`paint.fill`** on sheet glyphs (and to text **`colour`**). Strokes on those elements fall back to `_context_strokes`.
+Pattern player slots apply to **`paint.fill`** on sheet and text glyphs (and to legacy text **`colour`**). Text **`paint.border`** strokes use the resolved border colour.
 
 ### Patterns as colours
 
@@ -179,8 +179,8 @@ Each glyph object in the legend supports these properties. `name` and `text` are
 | --- | --- | --- | --- |
 | `name` | string | — | Sheet piece id (no whitespace). Searched across loaded glyph sheets. |
 | `text` | string | — | Short text rendered as a glyph instead of sheet artwork. |
-| `paint` | object | — | **Sheet glyphs only.** Map of slot name → colour (see [Glyph paint slots](/renderer/glyph-slots/)). |
-| `colour` | colour | — | **Text glyphs** (or legacy sheet shim). Primary fill; sheet **`name`** entries should use `paint.fill` instead. |
+| `paint` | object | — | Per-slot colours. Sheet glyphs: any slot from [Glyph paint slots](/renderer/glyph-slots/). Text glyphs: **`fill`**, **`border`** (or **`"auto"`** for paired contrast outline). |
+| `colour` | colour | — | **Deprecated** fill shim → **`paint.fill`** (sheet and text). |
 | `colour2` | colour | — | **Legacy** second tone on sheet glyphs; prefer `paint.border` or `paint.detail`. |
 | `scale` | number | `1` | Proportional size; values below 1 shrink, above 1 enlarge. |
 | `opacity` | number | `1` | Layer multiplier on the placed glyph (0–1). With legacy **`colour`** only, opacity tints **`paint.fill`**; with explicit **`paint`**, opacity applies to the whole layer. |

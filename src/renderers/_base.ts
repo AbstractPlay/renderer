@@ -27,6 +27,8 @@ import {
     applyTextGlyphFill,
     collectPatternsFromGlyphPaint,
     normalizeGlyphPaint,
+    normalizeTextGlyphPaint,
+    TEXT_GLYPH_BASE_FONT_SIZE,
     paintFingerprint,
     paintColourValue,
     paintMapAfterProceduralShading,
@@ -951,7 +953,7 @@ export abstract class RendererBase {
             } else if (("text" in g) && (g.text !== undefined) && (g.text.length > 0)) {
                 const symbolParent = layout === "isoFace" ? (parent.defs() as Svg) : parent;
                 const group = symbolParent.symbol();
-                const fontsize = 17;
+                const fontsize = TEXT_GLYPH_BASE_FONT_SIZE;
                 const fontOpts: Record<string, unknown> = {
                     anchor: "start",
                     fill: this.options.colourContext.strokes,
@@ -1068,12 +1070,20 @@ export abstract class RendererBase {
                         });
                     }
                 } else if (("text" in g) && (g.text !== undefined)) {
-                    applyTextGlyphFill(got, g, glyphs, idx, {
-                        resolveColour: this.resolveColour.bind(this) as TextGlyphFillContext["resolveColour"],
-                        resolveFill: this.resolveFill.bind(this),
-                        applyPlayerFillTargets: this.applyPlayerFillTargets.bind(this),
-                        contextBackground: this.options.colourContext.background,
-                    });
+                    applyTextGlyphFill(
+                        got,
+                        g,
+                        glyphs,
+                        idx,
+                        {
+                            resolveColour: this.resolveColour.bind(this) as TextGlyphFillContext["resolveColour"],
+                            resolveFill: this.resolveFill.bind(this),
+                            applyPlayerFillTargets: this.applyPlayerFillTargets.bind(this),
+                            isPatternSVGElement: this.isPatternSVGElement.bind(this),
+                            contextBackground: this.options.colourContext.background,
+                        },
+                        { fontSize: TEXT_GLYPH_BASE_FONT_SIZE },
+                    );
                 }
             } else if (("name" in g) && (g.name !== undefined)) {
                 this.applyContextStylesToGlyphSymbol(got);
@@ -1090,6 +1100,8 @@ export abstract class RendererBase {
                 }
                 const colour2Slot = resolveColour2SlotForGlyph(resolvedGlyphName, this.options.sheets);
                 layerOpacity = normalizeGlyphPaint(g, colour2Slot)!.layerOpacity;
+            } else if (("text" in g) && (g.text !== undefined) && (g.text.length > 0)) {
+                layerOpacity = normalizeTextGlyphPaint(g).layerOpacity;
             } else if (g.opacity !== undefined) {
                 layerOpacity = g.opacity;
             }

@@ -9,6 +9,7 @@ import schema from "../src/schemas/schema.json" with { type: "json" };
 import {
     isColourfuncs,
     normalizeGlyphPaint,
+    normalizeTextGlyphPaint,
     paintColourValue,
     paintFingerprint,
     priorCompositeLayerTint,
@@ -62,7 +63,33 @@ describe("glyphPaint", () => {
         it("does not run for text glyphs", () => {
             expect(normalizeGlyphPaint({ text: "1", colour: 1 })).to.equal(undefined);
         });
+    });
 
+    describe("normalizeTextGlyphPaint", () => {
+        it("shims colour to paint.fill", () => {
+            const norm = normalizeTextGlyphPaint({ text: "1", colour: 1 });
+            expect(norm.paint.fill).to.equal(1);
+            expect(norm.layerOpacity).to.equal(1);
+        });
+
+        it("maps legacy opacity onto paint.fill when paint is omitted", () => {
+            const norm = normalizeTextGlyphPaint({ text: "1", colour: 1, opacity: 0.5 });
+            expect(norm.paint.fill).to.deep.equal({ colour: 1, opacity: 0.5 });
+            expect(norm.layerOpacity).to.equal(1);
+        });
+
+        it("uses layer opacity when paint is explicit", () => {
+            const norm = normalizeTextGlyphPaint({
+                text: "1",
+                paint: { fill: 1 },
+                opacity: 0.5,
+            });
+            expect(norm.paint.fill).to.equal(1);
+            expect(norm.layerOpacity).to.equal(0.5);
+        });
+    });
+
+    describe("normalizeGlyphPaint colourfuncs and opacity", () => {
         it("does not treat flatten colour func as slot { opacity } wrapper", () => {
             const flatten = {
                 func: "flatten" as const,
@@ -280,6 +307,35 @@ describe("glyphPaint", () => {
             expect(textTag).to.match(/fill="#(fff|ffffff)"/);
         });
 
+        it("text paint.fill matches legacy colour", () => {
+            const legacy = renderLegendGlyphs([{ text: "9", colour: "#000" }]);
+            const paint = renderLegendGlyphs([{ text: "9", paint: { fill: "#000" } }]);
+            expect(normalizeSvgForGlyphCompare(legacy, { lenientOpacity: true })).to.equal(
+                normalizeSvgForGlyphCompare(paint, { lenientOpacity: true }),
+            );
+        });
+
+        it("text paint border outlines the label", () => {
+            const svg = renderLegendGlyphs([
+                { name: "piece", paint: { fill: 1 } },
+                { text: "7", paint: { fill: "#fff", border: "#000" } },
+            ]);
+            const textTag = svg.match(/<text[\s\S]*?<\/text>/)?.[0] ?? "";
+            expect(textTag).to.match(/stroke="#000000"|stroke="#000"/);
+            expect(textTag).to.include('paint-order="stroke fill"');
+        });
+
+        it("text paint border auto pairs contrast fill with opposite stroke", () => {
+            const svg = renderLegendGlyphs([
+                { name: "piece", colour: 1 },
+                { text: "7", paint: { border: "auto" } },
+            ]);
+            const textTag = svg.match(/<text[\s\S]*?<\/text>/)?.[0] ?? "";
+            expect(textTag).to.match(/fill="#(fff|ffffff)"/);
+            expect(textTag).to.match(/stroke="#(000|000000)"/);
+            expect(textTag).to.include('paint-order="stroke fill"');
+        });
+
         it("d6-1: detail slot uses context fill when colour2 / paint.detail omitted", () => {
             const draw = makeDraw();
             const renderer = new DefaultRenderer();
@@ -452,7 +508,7 @@ describe("glyphPaint", () => {
             ).to.equal(true);
         });
 
-        it("accepts text glyph with colour and rejects paint on text", () => {
+        it("accepts text glyph with colour or paint", () => {
             expect(
                 validate({
                     board: null,
@@ -466,7 +522,14 @@ describe("glyphPaint", () => {
                     legend: { T: { text: "9", paint: { fill: 1 } } },
                     pieces: "T",
                 }),
-            ).to.equal(false);
+            ).to.equal(true);
+            expect(
+                validate({
+                    board: null,
+                    legend: { T: { text: "9", paint: { border: "auto" } } },
+                    pieces: "T",
+                }),
+            ).to.equal(true);
         });
     });
 
