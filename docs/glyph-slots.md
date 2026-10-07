@@ -143,11 +143,13 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `piece-cog` | fill (fill), border (fill+stroke) | — |
 | core | `piece-dashed` | fill (fill), border (stroke) | — |
 | core | `piece-horse` | fill (fill), border (stroke) | — |
+| core | `piece-lr` | left (fill), right (fill), border (stroke) | — |
 | core | `piece-pentagon` | fill (fill), border (stroke) | — |
 | core | `piece-square` | fill (fill), border (stroke) | — |
 | core | `piece-square-borderless` | fill (fill) | — |
 | core | `piece-square-dashed` | fill (fill), border (stroke) | — |
 | core | `piece-square-single` | fill (fill), border (stroke) | — |
+| core | `piece-tb` | top (fill), bottom (fill), border (stroke) | — |
 | core | `piece-triangle` | fill (fill), border (stroke) | — |
 | core | `piece-triangle-dot` | fill (fill), border (fill+stroke) | — |
 | core | `plane` | fill (fill), border (fill+stroke), detail (fill), target (fill) | — |

@@ -49,6 +49,18 @@ const slotFillBody: Record<string, SlotMeta> = {
     border: { channels: ["stroke"] },
 };
 
+const slotPieceTB: Record<string, SlotMeta> = {
+    top: { channels: ["fill"], description: "Upper hemisphere player colour." },
+    bottom: { channels: ["fill"], description: "Lower hemisphere player colour." },
+    border: { channels: ["stroke"], description: "Outer rim stroke." },
+};
+
+const slotPieceLR: Record<string, SlotMeta> = {
+    left: { channels: ["fill"], description: "Left hemisphere player colour." },
+    right: { channels: ["fill"], description: "Right hemisphere player colour." },
+    border: { channels: ["stroke"], description: "Outer rim stroke." },
+};
+
 const slotHollowOutline: Record<string, SlotMeta> = {
     fill: { channels: ["fill", "stroke"] },
     border: { channels: ["stroke"] },
@@ -56,6 +68,57 @@ const slotHollowOutline: Record<string, SlotMeta> = {
 
 function registerDiscToken(name: string, build: (canvas: SVGContainer) => SVGSymbol): void {
     defineGlyph(sheet.name, name, { slots: slotFillBody, build }, sheet.glyphs);
+}
+
+function registerHemisphereDiscToken(
+    name: string,
+    slots: Record<string, SlotMeta>,
+    split: "tb" | "lr",
+    build: (canvas: SVGContainer, split: "tb" | "lr") => SVGSymbol,
+): void {
+    defineGlyph(sheet.name, name, { slots, build: (canvas) => build(canvas, split) }, sheet.glyphs);
+}
+
+function buildPieceHemisphereDisc(canvas: SVGContainer, split: "tb" | "lr"): SVGSymbol {
+    const group = canvas.symbol();
+    const border = 5;
+    const cx = sheet.cellsize / 2;
+    const cy = sheet.cellsize / 2;
+    const r = sheet.cellsize / 2;
+
+    if (split === "tb") {
+        group
+            .path(`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy} L ${cx} ${cy} Z`)
+            .attr("data-slot-fill", "top")
+            .fill("#fff")
+            .stroke("none");
+        group
+            .path(`M ${cx - r} ${cy} A ${r} ${r} 0 0 0 ${cx + r} ${cy} L ${cx} ${cy} Z`)
+            .attr("data-slot-fill", "bottom")
+            .fill("#e6e6e6")
+            .stroke("none");
+    } else {
+        group
+            .path(`M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} L ${cx} ${cy} Z`)
+            .attr("data-slot-fill", "left")
+            .fill("#fff")
+            .stroke("none");
+        group
+            .path(`M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} L ${cx} ${cy} Z`)
+            .attr("data-slot-fill", "right")
+            .fill("#e6e6e6")
+            .stroke("none");
+    }
+
+    group
+        .circle(sheet.cellsize)
+        .attr("data-slot-stroke", "border")
+        .fill("none")
+        .stroke({ width: border, color: "#000" })
+        .center(cx, cy);
+
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
 }
 
 /** Hard-coded artwork; legend `paint` does not recolour the glyph. */
@@ -1000,6 +1063,8 @@ registerDiscToken("piece-horse", (canvas: SVGContainer) => {
     return group;
 });
 
+registerHemisphereDiscToken("piece-lr", slotPieceLR, "lr", buildPieceHemisphereDisc);
+
 registerDiscToken("piece-pentagon", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const border = 5;
@@ -1081,6 +1146,8 @@ registerDiscToken("piece-square-single", (canvas: SVGContainer) => {
     group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
     return group;
 });
+
+registerHemisphereDiscToken("piece-tb", slotPieceTB, "tb", buildPieceHemisphereDisc);
 
 registerDiscToken("piece-triangle", (canvas: SVGContainer) => {
     const group = canvas.symbol();

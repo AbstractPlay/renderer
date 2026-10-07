@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-04T18:35:44.767Z",
+  "generated": "2026-10-07T17:18:19.491Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -683,6 +683,31 @@
       },
       "colour2Slot": "border"
     },
+    "core:piece-lr": {
+      "sheet": "core",
+      "name": "piece-lr",
+      "slots": {
+        "left": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Left hemisphere player colour."
+        },
+        "right": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Right hemisphere player colour."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer rim stroke."
+        }
+      },
+      "colour2Slot": "border"
+    },
     "core:piece-pentagon": {
       "sheet": "core",
       "name": "piece-pentagon",
@@ -768,6 +793,31 @@
             "stroke"
           ],
           "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-tb": {
+      "sheet": "core",
+      "name": "piece-tb",
+      "slots": {
+        "top": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Upper hemisphere player colour."
+        },
+        "bottom": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Lower hemisphere player colour."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer rim stroke."
         }
       },
       "colour2Slot": "border"
