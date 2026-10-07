@@ -1,0 +1,14 @@
+{
+  "board": {
+    "style": "eleven"
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "paint": {
+        "fill": 1
+      }
+    }
+  },
+  "pieces": "A"
+}

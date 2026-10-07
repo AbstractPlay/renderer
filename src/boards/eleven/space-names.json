@@ -1,0 +1,667 @@
+{
+  "version": 1,
+  "source": "src/boards/eleven/topology.json",
+  "schemes": {
+    "stable": {
+      "description": "e01–e68 by geographic sort (y, then x); eNN = index NN-1"
+    },
+    "pitch": {
+      "description": "Half-band-index (W|E + G|P|C|F or c-*); K = kickoff"
+    },
+    "rules": {
+      "description": "Spielstein rule terms; W/E = board left/right goals"
+    }
+  },
+  "spaces": [
+    {
+      "i": 0,
+      "x": 621.269,
+      "y": 69.537,
+      "stable": "e01",
+      "pitch": "E-F-01",
+      "rules": "field-E-01",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 1,
+      "x": 88.607,
+      "y": 81.955,
+      "stable": "e02",
+      "pitch": "W-F-01",
+      "rules": "field-W-01",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 2,
+      "x": 934.517,
+      "y": 86.927,
+      "stable": "e03",
+      "pitch": "E-F-02",
+      "rules": "field-E-02",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 3,
+      "x": 459.15,
+      "y": 88.433,
+      "stable": "e04",
+      "pitch": "W-F-02",
+      "rules": "field-W-02",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 4,
+      "x": 776.415,
+      "y": 97.679,
+      "stable": "e05",
+      "pitch": "E-F-03",
+      "rules": "field-E-03",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 5,
+      "x": 273.212,
+      "y": 118.723,
+      "stable": "e06",
+      "pitch": "W-F-03",
+      "rules": "field-W-03",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 6,
+      "x": 359.226,
+      "y": 132.301,
+      "stable": "e07",
+      "pitch": "W-F-04",
+      "rules": "field-W-04",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 7,
+      "x": 604.654,
+      "y": 144.614,
+      "stable": "e08",
+      "pitch": "E-F-04",
+      "rules": "field-E-04",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 8,
+      "x": 672.849,
+      "y": 149.985,
+      "stable": "e09",
+      "pitch": "E-F-05",
+      "rules": "field-E-05",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 9,
+      "x": 465.207,
+      "y": 169.177,
+      "stable": "e10",
+      "pitch": "W-F-05",
+      "rules": "field-W-05",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 10,
+      "x": 919.117,
+      "y": 183.855,
+      "stable": "e11",
+      "pitch": "E-F-06",
+      "rules": "field-E-06",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 11,
+      "x": 99.494,
+      "y": 185.995,
+      "stable": "e12",
+      "pitch": "W-F-06",
+      "rules": "field-W-06",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 12,
+      "x": 199.514,
+      "y": 188.938,
+      "stable": "e13",
+      "pitch": "W-F-07",
+      "rules": "field-W-07",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 13,
+      "x": 797.891,
+      "y": 192.109,
+      "stable": "e14",
+      "pitch": "E-F-07",
+      "rules": "field-E-07",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 14,
+      "x": 580.055,
+      "y": 211.007,
+      "stable": "e15",
+      "pitch": "E-F-08",
+      "rules": "field-E-08",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 15,
+      "x": 714.728,
+      "y": 220.407,
+      "stable": "e16",
+      "pitch": "E-F-09",
+      "rules": "field-E-09",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 16,
+      "x": 316.541,
+      "y": 222.879,
+      "stable": "e17",
+      "pitch": "W-F-08",
+      "rules": "field-W-08",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 17,
+      "x": 403.199,
+      "y": 229.545,
+      "stable": "e18",
+      "pitch": "W-F-09",
+      "rules": "field-W-09",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 18,
+      "x": 489.561,
+      "y": 236.481,
+      "stable": "e19",
+      "pitch": "W-F-10",
+      "rules": "field-W-10",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 19,
+      "x": 163.732,
+      "y": 277.877,
+      "stable": "e20",
+      "pitch": "W-P-01",
+      "rules": "score-W-1",
+      "zone": "penalty",
+      "half": "w"
+    },
+    {
+      "i": 20,
+      "x": 868.667,
+      "y": 279.517,
+      "stable": "e21",
+      "pitch": "E-P-01",
+      "rules": "score-E-1",
+      "zone": "penalty",
+      "half": "e"
+    },
+    {
+      "i": 21,
+      "x": 643.969,
+      "y": 282.873,
+      "stable": "e22",
+      "pitch": "E-F-10",
+      "rules": "field-E-10",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 22,
+      "x": 399.849,
+      "y": 302.973,
+      "stable": "e23",
+      "pitch": "W-F-11",
+      "rules": "field-W-11",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 23,
+      "x": 298.479,
+      "y": 310.614,
+      "stable": "e24",
+      "pitch": "W-F-12",
+      "rules": "field-W-12",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 24,
+      "x": 556.986,
+      "y": 319.184,
+      "stable": "e25",
+      "pitch": "c-C-01",
+      "rules": "center-1",
+      "zone": "center",
+      "half": "e"
+    },
+    {
+      "i": 25,
+      "x": 482.466,
+      "y": 324.833,
+      "stable": "e26",
+      "pitch": "c-C-02",
+      "rules": "center-6",
+      "zone": "center",
+      "half": "w"
+    },
+    {
+      "i": 26,
+      "x": 741.005,
+      "y": 340.77,
+      "stable": "e27",
+      "pitch": "E-F-11",
+      "rules": "field-E-11",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 27,
+      "x": 655.422,
+      "y": 352.951,
+      "stable": "e28",
+      "pitch": "E-F-12",
+      "rules": "field-E-12",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 28,
+      "x": 431.824,
+      "y": 377.073,
+      "stable": "e29",
+      "pitch": "c-C-03",
+      "rules": "center-5",
+      "zone": "center",
+      "half": "w"
+    },
+    {
+      "i": 29,
+      "x": 354.098,
+      "y": 387.258,
+      "stable": "e30",
+      "pitch": "W-F-13",
+      "rules": "field-W-13",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 30,
+      "x": 256.38,
+      "y": 389.53,
+      "stable": "e31",
+      "pitch": "W-F-14",
+      "rules": "field-W-14",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 31,
+      "x": 35.688,
+      "y": 393.696,
+      "stable": "e32",
+      "pitch": "W-G-01",
+      "rules": "goal-W-1",
+      "zone": "goal",
+      "half": "w"
+    },
+    {
+      "i": 32,
+      "x": 994.855,
+      "y": 393.696,
+      "stable": "e33",
+      "pitch": "E-G-01",
+      "rules": "goal-E-1",
+      "zone": "goal",
+      "half": "e"
+    },
+    {
+      "i": 33,
+      "x": 875.746,
+      "y": 393.813,
+      "stable": "e34",
+      "pitch": "E-P-02",
+      "rules": "score-E-2",
+      "zone": "penalty",
+      "half": "e"
+    },
+    {
+      "i": 34,
+      "x": 155.738,
+      "y": 393.82,
+      "stable": "e35",
+      "pitch": "W-P-02",
+      "rules": "score-W-2",
+      "zone": "penalty",
+      "half": "w"
+    },
+    {
+      "i": 35,
+      "x": 515.456,
+      "y": 393.896,
+      "stable": "e36",
+      "pitch": "K",
+      "rules": "kickoff",
+      "zone": "kickoff",
+      "half": "e"
+    },
+    {
+      "i": 36,
+      "x": 597.482,
+      "y": 407.298,
+      "stable": "e37",
+      "pitch": "c-C-04",
+      "rules": "center-2",
+      "zone": "center",
+      "half": "e"
+    },
+    {
+      "i": 37,
+      "x": 677.836,
+      "y": 423.693,
+      "stable": "e38",
+      "pitch": "E-F-13",
+      "rules": "field-E-13",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 38,
+      "x": 459.761,
+      "y": 457.771,
+      "stable": "e39",
+      "pitch": "c-C-05",
+      "rules": "center-4",
+      "zone": "center",
+      "half": "w"
+    },
+    {
+      "i": 39,
+      "x": 547.302,
+      "y": 460.384,
+      "stable": "e40",
+      "pitch": "c-C-06",
+      "rules": "center-3",
+      "zone": "center",
+      "half": "e"
+    },
+    {
+      "i": 40,
+      "x": 302.376,
+      "y": 472.855,
+      "stable": "e41",
+      "pitch": "W-F-15",
+      "rules": "field-W-15",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 41,
+      "x": 713.249,
+      "y": 494.759,
+      "stable": "e42",
+      "pitch": "E-F-14",
+      "rules": "field-E-14",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 42,
+      "x": 387.475,
+      "y": 497.205,
+      "stable": "e43",
+      "pitch": "W-F-16",
+      "rules": "field-W-16",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 43,
+      "x": 143.282,
+      "y": 498.227,
+      "stable": "e44",
+      "pitch": "W-P-03",
+      "rules": "score-W-3",
+      "zone": "penalty",
+      "half": "w"
+    },
+    {
+      "i": 44,
+      "x": 864.527,
+      "y": 507.177,
+      "stable": "e45",
+      "pitch": "E-P-03",
+      "rules": "score-E-3",
+      "zone": "penalty",
+      "half": "e"
+    },
+    {
+      "i": 45,
+      "x": 628.431,
+      "y": 525.895,
+      "stable": "e46",
+      "pitch": "E-F-15",
+      "rules": "field-E-15",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 46,
+      "x": 545.465,
+      "y": 542.587,
+      "stable": "e47",
+      "pitch": "E-F-16",
+      "rules": "field-E-16",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 47,
+      "x": 458.437,
+      "y": 548.651,
+      "stable": "e48",
+      "pitch": "W-F-17",
+      "rules": "field-W-17",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 48,
+      "x": 786.495,
+      "y": 548.681,
+      "stable": "e49",
+      "pitch": "E-F-17",
+      "rules": "field-E-17",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 49,
+      "x": 241.548,
+      "y": 550.348,
+      "stable": "e50",
+      "pitch": "W-F-18",
+      "rules": "field-W-18",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 50,
+      "x": 716.502,
+      "y": 576.178,
+      "stable": "e51",
+      "pitch": "E-F-18",
+      "rules": "field-E-18",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 51,
+      "x": 311.541,
+      "y": 577.845,
+      "stable": "e52",
+      "pitch": "W-F-19",
+      "rules": "field-W-19",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 52,
+      "x": 394.303,
+      "y": 580.288,
+      "stable": "e53",
+      "pitch": "W-F-20",
+      "rules": "field-W-20",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 53,
+      "x": 89.572,
+      "y": 601.092,
+      "stable": "e54",
+      "pitch": "W-F-21",
+      "rules": "field-W-21",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 54,
+      "x": 936.561,
+      "y": 601.646,
+      "stable": "e55",
+      "pitch": "E-F-19",
+      "rules": "field-E-19",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 55,
+      "x": 566.601,
+      "y": 616.125,
+      "stable": "e56",
+      "pitch": "E-F-20",
+      "rules": "field-E-20",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 56,
+      "x": 652.959,
+      "y": 647.916,
+      "stable": "e57",
+      "pitch": "E-F-21",
+      "rules": "field-E-21",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 57,
+      "x": 804.386,
+      "y": 651.968,
+      "stable": "e58",
+      "pitch": "E-F-22",
+      "rules": "field-E-22",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 58,
+      "x": 466.257,
+      "y": 661.619,
+      "stable": "e59",
+      "pitch": "W-F-22",
+      "rules": "field-W-22",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 59,
+      "x": 224.05,
+      "y": 664.503,
+      "stable": "e60",
+      "pitch": "W-F-23",
+      "rules": "field-W-23",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 60,
+      "x": 331.947,
+      "y": 665.978,
+      "stable": "e61",
+      "pitch": "W-F-24",
+      "rules": "field-W-24",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 61,
+      "x": 722.557,
+      "y": 691.407,
+      "stable": "e62",
+      "pitch": "E-F-23",
+      "rules": "field-E-23",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 62,
+      "x": 922.42,
+      "y": 707.374,
+      "stable": "e63",
+      "pitch": "E-F-24",
+      "rules": "field-E-24",
+      "zone": "field",
+      "half": "e"
+    },
+    {
+      "i": 63,
+      "x": 99.656,
+      "y": 709.121,
+      "stable": "e64",
+      "pitch": "W-F-25",
+      "rules": "field-W-25",
+      "zone": "field",
+      "half": "w"
+    },
+    {
+      "i": 64,
+      "x": 413.846,
+      "y": 720.274,
+      "stable": "e65",
+      "pitch": "W-F-26",
+      "rules": "field-W-26",
+      "zone": "field",
+      "half": "w"
+    }
+  ]
+}

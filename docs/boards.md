@@ -252,6 +252,14 @@ Index labels use a **tier letter** and **1-based column** (`A1` = row 0 col 0, `
 
 {% renderWidget "samples/board-fractured-flat-index.json" %}
 
+### `eleven`
+
+Football pitch board with **65 play spaces** in a `1×65` grid (`row` = `0`, `col` = topology index). Checkered grass, white pitch markings, green **curved** move connections, dashed shoot lines, and white-filled Felder rings with green strokes. Pieces are drawn **larger than the rings** (`board.eleven.pieceScale`); use a **single `pieces` row** of 65 cells (or comma-separated). Space highlights use **`flood` markers** on the marker layer over each Felder (`polys`), not piece `cellsize`.
+
+Defaults match `src/boards/eleven/source.svg`: grass `#aaea45` / `#85d218`, lines `#559f00` at `strokeWeight` **3**, white markings at **5/3×** stroke weight. Nested options live under **`board.eleven`** (`grass`, `flatGrass`, `markings`, `shootDashed`, `shootDash`, `pieceScale`). **Move/shoot lines** are procedural quadratics trimmed to Felder rings (not traced from Linien); committed **`topology.json` `edgePaths`** (from `npm run extract-eleven-board`) supply Linien **bulge direction** at render time and are validated in tests. Tuning aids: `npm run render-eleven-connection-debug` → `test/fixtures/eleven-connections-render.svg`, `npm run render-eleven-topology-debug` for spaces/markers. Gameslib should map pitch ids or indices via `@abstractplay/renderer/eleven` (`elevenResolveCell`, `elevenMarkerTarget`).
+
+{% renderWidget "samples/board-eleven.json" %}
+
 ## Sowing / Mancala
 
 ### `sowing`

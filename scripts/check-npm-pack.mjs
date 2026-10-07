@@ -7,6 +7,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const REQUIRED = [
     "build/index.js",
+    "build/eleven/index.js",
+    "build/boards/eleven/topology.json",
     "build/renderers/index.js",
     "build/sheets/index.js",
     "build/schemas/schema.json",

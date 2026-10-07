@@ -128,6 +128,13 @@ REGISTRY["hex-of-tri"] = entryHexMinMaxGrid(false);
 REGISTRY["squares-diamonds"] = NO_CUSTOMIZE;
 REGISTRY["pegboard"] = entryPegboard();
 REGISTRY["vertex-fanorona"] = NO_CUSTOMIZE;
+REGISTRY["eleven"] = {
+    compatibilityGroup: "none",
+    compatibleStyles: [],
+    hasPolys: true,
+    supportedMarkers: ROW_COL_MARKER_TYPES,
+    customizable: true,
+};
 
 export function getBoardStyleEntry(style: string | undefined): BoardStyleRegistryEntry {
     if (style === undefined) {

@@ -60,7 +60,7 @@ import {
 } from "../common/buttonBar.js";
 import { attachMarkerPulse } from "../common/markerPulse.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, eleven, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
 import {
     glyphKeepsUpright,
     isoFaceGlyphDrawSize,
@@ -2237,7 +2237,9 @@ export abstract class RendererBase {
             for (const marker of allMarkers) {
                 let belowGrid: boolean|undefined;
                 if ((marker.type === "flood") && marker.belowGrid === undefined) {
-                    marker.belowGrid = true;
+                    const boardStyle =
+                        "style" in this.json.board! ? this.json.board!.style : undefined;
+                    marker.belowGrid = boardStyle !== "eleven";
                 }
                 if ("belowGrid" in marker) {
                     belowGrid = marker.belowGrid;
@@ -2271,8 +2273,22 @@ export abstract class RendererBase {
                         const [ptx, pty] = this.interpolateFromGrid(grid, {row: p[0], col: p[1]});
                         // const pt = grid[p[0]][p[1]];
                         // these exceptions are due to poor SVGjs typing
+                        let dotDiameter = this.cellsize * diameter;
+                        const board = this.json?.board;
+                        if (
+                            board !== null &&
+                            board !== undefined &&
+                            "style" in board &&
+                            board.style === "eleven" &&
+                            polys !== undefined
+                        ) {
+                            const cell = polys[p[0]]?.[p[1]];
+                            if (cell !== undefined && cell.type === "circle") {
+                                dotDiameter = cell.r * 2 * diameter;
+                            }
+                        }
 
-                        targetGroup.circle(this.cellsize * diameter)
+                        targetGroup.circle(dotDiameter)
                             // @ts-expect-error (poor SVGjs typing)
                             .fill(colour)
                             .opacity(opacity)
@@ -3626,6 +3642,9 @@ export abstract class RendererBase {
                 case "fractured-flat":
                     this.cellsize = 40;
                     ({ grid: gridPoints, polys, boardFill } = fracturedFlat(this));
+                    break;
+                case "eleven":
+                    ({ grid: gridPoints, polys, boardFill } = eleven(this));
                     break;
                 default:
                     throw new Error(`The requested board style (${ this.json.board.style }) is not yet supported by the default renderer.`);

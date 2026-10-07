@@ -299,6 +299,7 @@ export type BoardStyles =
   | "heightmap-squares"
   | "dvgc"
   | "dvgc-checkered"
+  | "eleven"
   | "other";
 export type ReferenceSide = "left" | "right" | "top" | "bottom";
 /**
@@ -314,6 +315,7 @@ export type RowCol = {
 export type RowCol1 = {
   [k: string]: unknown;
 };
+export type PositiveNumber = number;
 /**
  * Actor reference shared with structured chat log and structured render labels.
  */
@@ -968,6 +970,7 @@ export interface BoardBasic {
    * Only meaningful in the `isometric` renderer. Selects camera elevation and ground-axis foreshortening. `iso` is classic 2:1 isometric; `shallow` and `very-shallow` raise the viewpoint; `compressed` keeps the iso azimuth with the depth axis at half scale; `cabinet` is true cabinet oblique (east–west undistorted, depth at 45° half scale); `dimetric` and `trimetric` foreshorten both ground axes equally or unequally at the iso azimuth.
    */
   projection?: "iso" | "shallow" | "very-shallow" | "compressed" | "cabinet" | "dimetric" | "trimetric";
+  eleven?: ElevenBoardOptions;
   /**
    * Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.
    */
@@ -1024,6 +1027,42 @@ export interface BoardReference {
   styles?: {
     [k: string]: ColourResolvable;
   };
+}
+/**
+ * Options for `style: eleven` (checkered grass, pitch markings, curved connections, piece scale).
+ */
+export interface ElevenBoardOptions {
+  grass?: {
+    light?: Colourfuncs | Colourstrings;
+    dark?: Colourfuncs | Colourstrings;
+  };
+  /**
+   * When true, skip the checkered grass layer (use board chrome fill only).
+   */
+  flatGrass?: boolean;
+  markings?: {
+    colour?: Colourfuncs | Colourstrings;
+    /**
+     * Pitch marking stroke width as a multiple of `strokeWeight` (reference art ≈ 5/3).
+     */
+    weightMult?: number;
+  };
+  /**
+   * Center circle stroke width as a multiple of `strokeWeight` (reference art ≈ 7.29/3).
+   */
+  centerCircleWeightMult?: number;
+  shootDashed?: boolean;
+  /**
+   * Dash pattern for shoot edges, in units of `strokeWeight` (default 3 on, 6 off).
+   *
+   * @minItems 2
+   * @maxItems 2
+   */
+  shootDash?: [PositiveNumber, PositiveNumber];
+  /**
+   * Multiplier on the default oversized piece diameter for this board.
+   */
+  pieceScale?: number;
 }
 export interface MarkerDots {
   /**

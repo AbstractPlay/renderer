@@ -418,8 +418,76 @@
                 "heightmap-squares",
                 "dvgc",
                 "dvgc-checkered",
+                "eleven",
                 "other"
             ]
+        },
+        "elevenBoardOptions": {
+            "description": "Visual options for the eleven football board (`style: eleven`). Connection and space-ring strokes use `strokeColour`, `strokeWeight`, and `strokeOpacity` on the board object.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "grass": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "light": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/colourfuncs" },
+                                { "$ref": "#/$defs/colourstrings" }
+                            ]
+                        },
+                        "dark": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/colourfuncs" },
+                                { "$ref": "#/$defs/colourstrings" }
+                            ]
+                        }
+                    }
+                },
+                "flatGrass": {
+                    "description": "When true, skip the checkered grass layer (use board chrome fill only).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "markings": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "colour": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/colourfuncs" },
+                                { "$ref": "#/$defs/colourstrings" }
+                            ]
+                        },
+                        "weightMult": {
+                            "description": "Pitch marking stroke width as a multiple of `strokeWeight` (reference art ≈ 5/3).",
+                            "$ref": "#/$defs/positiveNumber"
+                        }
+                    }
+                },
+                "centerCircleWeightMult": {
+                    "description": "Center circle stroke width as a multiple of `strokeWeight` (reference art ≈ 7.29/3).",
+                    "$ref": "#/$defs/positiveNumber"
+                },
+                "shootDashed": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "shootDash": {
+                    "description": "Dash pattern for shoot edges, in units of `strokeWeight` (default 3 on, 6 off).",
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                        "$ref": "#/$defs/positiveNumber"
+                    }
+                },
+                "pieceScale": {
+                    "description": "Multiplier on the default oversized piece diameter for this board.",
+                    "$ref": "#/$defs/positiveNumber"
+                }
+            }
         },
         "gradientStop": {
             "description": "Schema for a gradient stop",
@@ -3698,6 +3766,10 @@
                         "trimetric"
                     ],
                     "default": "iso"
+                },
+                "eleven": {
+                    "description": "Options for `style: eleven` (checkered grass, pitch markings, curved connections, piece scale).",
+                    "$ref": "#/$defs/elevenBoardOptions"
                 },
                 "markers": {
                     "description": "Sometimes a board needs shaded areas, lines showing ownership of board edges, things like that. This is how those are indicated. Not all features are available for all board styles.",

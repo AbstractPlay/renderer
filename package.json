@@ -26,6 +26,10 @@
         },
         "./build/renderers/_base": {
             "types": "./build/renderers/_base.d.ts"
+        },
+        "./eleven": {
+            "types": "./build/eleven/index.d.ts",
+            "import": "./build/eleven/index.js"
         }
     },
     "scripts": {
@@ -48,6 +52,10 @@
         "regenerate-glyphs": "node scripts/regenerate-glyph-artifacts.mjs",
         "verify-glyphs": "node scripts/regenerate-glyph-artifacts.mjs --verify",
         "docs:check:local": "node scripts/docs-check-local.mjs",
+        "extract-eleven-board": "node scripts/extract-eleven-board.mjs",
+        "render-eleven-topology-debug": "tsx scripts/render-eleven-topology-debug.ts",
+        "render-eleven-connection-debug": "tsx scripts/render-eleven-connection-debug.ts",
+        "generate-eleven-space-names": "node scripts/generate-eleven-space-names.mjs",
         "lint": "npx eslint .",
         "dist-dev": "rimraf dist && vite build --config playground/vite.config.ts && vite build --config playground/vite.aprender.config.ts",
         "dist-prod": "rimraf dist && vite build --config playground/vite.config.ts --mode production && vite build --config playground/vite.aprender.config.ts --mode production",

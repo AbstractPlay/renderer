@@ -33,6 +33,7 @@ export const BOARD_CHROME_BOARD_KEYS = new Set([
     "squarePits",
     "half",
     "alternatingSymmetry",
+    "eleven",
 ]);
 
 export const BOARD_CHROME_DENIED_KEYS = new Set([

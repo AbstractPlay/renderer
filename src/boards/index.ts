@@ -10,6 +10,7 @@ export { cobweb } from "./cobweb.js";
 export { conhex, getConhexCells } from "./conhex.js";
 export { conicalHex } from "./conicalHex.js";
 export { dvgc } from "./dvgc.js";
+export { eleven } from "./eleven.js";
 export { hexOfCir } from "./hexOfCir.js";
 export { hexOfHex } from "./hexOfHex.js";
 export { hexOfTri } from "./hexOfTri.js";
