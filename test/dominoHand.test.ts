@@ -2,6 +2,7 @@ import Ajv from "ajv";
 import { expect } from "chai";
 import "mocha";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
+import { areaTitleBand, measureAreaTitle } from "../src/common/areaLabelText.js";
 import { dominoClickPayload, buildPiecesAreaRows, piecesAreaCaptionCenterYFromSlotTop, piecesAreaCaptionTextYFromSlotTop, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, shouldRotateAreaPieces } from "../src/common/dominoHand";
 import { DefaultRenderer } from "../src/renderers/default";
 import { IRendererOptionsIn } from "../src/renderers/_base";
@@ -355,6 +356,13 @@ describe("domino hand area", () => {
         const draw = makeDraw();
         const renderer = new DefaultRenderer();
         renderer.render(labeledPiecesAreaData, draw, baseOptions);
+        const boardCellsize = renderer.cellsize;
+        const ordinaryCellsize = boardCellsize * 0.75;
+        const textHeight = boardCellsize / 3;
+        const titleBand = areaTitleBand(
+            measureAreaTitle(draw, "Hand", textHeight, baseOptions.colourContext!.labels as string).height,
+            textHeight,
+        );
         const piecesArea = draw.findOne("#_pieces0");
         expect(piecesArea).to.not.equal(null);
         if (piecesArea === null) {
@@ -394,13 +402,20 @@ describe("domino hand area", () => {
         expect(labelBelowCy!).to.be.greaterThan(useA.bbox().cy);
         expect(labelAboveCy!).to.be.lessThan(useB.bbox().cy);
         expect(labelBelow).to.not.equal(undefined);
-        expect(labelBelow!.attr("dominant-baseline")).to.equal("text-before-edge");
+        expect(labelBelow!.attr("dominant-baseline")).to.equal(undefined);
+        const belowEntry = { piece: "A", text: "1", textPosition: "below" as const };
+        const expectedBelowInkTop = piecesAreaCaptionTextYFromSlotTop(
+            titleBand,
+            belowEntry,
+            ordinaryCellsize,
+            boardCellsize,
+        )!;
+        expect(labelBelow!.bbox().y).to.be.closeTo(expectedBelowInkTop, 1);
         const areaTitle = piecesArea.findOne(".aprender-area-label");
         expect(areaTitle).to.not.equal(null);
         if (areaTitle !== null) {
-            expect(areaTitle.attr("dy")).to.equal(undefined);
-            expect(areaTitle.attr("dominant-baseline")).to.equal("text-before-edge");
-            expect(Number(areaTitle.attr("y"))).to.be.lessThan(useA.bbox().cy);
+            expect(areaTitle.attr("dominant-baseline")).to.equal(undefined);
+            expect(areaTitle.bbox().y2).to.be.at.most(titleBand + 0.5);
         }
         // Same slot spacing as hand uses; caption x is pieceCenterX (amove), use x is pieceCenterX - halfSize.
         expect(labelAboveX! - labelBelowX!).to.be.closeTo(useB.x() - useA.x(), 0.5);
