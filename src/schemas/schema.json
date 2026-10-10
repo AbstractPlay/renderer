@@ -1860,6 +1860,10 @@
                     "description": "When true (default for ordinary legend-key pieces), hand pieces rotate with the board so directional markers stay aligned. When false, pieces keep their legend-authored orientation regardless of board rotation. Defaults to false when all entries are domino tile refs.",
                     "type": "boolean",
                     "default": true
+                },
+                "veiled": {
+                    "description": "When true, draws a semi-opaque overlay over the piece grid in this area (not the title). Clicks still reach the pieces beneath. Set in game `render()` when needed.",
+                    "type": "boolean"
                 }
             },
             "required": [

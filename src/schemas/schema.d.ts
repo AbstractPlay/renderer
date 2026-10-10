@@ -1711,6 +1711,10 @@ export interface AreaPieces {
    * When true (default for ordinary legend-key pieces), hand pieces rotate with the board so directional markers stay aligned. When false, pieces keep their legend-authored orientation regardless of board rotation. Defaults to false when all entries are domino tile refs.
    */
   rotateWithBoard?: boolean;
+  /**
+   * When true, draws a semi-opaque overlay over the piece grid in this area (not the title). Clicks still reach the pieces beneath. Set in game `render()` when needed.
+   */
+  veiled?: boolean;
 }
 /**
  * A domino tile for use in a `pieces` area. Composes two legend entries (west/left and east/right) into one 2:1 flat tile at render time. Domino pairing is area-only; board placement uses separate half legends per cell.

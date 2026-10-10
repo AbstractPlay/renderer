@@ -4644,6 +4644,30 @@ export abstract class RendererBase {
     }
 
     /**
+     * Semi-opaque veil over the piece grid (not the title band). Click-through.
+     */
+    protected addPiecesAreaVeil(
+        nested: Svg,
+        area: AreaPieces,
+        areaWidth: number,
+        areaHeight: number,
+        titleBand: number,
+    ): void {
+        if (area.veiled !== true) {
+            return;
+        }
+        const piecesRegionHeight = areaHeight - titleBand;
+        if (piecesRegionHeight <= 0) {
+            return;
+        }
+        nested.rect(areaWidth, piecesRegionHeight)
+            .move(0, titleBand)
+            .fill({ color: this.options.colourContext.background, opacity: 0.5 })
+            .attr({ "pointer-events": "none" })
+            .addClass("aprender-pieces-veil");
+    }
+
+    /**
      * For placing a generic `pieces` area at the bottom of the board.
      *
      * @param gridPoints -
@@ -4809,6 +4833,8 @@ export abstract class RendererBase {
                         }
                     }
                 }
+
+                this.addPiecesAreaVeil(nested, area, areaWidth, areaHeight, titleBand);
 
                 // add marker line if indicated
                 if ( (markWidth > 0) && (markColour !== undefined) ) {

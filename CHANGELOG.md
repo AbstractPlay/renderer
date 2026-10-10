@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-10-07
+## [1.0.0-ci] - 2026-10-10
 
 ### Added
 
+- **`AreaPieces.veiled`** — optional boolean on `pieces` areas; when `true`, the renderer draws a semi-opaque theme-background overlay over the area’s piece grid (click-through). Games set it in `render()`; the renderer does not interpret perspective.
 - **Core `piece-tb` and `piece-lr` glyphs** — disc tokens like `piece` with two paintable hemispheres (`top`/`bottom` or `left`/`right`) plus a `border` rim slot (no `fill` slot).
 - **Eleven board (`eleven`)** — static football-board topology (65 play spaces, move and shoot adjacency, pitch markings, grass grid, **Linien `edgePaths` per edge** for extraction checks and connection bulge direction) plus default-renderer board style (`board.eleven` visual options, checkered grass, procedural curved move/shoot lines, white Felder fills, oversized pieces, `flood` markers over Felder rings on the marker layer). Grid is **`1×65`** (`row` 0, `col` = space index); `pieces` is one row of 65 cells. Art and committed data live under `src/boards/eleven/`; run `npm run extract-eleven-board` to regenerate `topology.json` and adjacency/marker debug SVGs under `test/fixtures/`. Graph helpers, cell resolution (`elevenResolveCell` / `elevenMarkerTarget`), grass-column pitch ids (`WG` / `EG` / `C` reserved), and committed topology are importable from `@abstractplay/renderer/eleven`.
 - **Glyph paint slot audit** — `runGlyphPaintAudit` / `npm run glyph-paint-audit` flags contact glyphs whose fill or stroke stays off player colour after uniform `paint.fill`, `paint.border`, and `paint.detail` (skips `paintMode: fixed`, procedural orbs, and ink on optional catalog slots outside those three). Runs on `regenerate-glyphs` / `verify-glyphs` and in `npm test`.

@@ -191,6 +191,8 @@ export class PolyominoRenderer extends RendererBase {
                         }
                     }
 
+                    this.addPiecesAreaVeil(nested, area, areaWidth, areaHeight, titleBand);
+
                     // add marker line if indicated
                     if ( (markWidth > 0) && (markColour !== undefined) ) {
                         nested.rect(markWidth, nested.bbox().height).fill(markColour).stroke({width: 1, color: "black"}).dmove((markWidth * -1) - 5, 0);
