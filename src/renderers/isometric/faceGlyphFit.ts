@@ -90,6 +90,21 @@ export const glyphKeepsUpright = (g: Glyph): boolean => {
     return g.orientation === "vertical";
 };
 
+/** Cosmetic glyphmap remaps default to screen-upright when orientation is omitted. */
+export const glyphForLayoutRotation = (
+    g: Glyph,
+    glyphmap: [string, string, number][],
+): Glyph => {
+    if (glyphmap.length === 0 || !("name" in g) || g.name === undefined) {
+        return g;
+    }
+    const mapped = glyphmap.some(([from]) => from === g.name);
+    if (!mapped || g.orientation !== undefined) {
+        return g;
+    }
+    return { ...g, orientation: "vertical" };
+};
+
 export type GlyphRotationOptions = {
     /** When false, never subtract board rotation (iso cube sides). Legend layout defaults to true. */
     counterRotateWithBoard?: boolean;

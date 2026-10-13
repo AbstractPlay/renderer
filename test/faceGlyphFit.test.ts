@@ -4,6 +4,7 @@ import { createSVGWindow } from "svgdom";
 import {
     computeMaxCenteredSquareSide,
     cubeFaceDecorUvScale,
+    glyphForLayoutRotation,
     glyphKeepsUpright,
     hexTopOverlayPrepMatrix,
     ISO_FACE_DECOR_MARGIN,
@@ -139,5 +140,35 @@ describe("iso face glyph fit", () => {
 
         const bothFlip = { name: "arimaa-camel", colour: 1, orientation: "vertical" as const, flipx: true, flipy: true };
         expect(resolveGlyphFlipAxes(bothFlip, 90, legendOpts)).to.deep.equal({ flipx: true, flipy: true });
+    });
+
+    describe("glyphmap layout rotation", () => {
+        const map: [string, string, number][] = [["piece", "chess-knight-solid-traditional", 1]];
+        const legendOpts = { counterRotateWithBoard: true, rotateFluidWithBoard: false };
+
+        it("should default remapped sheet glyphs to vertical when orientation is omitted", () => {
+            const piece = { name: "piece", colour: 1 };
+            const layoutGlyph = glyphForLayoutRotation(piece, map);
+            expect(layoutGlyph.orientation).to.equal("vertical");
+            expect(glyphKeepsUpright(layoutGlyph)).to.equal(true);
+            expect(resolveGlyphRotationDegrees(layoutGlyph, 90, legendOpts)).to.equal(-90);
+        });
+
+        it("should leave authored orientation on remapped glyphs", () => {
+            const fluid = { name: "piece", colour: 1, orientation: "fluid" as const };
+            expect(glyphForLayoutRotation(fluid, map)).to.deep.equal(fluid);
+            expect(resolveGlyphRotationDegrees(fluid, 90, legendOpts)).to.equal(0);
+        });
+
+        it("should not alter glyphs when glyphmap is empty", () => {
+            const chess = { name: "chess-knight-solid-traditional", colour: 1 };
+            expect(glyphForLayoutRotation(chess, [])).to.deep.equal(chess);
+            expect(glyphKeepsUpright(chess)).to.equal(false);
+        });
+
+        it("should not remap when legend name is not in glyphmap", () => {
+            const meeple = { name: "meeple", colour: 1 };
+            expect(glyphForLayoutRotation(meeple, map)).to.deep.equal(meeple);
+        });
     });
 });

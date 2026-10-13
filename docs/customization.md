@@ -8,7 +8,7 @@ Abstract Play stores per-user renderer overrides in the front-end profile under 
 |--------------|--------------|--------|
 | `render.board` | `applyBoardChrome(rep, boardChrome)` | Shallow merge of allowlisted `boardBasic` keys onto the game’s render rep |
 | `render.options` | Same call: `{ ...board, options }` | Replaces `rep.options` when present |
-| `render.glyphmap` | Renderer `options.glyphmap` (not rep merge) | Legend glyph id + scale at draw time |
+| `render.glyphmap` | Renderer `options.glyphmap` (not rep merge) | Legend glyph id + scale at draw time; remapped layers default to screen-upright when `orientation` is omitted (see [Glyphs](/renderer/glyphs/)) |
 
 Entry points exported from `@abstractplay/renderer`:
 

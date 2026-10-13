@@ -65,6 +65,7 @@ import { attachMarkerPulse } from "../common/markerPulse.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, eleven, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
 import {
+    glyphForLayoutRotation,
     glyphKeepsUpright,
     isoFaceGlyphDrawSize,
     isoFaceGlyphPlacement,
@@ -919,6 +920,7 @@ export abstract class RendererBase {
         const isoFaceOriginY = faceLocalH / 2;
         let size = 0;
         for (const [idx, g] of glyphs.entries()) {
+            const layoutGlyph = glyphForLayoutRotation(g, this.options.glyphmap);
             let baseScale = 1;
             let got: SVGSymbol;
             // Whether this glyph that was already built in this layer
@@ -1184,7 +1186,7 @@ export abstract class RendererBase {
                     let pdy = nudgeDy;
                     if (
                         layout === "legend"
-                        && glyphKeepsUpright(g)
+                        && glyphKeepsUpright(layoutGlyph)
                         && rotationOpts.counterRotateWithBoard !== false
                     ) {
                         const viewerRotation = boardRotation - legendEmbedRotation;
@@ -1194,7 +1196,7 @@ export abstract class RendererBase {
                 }
             }
 
-            const rotation = resolveGlyphRotationDegrees(g, boardRotation, rotationOpts);
+            const rotation = resolveGlyphRotationDegrees(layoutGlyph, boardRotation, rotationOpts);
             if (rotation !== null) {
                 const rotOrigin = layout === "isoFace" ? layerIsoFaceX + layerIsoFaceDrawSize / 2 : 0;
                 const rotOriginY = layout === "isoFace" ? layerIsoFaceY + layerIsoFaceDrawSize / 2 : 0;
@@ -1221,7 +1223,7 @@ export abstract class RendererBase {
                 size = factor * cellsize;
             }
 
-            const { flipx, flipy } = resolveGlyphFlipAxes(g, boardRotation, rotationOpts);
+            const { flipx, flipy } = resolveGlyphFlipAxes(layoutGlyph, boardRotation, rotationOpts);
             const flipOriginX = layout === "isoFace" ? layerIsoFaceX + layerIsoFaceDrawSize / 2 : 0;
             const flipOriginY = layout === "isoFace" ? layerIsoFaceY + layerIsoFaceDrawSize / 2 : 0;
             if (flipx) {

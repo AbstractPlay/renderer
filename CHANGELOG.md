@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-10-10
+## [1.0.0-ci] - 2026-10-13
 
 ### Added
 
@@ -26,6 +26,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Changed
 
+- **Glyphmap orientation:** When a legend layer’s `name` is remapped via `options.glyphmap` and `orientation` is omitted, the renderer treats the layer as `orientation: "vertical"` so asymmetric swap targets stay screen-upright when the board spins; authored `orientation` on the legend entry is unchanged.
 - **Text glyph paint:** Text legend layers support `paint.fill` and `paint.border` (including `border: "auto"` for contrast fill plus opposite outline). Legacy `colour` maps to `paint.fill`; glyph `opacity` follows the same rules as sheet glyphs (fill-channel vs layer).
 - **Sheet glyph paint:** Name legend entries may use optional `paint` with per-slot colours (`fill`, `border`, and where the glyph defines them, `detail`; see the generated [Glyph paint slots](docs/glyph-slots.md) reference). Legacy `colour` and `colour2` still apply and map to the same slots (`colour2` defaults to `border`; on dice and orca, `colour2` maps to `detail`). Core disc-like tokens, chess, arimaa, experimental duotone pieces, dice faces, orbs (`orb`–`orb3`), and piecepack (disc-frame numbers and simple suits; ink-border coin and compound suits; fill+detail tile back and void) and domino pip tiles (`fill` only, default `#000`) and NATO symbols (frame `fill` + `border`) and Looney pyramids (disc-frame; `*-3D` inner `fill` + outer `border` strokes, defaults white/black) and Decktet ranks/court/crown/pawn (`fill` only, default black) and suit glyphs (retained suit `fill` defaults plus black `border` ink) and Gnostica glyphs (`fill` for player areas, `detail` for legacy `colour2` wedges, black `border` for outlines and decorative ink) and Streetcar Suburb cubes and house (`fill` for cube faces, `#4d4d4d` `border` for outlines and icon ink) and the remaining core contact-sheet glyphs use slot bindings and renderer-side procedural sphere shading; `orca` uses `fill` and `detail`. CI runs `verify-glyphs` so the contact sheet, catalog, and docs stay aligned with sheet sources. After editing sheet glyphs locally, run `npm run regenerate-glyphs`.
 - In-repo **docs samples**, **playground** catalog, and author docs now use **`paint`** on sheet legend glyphs; `npm run migrate-glyph-paint` converts external JSON (`--write` / `--verify`). See [Designing sheet glyphs](docs/designing-glyphs.md) and updated [Glyphs](docs/glyphs.md).

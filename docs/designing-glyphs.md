@@ -90,6 +90,8 @@ Slot paint runs after context defaults; explicit `paint.border` / `paint.fill` w
 
 Legend **`name`** may be remapped (customize UI). **`paint`** keys apply to bindings on the **loaded** symbol. Extra keys (e.g. `paint.border` on `piece-borderless`) are ignored at runtime; the front end may warn when slot sets differ.
 
+When a layer’s **`name`** is remapped and **`orientation`** is omitted, the renderer treats the layer as **`orientation: "vertical"`** for board spin (screen-upright), so asymmetric targets (chess, meeple, and so on) stay readable on abstract games that use symmetric `piece` tokens. Symmetric swaps (e.g. `piece` → `piece-square`) look the same either way. Set **`orientation: "fluid"`** on the legend entry if you need board-aligned remapped art.
+
 Compare slot lists in [Glyph paint slots](/renderer/glyph-slots/) when documenting safe swaps (e.g. `piece` ↔ `hex-flat`).
 
 ## Contact sheet preview
