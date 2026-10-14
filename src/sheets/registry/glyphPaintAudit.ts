@@ -21,6 +21,7 @@ import { getGlyphDefinitionMeta, invokeGlyphBuild } from "./defineGlyph.js";
 import {
     proceduralShadingProfile,
     resetGlyphCatalogFromModule,
+    resolveCatalogEntry,
     resolveColour2SlotForGlyph,
 } from "./glyphRegistry.js";
 
@@ -356,6 +357,7 @@ function scanNonUniformInk(
     if (
         strokeIsVisible(el)
         && stroke !== null
+        && strokeSlot !== null
         && slotChannelAudited(strokeSlot, paintedSlots)
         && !matchesExpectedColour(stroke, expectedHex)
     ) {
@@ -543,12 +545,11 @@ export function runGlyphPaintAudit(options: GlyphPaintAuditOptions = {}): GlyphP
     const sheets = options.sheets ?? contactSheets;
     const sheetNames = sheets.map((s) => s.name);
     const expectedHex = paletteDefault[playerIndex - 1]!;
-    const slotPaint: NormalizedPaintMap = {
+    const defaultAuditPaint: NormalizedPaintMap = {
         fill: playerIndex,
         border: playerIndex,
         detail: playerIndex,
     };
-    const paintedSlots = new Set<string>(STANDARD_LEGEND_PAINT_SLOTS);
 
     let totalGlyphs = 0;
     let skippedGlyphs = 0;
@@ -565,6 +566,15 @@ export function runGlyphPaintAudit(options: GlyphPaintAuditOptions = {}): GlyphP
                 skippedGlyphs += 1;
                 continue;
             }
+
+            const catalogEntry = resolveCatalogEntry(glyphName, sheetSearchOrder(sheet.name, sheetNames));
+            const slotNames =
+                catalogEntry !== undefined ? Object.keys(catalogEntry.slots) : [...STANDARD_LEGEND_PAINT_SLOTS];
+            const slotPaint: NormalizedPaintMap = {};
+            for (const slot of slotNames) {
+                slotPaint[slot] = playerIndex;
+            }
+            const paintedSlots = new Set<string>(slotNames);
 
             const symbol = paintedGlyphSymbol(sheet, glyphName, sheetNames, slotPaint);
             const glyphHits: GlyphPaintAuditHit[] = [];
@@ -590,7 +600,7 @@ export function runGlyphPaintAudit(options: GlyphPaintAuditOptions = {}): GlyphP
 
     hits.sort((a, b) => a.glyphKey.localeCompare(b.glyphKey) || a.channel.localeCompare(b.channel));
 
-    const report = buildReport(hits, totalGlyphs, skippedGlyphs, expectedHex, playerIndex, slotPaint);
+    const report = buildReport(hits, totalGlyphs, skippedGlyphs, expectedHex, playerIndex, defaultAuditPaint);
 
     if (writeArtifactsFlag) {
         writeAuditArtifacts(artifactRoot, report, playerIndex);

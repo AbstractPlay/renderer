@@ -233,6 +233,35 @@ describe("glyphPaint", () => {
             );
         });
 
+        it("chess-king solid: fill, border rim, and highlight slots paint independently", () => {
+            const customFill = {
+                func: "custom" as const,
+                default: "#333333",
+                palette: 2,
+            };
+            const highlightContrast = {
+                func: "bestContrast" as const,
+                bg: customFill,
+                fg: ["#000", "#fff"],
+            };
+            const svg = renderLegendGlyphs(
+                [
+                    {
+                        name: "chess-king-solid-traditional",
+                        paint: {
+                            fill: customFill,
+                            border: "#000000",
+                            highlight: highlightContrast,
+                        },
+                    },
+                ],
+                ["chess"],
+            );
+            expect(svg).to.match(/data-slot-fill="fill"[^>]*fill="#333333"/);
+            expect(svg).to.match(/data-slot-stroke="border"[^>]*stroke="#000000"/i);
+            expect(svg).to.match(/data-slot-stroke="highlight"[^>]*stroke="#ffffff"/i);
+        });
+
         it("legacy opacity without colour tints fill-slot defaults", () => {
             const svg = renderLegendGlyphs([{ name: "piece-borderless", opacity: 0.9 }]);
             expect(svg).to.match(/fill-opacity="0\.9"|opacity="0\.9"/);

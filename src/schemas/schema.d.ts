@@ -600,7 +600,7 @@ export interface SheetGlyph {
   colour2?: ColourResolvable | Gradient;
 }
 /**
- * Per-slot colours for sheet artwork slots (fill, border, detail, …).
+ * Per-slot colours for sheet artwork slots (fill, border, detail, highlight, …). See glyph-slots.md per glyph.
  */
 export interface SheetGlyphPaintMap {
   [k: string]: PaintEntry;

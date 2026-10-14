@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-10-13
+## [1.0.0-ci] - 2026-10-14
 
 ### Added
 
@@ -19,6 +19,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Fixed
 
+- **Chess solid glyphs:** three paint slots — `fill` (body), `border` (silhouette rim stroke), `highlight` (interior accents; formerly mis-bound to `border`). Fixes white halos when legacy `colour2` / `bestContrast` was applied to the outer rim.
 - **Pieces / `localStash` area labels and entry captions:** Tried to fix browser engine discrepancies by using direct dimension probing instead of relying on consistent application of baseline metrics. Slightly less performant, but not noticeable.
 - **Legacy glyph `opacity` without `colour`:** `fill-opacity` is applied to fill-channel slot bindings on authored defaults (regression from slot paint migration).
 - **Procedural orbs (`orb`–`orb3`):** legacy `opacity` on `paint.fill` is applied as `fill-opacity` on the shaded sphere after gradients are built (was dropped when `fill` was removed from post-shading slot paint).

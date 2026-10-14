@@ -13,95 +13,95 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | arimaa | `arimaa-horse` | border (fill+stroke), fill (fill) | — |
 | arimaa | `arimaa-rabbit` | border (fill+stroke), fill (fill) | — |
 | chess | `chess-amazon-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-amazon-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-amazon-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-archbishop-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-archbishop-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-archbishop-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-bishop-outline-line` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-bishop-outline-millenia` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-bishop-outline-montreal` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-bishop-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-bishop-solid-line` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-bishop-solid-millenia` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-bishop-solid-montreal` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-bishop-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-bishop-solid-line` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-bishop-solid-millenia` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-bishop-solid-montreal` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-bishop-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-boat-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-boat-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-boat-solid-traditional` | fill (fill), highlight (fill+stroke), border (stroke) | — |
 | chess | `chess-centaur-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-centaur-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-centaur-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-champion-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-champion-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-champion-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-chancellor-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-chancellor-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-chancellor-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-commoner-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-commoner-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-commoner-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-dabbaba-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-dabbaba-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-dabbaba-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-dragon-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-dragon-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-dragon-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-elephant-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-elephant-solid-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-ex-solid-line` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-ex-solid-millenia` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-elephant-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-ex-solid-line` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-ex-solid-millenia` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-ferz-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-ferz-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-ferz-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-fool-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-fool-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-fool-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-giraffe-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-giraffe-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-giraffe-solid-traditional` | fill (fill), highlight (fill+stroke), border (stroke) | — |
 | chess | `chess-king-outline-line` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-king-outline-millenia` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-king-outline-montreal` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-king-outline-traditional` | border (fill+stroke), fill (fill) | — |
-| chess | `chess-king-solid-line` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-king-solid-millenia` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-king-solid-montreal` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-king-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-king-solid-line` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-king-solid-millenia` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-king-solid-montreal` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-king-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-knight-outline-line` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-knight-outline-millenia` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-knight-outline-montreal` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-knight-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-knight-solid-line` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-knight-solid-millenia` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-knight-solid-montreal` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-knight-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-knight-solid-line` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-knight-solid-millenia` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-knight-solid-montreal` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-knight-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-mann-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-mann-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-mann-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-nightrider-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-nightrider-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-nightrider-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-pawn-outline-line` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-pawn-outline-millenia` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-pawn-outline-montreal` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-pawn-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-pawn-solid-line` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-pawn-solid-millenia` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-pawn-solid-montreal` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-pawn-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-pawn-solid-line` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-pawn-solid-millenia` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-pawn-solid-montreal` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-pawn-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-queen-outline-line` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-queen-outline-millenia` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-queen-outline-montreal` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-queen-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-queen-solid-line` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-queen-solid-millenia` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-queen-solid-montreal` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-queen-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-queen-solid-line` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-queen-solid-millenia` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-queen-solid-montreal` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-queen-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-rook-outline-line` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-rook-outline-millenia` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-rook-outline-montreal` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-rook-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-rook-solid-line` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-rook-solid-millenia` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-rook-solid-montreal` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-rook-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-rook-solid-line` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-rook-solid-millenia` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-rook-solid-montreal` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-rook-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-short-rook-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-short-rook-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-short-rook-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-unicorn-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-unicorn-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-unicorn-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-wazir-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-wazir-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-wazir-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-wizard-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-wizard-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-wizard-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-zebra-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-zebra-solid-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-zebra-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `piece-janggi` | fill (fill), border (stroke) | — |
 | chess | `piece-shogi` | fill (fill), border (stroke) | — |
 | core | `arrowhead` | fill (fill), border (stroke) | — |

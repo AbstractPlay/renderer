@@ -32,6 +32,30 @@ export function registerDuotoneGlyph(
     );
 }
 
+/** Solid chess: body `fill`, silhouette rim `border` (stroke), interior ink `highlight` (legacy colour2 was highlight-only). */
+export const SOLID_CHESS_SLOTS: Record<string, SlotMeta> = {
+    fill: { channels: ["fill"], description: "Solid piece body." },
+    border: { channels: ["stroke"], description: "Outer silhouette rim." },
+    highlight: { channels: ["fill", "stroke"], description: "Interior line work and accents." },
+};
+
+export function registerSolidChessGlyph(
+    sheet: ISheet,
+    glyphName: string,
+    build: (canvas: SVGContainer) => SVGSymbol,
+): void {
+    defineGlyph(
+        sheet.name,
+        glyphName,
+        {
+            slots: SOLID_CHESS_SLOTS,
+            colour2Slot: "border",
+            build,
+        },
+        sheet.glyphs,
+    );
+}
+
 /** Die faces: outline `border`, pips `detail` (legacy colour2); optional face `fill`. */
 export const DICE_FACE_SLOTS: Record<string, SlotMeta> = {
     fill: { channels: ["fill"] },

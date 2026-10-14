@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-07T18:11:24.565Z",
+  "generated": "2026-10-14T18:43:42.178Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -1368,14 +1368,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1408,14 +1414,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1508,14 +1520,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1528,14 +1546,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1548,14 +1572,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1568,14 +1598,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1608,14 +1644,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
-        "border": {
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
         }
       },
       "colour2Slot": "border"
@@ -1648,14 +1690,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1688,14 +1736,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1728,14 +1782,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1768,14 +1828,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1808,14 +1874,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1848,14 +1920,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1888,14 +1966,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1908,14 +1992,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1928,14 +2018,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -1968,14 +2064,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2008,14 +2110,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2048,14 +2156,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
-        "border": {
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
         }
       },
       "colour2Slot": "border"
@@ -2148,14 +2262,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2168,14 +2288,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2188,14 +2314,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2208,14 +2340,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2308,14 +2446,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2328,14 +2472,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2348,14 +2498,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2368,14 +2524,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2408,14 +2570,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2448,14 +2616,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2548,14 +2722,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2568,14 +2748,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2588,14 +2774,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2608,14 +2800,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2708,14 +2906,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2728,14 +2932,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2748,14 +2958,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2768,14 +2984,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2868,14 +3090,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2888,14 +3116,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2908,14 +3142,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2928,14 +3168,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -2968,14 +3214,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -3008,14 +3260,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -3048,14 +3306,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -3088,14 +3352,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"
@@ -3128,14 +3398,20 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Solid piece body."
         },
         "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Interior line work and accents."
         }
       },
       "colour2Slot": "border"

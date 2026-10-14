@@ -598,7 +598,7 @@
             ]
         },
         "sheetGlyphPaintMap": {
-            "description": "Per-slot colours for sheet artwork slots (fill, border, detail, …).",
+            "description": "Per-slot colours for sheet artwork slots (fill, border, detail, highlight, …). See glyph-slots.md per glyph.",
             "type": "object",
             "additionalProperties": { "$ref": "#/$defs/paintEntry" }
         },
