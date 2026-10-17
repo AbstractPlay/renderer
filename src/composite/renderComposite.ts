@@ -14,6 +14,7 @@ import AjvImport from "ajv";
 import type { ValidateFunction } from "ajv";
 import { captureSquareClickMeta, type SquareClickMeta } from "./captureSquareClickMeta.js";
 import { attachCompositeBoardClick } from "./delegateBoardClick.js";
+import { attachCompositeBoardHover } from "./delegateBoardHover.js";
 import { importPrefixedPanelSvg } from "./importPanel.js";
 import {
     COMPOSITE_LABEL_FONT_SIZE,
@@ -210,14 +211,19 @@ export const renderComposite = (json: APRenderComposite, opts = {} as IRenderCom
 
     renderCompositeAnnotations(compositeGroup, json, measured, placements, opts);
 
-    if (opts.boardClick !== undefined) {
+    if (opts.boardClick !== undefined || opts.boardHover !== undefined) {
         const clickMetaByPanelId = new Map<string, SquareClickMeta>();
         for (const { panel, clickMeta } of measured) {
             if (clickMeta !== undefined) {
                 clickMetaByPanelId.set(panel.id, clickMeta);
             }
         }
-        attachCompositeBoardClick(draw, compositeGroup, json, placements, clickMetaByPanelId, opts.boardClick);
+        if (opts.boardClick !== undefined) {
+            attachCompositeBoardClick(draw, compositeGroup, json, placements, clickMetaByPanelId, opts.boardClick);
+        }
+        if (opts.boardHover !== undefined) {
+            attachCompositeBoardHover(draw, compositeGroup, json, placements, clickMetaByPanelId, opts.boardHover);
+        }
     }
 
     const pad = MOZILLA_VIEWBOX_PAD;

@@ -29,7 +29,7 @@ Supported types today: `move`, `line`, `dots`, `outline`. Square boards only (sa
 
 Example: [`docs/samples/composite-cross-panel-arrow.json`](samples/composite-cross-panel-arrow.json).
 
-Each panel is measured once on the output SVG (no click handlers) using `unionLayoutBBox`, then cleared before the next panel. Prefixed panel markup is composed under `#ap-composite-panels`. When `boardClick` is set, a single delegated handler on that group routes hits to the correct `panels[].id` (square boards today). Panel titles (`panels[].label`) are drawn in layout space above each board, separate from row/column labels on the board itself.
+Each panel is measured once on the output SVG (no per-tile handlers) using `unionLayoutBBox`, then cleared before the next panel. Prefixed panel markup is composed under `#ap-composite-panels`. When `boardClick` or `boardHover` is set, delegated handlers on that group route hits to the correct `panels[].id` (square boards today). Hover dedupes repeated `pointermove` events for the same panel cell. Panel titles (`panels[].label`) are drawn in layout space above each board, separate from row/column labels on the board itself.
 
 ## API
 
@@ -40,13 +40,14 @@ renderComposite(compositeJson, {
   divid: "drawing",
   showAnnotations: true,
   boardClick(panelId, row, col, piece) { /* ... */ },
+  boardHover(panelId, row, col, piece) { /* e.g. stacking-expanding column */ },
 });
 ```
 
 - **`renderComposite`** is a separate export from **`render`**.
 - Do **not** pass **`opts.rotate`** on the composite call (it is rejected). Set **`panels[].rotate`** in JSON instead.
 - **`showAnnotations`** applies to every panel.
-- **`boardHover`** is not wired for composites yet (typed on `IRenderCompositeOptions` for a future pass).
+- **`boardHover(panelId, row, col, piece)`** — same routing as `boardClick`; intended for integrators that call `renderColumn` for a side stack (not composite JSON).
 
 Integrators (Abstract Play front, gameslib) must detect `kind: "composite"`, call **`renderComposite`** instead of **`render`**, and route clicks with **`panelId`** — not covered in this package beyond the API above.
 
