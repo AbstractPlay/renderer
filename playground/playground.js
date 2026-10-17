@@ -82,6 +82,7 @@ function processJson() {
         const compositeOptions = { ...options };
         delete compositeOptions.rotate;
         compositeOptions.boardClick = handleCompositeClick;
+        compositeOptions.showAnnotations = true;
         renderComposite(data, compositeOptions);
     } else {
         render(data, options);

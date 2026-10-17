@@ -22,7 +22,9 @@ import {
     layoutCompositePanels,
     type PanelBBox,
 } from "./layout.js";
+import { renderCompositeAnnotations } from "./renderCompositeAnnotations.js";
 import { validateComposite } from "./validateComposite.js";
+import { validateCompositeAnnotationTargets } from "./validateCompositeAnnotations.js";
 
 type AjvInstance = {
     compile(jsonSchema: object): ValidateFunction;
@@ -131,6 +133,7 @@ export const renderComposite = (json: APRenderComposite, opts = {} as IRenderCom
             throw new Error(`Panel "${panel.id}" render does not validate: ${formatAJVErrors(validateRep.errors ?? [])}`);
         }
     }
+    validateCompositeAnnotationTargets(json);
 
     const compositeRotate = (opts as { rotate?: number }).rotate;
     if (compositeRotate !== undefined && compositeRotate !== 0) {
@@ -204,6 +207,8 @@ export const renderComposite = (json: APRenderComposite, opts = {} as IRenderCom
 
         importPrefixedPanelSvg(panelGroup, svgString, placement.panel.id);
     }
+
+    renderCompositeAnnotations(compositeGroup, json, measured, placements, opts);
 
     if (opts.boardClick !== undefined) {
         const clickMetaByPanelId = new Map<string, SquareClickMeta>();

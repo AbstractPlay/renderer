@@ -4250,6 +4250,101 @@
             ],
             "additionalProperties": false
         },
+        "compositeCellRef": {
+            "description": "A cell on a specific composite panel (logical row/col in that panel's pieces grid).",
+            "type": "object",
+            "properties": {
+                "panel": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "row": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "col": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "panel",
+                "row",
+                "col"
+            ],
+            "additionalProperties": false
+        },
+        "compositeAnnotation": {
+            "description": "Annotation spanning one or more panels. Targets use compositeCellRef; draw in composite SVG space above all panels.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "move",
+                        "line",
+                        "dots",
+                        "outline"
+                    ]
+                },
+                "targets": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/compositeCellRef"
+                    }
+                },
+                "style": {
+                    "enum": [
+                        "solid",
+                        "dashed"
+                    ]
+                },
+                "strokeWidth": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "colour": {
+                    "$ref": "#/$defs/colourResolvable"
+                },
+                "arrow": {
+                    "type": "boolean"
+                },
+                "anchors": {
+                    "type": "boolean"
+                },
+                "size": {
+                    "type": "number"
+                },
+                "dashed": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "dotShape": {
+                    "enum": [
+                        "circle",
+                        "ring",
+                        "ring-large",
+                        "chevron",
+                        "explosion"
+                    ]
+                },
+                "rotation": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "type",
+                "targets"
+            ],
+            "additionalProperties": false
+        },
         "APRenderComposite": {
             "description": "Multiple independent boards in one SVG. Use `renderComposite` in the renderer package; each `panels[].render` validates as a normal render rep.",
             "type": "object",
@@ -4265,6 +4360,13 @@
                     "minItems": 1,
                     "items": {
                         "$ref": "#/$defs/compositePanel"
+                    }
+                },
+                "annotations": {
+                    "description": "Cross-panel annotations (arrows, lines, dots, outlines). Within-panel annotations stay on panels[].render.annotations.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/compositeAnnotation"
                     }
                 }
             },

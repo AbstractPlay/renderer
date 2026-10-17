@@ -16,6 +16,19 @@ Single-board games are unchanged: keep producing a normal render rep and call `A
 
 There is no composite-level `legend`; duplicate `legend` / `glyphDefs` on each panel as needed—the compositor prefixes SVG ids per panel to avoid collisions.
 
+### Cross-panel annotations
+
+Optional top-level **`annotations`** draw move arrows, polylines, dots, or outlines in composite SVG space (layer `#ap-composite-annotations`, above all panels). Each target is a **`compositeCellRef`**: `{ "panel": "<panels[].id>", "row", "col" }` (logical cell indices on that panel’s board, respecting `panels[].rotate`).
+
+| Intent | Where to author |
+|--------|-----------------|
+| Arrow entirely on one board | `panels[i].render.annotations` (unchanged) |
+| Arrow between panels | top-level `annotations` |
+
+Supported types today: `move`, `line`, `dots`, `outline`. Square boards only (same constraint as composite `boardClick`). Requires **`showAnnotations: true`** on `renderComposite` (includes per-panel `render.annotations`).
+
+Example: [`docs/samples/composite-cross-panel-arrow.json`](samples/composite-cross-panel-arrow.json).
+
 Each panel is measured once on the output SVG (no click handlers) using `unionLayoutBBox`, then cleared before the next panel. Prefixed panel markup is composed under `#ap-composite-panels`. When `boardClick` is set, a single delegated handler on that group routes hits to the correct `panels[].id` (square boards today). Panel titles (`panels[].label`) are drawn in layout space above each board, separate from row/column labels on the board itself.
 
 ## API
@@ -41,5 +54,5 @@ Schema: `src/schemas/composite-schema.json` (references `APRenderComposite` in t
 
 Examples:
 
-- Playground **Composite: Dual boards** (`row`) and **Composite: 2×2 grid** (`grid` with `columns: 2`).
-- Pretty-printed JSON: [`docs/samples/composite-grid-2x2.json`](samples/composite-grid-2x2.json).
+- Playground **Composite: Dual boards** (`row`), **Composite: 2×2 grid** (`grid` with `columns: 2`), and **Composite: Cross-panel arrow** (`showAnnotations`).
+- Pretty-printed JSON: [`composite-grid-2x2.json`](samples/composite-grid-2x2.json), [`composite-cross-panel-arrow.json`](samples/composite-cross-panel-arrow.json).

@@ -1,0 +1,89 @@
+{
+    "kind": "composite",
+    "layout": {
+        "arrangement": "row",
+        "gap": 1
+    },
+    "panels": [
+        {
+            "id": "left",
+            "label": "From",
+            "render": {
+                "board": {
+                    "style": "squares-checkered",
+                    "width": 4,
+                    "height": 4
+                },
+                "legend": {
+                    "A": {
+                        "name": "piece",
+                        "paint": {
+                            "fill": 1
+                        }
+                    },
+                    "B": {
+                        "name": "piece",
+                        "paint": {
+                            "fill": 2
+                        }
+                    }
+                },
+                "pieces": null,
+                "annotations": [
+                    {
+                        "type": "exit",
+                        "targets": [
+                            {
+                                "row": 2,
+                                "col": 2
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "right",
+            "label": "To",
+            "render": {
+                "board": {
+                    "style": "squares-checkered",
+                    "width": 4,
+                    "height": 4
+                },
+                "legend": {
+                    "A": {
+                        "name": "piece",
+                        "paint": {
+                            "fill": 1
+                        }
+                    },
+                    "B": {
+                        "name": "piece",
+                        "paint": {
+                            "fill": 2
+                        }
+                    }
+                },
+                "pieces": "----\n-B--\n----\n----"
+            }
+        }
+    ],
+    "annotations": [
+        {
+            "type": "move",
+            "targets": [
+                {
+                    "panel": "left",
+                    "row": 2,
+                    "col": 2
+                },
+                {
+                    "panel": "right",
+                    "row": 1,
+                    "col": 1
+                }
+            ]
+        }
+    ]
+}

@@ -1,4 +1,26 @@
-import type { APRenderRep, RenderLabel } from "./schema.js";
+import type { AnnotationBasic, APRenderRep, ColourResolvable, RenderLabel } from "./schema.js";
+
+export interface CompositeCellRef {
+    panel: string;
+    row: number;
+    col: number;
+}
+
+/** Cross-panel annotation (`move`, `line`, `dots`, `outline`). */
+export interface CompositeAnnotation {
+    type: "move" | "line" | "dots" | "outline";
+    targets: CompositeCellRef[];
+    style?: "solid" | "dashed";
+    strokeWidth?: number;
+    opacity?: number;
+    colour?: ColourResolvable;
+    arrow?: boolean;
+    anchors?: boolean;
+    size?: number;
+    dashed?: number[];
+    dotShape?: NonNullable<AnnotationBasic["dotShape"]>;
+    rotation?: number;
+}
 
 export type CompositePanelRotate = 0 | 90 | 180 | 270;
 
@@ -26,4 +48,5 @@ export interface APRenderComposite {
     kind: "composite";
     layout: APRenderCompositeLayout;
     panels: APRenderCompositePanel[];
+    annotations?: CompositeAnnotation[];
 }

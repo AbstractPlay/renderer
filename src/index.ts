@@ -25,6 +25,8 @@ export type {
     APRenderComposite,
     APRenderCompositeLayout,
     APRenderCompositePanel,
+    CompositeAnnotation,
+    CompositeCellRef,
 } from "./schemas/composite.js";
 export { renderComposite };
 
