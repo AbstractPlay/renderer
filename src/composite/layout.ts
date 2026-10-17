@@ -122,12 +122,14 @@ export const layoutCompositePanels = (
     }
 
     const rowBoardH = rows.map((row) => Math.max(...row.map((p) => p.bbox.height)));
+    const rowLabelBand = rows.map((row) => Math.max(...row.map((p) => p.labelBand)));
 
     const placements: PanelPlacement[] = [];
     let cellY = 0;
     for (let r = 0; r < rows.length; r++) {
         const row = rows[r]!;
         const boardH = rowBoardH[r]!;
+        const titleBand = rowLabelBand[r]!;
         const rowCellH = Math.max(
             ...row.map((p) => cellContentHeight(p.labelBand, boardH)),
         );
@@ -141,7 +143,7 @@ export const layoutCompositePanels = (
             }
             const { panel, bbox, labelBand } = cell;
             const boardX = cellX + alignOffset(align, bbox.width, cellWidth);
-            const boardTop = cellY + labelBand;
+            const boardTop = cellY + titleBand;
             placements.push({
                 panel,
                 bbox,
