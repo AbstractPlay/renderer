@@ -1,0 +1,7 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "$id": "https://www.abstractplay.com/schemas/rendercomposite/0-8-0.json#",
+    "title": "AP Render Composite",
+    "description": "Multiple independent boards in one SVG. Panel bodies validate against the main render-game schema.",
+    "$ref": "https://www.abstractplay.com/schemas/rendergame/0-8-0.json#/$defs/APRenderComposite"
+}

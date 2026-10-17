@@ -11,6 +11,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Added
 
+- **Composite renders (`kind: "composite"`, `@beta`):** `renderComposite` composes multiple full render reps in one SVG — per-panel `render`, `id`, and `rotate`; layout `row` / `column` / `grid` with `gap`, `align`, and optional panel titles; fixed layout cells per row/column so panels align. Delegated `boardClick(panelId, row, col, piece)` on square boards (`#ap-composite-panels`). Exported schema types (`APRenderComposite`, …); single-board `render()` unchanged. Docs: [Composite (multi-board)](docs/composite.md); playground `composite-dual-boards` and `composite-grid-2x2`.
 - **Custom legend glyphs:** optional render-root `glyphDefs` (`viewBox` + sanitized SVG `markup`) and legend layers `{ "def", "paint", … }` that share one definition across pieces; same slot paint pipeline as sheet `name` glyphs. Docs: [Custom glyph definitions](docs/custom-glyphs.md).
 - **Ops:** `ap:service` and `ap:stage` cost-allocation tags on the `abstractplay-renderer-playground` Serverless stack and S3 bucket (via `serverless client deploy`).
 - **`AreaPieces.veiled`** — optional boolean on `pieces` areas; when `true`, the renderer draws a semi-opaque theme-background overlay over the area’s piece grid (click-through). Games set it in `render()`; the renderer does not interpret perspective.

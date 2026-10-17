@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "$id": "https://www.abstractplay.com/schemas/rendergame/0-7-0.json#",
+    "$id": "https://www.abstractplay.com/schemas/rendergame/0-8-0.json#",
     "title": "AP Render Rep",
     "description": "Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.",
     "$defs": {
@@ -4126,6 +4126,121 @@
             "required": [
                 "width",
                 "height"
+            ],
+            "additionalProperties": false
+        },
+        "compositeLayoutAlign": {
+            "type": "string",
+            "enum": [
+                "start",
+                "center",
+                "end"
+            ],
+            "default": "center"
+        },
+        "compositeLayout": {
+            "description": "Arrangement of independent render panels in a composite document.",
+            "type": "object",
+            "properties": {
+                "arrangement": {
+                    "enum": [
+                        "row",
+                        "column",
+                        "grid"
+                    ]
+                },
+                "gap": {
+                    "description": "Space between panels, in default cell-size units (50px per unit).",
+                    "$ref": "#/$defs/positiveNumber"
+                },
+                "columns": {
+                    "description": "Required when `arrangement` is `grid`. Panels fill left-to-right, top-to-bottom.",
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "align": {
+                    "$ref": "#/$defs/compositeLayoutAlign"
+                }
+            },
+            "required": [
+                "arrangement"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "arrangement": {
+                                "const": "grid"
+                            }
+                        },
+                        "required": [
+                            "arrangement"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "columns"
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "compositePanelRotate": {
+            "type": "integer",
+            "enum": [
+                0,
+                90,
+                180,
+                270
+            ]
+        },
+        "compositePanel": {
+            "description": "One independent board render plus layout metadata.",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "$ref": "#/$defs/renderLabel"
+                },
+                "rotate": {
+                    "$ref": "#/$defs/compositePanelRotate"
+                },
+                "render": {
+                    "description": "A complete single-board render representation.",
+                    "$ref": "#"
+                }
+            },
+            "required": [
+                "id",
+                "render"
+            ],
+            "additionalProperties": false
+        },
+        "APRenderComposite": {
+            "description": "Multiple independent boards in one SVG. Use `renderComposite` in the renderer package; each `panels[].render` validates as a normal render rep.",
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "const": "composite"
+                },
+                "layout": {
+                    "$ref": "#/$defs/compositeLayout"
+                },
+                "panels": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/compositePanel"
+                    }
+                }
+            },
+            "required": [
+                "kind",
+                "layout",
+                "panels"
             ],
             "additionalProperties": false
         }

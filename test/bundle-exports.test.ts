@@ -23,6 +23,7 @@ describe("bundled build exports", function () {
     it("should export the public API from build/index.js", () => {
         const {
             render,
+            renderComposite,
             renderglyph,
             renderSheetGlyph,
             renderLegendGlyph,
@@ -32,6 +33,7 @@ describe("bundled build exports", function () {
         } = bundled.default;
 
         expect(render).to.be.a("function");
+        expect(renderComposite).to.be.a("function");
         expect(renderglyph).to.be.a("function");
         expect(renderSheetGlyph).to.be.a("function");
         expect(renderLegendGlyph).to.be.a("function");

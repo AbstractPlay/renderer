@@ -498,5 +498,15 @@
     "name": "Glyphs: Dice pips",
     "description": "Die face fill and pip detail colours.",
     "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":4,\"height\":2},\"legend\":{\"A\":{\"name\":\"d6-5\",\"paint\":{\"fill\":1,\"detail\":2},\"scale\":1.1},\"B\":{\"name\":\"d6-5\",\"paint\":{\"fill\":2,\"detail\":1},\"scale\":1.1}},\"pieces\":\"AA--\\n--BB\"}"
+  },
+  "composite-dual-boards": {
+    "name": "Composite: Dual boards",
+    "description": "Two independent 4×4 boards in a row; the right panel uses panels[].rotate 180. Use renderComposite (kind composite).",
+    "render": "{\"kind\":\"composite\",\"layout\":{\"arrangement\":\"row\",\"gap\":1},\"panels\":[{\"id\":\"left\",\"label\":\"Board A\",\"render\":{\"board\":{\"style\":\"squares-checkered\",\"width\":4,\"height\":4},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"AAAA\\nA--A\\nA--A\\nAAAA\"}},{\"id\":\"right\",\"label\":\"Board B\",\"rotate\":180,\"render\":{\"board\":{\"style\":\"squares-checkered\",\"width\":4,\"height\":4},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"BBBB\\nB--B\\nB--B\\nBBBB\"}}]}"
+  },
+  "composite-grid-2x2": {
+    "name": "Composite: 2×2 grid",
+    "description": "Four 3×3 boards in a grid (layout.columns 2); panels fill left-to-right, top-to-bottom. Copy: docs/samples/composite-grid-2x2.json.",
+    "render": "{\"kind\":\"composite\",\"layout\":{\"arrangement\":\"grid\",\"columns\":2,\"gap\":1,\"align\":\"center\"},\"panels\":[{\"id\":\"nw\",\"label\":\"Northwest\",\"render\":{\"board\":{\"style\":\"squares-checkered\",\"width\":3,\"height\":3},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}}},\"pieces\":\"AAA\\nA-A\\nAAA\"}},{\"id\":\"ne\",\"label\":\"Northeast\",\"render\":{\"board\":{\"style\":\"squares-checkered\",\"width\":3,\"height\":3},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"AAA\\nA-A\\nAAA\"}},{\"id\":\"sw\",\"label\":\"Southwest\",\"render\":{\"board\":{\"style\":\"squares-checkered\",\"width\":3,\"height\":3},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":3}}},\"pieces\":\"AAA\\nA-A\\nAAA\"}},{\"id\":\"se\",\"label\":\"Southeast\",\"render\":{\"board\":{\"style\":\"squares-checkered\",\"width\":3,\"height\":3},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":4}}},\"pieces\":\"AAA\\nA-A\\nAAA\"}}]}"
   }
 }

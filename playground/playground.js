@@ -1,8 +1,12 @@
-import { render } from "@abstractplay/renderer";
+import { render, renderComposite } from "@abstractplay/renderer";
 import PLAYGROUND_SAMPLES from "../test/fixtures/playground-samples.json" with { type: "json" };
 
 function handleClick(row, col, piece) {
     console.log(`Row: ${row}, Col: ${col}, Piece: ${piece}`);
+}
+
+function handleCompositeClick(panelId, row, col, piece) {
+    console.log(`Panel: ${panelId}, Row: ${row}, Col: ${col}, Piece: ${piece}`);
 }
 
 function processJson() {
@@ -74,7 +78,14 @@ function processJson() {
     div.style.backgroundColor = (options.colourContext && options.colourContext.background) ? options.colourContext.background : bg.value;
 
     const data = JSON.parse(document.getElementById("jsonIn").value);
-    render(data, options);
+    if (data && data.kind === "composite") {
+        const compositeOptions = { ...options };
+        delete compositeOptions.rotate;
+        compositeOptions.boardClick = handleCompositeClick;
+        renderComposite(data, compositeOptions);
+    } else {
+        render(data, options);
+    }
     return false;
 }
 
