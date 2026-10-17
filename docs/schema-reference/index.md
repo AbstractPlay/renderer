@@ -101,7 +101,11 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 | Option | Description |
 | --- | --- |
 | `hide-labels` | Hides all external row and column labels around the board. |
-| `hide-labels-half` | On boards with labels on every side (e.g. `squares*`), hides only the top and right labels. |
+| `hide-labels-half` | On boards with labels on every side (e.g. `squares*`), hides only the top and right labels. On `squares*` and `vertex`, this is north and east in grid coordinates. |
+| `hide-labels-north` | On `squares*` and `vertex`, hides column labels on row 0. |
+| `hide-labels-south` | On `squares*` and `vertex`, hides column labels on the last row. |
+| `hide-labels-west` | On `squares*` and `vertex`, hides row labels on column 0. |
+| `hide-labels-east` | On `squares*` and `vertex`, hides row labels on the last column. |
 | `hide-star-points` | On square `vertex` boards, hides the decorative star points. |
 | `no-border` | Hides the outer border line on square-based boards. |
 | `hw-light` | Homeworlds: swaps background and contrast colours for a lighter theme. |

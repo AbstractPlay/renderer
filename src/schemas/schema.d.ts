@@ -494,11 +494,15 @@ export interface APRenderRep {
     | "isometric"
     | "tree-pyramid";
   /**
-   * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers on `squares*` and `vertex` boards; on `circular-wheel*` boards it replaces default letter labels around the circumference with numbers `1` through `n`. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
+   * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. On `squares*` and `vertex` boards, `hide-labels-north`, `hide-labels-south`, `hide-labels-west`, and `hide-labels-east` hide labels on that board edge (grid north = row 0); `hide-labels-half` is equivalent to north plus east. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers on `squares*` and `vertex` boards; on `circular-wheel*` boards it replaces default letter labels around the circumference with numbers `1` through `n`. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
   options?: (
     | "hide-labels"
     | "hide-labels-half"
+    | "hide-labels-north"
+    | "hide-labels-south"
+    | "hide-labels-east"
+    | "hide-labels-west"
     | "hide-star-points"
     | "no-border"
     | "hw-light"
@@ -960,6 +964,15 @@ export interface BoardBasic {
    * An optional array of strings to override the default row labeling.
    */
   rowLabels?: string[];
+  /**
+   * Only on `squares*` and `vertex` boards. Optional per-edge coordinate label strings (north/south length = `width`, west/east length = `height`). Omitted sides use the shared `columnLabels` / `rowLabels` sequences after `reverse-*` and `swap-labels`; provided values are literal and are not transformed again.
+   */
+  edgeLabels?: {
+    north?: string[];
+    south?: string[];
+    east?: string[];
+    west?: string[];
+  };
   /**
    * Currently only applies to hex fields
    */

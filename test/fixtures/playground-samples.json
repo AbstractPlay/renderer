@@ -264,6 +264,21 @@
     "description": "The row and column labels can be customized.",
     "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8,\"columnLabels\":[\"А\",\"Б\",\"В\",\"Г\",\"Д\",\"Е\",\"Ж\",\"З\"],\"rowLabels\":[\"I\",\"II\",\"III\",\"IV\",\"V\",\"VI\",\"VII\",\"VIII\"]},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"BBBBBBBB\\nBBBBBBBB\\n_\\n_\\n_\\n_\\nAAAAAAAA\\nAAAAAAAA\"}"
   },
+  "formatting-labels-hide-edges": {
+    "name": "Formatting: Hide edge labels",
+    "description": "On <code>squares*</code> and <code>vertex</code> boards, <code>hide-labels-north</code>, <code>hide-labels-south</code>, <code>hide-labels-west</code>, and <code>hide-labels-east</code> hide coordinate labels on one grid edge (cardinals rotate with the board). <code>hide-labels-half</code> is the same as north plus east. This sample uses half for a familiar layout with labels only on the south and west.",
+    "render": "{\"options\":[\"hide-labels-half\"],\"board\":{\"style\":\"squares-checkered\",\"width\":8,\"height\":8},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"BBBBBBBB\\nBBBBBBBB\\n_\\n_\\n_\\n_\\nAAAAAAAA\\nAAAAAAAA\"}"
+  },
+  "formatting-edge-labels": {
+    "name": "Formatting: Per-edge labels",
+    "description": "Optional <code>board.edgeLabels</code> sets different strings on each edge of <code>squares*</code> and <code>vertex</code> boards. Omitted edges still share <code>columnLabels</code> / <code>rowLabels</code> (and <code>reverse-*</code> / <code>swap-labels</code>); values under <code>edgeLabels</code> are literal. Here the south edge uses Roman numerals while north keeps default letters.",
+    "render": "{\"board\":{\"style\":\"squares\",\"width\":8,\"height\":8,\"edgeLabels\":{\"south\":[\"I\",\"II\",\"III\",\"IV\",\"V\",\"VI\",\"VII\",\"VIII\"]}},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":null}"
+  },
+  "formatting-labels-hide-edges-vertex": {
+    "name": "Formatting: Hide edge labels (vertex)",
+    "description": "Per-edge hide on a <code>vertex</code> board: column labels on north and south and row labels on the east are hidden, so only west row numbers remain.",
+    "render": "{\"options\":[\"hide-labels-north\",\"hide-labels-south\",\"hide-labels-east\"],\"board\":{\"style\":\"vertex\",\"width\":6,\"height\":6},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"------\\n------\\n---A--\\n------\\n------\\n------\"}"
+  },
   "formatting-strokes": {
     "name": "Formatting: Different strokes",
     "description": "Adjusting the attributes of the lines used to draw the board and labels",
