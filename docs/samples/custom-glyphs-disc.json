@@ -1,0 +1,18 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 4,
+    "height": 4
+  },
+  "glyphDefs": {
+    "go-disc": {
+      "viewBox": [-2.5, -2.5, 105, 105],
+      "markup": "<circle cx=\"50\" cy=\"50\" r=\"50\" data-slot-fill=\"fill\" data-slot-stroke=\"border\" fill=\"#ffffff\" stroke=\"#000000\" stroke-width=\"5\"/>"
+    }
+  },
+  "legend": {
+    "B": { "def": "go-disc", "paint": { "fill": 1 } },
+    "W": { "def": "go-disc", "paint": { "fill": 2 } }
+  },
+  "pieces": "BWBW\nWBWB\nBWBW\nWBWB"
+}

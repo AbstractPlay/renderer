@@ -8,6 +8,8 @@ Player-owned sheet pieces should set `paint.fill` to a player number (`1`, `2`, 
 
 See the [contact sheet](/renderer/contact-sheet/) for every available sheet piece name.
 
+For game-authored SVG (shared definitions and `def` legend layers), see [Custom glyph definitions](/renderer/custom-glyphs/).
+
 ## Simple glyphs
 
 A legend entry can be a plain string (the sheet piece name) or an object with `name` and optional properties:

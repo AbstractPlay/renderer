@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-10-15
+## [1.0.0-ci] - 2026-10-17
 
 ### Added
 
+- **Custom legend glyphs:** optional render-root `glyphDefs` (`viewBox` + sanitized SVG `markup`) and legend layers `{ "def", "paint", … }` that share one definition across pieces; same slot paint pipeline as sheet `name` glyphs. Docs: [Custom glyph definitions](docs/custom-glyphs.md).
 - **Ops:** `ap:service` and `ap:stage` cost-allocation tags on the `abstractplay-renderer-playground` Serverless stack and S3 bucket (via `serverless client deploy`).
 - **`AreaPieces.veiled`** — optional boolean on `pieces` areas; when `true`, the renderer draws a semi-opaque theme-background overlay over the area’s piece grid (click-through). Games set it in `render()`; the renderer does not interpret perspective.
 - **Core `piece-tb` and `piece-lr` glyphs** — disc tokens like `piece` with two paintable hemispheres (`top`/`bottom` or `left`/`right`) plus a `border` rim slot (no `fill` slot).

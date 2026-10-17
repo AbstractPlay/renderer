@@ -1,5 +1,5 @@
 import type { Element as SVGElement, Gradient as SVGGradient, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import type { Colourfuncs, ColourResolvable, FunctionBestContrast, Glyph, Gradient, SheetGlyph, TextGlyph } from "../schemas/schema.js";
+import type { Colourfuncs, ColourResolvable, CustomGlyph, FunctionBestContrast, Glyph, Gradient, SheetGlyph, TextGlyph } from "../schemas/schema.js";
 import { x2uid } from "../common/glyph2uid.js";
 import { warnUnknownPaintSlot } from "../sheets/registry/glyphRegistry.js";
 
@@ -49,7 +49,11 @@ export interface NormalizedSheetGlyph {
 }
 
 export function isSheetGlyph(g: Glyph): g is SheetGlyph {
-    return "name" in g && g.name.length > 0;
+    return "name" in g && g.name !== undefined && g.name.length > 0;
+}
+
+export function isCustomGlyph(g: Glyph): g is CustomGlyph {
+    return "def" in g && g.def !== undefined && g.def.length > 0;
 }
 
 export function isTextGlyph(g: Glyph): g is TextGlyph {
@@ -75,6 +79,9 @@ export function normalizeGlyphPaint(
     g: Glyph,
     colour2Slot: Colour2Slot = "border",
 ): NormalizedSheetGlyph | undefined {
+    if (isCustomGlyph(g)) {
+        return normalizeCustomGlyphPaint(g, colour2Slot);
+    }
     if (!isSheetGlyph(g)) {
         return undefined;
     }
@@ -113,13 +120,12 @@ export function normalizeTextGlyphPaint(g: TextGlyph): NormalizedSheetGlyph {
     return { paint, layerOpacity };
 }
 
-export function normalizeSheetGlyphPaint(
-    g: Glyph,
-    colour2Slot: Colour2Slot = "border",
+type PaintableLayerGlyph = Pick<SheetGlyph, "paint" | "colour" | "colour2" | "opacity">;
+
+function normalizePaintableLayerGlyph(
+    g: PaintableLayerGlyph,
+    colour2Slot: Colour2Slot,
 ): NormalizedSheetGlyph {
-    if (!isSheetGlyph(g)) {
-        throw new Error("normalizeSheetGlyphPaint requires a sheet glyph with name");
-    }
     const hasExplicitPaint = g.paint !== undefined;
     const paint: NormalizedPaintMap = hasExplicitPaint ? { ...g.paint } : {};
     if (g.colour !== undefined && paint.fill === undefined) {
@@ -148,6 +154,23 @@ export function normalizeSheetGlyphPaint(
         }
     }
     return { paint, layerOpacity };
+}
+
+export function normalizeCustomGlyphPaint(
+    g: CustomGlyph,
+    colour2Slot: Colour2Slot = "border",
+): NormalizedSheetGlyph {
+    return normalizePaintableLayerGlyph(g, colour2Slot);
+}
+
+export function normalizeSheetGlyphPaint(
+    g: Glyph,
+    colour2Slot: Colour2Slot = "border",
+): NormalizedSheetGlyph {
+    if (!isSheetGlyph(g)) {
+        throw new Error("normalizeSheetGlyphPaint requires a sheet glyph with name");
+    }
+    return normalizePaintableLayerGlyph(g, colour2Slot);
 }
 
 /** Stable cache fingerprint for styled sheet symbols (excludes layer opacity). */
@@ -207,7 +230,7 @@ export function collectPaintColourValues(
 
 /** Player palette index from normalized paint.fill when numeric. */
 export function playerIndexFromSheetGlyph(g: Glyph, normalized?: NormalizedSheetGlyph): number | undefined {
-    const norm = normalized ?? (isSheetGlyph(g) ? normalizeSheetGlyphPaint(g) : undefined);
+    const norm = normalized ?? (isSheetGlyph(g) || isCustomGlyph(g) ? normalizeGlyphPaint(g) : undefined);
     if (norm === undefined) {
         return undefined;
     }
@@ -233,8 +256,8 @@ export function priorCompositeLayerTint(
 ): string {
     for (let j = idx - 1; j >= 0; j--) {
         const prev = glyphs[j]!;
-        if (isSheetGlyph(prev)) {
-            const norm = normalizeSheetGlyphPaint(prev);
+        if (isSheetGlyph(prev) || isCustomGlyph(prev)) {
+            const norm = normalizeGlyphPaint(prev)!;
             const fill = norm.paint.fill;
             if (fill !== undefined) {
                 const c = paintColourValue(fill);

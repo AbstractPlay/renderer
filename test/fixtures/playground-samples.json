@@ -9,6 +9,11 @@
     "description": "Composite glyphs on a square board",
     "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":10,\"height\":10},\"legend\":{\"A\":[{\"name\":\"piece\",\"paint\":{\"fill\":1}},{\"name\":\"cannon-piece\",\"scale\":0.5}],\"B\":[{\"name\":\"piece-square\",\"paint\":{\"fill\":1}},{\"name\":\"cannon-town\",\"scale\":0.75}],\"Y\":[{\"name\":\"piece\",\"paint\":{\"fill\":2}},{\"name\":\"cannon-piece\",\"scale\":0.5,\"rotate\":180}],\"Z\":[{\"name\":\"piece-square\",\"paint\":{\"fill\":2}},{\"name\":\"cannon-town\",\"scale\":0.75,\"rotate\":180}]},\"pieces\":\"-------Z--\\n-Y-Y-Y-Y-Y\\n-Y-Y-Y-Y-Y\\n-Y-Y-Y-Y-Y\\n_\\n_\\nA-A-A-A-A-\\nA-A-A-A-A-\\nA-A-A-A-A-\\n--B-------\"}"
   },
+  "glyphs-custom-disc": {
+    "name": "Glyphs: Custom disc",
+    "description": "Shared glyphDefs entry (go-disc) referenced by two legend keys with different paint, equivalent to core piece.",
+    "render": "{\"board\":{\"style\":\"squares-checkered\",\"width\":4,\"height\":4},\"glyphDefs\":{\"go-disc\":{\"viewBox\":[-2.5,-2.5,105,105],\"markup\":\"<circle cx=\\\"50\\\" cy=\\\"50\\\" r=\\\"50\\\" data-slot-fill=\\\"fill\\\" data-slot-stroke=\\\"border\\\" fill=\\\"#ffffff\\\" stroke=\\\"#000000\\\" stroke-width=\\\"5\\\"/>\"}},\"legend\":{\"B\":{\"def\":\"go-disc\",\"paint\":{\"fill\":1}},\"W\":{\"def\":\"go-disc\",\"paint\":{\"fill\":2}}},\"pieces\":\"BWBW\\nWBWB\\nBWBW\\nWBWB\"}"
+  },
   "pieces-gradients": {
     "name": "Glyphs: Gradients",
     "description": "Glyphs and other elements can be coloured by gradient.",

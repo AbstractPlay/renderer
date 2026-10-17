@@ -814,11 +814,102 @@
             },
             "additionalProperties": false
         },
+        "glyphDefsEntry": {
+            "description": "Shared custom vector art referenced by legend layers via `def`. Markup is sanitized at render time; tag paint regions with `data-slot-fill` / `data-slot-stroke` like sheet glyphs.",
+            "type": "object",
+            "required": ["viewBox", "markup"],
+            "properties": {
+                "viewBox": {
+                    "description": "Symbol viewBox as `[minX, minY, width, height]`.",
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "minItems": 4,
+                    "maxItems": 4
+                },
+                "markup": {
+                    "description": "Inner SVG fragment (paths and primitive shapes only). Not a full `<svg>` document.",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "customGlyph": {
+            "description": "A legend layer that references shared art in `glyphDefs`. Use `paint` like sheet glyphs; markup must declare slot bindings.",
+            "type": "object",
+            "required": ["def"],
+            "properties": {
+                "scale": {
+                    "description": "A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.",
+                    "type": "number",
+                    "default": 1
+                },
+                "opacity": {
+                    "description": "Layer opacity multiplier on the placed glyph (0–1).",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "rotate": {
+                    "description": "A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.",
+                    "anyOf": [
+                        { "type": "number", "minimum": -360, "maximum": 360 },
+                        { "type": "null" }
+                    ],
+                    "default": 0
+                },
+                "orientation": {
+                    "description": "Determines how the piece (usually a text element) is reorientated after rotation is done.",
+                    "enum": ["vertical", "fluid"],
+                    "default": "fluid"
+                },
+                "flipx": {
+                    "description": "Flips x coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "flipy": {
+                    "description": "Flips the y coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "nudge": {
+                    "description": "The number of units to nudge the glyph from centre.",
+                    "type": "object",
+                    "properties": {
+                        "relativeTo": {
+                            "description": "Nudge coordinate system.",
+                            "enum": ["piece", "glyph"]
+                        },
+                        "dx": { "type": "number", "default": 0 },
+                        "dy": { "type": "number", "default": 0 }
+                    },
+                    "additionalProperties": false
+                },
+                "def": {
+                    "description": "Key into the render root `glyphDefs` map.",
+                    "type": "string",
+                    "pattern": "^\\S+$"
+                },
+                "paint": { "$ref": "#/$defs/sheetGlyphPaintMap" },
+                "colour": { "$ref": "#/$defs/glyphPaintColour" },
+                "colour2": {
+                    "deprecated": true,
+                    "description": "Deprecated — use paint.border or paint.detail. Maps like sheet glyphs (default border).",
+                    "anyOf": [
+                        { "$ref": "#/$defs/colourResolvable" },
+                        { "$ref": "#/$defs/gradient" }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
         "glyph": {
             "description": "An individual glyph with options, used in the `legend` property.",
             "oneOf": [
                 { "$ref": "#/$defs/sheetGlyph" },
-                { "$ref": "#/$defs/textGlyph" }
+                { "$ref": "#/$defs/textGlyph" },
+                { "$ref": "#/$defs/customGlyph" }
             ]
         },
         "polymatrix": {
@@ -4084,6 +4175,13 @@
                     "no-iso-depth-shade",
                     "no-iso-cell-footprint"
                 ]
+            }
+        },
+        "glyphDefs": {
+            "description": "Shared custom SVG definitions referenced by legend layers (`def`). Keys are definition ids; values hold `viewBox` and sanitized `markup`.",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/glyphDefsEntry"
             }
         },
         "legend": {

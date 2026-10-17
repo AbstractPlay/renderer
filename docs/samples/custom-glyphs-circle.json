@@ -1,0 +1,18 @@
+{
+  "board": {
+    "style": "squares-checkered",
+    "width": 4,
+    "height": 4
+  },
+  "glyphDefs": {
+    "ring-token": {
+      "viewBox": [-7.5, -7.5, 115, 115],
+      "markup": "<circle cx=\"50\" cy=\"50\" r=\"50\" fill=\"none\" data-slot-stroke=\"fill\" stroke=\"#000000\" stroke-width=\"15\"/>"
+    }
+  },
+  "legend": {
+    "A": { "def": "ring-token", "paint": { "fill": 1 } },
+    "B": { "def": "ring-token", "paint": { "fill": 2 } }
+  },
+  "pieces": "ABAB\nBABA\nABAB\nBABA"
+}

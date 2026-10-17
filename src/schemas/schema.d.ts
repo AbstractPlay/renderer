@@ -8,7 +8,7 @@
 /**
  * An individual glyph with options, used in the `legend` property.
  */
-export type Glyph = SheetGlyph | TextGlyph;
+export type Glyph = SheetGlyph | TextGlyph | CustomGlyph;
 /**
  * Shorthand colour or structured slot paint.
  */
@@ -514,6 +514,12 @@ export interface APRenderRep {
     | "no-iso-cell-footprint"
   )[];
   /**
+   * Shared custom SVG definitions referenced by legend layers (`def`). Keys are definition ids; values hold `viewBox` and sanitized `markup`.
+   */
+  glyphDefs?: {
+    [k: string]: GlyphDefsEntry;
+  };
+  /**
    * Map each `piece` to an actual glyph with possible options.
    */
   legend?: {
@@ -547,6 +553,22 @@ export interface APRenderRep {
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
   annotations?: (AnnotationBasic | AnnotationSowing | AnnotationHomeworlds | AnnotationFreespace | AnnotationTree)[];
+}
+/**
+ * Shared custom vector art referenced by legend layers via `def`. Markup is sanitized at render time; tag paint regions with `data-slot-fill` / `data-slot-stroke` like sheet glyphs.
+ */
+export interface GlyphDefsEntry {
+  /**
+   * Symbol viewBox as `[minX, minY, width, height]`.
+   *
+   * @minItems 4
+   * @maxItems 4
+   */
+  viewBox: [number, number, number, number];
+  /**
+   * Inner SVG fragment (paths and primitive shapes only). Not a full `<svg>` document.
+   */
+  markup: string;
 }
 /**
  * A named glyph from a sheet. Use paint (fill, border, …); colour/colour2 are deprecated aliases.
@@ -743,6 +765,57 @@ export interface TextGlyph {
 export interface TextGlyphPaintMap {
   fill?: PaintEntry;
   border?: TextPaintBorderEntry;
+}
+/**
+ * A legend layer that references shared art in `glyphDefs`. Use `paint` like sheet glyphs; markup must declare slot bindings.
+ */
+export interface CustomGlyph {
+  /**
+   * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
+   */
+  scale?: number;
+  /**
+   * Layer opacity multiplier on the placed glyph (0–1).
+   */
+  opacity?: number;
+  /**
+   * A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.
+   */
+  rotate?: number | null;
+  /**
+   * Determines how the piece (usually a text element) is reorientated after rotation is done.
+   */
+  orientation?: "vertical" | "fluid";
+  /**
+   * Flips x coordinates
+   */
+  flipx?: boolean;
+  /**
+   * Flips the y coordinates
+   */
+  flipy?: boolean;
+  /**
+   * The number of units to nudge the glyph from centre.
+   */
+  nudge?: {
+    /**
+     * Nudge coordinate system.
+     */
+    relativeTo?: "piece" | "glyph";
+    dx?: number;
+    dy?: number;
+  };
+  /**
+   * Key into the render root `glyphDefs` map.
+   */
+  def: string;
+  paint?: SheetGlyphPaintMap;
+  colour?: GlyphPaintColour;
+  /**
+   * @deprecated
+   * Deprecated — use paint.border or paint.detail. Maps like sheet glyphs (default border).
+   */
+  colour2?: ColourResolvable | Gradient;
 }
 /**
  * Sheet glyphs on cube faces (`cube` and cube lintels). Keys use intrinsic N/E/S/W + top.
