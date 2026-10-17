@@ -83,15 +83,23 @@ export function resolveRectEdgeLabelStrings(
         rowLabels.reverse();
     }
 
+    if (edgeLabels?.north !== undefined) {
+        assertEdgeLength(edgeLabels.north, width, "north");
+    }
+    if (edgeLabels?.south !== undefined) {
+        assertEdgeLength(edgeLabels.south, width, "south");
+    }
+    if (edgeLabels?.west !== undefined) {
+        assertEdgeLength(edgeLabels.west, height, "west");
+    }
+    if (edgeLabels?.east !== undefined) {
+        assertEdgeLength(edgeLabels.east, height, "east");
+    }
+
     const north = edgeLabels?.north ?? [...columnLabels];
     const south = edgeLabels?.south ?? [...columnLabels];
     const west = edgeLabels?.west ?? [...rowLabels];
     const east = edgeLabels?.east ?? [...rowLabels];
-
-    assertEdgeLength(north, width, "north");
-    assertEdgeLength(south, width, "south");
-    assertEdgeLength(west, height, "west");
-    assertEdgeLength(east, height, "east");
 
     return { north, south, west, east };
 }

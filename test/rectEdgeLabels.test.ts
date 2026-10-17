@@ -75,6 +75,22 @@ describe("rect edge labels (squares and vertex)", () => {
             expect(texts.filter((t) => t === "1").length).to.equal(2);
         });
 
+        it("should not require columnLabels length to match width when edgeLabels is omitted", () => {
+            const draw = makeDraw();
+            renderer.render(
+                squaresLabelRep(undefined, {
+                    style: "squares",
+                    width: 5,
+                    height: 3,
+                    columnLabels: ["", "", "", ""],
+                    rowLabels: ["", "", ""],
+                }),
+                draw,
+                {},
+            );
+            expect(draw.findOne("#labels")).to.not.equal(null);
+        });
+
         it("should apply edgeLabels overrides literally on one side", () => {
             const draw = makeDraw();
             renderer.render(
