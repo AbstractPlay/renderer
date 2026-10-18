@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-18T18:03:16.228Z",
+  "generated": "2026-10-18T18:06:01.926Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -2099,6 +2099,52 @@
     "chess:chess-fool-solid-traditional": {
       "sheet": "chess",
       "name": "chess-fool-solid-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Solid piece body."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
+        "highlight": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Interior line work and accents."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-giraffe-bishop-outline-traditional": {
+      "sheet": "chess",
+      "name": "chess-giraffe-bishop-outline-traditional",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "fill",
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "chess:chess-giraffe-bishop-solid-traditional": {
+      "sheet": "chess",
+      "name": "chess-giraffe-bishop-solid-traditional",
       "slots": {
         "fill": {
           "channels": [

@@ -920,6 +920,74 @@ registerSolidChessGlyph(sheet, "chess-fool-solid-traditional", (canvas: SVGConta
     return symbol;
 });
 
+registerDuotoneGlyph(sheet, "chess-giraffe-bishop-outline-traditional", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group()
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
+        .fill({color: "#fff", opacity: 1, rule: "evenodd"})
+        .stroke({color: "#000", width: 1.5, linecap: "round", linejoin: "round", miterlimit: 4});
+    group.path("M 41 36 C 37.6 35 30.9 36.4 27.5 34 C 24.1 36.4 17.4 35 14 36 C 14 36 12.4 36.5 11 38 C 11.7 39 12.6 39 14 38.5 C 17.4 37.5 24.1 39 27.5 37.5 C 30.9 39 37.6 37.5 41 38.5 C 42.4 39 43.3 39 44 38 C 42.6 36.1 41 36 41 36 Z");
+    group.path("M 35 32 C 32.5 34.5 22.5 34.5 20 32 C 19.5 30.5 20 30 20 30 H 35 C 35 30 35.5 30.5 35 32 Z");
+    group.path("M 16.36 0.93 H 18.91 M 17.72 5.01 V -1.15")
+        .fill("none");
+    group.path("M 34.975 29.97 C 29.66845 28.002 31.184 8.7732 27.39385 5.494 C 28.29485 4.6188 31.18485 3.526 28.91025 2.87 C 24.36105 1.558 25.87745 2.87 22.84465 4.182 C 19.8127 4.182 13.7471 1.558 12.2307 9.4292 C 10.71515 12.0524 7.68235 12.0524 6.16595 14.6764 C 5.208 16.3292 7.68235 19.9228 12.2307 15.9884 C 16.7799 15.9884 19.81185 15.9884 21.32825 13.3644 C 22.41965 15.9884 24.78605 16.8524 24.78605 23.3644 C 24.78605 25.9244 23.08605 27.8444 19.68605 29.97 Z");
+    group.path("M 19.335 1.81 H 21.885 M 20.695 5.89 V -0.27")
+        .fill("none");
+    group.path("M 15.31825 8.74937 A 0.36805 1.0392 0 1 1 14.58215 8.34937 A 0.36805 1.0392 0 1 1 15.31825 8.74937 Z")
+        .attr("data-slot-fill", "border")
+        .fill("#000")
+        .stroke("none");
+    group.path("M 27.41 14.69 A 1.4705 2 0 1 1 24.469 14.69 A 1.4705 2 0 1 1 27.41 14.69 Z")
+        .attr("data-slot-fill", "border")
+        .fill("#000")
+        .stroke("none");
+    group.path("M 29.1355 20.69 A 1.4705 2 0 1 1 26.1945 20.69 A 1.4705 2 0 1 1 29.1355 20.69 Z")
+        .attr("data-slot-fill", "border")
+        .fill("#000")
+        .stroke("none");
+    group.path("M20.5 30h14")
+        .attr("data-slot-stroke", "border")
+        .fill("none")
+        .stroke({color: "#000", width: 1.1});
+    symbol.viewbox(3.5, -2.5, 42, 43.5);
+    return symbol;
+});
+
+registerSolidChessGlyph(sheet, "chess-giraffe-bishop-solid-traditional", (canvas: SVGContainer) => {
+    const symbol = canvas.symbol();
+    const group = symbol.group()
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
+        .fill({color: "#000", opacity: 1, rule: "evenodd"})
+        .stroke({color: "#000", width: 1.5, linecap: "round", linejoin: "round", miterlimit: 4});
+    group.path("M 41 36 C 37.6 35 30.9 36.4 27.5 34 C 24.1 36.4 17.4 35 14 36 C 14 36 12.4 36.5 11 38 C 11.7 39 12.6 39 14 38.5 C 17.4 37.5 24.1 39 27.5 37.5 C 30.9 39 37.6 37.5 41 38.5 C 42.4 39 43.3 39 44 38 C 42.6 36.1 41 36 41 36 Z");
+    group.path("M 35 32 C 32.5 34.5 22.5 34.5 20 32 C 19.5 30.5 20 30 20 30 H 35 C 35 30 35.5 30.5 35 32 Z");
+    group.path("M 16.36 0.93 H 18.91 M 17.72 5.01 V -1.15")
+        .fill("none");
+    group.path("M 34.975 29.97 C 29.66845 28.002 31.184 8.7732 27.39385 5.494 C 28.29485 4.6188 31.18485 3.526 28.91025 2.87 C 24.36105 1.558 25.87745 2.87 22.84465 4.182 C 19.8127 4.182 13.7471 1.558 12.2307 9.4292 C 10.71515 12.0524 7.68235 12.0524 6.16595 14.6764 C 5.208 16.3292 7.68235 19.9228 12.2307 15.9884 C 16.7799 15.9884 19.81185 15.9884 21.32825 13.3644 C 22.41965 15.9884 24.78605 16.8524 24.78605 23.3644 C 24.78605 25.9244 23.08605 27.8444 19.68605 29.97 Z");
+    group.path("M 19.335 1.81 H 21.885 M 20.695 5.89 V -0.27")
+        .fill("none");
+    group.path("M 15.31825 8.74937 A 0.36805 1.0392 0 1 1 14.58215 8.34937 A 0.36805 1.0392 0 1 1 15.31825 8.74937 Z")
+        .attr("data-slot-fill", "highlight")
+        .fill("#fff")
+        .stroke("none");
+    group.path("M 27.41 14.69 A 1.4705 2 0 1 1 24.469 14.69 A 1.4705 2 0 1 1 27.41 14.69 Z")
+        .attr("data-slot-fill", "highlight")
+        .fill("#fff")
+        .stroke("none");
+    group.path("M 29.1355 20.69 A 1.4705 2 0 1 1 26.1945 20.69 A 1.4705 2 0 1 1 29.1355 20.69 Z")
+        .attr("data-slot-fill", "highlight")
+        .fill("#fff")
+        .stroke("none");
+    group.path("M20.5 30h14")
+        .attr("data-slot-stroke", "highlight")
+        .fill("none")
+        .stroke({color: "#fff", width: 1.1});
+    symbol.viewbox(3.5, -2.5, 42, 43.5);
+    return symbol;
+});
+
 registerDuotoneGlyph(sheet, "chess-giraffe-outline-traditional", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group()

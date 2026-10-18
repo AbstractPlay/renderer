@@ -46,6 +46,8 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | chess | `chess-ferz-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-fool-outline-traditional` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-fool-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
+| chess | `chess-giraffe-bishop-outline-traditional` | fill (fill), border (fill+stroke) | — |
+| chess | `chess-giraffe-bishop-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-giraffe-outline-traditional` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-giraffe-solid-traditional` | fill (fill), highlight (fill+stroke), border (stroke) | — |
 | chess | `chess-king-outline-line` | fill (fill), border (fill+stroke) | — |
