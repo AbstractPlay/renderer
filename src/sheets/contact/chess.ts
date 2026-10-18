@@ -279,18 +279,17 @@ registerDuotoneGlyph(sheet, "chess-boat-outline-traditional", (canvas: SVGContai
 registerSolidChessGlyph(sheet, "chess-boat-solid-traditional", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group()
-        .attr("data-slot-stroke", "border")
         .attr("data-slot-fill", "fill")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .fill({color: "#000", opacity: 1, rule: "evenodd"})
         .stroke({color: "#000", width: 1.5, linecap: "round", linejoin: "round", miterlimit: 4});
     group.path("M24.989 8.206v19.17")
         .fill("none")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .stroke({color: "#000", width: 3, linejoin: "miter"});
     group.path("M7.543 25.209l17.42-17.07 14.85 17.67")
         .fill("none")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .stroke({color: "#000", width: 0.8, linejoin: "miter", linecap: "round"});
     group.path("M25.029 8.206v19.17")
         .attr("data-slot-stroke", "highlight")
@@ -1027,27 +1026,26 @@ registerDuotoneGlyph(sheet, "chess-giraffe-outline-traditional", (canvas: SVGCon
 registerSolidChessGlyph(sheet, "chess-giraffe-solid-traditional", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();
     const group = symbol.group()
-        .attr("data-slot-stroke", "border")
         .attr("data-slot-fill", "fill")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .fill({color: "#000", opacity: 1, rule: "evenodd"})
         .stroke({color: "#000", width: 1.5, linecap: "round", linejoin: "round", miterlimit: 4});
     group.path("m39.5,40.1003l0,-5.478001c-6.243401,-2.459599 -4.459599,-20.018399 -8.919201,-24.117703c1.059601,-1.09367 4.459602,-2.45955 1.783901,-3.279408c-5.351601,-1.63971 -3.567801,0 -7.135401,1.63972c-3.567699,0 -10.703099,-3.27943 -12.486899,6.55879c-1.7838,3.279499 -5.35153,3.279499 -7.13536,6.558897c-1.12738,2.066 1.78383,6.558805 7.13536,1.6397c5.351501,0 8.9192,0 10.703,-3.2794c1.783899,3.2794 4.567699,4.3603 4.567699,20.757404l11.4869,0l0,-1z");
     group.path("m17.6,4.8l3,0")
         .fill("none")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .stroke({color: "#000", width: 1.5});
     group.path("m19.2,9.9l0,-7.7")
         .fill("none")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .stroke({color: "#000", width: 1.5});
     group.path("m21.1,5.9l3,0")
         .fill("none")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .stroke({color: "#000", width: 1.5});
     group.path("m22.7,11l0,-7.7")
         .fill("none")
-        .attr("data-slot-stroke", "highlight")
+        .attr("data-slot-stroke", "border")
         .stroke({color: "#000", width: 1.5});
     group.path("m16.37441,14.57421a0.433,1.299 0 1 1 -0.866,-0.5a0.433,1.299 0 1 1 0.866,0.5z")
         .attr("data-slot-fill", "highlight")

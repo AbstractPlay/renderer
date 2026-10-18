@@ -1640,18 +1640,18 @@
           ],
           "description": "Solid piece body."
         },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
         "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
           "description": "Interior line work and accents."
-        },
-        "border": {
-          "channels": [
-            "stroke"
-          ],
-          "description": "Outer silhouette rim."
         }
       },
       "colour2Slot": "border"
@@ -2198,18 +2198,18 @@
           ],
           "description": "Solid piece body."
         },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Outer silhouette rim."
+        },
         "highlight": {
           "channels": [
             "fill",
             "stroke"
           ],
           "description": "Interior line work and accents."
-        },
-        "border": {
-          "channels": [
-            "stroke"
-          ],
-          "description": "Outer silhouette rim."
         }
       },
       "colour2Slot": "border"

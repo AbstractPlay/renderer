@@ -40,11 +40,11 @@ describe("Wikimedia fairy chess import", () => {
         expect(block).to.match(/M22\.5 19v12[\s\S]*\.attr\("data-slot-stroke", "highlight"\)/);
     });
 
-    it("giraffe solid horns use highlight stroke slot", () => {
+    it("giraffe solid horns use border stroke slot", () => {
         const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-giraffe-solid-traditional");
-        expect(block).to.match(/m17\.6,4\.8[\s\S]*\.attr\("data-slot-stroke", "highlight"\)/);
-        expect(block).to.match(/m22\.7,11[\s\S]*\.attr\("data-slot-stroke", "highlight"\)/);
+        expect(block).to.match(/m17\.6,4\.8[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
+        expect(block).to.match(/m22\.7,11[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
     });
 
     it("knight solid nose stroke uses highlight slot like mane highlight", () => {
@@ -123,7 +123,7 @@ describe("Wikimedia fairy chess import", () => {
         expect(sailIdx).to.be.greaterThan(ropeIdx, "rigging sits under the sail fill");
         const ropeEnd = block.indexOf("width: 0.8", ropeIdx);
         expect(ropeEnd).to.be.greaterThan(ropeIdx);
-        expect(block.slice(ropeIdx, ropeEnd)).to.include('.attr("data-slot-stroke", "highlight")');
+        expect(block.slice(ropeIdx, ropeEnd)).to.include('.attr("data-slot-stroke", "border")');
     });
 
     it("short rook renders smaller than standard rook", () => {

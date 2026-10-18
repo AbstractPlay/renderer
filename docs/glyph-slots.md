@@ -25,7 +25,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | chess | `chess-bishop-solid-montreal` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-bishop-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-boat-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-boat-solid-traditional` | fill (fill), highlight (fill+stroke), border (stroke) | — |
+| chess | `chess-boat-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-centaur-outline-traditional` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-centaur-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-champion-outline-traditional` | fill (fill), border (fill+stroke) | — |
@@ -49,7 +49,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | chess | `chess-giraffe-bishop-outline-traditional` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-giraffe-bishop-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-giraffe-outline-traditional` | fill (fill), border (fill+stroke) | — |
-| chess | `chess-giraffe-solid-traditional` | fill (fill), highlight (fill+stroke), border (stroke) | — |
+| chess | `chess-giraffe-solid-traditional` | fill (fill), border (stroke), highlight (fill+stroke) | — |
 | chess | `chess-king-outline-line` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-king-outline-millenia` | fill (fill), border (fill+stroke) | — |
 | chess | `chess-king-outline-montreal` | fill (fill), border (fill+stroke) | — |
