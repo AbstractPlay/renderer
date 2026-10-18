@@ -20,6 +20,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 - **Eleven board (`eleven`)** — static football-board topology (65 play spaces, move and shoot adjacency, pitch markings, grass grid, **Linien `edgePaths` per edge** for extraction checks and connection bulge direction) plus default-renderer board style (`board.eleven` visual options, checkered grass, procedural curved move/shoot lines, white Felder fills, oversized pieces, `flood` markers over Felder rings on the marker layer). Grid is **`1×65`** (`row` 0, `col` = space index); `pieces` is one row of 65 cells. Art and committed data live under `src/boards/eleven/`; run `npm run extract-eleven-board` to regenerate `topology.json` and adjacency/marker debug SVGs under `test/fixtures/`. Graph helpers, cell resolution (`elevenResolveCell` / `elevenMarkerTarget`), grass-column pitch ids (`WG` / `EG` / `C` reserved), and committed topology are importable from `@abstractplay/renderer/eleven`.
 - **Glyph paint slot audit** — `runGlyphPaintAudit` / `npm run glyph-paint-audit` flags contact glyphs whose fill or stroke stays off player colour after uniform `paint.fill`, `paint.border`, and `paint.detail` (skips `paintMode: fixed`, procedural orbs, and ink on optional catalog slots outside those three). Runs on `regenerate-glyphs` / `verify-glyphs` and in `npm test`.
 - [Designing sheet glyphs](docs/designing-glyphs.md) contributor guide; showcase samples for border, duotone chess, and dice pip paint.
+- **Chess `chess-giraffe-bishop-*-traditional` glyphs** — outline and solid fairy-chess giraffe+bishop pieces on the contact sheet.
 
 ### Fixed
 
@@ -27,6 +28,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 - **`boardClick` with seat/board rotation:** Generic handlers on `#board` use `boardClickLocalPoint` (`board.point()` only); dropping the extra `rotatePoint` pass fixes wrong cells after `rotateBoard` (regression from the composite click-handler move).
 - **Composite cross-panel annotations:** Cell centres use the full logical square grid so `board.blocked` (missing tiles) does not shift annotation endpoints.
 - **Chess solid glyphs:** three paint slots — `fill` (body), `border` (silhouette rim stroke), `highlight` (interior accents; formerly mis-bound to `border`). Fixes white halos when legacy `colour2` / `bestContrast` was applied to the outer rim.
+- **Chess solid giraffe and boat:** silhouette strokes use the `border` slot (not `highlight`), so player `paint.fill` no longer leaves spurious rim outlines on horns, rigging, and hull.
 - **`cross-omni`:** all four arms use the `fill` stroke slot (horizontal arm was wrongly tagged `border`, so `paint.fill` alone left a default-ink stroke).
 - **Pieces / `localStash` area labels and entry captions:** Tried to fix browser engine discrepancies by using direct dimension probing instead of relying on consistent application of baseline metrics. Slightly less performant, but not noticeable.
 - **Legacy glyph `opacity` without `colour`:** `fill-opacity` is applied to fill-channel slot bindings on authored defaults (regression from slot paint migration).
