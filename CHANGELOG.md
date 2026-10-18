@@ -25,6 +25,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 ### Fixed
 
 - **Glyph paint cache:** Reusing a styled sheet symbol across legend keys no longer re-applies theme `data-context-*` defaults on the shared symbol (which overwrote `paint.border` and similar slot colours on the second key).
+- **`squares-stacked` `boardClick` on upper layers:** Invisible sub-cell hit targets (`#click-cells`) cover the full `(2×width−1)` grid so clicks on half-offset stack positions register (base tiles only sat on cell centres; upper-layer pieces use `pointer-events: none` and previously had nothing underneath to receive the event).
 - **`boardClick` with seat/board rotation:** Generic handlers on `#board` use `boardClickLocalPoint` (`board.point()` only); dropping the extra `rotatePoint` pass fixes wrong cells after `rotateBoard` (regression from the composite click-handler move).
 - **Default-renderer `vertex` board clicks:** Plain `vertex` boards (e.g. Go) attach the generic click handler with `pointer-events: bounding-box` on `#board`, so intersection clicks register like other line-grid styles.
 - **Composite cross-panel annotations:** Cell centres use the full logical square grid so `board.blocked` (missing tiles) does not shift annotation endpoints.
