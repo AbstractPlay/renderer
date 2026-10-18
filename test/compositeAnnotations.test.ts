@@ -4,6 +4,8 @@ import { SVG, registerWindow, type Element, type Svg } from "@svgdotjs/svg.js";
 import { createSVGWindow } from "svgdom";
 import { logicalCellCenter } from "../src/composite/cellCenter.js";
 import { captureSquareClickMeta } from "../src/composite/captureSquareClickMeta.js";
+import { rectOfRects } from "../src/grids/index.js";
+import { rotatePoint } from "../src/common/plotting.js";
 import { renderComposite } from "../src/composite/renderComposite.js";
 import { validateComposite } from "../src/composite/validateComposite.js";
 import { validateCompositeAnnotationTargets } from "../src/composite/validateCompositeAnnotations.js";
@@ -54,12 +56,13 @@ describe("composite cross-panel annotations", () => {
         const meta = captureSquareClickMeta(draw, rep, 180, 0);
         expect(meta).to.not.equal(undefined);
         const centre = logicalCellCenter(meta!, 1, 1);
-        const tiles = draw.find("#tiles use") as Element[];
-        expect(tiles.length).to.be.greaterThan(1);
-        const lastTile = tiles[tiles.length - 1] as Element;
-        const box = lastTile.bbox();
-        expect(centre!.x).to.be.closeTo(box.cx, 0.5);
-        expect(centre!.y).to.be.closeTo(box.cy, 0.5);
+        const grid = rectOfRects({ gridWidth: 2, gridHeight: 2, cellSize: 50 });
+        const board = draw.findOne("#board") as Element;
+        const bb = board.bbox();
+        const pivot = { x: bb.cx, y: bb.cy };
+        const expected = rotatePoint(grid[1][1], 180, pivot);
+        expect(centre!.x).to.be.closeTo(expected.x, 0.5);
+        expect(centre!.y).to.be.closeTo(expected.y, 0.5);
     });
 
     it("logicalCellCenter matches first tile for 2x2 at rotate 0", () => {
@@ -73,10 +76,9 @@ describe("composite cross-panel annotations", () => {
         const meta = captureSquareClickMeta(draw, rep, 0, 0);
         expect(meta).to.not.equal(undefined);
         const centre = logicalCellCenter(meta!, 0, 0);
-        const tile = draw.findOne("#tiles use") as Element;
-        const box = tile.bbox();
-        expect(centre!.x).to.be.closeTo(box.cx, 0.01);
-        expect(centre!.y).to.be.closeTo(box.cy, 0.01);
+        const grid = rectOfRects({ gridWidth: 2, gridHeight: 2, cellSize: 50 });
+        expect(centre!.x).to.be.closeTo(grid[0][0].x, 0.01);
+        expect(centre!.y).to.be.closeTo(grid[0][0].y, 0.01);
     });
 
     it("cross-panel move endpoints align with cells when panels use board.rotate", () => {
@@ -130,6 +132,57 @@ describe("composite cross-panel annotations", () => {
         expect(Number.isFinite(p1.x)).to.equal(true);
         expect(Number.isFinite(p1.y)).to.equal(true);
         expect(Math.hypot(p1.x - p0.x, p1.y - p0.y)).to.be.greaterThan(10);
+    });
+
+    it("cross-panel move stays level when one panel has blocked cells", () => {
+        const doc = {
+            kind: "composite",
+            layout: { arrangement: "row", gap: 1 },
+            panels: [
+                {
+                    id: "left",
+                    render: {
+                        board: { style: "squares", width: 4, height: 4 },
+                        legend: { P: { name: "piece", paint: { fill: 1 } } },
+                        pieces: "----\n----\n--P-\n----",
+                    },
+                },
+                {
+                    id: "right",
+                    render: {
+                        board: {
+                            style: "squares",
+                            width: 4,
+                            height: 4,
+                            blocked: [
+                                { row: 0, col: 0 }, { row: 0, col: 1 }, { row: 0, col: 2 }, { row: 0, col: 3 },
+                                { row: 1, col: 0 }, { row: 1, col: 3 },
+                                { row: 2, col: 0 }, { row: 2, col: 3 },
+                                { row: 3, col: 0 }, { row: 3, col: 1 }, { row: 3, col: 2 }, { row: 3, col: 3 },
+                            ],
+                        },
+                        legend: { P: { name: "piece", paint: { fill: 2 } } },
+                        pieces: "----\n----\n--P-\n----",
+                    },
+                },
+            ],
+            annotations: [
+                {
+                    type: "move",
+                    targets: [
+                        { panel: "left", row: 2, col: 2 },
+                        { panel: "right", row: 2, col: 2 },
+                    ],
+                },
+            ],
+        } as APRenderComposite;
+        const draw = makeDraw();
+        renderComposite(doc, { ...coreRenderOptions, target: draw, showAnnotations: true });
+        const poly = draw.findOne("#ap-composite-annotations polyline") as Element;
+        const [start, end] = String(poly.attr("points")).trim().split(/\s+/);
+        const y0 = Number(start.split(",")[1]);
+        const y1 = Number(end.split(",")[1]);
+        expect(y0).to.be.closeTo(y1, 0.5);
     });
 
     it("draws cross-panel move annotation when showAnnotations is true", () => {

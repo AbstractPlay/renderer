@@ -1,4 +1,6 @@
-import type { Element, Svg } from "@svgdotjs/svg.js";
+import type { Element, G, Svg } from "@svgdotjs/svg.js";
+import { rotatePoint } from "../common/plotting.js";
+import { rectOfRects } from "../grids/index.js";
 import type { APRenderRep } from "../schemas/schema.js";
 import { boardRotateFromRender, compositeVisualRotation, normalizeDegrees } from "./compositePanelRotation.js";
 
@@ -14,29 +16,58 @@ export type SquareClickMeta = {
     boardRotate: number;
     /** Combined rotation applied to `#board` (panel + board). */
     seatRotate: number;
-    /** Measured tile centres in panel SVG space (`row,col` → point). */
+    /** Logical cell centres in panel SVG space (`row,col` → point). */
     cellCenters: Record<string, { x: number; y: number }>;
 };
 
-const sampleSquareCellCenters = (
+/** Absolute row/col centres from the square grid (blocked cells do not shift indices). */
+const logicalSquareCellCenters = (
     draw: Svg,
+    render: APRenderRep,
     width: number,
     height: number,
-): Record<string, { x: number; y: number }> => {
-    const tiles = draw.find("#tiles use");
-    const out: Record<string, { x: number; y: number }> = {};
+    cellsize: number,
+    seatRotate: number,
+): { centers: Record<string, { x: number; y: number }>; origin: { x: number; y: number } } => {
+    const boardJson = render.board;
+    const grid = rectOfRects({
+        gridWidth: width,
+        gridHeight: height,
+        cellSize: cellsize,
+        tileWidth: boardJson !== null && boardJson !== undefined && "tileWidth" in boardJson
+            ? boardJson.tileWidth
+            : undefined,
+        tileHeight: boardJson !== null && boardJson !== undefined && "tileHeight" in boardJson
+            ? boardJson.tileHeight
+            : undefined,
+        tileSpacing: boardJson !== null && boardJson !== undefined && "tileSpacing" in boardJson
+            ? boardJson.tileSpacing
+            : undefined,
+    });
+
+    const board = draw.findOne("#board") as G | null;
+    const pivot = board !== null
+        ? (() => {
+            const bb = board.bbox();
+            return { x: bb.cx, y: bb.cy };
+        })()
+        : grid[0][0];
+
+    const centers: Record<string, { x: number; y: number }> = {};
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
-            const idx = row * width + col;
-            const el = tiles[idx];
-            if (el === undefined) {
-                continue;
+            let pt = { ...grid[row][col] };
+            if (seatRotate !== 0) {
+                pt = rotatePoint(pt, seatRotate, pivot);
             }
-            const box = el.rbox(draw);
-            out[`${row},${col}`] = { x: box.cx, y: box.cy };
+            centers[`${row},${col}`] = pt;
         }
     }
-    return out;
+    let origin = { ...grid[0][0] };
+    if (seatRotate !== 0) {
+        origin = rotatePoint(origin, seatRotate, pivot);
+    }
+    return { centers, origin };
 };
 
 /** Read grid origin and cell size from a freshly rendered square board on `draw`. */
@@ -64,20 +95,19 @@ export const captureSquareClickMeta = (
     if (!Number.isFinite(cellsize) || cellsize <= 0) {
         return undefined;
     }
-    const originX = box.cx;
-    const originY = box.cy;
     const br = boardRotate ?? boardRotateFromRender(render);
     const pr = normalizeDegrees(panelRotate);
     const seatRotate = compositeVisualRotation(pr, br);
+    const { centers, origin } = logicalSquareCellCenters(draw, render, width, height, cellsize, seatRotate);
     return {
-        originX,
-        originY,
+        originX: origin.x,
+        originY: origin.y,
         cellsize,
         width,
         height,
         panelRotate: pr,
         boardRotate: br,
         seatRotate,
-        cellCenters: sampleSquareCellCenters(draw, width, height),
+        cellCenters: centers,
     };
 };

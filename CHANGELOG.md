@@ -24,6 +24,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 ### Fixed
 
 - **`boardClick` with seat/board rotation:** Generic handlers on `#board` use `boardClickLocalPoint` (`board.point()` only); dropping the extra `rotatePoint` pass fixes wrong cells after `rotateBoard` (regression from the composite click-handler move).
+- **Composite cross-panel annotations:** Cell centres use the full logical square grid so `board.blocked` (missing tiles) does not shift annotation endpoints.
 - **Chess solid glyphs:** three paint slots — `fill` (body), `border` (silhouette rim stroke), `highlight` (interior accents; formerly mis-bound to `border`). Fixes white halos when legacy `colour2` / `bestContrast` was applied to the outer rim.
 - **Pieces / `localStash` area labels and entry captions:** Tried to fix browser engine discrepancies by using direct dimension probing instead of relying on consistent application of baseline metrics. Slightly less performant, but not noticeable.
 - **Legacy glyph `opacity` without `colour`:** `fill-opacity` is applied to fill-channel slot bindings on authored defaults (regression from slot paint migration).
