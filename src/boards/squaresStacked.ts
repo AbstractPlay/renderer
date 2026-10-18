@@ -208,19 +208,18 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
         const originY = grid[0][0].y;
         const clickDeltaX = (ctx.json.board.clickDeltaX ?? 0);
         const clickDeltaY = (ctx.json.board.clickDeltaX ?? 0);
-        const root = ctx.rootSvg;
         const realwidth = (width * 2) - 1;
         const realheight = (height * 2) - 1;
         const realsize = cellsize / 2;
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+            const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
             const x = Math.floor((point.x - (originX - (realsize / 2))) / realsize);
             const y = Math.floor((point.y - (originY - (realsize / 2))) / realsize);
             if (x >= 0 - clickDeltaX && x < realwidth + clickDeltaX && y >= 0 - clickDeltaY && y < realheight + clickDeltaY) {
                 ctx.options.boardClick!(y, x, "");
             }
         });
-        ctx.rootSvg.click(genericCatcher);
+        board.click(genericCatcher);
     }
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});

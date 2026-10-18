@@ -769,9 +769,8 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
         const originY = grid[0][0].y;
         // const maxX = grid[0][grid[0].length - 1].x;
         // const maxY = grid[grid.length - 1][0].y;
-        const root = ctx.rootSvg;
         let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+            const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
             const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
             const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
             if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
@@ -783,7 +782,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
         });
         if (ctx.options.rotate === 180) {
             genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
                 const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                 const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                 if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
@@ -794,7 +793,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                 }
             });
         }
-        ctx.rootSvg.click(genericCatcher);
+        board.click(genericCatcher);
     }
 
     // Add edge click handlers if requested

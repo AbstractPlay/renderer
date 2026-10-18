@@ -3,7 +3,7 @@ import { RendererBase } from "../renderers/_base.js";
 import { calcBearing, centroid, projectPoint, ptDistance, rotatePoint } from "../common/plotting.js";
 import { bentTriBoard } from "../common/bentTri/index.js";
 import { BentTri, BentTriNodeData } from "../graphs/index.js";
-import { BoardReturn, createGridlineLayers } from "./index.js";
+import { attachBoardNearestClick, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const bentTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -70,12 +70,23 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
         layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
     }
 
+    const centre = centroid(grid[grid.length - 1]!) ?? grid[grid.length - 1]![0]!;
+    const outer = [...grid[0]!];
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: outer.map(p => {
+            const bearing = calcBearing(centre.x, centre.y, p.x, p.y);
+            const dist = ptDistance(centre.x, centre.y, p.x, p.y) + (ctx.cellsize / 1.5);
+            const [nx, ny] = projectPoint(centre.x, centre.y, dist, bearing);
+            return {x: nx, y: ny};
+        })
+    };
+
     if (ctx.options.boardClick !== undefined) {
         const rotation = ctx.getRotation();
-        const centre = ctx.getBoardCentre();
-        const root = ctx.rootSvg;
+        const boardCentre = ctx.getBoardCentre();
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const clicked = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+            const clicked = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, boardCentre);
             const closest = {
                 dist: Infinity,
                 row: null as (null|number),
@@ -96,23 +107,12 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
                 ctx.options.boardClick!(closest.row, closest.col, "");
             }
         });
-        ctx.rootSvg.click(genericCatcher);
+        attachBoardNearestClick(board, genericCatcher);
     }
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
     // Grid rows run outside-in (row 0 = perimeter, last row = hub), same as star.
-    const centre = centroid(grid[grid.length - 1]!) ?? grid[grid.length - 1]![0]!;
-    const outer = [...grid[0]!];
-    const boardFill: IPolyPolygon = {
-        type: "poly",
-        points: outer.map(p => {
-            const bearing = calcBearing(centre.x, centre.y, p.x, p.y);
-            const dist = ptDistance(centre.x, centre.y, p.x, p.y) + (ctx.cellsize / 1.5);
-            const [nx, ny] = projectPoint(centre.x, centre.y, dist, bearing);
-            return {x: nx, y: ny};
-        })
-    };
 
     return {grid, boardFill};
 }

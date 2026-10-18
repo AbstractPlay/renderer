@@ -1,7 +1,7 @@
 import { IPolyPolygon, snubsquare, SnubStart } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
 import { rotatePoint } from "../common/plotting.js";
-import { BoardReturn, createGridlineLayers } from "./index.js";
+import { attachBoardNearestClick, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const snubSquare = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -168,12 +168,28 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
         }
     }
 
+    const delta = cellsize / 1.5;
+    const xs = grid.flat().map(pt => pt.x);
+    const ys = grid.flat().map(pt => pt.y);
+    const minx = Math.min(...xs);
+    const miny = Math.min(...ys);
+    const maxx = Math.max(...xs);
+    const maxy = Math.max(...ys);
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: [
+            {x: minx - (delta), y: miny - (delta)},
+            {x: maxx + (delta), y: miny - (delta)},
+            {x: maxx + (delta), y: maxy + (delta)},
+            {x: minx - (delta), y: maxy + (delta)},
+        ]
+    };
+
     if (ctx.options.boardClick !== undefined) {
         const rotation = ctx.getRotation();
         const centre = ctx.getBoardCentre();
-        const root = ctx.rootSvg;
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+            const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
             let min = Number.MAX_VALUE;
             let row0 = 0;
             let col0 = 0;
@@ -191,28 +207,10 @@ export const snubSquare = (ctx: RendererBase): BoardReturn => {
             }
             ctx.options.boardClick!(row0, col0, "");
         });
-        ctx.rootSvg.click(genericCatcher);
+        attachBoardNearestClick(board, genericCatcher);
     }
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
-
-    // derive boardFill
-    const delta = cellsize / 1.5;
-    const xs = grid.flat().map(pt => pt.x);
-    const ys = grid.flat().map(pt => pt.y);
-    const minx = Math.min(...xs);
-    const miny = Math.min(...ys);
-    const maxx = Math.max(...xs);
-    const maxy = Math.max(...ys);
-    const boardFill: IPolyPolygon = {
-        type: "poly",
-        points: [
-            {x: minx - (delta), y: miny - (delta)},
-            {x: maxx + (delta), y: miny - (delta)},
-            {x: maxx + (delta), y: maxy + (delta)},
-            {x: minx - (delta), y: maxy + (delta)},
-        ]
-    };
 
     return {grid, boardFill};
 }

@@ -138,6 +138,12 @@ export class StackingExpandingRenderer extends RendererBase {
                 for (let col = 0; col < gridPoints[row].length; col++) {
                     const {x, y} = gridPoints[row][col];
                     const t = tiles.use(tile).size(this.cellsize, this.cellsize).center(x, y);
+                    if (this.options.boardClick !== undefined) {
+                        t.click((e?: Event) => {
+                            this.options.boardClick!(row, col, "");
+                            e?.stopPropagation?.();
+                        });
+                    }
                     if (this.options.boardHover !== undefined) {
                         t.mouseenter(() => this.options.boardHover!(row, col, ""));
                     }

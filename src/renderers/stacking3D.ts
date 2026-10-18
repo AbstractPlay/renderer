@@ -387,11 +387,10 @@ export class Stacking3DRenderer extends RendererBase {
         if ( (this.options.boardClick !== undefined) && (tileSpace === 0) ) {
             const originX = grid[0][0].x;
             const originY = grid[0][0].y;
-            const root = this.rootSvg;
             // We don't need to use click catchers here because this renderer
             // does not support rotation at all.
             const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const pnt = root.point(e.clientX, e.clientY);
+                const pnt = board.point(e.clientX, e.clientY);
                 const point = this.unproject(pnt.x, pnt.y);
                 const x = Math.floor((point[0] - (originX - (cellsize / 2))) / cellsize);
                 const y = Math.floor((point[1] - (originY - (cellsize / 2))) / cellsize);
@@ -402,7 +401,7 @@ export class Stacking3DRenderer extends RendererBase {
                     this.options.boardClick!(y, x, "");
                 }
             });
-            this.rootSvg.click(genericCatcher);
+            board.click(genericCatcher);
         }
 
         return grid;

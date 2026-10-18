@@ -53,7 +53,15 @@ New `docs/**/*.md` → [`docs/nav.json`](docs/nav.json). Run `npm run docs:check
 
 ## Changelog
 
-Substantive schema or rendering changes → [`CHANGELOG.md`](CHANGELOG.md), monthly `[1.0.0-ci]` sections.
+Substantive schema or rendering changes → [`CHANGELOG.md`](CHANGELOG.md).
+
+Follow org-wide **monthly batching** (one `[1.0.0-ci] - YYYY-MM-DD` section per calendar month; set the section date to the latest change day in that month—do not add a second dated block in the same month).
+
+When editing the changelog:
+
+- **New features** — one **Added** bullet per feature describing **current shipped behaviour**, not a bullet per follow-up fix or PR.
+- **Cross-cutting behaviour** (e.g. `boardClick` routing that affects many board styles)—**Changed** or **Fixed**, often a single bullet; avoid duplicating the same theme under Added.
+- **Avoid** many sub-bullets prefixed with the same label (e.g. five “Composite boards:” lines); fold fixes into the feature bullet or a global **Changed** entry instead.
 
 ## Contact
 

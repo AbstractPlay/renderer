@@ -18,7 +18,7 @@ There is no composite-level `legend`; duplicate `legend` / `glyphDefs` on each p
 
 ### Cross-panel annotations
 
-Optional top-level **`annotations`** draw move arrows, polylines, dots, or outlines in composite SVG space (layer `#ap-composite-annotations`, above all panels). Each target is a **`compositeCellRef`**: `{ "panel": "<panels[].id>", "row", "col" }` (logical cell indices on that panel’s board, respecting `panels[].rotate`).
+Optional top-level **`annotations`** draw move arrows, polylines, dots, or outlines in composite SVG space (layer `#ap-composite-annotations`, above all panels). Each target is a **`compositeCellRef`**: `{ "panel": "<panels[].id>", "row", "col" }` (logical cell indices on that panel’s board, respecting **`panels[].rotate` plus `panels[].render.board.rotate`** — same combined rotation as a single-board `render()`).
 
 | Intent | Where to author |
 |--------|-----------------|
@@ -29,7 +29,7 @@ Supported types today: `move`, `line`, `dots`, `outline`. Square boards only (sa
 
 Example: [`docs/samples/composite-cross-panel-arrow.json`](samples/composite-cross-panel-arrow.json).
 
-Each panel is measured once on the output SVG (no per-tile handlers) using `unionLayoutBBox`, then cleared before the next panel. Prefixed panel markup is composed under `#ap-composite-panels`. When `boardClick` or `boardHover` is set, delegated handlers on that group route hits to the correct `panels[].id` (square boards today). Hover dedupes repeated `pointermove` events for the same panel cell. Panel titles (`panels[].label`) are drawn in layout space above each board, separate from row/column labels on the board itself.
+Each panel is **measured** once on a scratch SVG (no `boardClick` / `boardHover`) to obtain layout bounds and cross-panel annotation geometry, then cleared before the next panel. For the **final** composite, each panel is **live-rendered** into `#ap-composite-panels` with the same `renderRep` path as a single board: ids are prefixed per panel, and `boardClick` / `boardHover` are wrapped as `(panelId, row, col, piece)` so every clickable area (cells, `areas`, button bars, renderer-specific UI, etc.) behaves like standalone `render()`. Panel titles (`panels[].label`) are drawn in layout space above each board, separate from row/column labels on the board itself.
 
 ## API
 

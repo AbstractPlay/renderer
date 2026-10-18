@@ -12,10 +12,9 @@ import type { APRenderComposite } from "../schemas/composite.js";
 import schema from "../schemas/schema.json" with { type: "json" };
 import AjvImport from "ajv";
 import type { ValidateFunction } from "ajv";
+import { clearPanelScratch, composePanelLive } from "./composePanelLive.js";
 import { captureSquareClickMeta, type SquareClickMeta } from "./captureSquareClickMeta.js";
-import { attachCompositeBoardClick } from "./delegateBoardClick.js";
-import { attachCompositeBoardHover } from "./delegateBoardHover.js";
-import { importPrefixedPanelSvg } from "./importPanel.js";
+import { boardRotateFromRender } from "./compositePanelRotation.js";
 import {
     COMPOSITE_LABEL_FONT_SIZE,
     compositeExtent,
@@ -74,15 +73,10 @@ const createRootDraw = (opts: IRenderCompositeOptions): Svg => {
 };
 
 const clearSvg = (draw: Svg): void => {
-    draw.off();
-    const children = [...draw.children()];
-    for (const child of children) {
-        child.remove();
-    }
-    draw.viewbox(0, 0, 0, 0);
+    clearPanelScratch(draw);
 };
 
-const panelRenderOpts = (
+const panelMeasureOpts = (
     opts: IRenderCompositeOptions,
 ): Omit<IRenderCompositeOptions, "target" | "divid" | "divelem" | "boardClick" | "boardHover"> => {
     const copy = { ...opts };
@@ -94,30 +88,32 @@ const panelRenderOpts = (
     return copy;
 };
 
-/**
- * Render one panel on the output SVG for measurement and SVG export (no click handlers on the root SVG).
- */
+/** Layout-only render (no click/hover handlers). */
 const measurePanel = (
     draw: Svg,
     json: APRenderComposite,
     opts: IRenderCompositeOptions,
     panelIndex: number,
-): { bbox: PanelBBox; svgString: string; clickMeta?: SquareClickMeta } => {
+): { bbox: PanelBBox; clickMeta?: SquareClickMeta } => {
     const panel = json.panels[panelIndex]!;
 
     clearSvg(draw);
     renderRep(panel.render, {
-        ...panelRenderOpts(opts),
+        ...panelMeasureOpts(opts),
         target: draw,
         rotate: panel.rotate ?? 0,
         showAnnotations: opts.showAnnotations,
     }, validateRep);
 
     const layoutBox = unionLayoutBBox(draw);
-    const clickMeta = captureSquareClickMeta(draw, panel.render, panel.rotate ?? 0);
-    const svgString = draw.svg();
+    const clickMeta = captureSquareClickMeta(
+        draw,
+        panel.render,
+        panel.rotate ?? 0,
+        boardRotateFromRender(panel.render),
+    );
     clearSvg(draw);
-    return { bbox: layoutBox, svgString, clickMeta };
+    return { bbox: layoutBox, clickMeta };
 };
 
 /**
@@ -144,8 +140,8 @@ export const renderComposite = (json: APRenderComposite, opts = {} as IRenderCom
     const draw = createRootDraw(opts);
 
     const measured = json.panels.map((panel, index) => {
-        const { bbox, svgString, clickMeta } = measurePanel(draw, json, opts, index);
-        return { panel, bbox, svgString, clickMeta };
+        const { bbox, clickMeta } = measurePanel(draw, json, opts, index);
+        return { panel, bbox, clickMeta };
     });
 
     clearSvg(draw);
@@ -183,7 +179,7 @@ export const renderComposite = (json: APRenderComposite, opts = {} as IRenderCom
         if (measuredPanel === undefined) {
             continue;
         }
-        const { bbox, svgString } = measuredPanel;
+        const { bbox } = measuredPanel;
         const translateX = placement.boardX - bbox.x;
         const translateY = placement.boardTop - bbox.y;
 
@@ -206,31 +202,25 @@ export const renderComposite = (json: APRenderComposite, opts = {} as IRenderCom
             .id(`panel-${placement.panel.id}`)
             .transform({ translate: [translateX, translateY] });
 
-        importPrefixedPanelSvg(panelGroup, svgString, placement.panel.id);
+        compositeGroup.remove();
+        composePanelLive(draw, panelGroup, placement.panel, opts, validateRep);
+        draw.add(compositeGroup);
     }
 
     renderCompositeAnnotations(compositeGroup, json, measured, placements, opts);
 
-    if (opts.boardClick !== undefined || opts.boardHover !== undefined) {
-        const clickMetaByPanelId = new Map<string, SquareClickMeta>();
-        for (const { panel, clickMeta } of measured) {
-            if (clickMeta !== undefined) {
-                clickMetaByPanelId.set(panel.id, clickMeta);
-            }
-        }
-        if (opts.boardClick !== undefined) {
-            attachCompositeBoardClick(draw, compositeGroup, json, placements, clickMetaByPanelId, opts.boardClick);
-        }
-        if (opts.boardHover !== undefined) {
-            attachCompositeBoardHover(draw, compositeGroup, json, placements, clickMetaByPanelId, opts.boardHover);
-        }
-    }
-
     const pad = MOZILLA_VIEWBOX_PAD;
-    const composed = compositeGroup.rbox(draw);
-    if (composed.width > 0 && composed.height > 0) {
-        draw.viewbox(composed.x - pad, composed.y - pad, composed.width + pad * 2, composed.height + pad * 2);
-    } else {
+    let usedMeasuredViewBox = false;
+    try {
+        const composed = compositeGroup.rbox(draw);
+        if (composed.width > 0 && composed.height > 0) {
+            draw.viewbox(composed.x - pad, composed.y - pad, composed.width + pad * 2, composed.height + pad * 2);
+            usedMeasuredViewBox = true;
+        }
+    } catch {
+        // svgdom may not compute rbox on composed groups after live panel adoption
+    }
+    if (!usedMeasuredViewBox) {
         const extent = compositeExtent(placements);
         draw.viewbox(-pad, -pad, extent.width + pad * 2, extent.height + pad * 2);
     }

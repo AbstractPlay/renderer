@@ -51,7 +51,7 @@ describe("composite cross-panel annotations", () => {
             pieces: "AA\nAA",
         };
         renderRep(rep, { ...coreRenderOptions, target: draw, rotate: 180 }, validateRep);
-        const meta = captureSquareClickMeta(draw, rep, 180);
+        const meta = captureSquareClickMeta(draw, rep, 180, 0);
         expect(meta).to.not.equal(undefined);
         const centre = logicalCellCenter(meta!, 1, 1);
         const tiles = draw.find("#tiles use") as Element[];
@@ -70,13 +70,66 @@ describe("composite cross-panel annotations", () => {
             pieces: "AA\nAA",
         };
         renderRep(rep, { ...coreRenderOptions, target: draw }, validateRep);
-        const meta = captureSquareClickMeta(draw, rep, 0);
+        const meta = captureSquareClickMeta(draw, rep, 0, 0);
         expect(meta).to.not.equal(undefined);
         const centre = logicalCellCenter(meta!, 0, 0);
         const tile = draw.findOne("#tiles use") as Element;
         const box = tile.bbox();
         expect(centre!.x).to.be.closeTo(box.cx, 0.01);
         expect(centre!.y).to.be.closeTo(box.cy, 0.01);
+    });
+
+    it("cross-panel move endpoints align with cells when panels use board.rotate", () => {
+        const doc = {
+            kind: "composite",
+            layout: { arrangement: "row", gap: 1 },
+            panels: [
+                {
+                    id: "left",
+                    label: "From",
+                    render: {
+                        board: { rotate: 90, style: "squares-checkered", width: 4, height: 4 },
+                        legend: { A: { name: "piece", paint: { fill: 1 } } },
+                        pieces: "----\n----\n--A-\n----",
+                    },
+                },
+                {
+                    id: "right",
+                    label: "To",
+                    render: {
+                        board: { rotate: 180, style: "squares-checkered", width: 4, height: 4 },
+                        legend: { B: { name: "piece", paint: { fill: 2 } } },
+                        pieces: "----\n-B--\n----\n----",
+                    },
+                },
+            ],
+            annotations: [
+                {
+                    type: "move",
+                    colour: 1,
+                    targets: [
+                        { panel: "left", row: 2, col: 2 },
+                        { panel: "right", row: 1, col: 1 },
+                    ],
+                },
+            ],
+        } as APRenderComposite;
+        const draw = makeDraw();
+        renderComposite(doc, { ...coreRenderOptions, target: draw, showAnnotations: true });
+        const poly = draw.findOne("#ap-composite-annotations polyline") as Element;
+        expect(poly).to.not.equal(null);
+        const [start, end] = String(poly.attr("points")).trim().split(/\s+/);
+        const parsePt = (s: string) => {
+            const [x, y] = s.split(",").map(Number);
+            return { x, y };
+        };
+        const p0 = parsePt(start);
+        const p1 = parsePt(end);
+        expect(Number.isFinite(p0.x)).to.equal(true);
+        expect(Number.isFinite(p0.y)).to.equal(true);
+        expect(Number.isFinite(p1.x)).to.equal(true);
+        expect(Number.isFinite(p1.y)).to.equal(true);
+        expect(Math.hypot(p1.x - p0.x, p1.y - p0.y)).to.be.greaterThan(10);
     });
 
     it("draws cross-panel move annotation when showAnnotations is true", () => {

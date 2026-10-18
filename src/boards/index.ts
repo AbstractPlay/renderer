@@ -66,6 +66,19 @@ export function createGridlineLayers(parent: SVGG, id = "gridlines"): GridlineLa
 /** Alias for boards that use a `#cells` group instead of `#gridlines`. */
 export const createCellsLayers = createGridlineLayers;
 
+/**
+ * Line-grid boards only draw thin strokes; plain `board.click` misses open areas that
+ * `rootSvg.click` used to receive. `pointer-events: bounding-box` lets the `#board`
+ * group receive clicks anywhere inside its descendants' bounds (no extra geometry).
+ */
+export function attachBoardNearestClick(
+    board: SVGG,
+    handler: (e: { clientX: number; clientY: number }) => void,
+): void {
+    board.attr({ "pointer-events": "bounding-box" });
+    board.click(handler);
+}
+
 /** Add marker sublayers to an existing group (e.g. `#board`) used as the markBoard target. */
 export function ensureBoardMarkerLayers(root: SVGG): GridlineLayers {
     const id = root.id();

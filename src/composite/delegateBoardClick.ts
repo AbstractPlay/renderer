@@ -1,5 +1,6 @@
 import type { G, Svg } from "@svgdotjs/svg.js";
 import type { APRenderComposite } from "../schemas/composite.js";
+import type { KeyAreaClickMeta } from "./captureKeyAreaClickMeta.js";
 import type { SquareClickMeta } from "./captureSquareClickMeta.js";
 import { resolveCompositeBoardHit } from "./compositeBoardHit.js";
 import type { PanelPlacement } from "./layout.js";
@@ -10,6 +11,7 @@ export const attachCompositeBoardClick = (
     json: APRenderComposite,
     placements: PanelPlacement[],
     clickMetaByPanelId: Map<string, SquareClickMeta>,
+    keyMetaByPanelId: Map<string, KeyAreaClickMeta>,
     boardClick: (panelId: string, row: number, col: number, piece: string) => void,
 ): void => {
     compositeGroup.on("click", (e: Event) => {
@@ -19,6 +21,7 @@ export const attachCompositeBoardClick = (
             json,
             placements,
             clickMetaByPanelId,
+            keyMetaByPanelId,
             me.target,
             me.clientX,
             me.clientY,
