@@ -1,10 +1,10 @@
 import { Element as SVGElement, Rect as SVGRect, StrokeData, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
 import { expandSquareGrid, IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { rotatePoint, shortenLine } from "../common/plotting.js";
+import { shortenLine } from "../common/plotting.js";
 import tinycolor from "tinycolor2";
 import { MarkerOutline } from "../schemas/schema.js";
-import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from "./index.js";
+import { boardClickLocalPoint, BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from "./index.js";
 import { drawSquareCellGridEdges, drawSquaresOuterBorder } from "./squaresOuterBorder.js";
 import {
     hiddenRectLabelSides,
@@ -761,8 +761,6 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
     }
 
     if ( (ctx.options.boardClick !== undefined) && (tileSpace === 0) && (style !== "pegboard") ) {
-        const rotation = ctx.getRotation();
-        const centre = ctx.getBoardCentre();
         const clickDeltaX: number = (ctx.json.board.clickDeltaX ?? 0);
         const clickDeltaY: number = (ctx.json.board.clickDeltaX ?? 0);
         const originX = grid[0][0].x;
@@ -770,7 +768,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
         // const maxX = grid[0][grid[0].length - 1].x;
         // const maxY = grid[grid.length - 1][0].y;
         let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
+            const point = boardClickLocalPoint(board, e.clientX, e.clientY);
             const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
             const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
             if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
@@ -782,7 +780,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
         });
         if (ctx.options.rotate === 180) {
             genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
+                const point = boardClickLocalPoint(board, e.clientX, e.clientY);
                 const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                 const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                 if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {

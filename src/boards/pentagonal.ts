@@ -1,9 +1,9 @@
 import { IPolyPolygon, pentagonal as pentagonalGrid } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting.js";
+import { calcBearing, projectPoint, ptDistance } from "../common/plotting.js";
 import { pentagonalBoard } from "../common/pentagons/index.js";
 import { Pentagonal, PentagonalNodeData } from "../graphs/index.js";
-import { attachBoardNearestClick, BoardReturn, createGridlineLayers } from "./index.js";
+import { attachBoardNearestClick, boardClickLocalPoint, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const pentagonal = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -167,10 +167,8 @@ export const pentagonal = (ctx: RendererBase): BoardReturn => {
     };
 
     if (ctx.options.boardClick !== undefined) {
-        const rotation = ctx.getRotation();
-        const centre = ctx.getBoardCentre();
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const clicked = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
+            const clicked = boardClickLocalPoint(board, e.clientX, e.clientY);
             // simply find the point that's closest to the click
             const closest = {
                 dist: Infinity,

@@ -59,4 +59,28 @@ describe("squares boardClick (single-board render)", () => {
         expect(clicked?.row).to.be.at.least(0);
         expect(clicked?.col).to.be.at.least(0);
     });
+
+    it("maps empty cell clicks to the correct row/col when opts.rotate is 180", () => {
+        const draw = makeDraw();
+        let clicked: { row: number; col: number; piece: string } | undefined;
+        render({
+            board: { style: "squares-checkered", width: 3, height: 3 },
+            legend: { A: { name: "piece", paint: { fill: 1 } } },
+            pieces: "---\n---\n---",
+        }, {
+            ...coreRenderOptions,
+            target: draw,
+            rotate: 180,
+            boardClick(row, col, piece) {
+                clicked = { row, col, piece };
+            },
+        });
+
+        const board = draw.findOne("#board");
+        const bottomRightTile = draw.find("#tiles use")[8]!;
+        const box = bottomRightTile.rbox(draw);
+        board!.fire("click", { clientX: box.cx, clientY: box.cy });
+
+        expect(clicked).to.deep.equal({ row: 2, col: 2, piece: "" });
+    });
 });

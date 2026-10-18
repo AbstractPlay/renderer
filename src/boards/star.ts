@@ -1,9 +1,9 @@
 import { IPolyPolygon, star as starGrid } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { calcBearing, projectPoint, ptDistance, rotatePoint } from "../common/plotting.js";
+import { calcBearing, projectPoint, ptDistance } from "../common/plotting.js";
 import { starBoard, starFrequencyFromWidth } from "../common/star/index.js";
 import { Star, StarNodeData } from "../graphs/index.js";
-import { attachBoardNearestClick, BoardReturn, createGridlineLayers } from "./index.js";
+import { attachBoardNearestClick, boardClickLocalPoint, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const star = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -80,10 +80,8 @@ export const star = (ctx: RendererBase): BoardReturn => {
     };
 
     if (ctx.options.boardClick !== undefined) {
-        const rotation = ctx.getRotation();
-        const boardCentre = ctx.getBoardCentre();
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const clicked = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, boardCentre);
+            const clicked = boardClickLocalPoint(board, e.clientX, e.clientY);
             const closest = {
                 dist: Infinity,
                 row: null as (null|number),

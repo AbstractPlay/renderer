@@ -1,7 +1,7 @@
 import { GridPoints, IPoint, IPolyPolygon, snubsquare, SnubStart } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { centroid, rotatePoint } from "../common/plotting.js";
-import { attachBoardNearestClick, BoardReturn, createGridlineLayers } from "./index.js";
+import { centroid } from "../common/plotting.js";
+import { attachBoardNearestClick, boardClickLocalPoint, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const onyx = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -245,10 +245,8 @@ export const onyx = (ctx: RendererBase): BoardReturn => {
     };
 
     if (ctx.options.boardClick !== undefined) {
-        const rotation = ctx.getRotation();
-        const centre = ctx.getBoardCentre();
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
+            const point = boardClickLocalPoint(board, e.clientX, e.clientY);
             let min = Number.MAX_VALUE;
             let row0 = 0;
             let col0 = 0;

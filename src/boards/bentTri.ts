@@ -1,9 +1,9 @@
 import { IPolyPolygon, bentTri as bentTriGrid } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { calcBearing, centroid, projectPoint, ptDistance, rotatePoint } from "../common/plotting.js";
+import { calcBearing, centroid, projectPoint, ptDistance } from "../common/plotting.js";
 import { bentTriBoard } from "../common/bentTri/index.js";
 import { BentTri, BentTriNodeData } from "../graphs/index.js";
-import { attachBoardNearestClick, BoardReturn, createGridlineLayers } from "./index.js";
+import { attachBoardNearestClick, boardClickLocalPoint, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const bentTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -83,10 +83,8 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
     };
 
     if (ctx.options.boardClick !== undefined) {
-        const rotation = ctx.getRotation();
-        const boardCentre = ctx.getBoardCentre();
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const clicked = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, boardCentre);
+            const clicked = boardClickLocalPoint(board, e.clientX, e.clientY);
             const closest = {
                 dist: Infinity,
                 row: null as (null|number),

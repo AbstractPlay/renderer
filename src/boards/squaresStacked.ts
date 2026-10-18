@@ -1,7 +1,6 @@
 import { IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { rotatePoint } from "../common/plotting.js";
-import { BoardReturn, createGridlineLayers } from "./index.js";
+import { boardClickLocalPoint, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const squaresStacked = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -202,8 +201,6 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
     }
 
     if (ctx.options.boardClick !== undefined) {
-        const rotation = ctx.getRotation();
-        const centre = ctx.getBoardCentre();
         const originX = grid[0][0].x;
         const originY = grid[0][0].y;
         const clickDeltaX = (ctx.json.board.clickDeltaX ?? 0);
@@ -212,7 +209,7 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
         const realheight = (height * 2) - 1;
         const realsize = cellsize / 2;
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const point = rotatePoint(board.point(e.clientX, e.clientY), rotation*-1, centre);
+            const point = boardClickLocalPoint(board, e.clientX, e.clientY);
             const x = Math.floor((point.x - (originX - (realsize / 2))) / realsize);
             const y = Math.floor((point.y - (originY - (realsize / 2))) / realsize);
             if (x >= 0 - clickDeltaX && x < realwidth + clickDeltaX && y >= 0 - clickDeltaY && y < realheight + clickDeltaY) {
