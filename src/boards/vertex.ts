@@ -1,7 +1,7 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
 import { IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { boardClickLocalPoint, BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
+import { attachBoardNearestClick, boardClickLocalPoint, BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
 import { shortenLine } from "../common/plotting.js";
 import { Graph, SquareFanoronaGraph, SquareGraph, SquareOrthGraph } from "../graphs/index.js";
 import { calcStarPoints } from "../common/starPoints.js";
@@ -680,7 +680,7 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
                     }
                 });
             }
-            board.click(genericCatcher);
+            attachBoardNearestClick(board, genericCatcher);
         } else {
             const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
             for (let row = 0; row < grid.length; row++) {
