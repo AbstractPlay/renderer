@@ -346,6 +346,13 @@ function applyPresentationFillOpacity(el: SVGElement, opacity: number): void {
     }
 }
 
+function applyPresentationStrokeOpacity(el: SVGElement, opacity: number): void {
+    const node = el.node as Element | undefined;
+    if (node !== undefined && typeof node.setAttribute === "function") {
+        node.setAttribute("stroke-opacity", String(opacity));
+    }
+}
+
 /** Legacy fill-slot opacity with no colour: tint authored fill on fill-channel bindings only. */
 export function applyFillSlotFillChannelOpacity(
     got: SVGSymbol,
@@ -360,6 +367,24 @@ export function applyFillSlotFillChannelOpacity(
         }
         got.find(sel).each(function (this: SVGElement) {
             applyPresentationFillOpacity(this, opacity);
+        });
+    }
+}
+
+/** Opacity with no colour: tint authored stroke on stroke-channel bindings only. */
+function applyStrokeSlotStrokeChannelOpacity(
+    got: SVGSymbol,
+    slot: string,
+    opacity: number,
+    colour2Slot: Colour2Slot = "border",
+): void {
+    const { stroke: strokeSels } = findBindings(slot, colour2Slot);
+    for (const sel of strokeSels) {
+        if (sel.startsWith("[data-playerstroke") || sel.startsWith("[data-context-border")) {
+            continue;
+        }
+        got.find(sel).each(function (this: SVGElement) {
+            applyPresentationStrokeOpacity(this, opacity);
         });
     }
 }
@@ -446,11 +471,15 @@ export function applySlotPaint(
         if (opacityOnly) {
             if (opts.slotted) {
                 applyFillSlotFillChannelOpacity(got, slot, slotOpacity, opts.colour2Slot);
+                applyStrokeSlotStrokeChannelOpacity(got, slot, slotOpacity, opts.colour2Slot);
             } else {
                 const legacySuffix = legacyFillSuffixForSlot(slot, opts.colour2Slot);
                 if (legacySuffix !== null) {
                     got.find(`[data-playerfill${legacySuffix}=true]`).each(function (this: SVGElement) {
                         applyPresentationFillOpacity(this, slotOpacity);
+                    });
+                    got.find(`[data-playerstroke${legacySuffix}=true]`).each(function (this: SVGElement) {
+                        applyPresentationStrokeOpacity(this, slotOpacity);
                     });
                 }
             }

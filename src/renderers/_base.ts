@@ -1148,8 +1148,6 @@ export abstract class RendererBase {
                         { fontSize: TEXT_GLYPH_BASE_FONT_SIZE },
                     );
                 }
-            } else if ((("name" in g) && (g.name !== undefined)) || isCustomGlyph(g)) {
-                this.applyContextStylesToGlyphSymbol(got);
             }
 
             let layerOpacity = 1;

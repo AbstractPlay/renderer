@@ -116,7 +116,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `circle` | fill (stroke) | — |
 | core | `cloud` | fill (fill), border (fill+stroke) | — |
 | core | `cross-diag` | fill (stroke) | — |
-| core | `cross-omni` | fill (stroke), border (stroke) | — |
+| core | `cross-omni` | fill (stroke) | — |
 | core | `cross-orth` | fill (stroke) | — |
 | core | `cube` | fill (fill), border (fill+stroke) | — |
 | core | `dline-neg` | fill (stroke) | — |

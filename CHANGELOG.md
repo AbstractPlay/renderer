@@ -23,11 +23,14 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Fixed
 
+- **Glyph paint cache:** Reusing a styled sheet symbol across legend keys no longer re-applies theme `data-context-*` defaults on the shared symbol (which overwrote `paint.border` and similar slot colours on the second key).
 - **`boardClick` with seat/board rotation:** Generic handlers on `#board` use `boardClickLocalPoint` (`board.point()` only); dropping the extra `rotatePoint` pass fixes wrong cells after `rotateBoard` (regression from the composite click-handler move).
 - **Composite cross-panel annotations:** Cell centres use the full logical square grid so `board.blocked` (missing tiles) does not shift annotation endpoints.
 - **Chess solid glyphs:** three paint slots — `fill` (body), `border` (silhouette rim stroke), `highlight` (interior accents; formerly mis-bound to `border`). Fixes white halos when legacy `colour2` / `bestContrast` was applied to the outer rim.
+- **`cross-omni`:** all four arms use the `fill` stroke slot (horizontal arm was wrongly tagged `border`, so `paint.fill` alone left a default-ink stroke).
 - **Pieces / `localStash` area labels and entry captions:** Tried to fix browser engine discrepancies by using direct dimension probing instead of relying on consistent application of baseline metrics. Slightly less performant, but not noticeable.
 - **Legacy glyph `opacity` without `colour`:** `fill-opacity` is applied to fill-channel slot bindings on authored defaults (regression from slot paint migration).
+- **Slot paint opacity without `colour`:** `stroke-opacity` (and `fill-opacity` where applicable) is applied on authored defaults for stroke- and fill-channel bindings (e.g. `paint.border: { opacity }` on outline chess glyphs).
 - **Procedural orbs (`orb`–`orb3`):** legacy `opacity` on `paint.fill` is applied as `fill-opacity` on the shaded sphere after gradients are built (was dropped when `fill` was removed from post-shading slot paint).
 - **Legacy `colour` colourfuncs (`flatten`, `lighten`, `bestContrast`, `custom`):** slot paint no longer treats colourfunc objects as `{ opacity }`-only slot wrappers when they include an `opacity` field; they are always passed to `resolveFill` (e.g. Decktet hidden `cUNKNOWN` card backs).
 

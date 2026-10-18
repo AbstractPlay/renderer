@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-14T18:43:42.178Z",
+  "generated": "2026-10-18T17:47:48.455Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -204,12 +204,6 @@
             "stroke"
           ],
           "description": "Primary player colour (body or main silhouette)."
-        },
-        "border": {
-          "channels": [
-            "stroke"
-          ],
-          "description": "Secondary outline, rim, or theme border band."
         }
       },
       "colour2Slot": "border"

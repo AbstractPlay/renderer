@@ -262,6 +262,25 @@ describe("glyphPaint", () => {
             expect(svg).to.match(/data-slot-stroke="highlight"[^>]*stroke="#ffffff"/i);
         });
 
+        it("paint.border opacity without colour tints stroke-slot defaults", () => {
+            const explicit = renderLegendGlyphs([
+                {
+                    name: "chess-rook-outline-traditional",
+                    paint: { fill: 1, border: { colour: "#000000", opacity: 0.5 } },
+                },
+            ]);
+            const opacityOnly = renderLegendGlyphs([
+                {
+                    name: "chess-rook-outline-traditional",
+                    paint: { fill: 1, border: { opacity: 0.5 } },
+                },
+            ]);
+            expect(opacityOnly).to.match(/data-slot-stroke="border"[^>]*stroke-opacity="0\.5"/i);
+            expect(normalizeSvgForGlyphCompare(explicit, { lenientOpacity: true })).to.equal(
+                normalizeSvgForGlyphCompare(opacityOnly, { lenientOpacity: true }),
+            );
+        });
+
         it("legacy opacity without colour tints fill-slot defaults", () => {
             const svg = renderLegendGlyphs([{ name: "piece-borderless", opacity: 0.9 }]);
             expect(svg).to.match(/fill-opacity="0\.9"|opacity="0\.9"/);
@@ -489,6 +508,30 @@ describe("glyphPaint", () => {
             );
             const cache = (renderer as unknown as { glyphCache: Map<string, unknown> }).glyphCache;
             expect(cache.size).to.equal(2);
+        });
+
+        it("keeps slot paint when reusing cached symbol across legend keys", () => {
+            const draw = makeDraw();
+            const renderer = new DefaultRenderer();
+            renderer.render(
+                {
+                    board: { style: "squares", width: 2, height: 1 },
+                    legend: {
+                        A: { name: "piece-pentagon", paint: { fill: 1, border: 2 } },
+                        B: {
+                            name: "piece-pentagon",
+                            paint: { fill: 1, border: 2 },
+                            scale: 0.8,
+                        },
+                    },
+                    pieces: "AB",
+                },
+                draw,
+                { ...baseOptions, sheets: ["core"] },
+            );
+            const svg = draw.svg();
+            const borderSlot = svg.match(/<polygon[^>]*data-slot-stroke="border"[^>]*>/i)?.[0] ?? "";
+            expect(borderSlot).to.match(/stroke="#1f78b4"/i);
         });
 
         it("does not reuse styled symbols when paint.fill differs", () => {
