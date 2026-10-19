@@ -648,53 +648,6 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
         }
     }
 
-    if (ctx.options.boardClick !== undefined) {
-        if ( (ctx.json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
-            const clickDeltaX: number = (ctx.json.board.clickDeltaX ?? 0);
-            const clickDeltaY: number = (ctx.json.board.clickDeltaX ?? 0);
-            const originX = grid[0][0].x;
-            const originY = grid[0][0].y;
-            // const maxX = grid[0][grid[0].length - 1].x;
-            // const maxY = grid[grid.length - 1][0].y;
-            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = boardClickLocalPoint(board, e.clientX, e.clientY);
-                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
-                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
-                if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                    // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                    // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                        ctx.options.boardClick!(y, x, "");
-                    // }
-                }
-            });
-            if (ctx.options.rotate === 180) {
-                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = boardClickLocalPoint(board, e.clientX, e.clientY);
-                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
-                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
-                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                        // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                        // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                            ctx.options.boardClick!(y, x, "");
-                        // }
-                    }
-                });
-            }
-            attachBoardNearestClick(board, genericCatcher);
-        } else {
-            const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
-            for (let row = 0; row < grid.length; row++) {
-                for (let col = 0; col < grid[row].length; col++) {
-                    if (graph.hasNode([col, row])) {
-                        const {x, y} = grid[row][col];
-                        const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                        t.click(() => ctx.options.boardClick!(row, col, ""));
-                    }
-                }
-            }
-        }
-    }
-
     // If square `vertex` board, not tiled, and no blocked cells, consider adding star points
     if (style === "vertex" && width === height && tileSpace === 0 && blocked === undefined && (ctx.json.options === undefined || !ctx.json.options.includes("hide-star-points"))) {
         const pts = calcStarPoints(width);
@@ -739,6 +692,45 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
             {x: minx - (delta), y: maxy + (delta)},
         ]
     };
+
+    if (ctx.options.boardClick !== undefined) {
+        if (tileSpace === 0) {
+            const clickDeltaX: number = (ctx.json.board.clickDeltaX ?? 0);
+            const clickDeltaY: number = (ctx.json.board.clickDeltaY ?? 0);
+            const originX = grid[0][0].x;
+            const originY = grid[0][0].y;
+            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const point = boardClickLocalPoint(board, e.clientX, e.clientY);
+                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
+                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
+                if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
+                    ctx.options.boardClick!(y, x, "");
+                }
+            });
+            if (ctx.options.rotate === 180) {
+                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                    const point = boardClickLocalPoint(board, e.clientX, e.clientY);
+                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
+                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
+                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
+                        ctx.options.boardClick!(y, x, "");
+                    }
+                });
+            }
+            attachBoardNearestClick(board, genericCatcher, boardFill);
+        } else {
+            const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    if (graph.hasNode([col, row])) {
+                        const {x, y} = grid[row][col];
+                        const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                        t.click(() => ctx.options.boardClick!(row, col, ""));
+                    }
+                }
+            }
+        }
+    }
 
     return {grid, boardFill};
 }

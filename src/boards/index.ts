@@ -1,6 +1,7 @@
 import { G as SVGG } from "@svgdotjs/svg.js";
+import { ptDistance } from "../common/plotting.js";
 import { RendererBase } from "../renderers/_base.js";
-import { GridPoints, IPoint, Poly } from "../grids/index.js";
+import { GridPoints, IPolyPolygon, IPoint, Poly } from "../grids/index.js";
 import { Colourfuncs, Colourstrings, PositiveInteger } from "../schemas/schema.js";
 import { Orientation } from "honeycomb-grid";
 
@@ -80,16 +81,87 @@ export function boardClickLocalPoint(
 }
 
 /**
- * Line-grid boards only draw thin strokes; plain `board.click` misses open areas that
- * `rootSvg.click` used to receive. `pointer-events: bounding-box` lets the `#board`
- * group receive clicks anywhere inside its descendants' bounds (no extra geometry).
+ * Transparent playfield overlay for `boardClick` (same geometry as `boardFill`, not the
+ * backfill layer). Call after `markBoard` so it sits above grid chrome and below `#pieces`.
+ * `stacking-offset` stacks must append `#pieces` after board dispatch so per-piece handlers
+ * (with `stopPropagation`) stay above this layer. Group `pointer-events: bounding-box` is
+ * unreliable in Firefox.
  */
 export function attachBoardNearestClick(
     board: SVGG,
     handler: (e: { clientX: number; clientY: number }) => void,
+    hitArea: IPolyPolygon,
 ): void {
-    board.attr({ "pointer-events": "bounding-box" });
-    board.click(handler);
+    const catcher = board.group().id("board-click-catcher");
+    const pointStr = hitArea.points.map((p) => `${p.x},${p.y}`).join(" ");
+    catcher
+        .polygon(pointStr)
+        .fill({ color: "#000", opacity: 0 })
+        .attr({ "pointer-events": "all" })
+        .click(handler);
+}
+
+/** Axis-aligned playfield bounds around a vertex grid (padding ≈ one cell). */
+export function boardFillBBoxFromGrid(grid: GridPoints, cellsize: number): IPolyPolygon {
+    const delta = cellsize / 1.5;
+    const xs = grid.flat().map((pt) => pt.x);
+    const ys = grid.flat().map((pt) => pt.y);
+    const minx = Math.min(...xs);
+    const miny = Math.min(...ys);
+    const maxx = Math.max(...xs);
+    const maxy = Math.max(...ys);
+    return {
+        type: "poly",
+        points: [
+            { x: minx - delta, y: miny - delta },
+            { x: maxx + delta, y: miny - delta },
+            { x: maxx + delta, y: maxy + delta },
+            { x: minx - delta, y: maxy + delta },
+        ],
+    };
+}
+
+export type BoardClickBlockedCell = { row: number; col: number };
+
+/** Nearest grid vertex for line-grid boards; call after `markBoard`. */
+export function attachNearestGridPointClick(
+    board: SVGG,
+    grid: GridPoints,
+    boardFill: IPolyPolygon,
+    boardClick: (row: number, col: number, piece: string) => void,
+    options?: {
+        blocked?: readonly BoardClickBlockedCell[];
+        rowFilter?: (row: number) => boolean;
+    },
+): void {
+    const handler = (e: { clientX: number; clientY: number }) => {
+        const clicked = boardClickLocalPoint(board, e.clientX, e.clientY);
+        let closestDist = Infinity;
+        let closestRow: number | null = null;
+        let closestCol: number | null = null;
+        for (let row = 0; row < grid.length; row++) {
+            if (options?.rowFilter !== undefined && !options.rowFilter(row)) {
+                continue;
+            }
+            const currRow = grid[row];
+            for (let col = 0; col < currRow.length; col++) {
+                if (options?.blocked?.some((b) => b.row === row && b.col === col)) {
+                    continue;
+                }
+                const pt = currRow[col];
+                const dist = ptDistance(pt.x, pt.y, clicked.x, clicked.y);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestRow = row;
+                    closestCol = col;
+                }
+            }
+        }
+        if (closestRow !== null && closestCol !== null) {
+            boardClick(closestRow, closestCol, "");
+        }
+    };
+    attachBoardNearestClick(board, handler, boardFill);
 }
 
 /** Add marker sublayers to an existing group (e.g. `#board`) used as the markBoard target. */

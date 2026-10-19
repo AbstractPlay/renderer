@@ -79,6 +79,7 @@ export const star = (ctx: RendererBase): BoardReturn => {
         })
     };
 
+    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
     if (ctx.options.boardClick !== undefined) {
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
             const clicked = boardClickLocalPoint(board, e.clientX, e.clientY);
@@ -102,11 +103,8 @@ export const star = (ctx: RendererBase): BoardReturn => {
                 ctx.options.boardClick!(closest.row, closest.col, "");
             }
         });
-        attachBoardNearestClick(board, genericCatcher);
+        attachBoardNearestClick(board, genericCatcher, boardFill);
     }
-
-    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
-
 
     return {grid, boardFill};
 };

@@ -22,6 +22,16 @@ const onyxRep = (pieces: string): APRenderRep => ({
     pieces,
 });
 
+const hexOfTriRep = (pieces: string | null): APRenderRep => ({
+    renderer: "stacking-offset",
+    board: { style: "hex-of-tri", minWidth: 4, maxWidth: 7 },
+    legend: {
+        A: { name: "piece", paint: { fill: 1 } },
+        B: { name: "piece", paint: { fill: 2 } },
+    },
+    pieces,
+});
+
 const vertexRep = (pieces: string | null, width = 19, height = 19): APRenderRep => ({
     board: { style: "vertex", width, height },
     legend: {
@@ -43,10 +53,10 @@ describe("line-grid nearest boardClick", () => {
             },
         });
 
-        const board = draw.findOne("#board");
-        expect(board).to.not.equal(null);
-        const box = board!.rbox(draw);
-        board!.fire("click", { clientX: box.cx, clientY: box.cy });
+        const catcher = draw.findOne("#board-click-catcher polygon")!;
+        expect(catcher).to.not.equal(null);
+        const box = catcher.rbox(draw);
+        catcher.fire("click", { clientX: box.cx, clientY: box.cy });
 
         expect(clicked).to.not.equal(undefined);
         expect(clicked?.piece).to.equal("");
@@ -65,16 +75,54 @@ describe("line-grid nearest boardClick", () => {
             },
         });
 
-        const board = draw.findOne("#board");
-        expect(board).to.not.equal(null);
-        const box = board!.rbox(draw);
-        board!.fire("click", { clientX: box.cx, clientY: box.cy });
+        const catcher = draw.findOne("#board-click-catcher polygon")!;
+        const box = catcher.rbox(draw);
+        catcher.fire("click", { clientX: box.cx, clientY: box.cy });
 
         expect(clicked).to.not.equal(undefined);
         expect(clicked?.piece).to.equal("");
     });
 
-    it("vertex (default renderer): open grid click uses bounding-box on #board", () => {
+    it("stacking-offset: stacked piece click returns stack index, not playfield", () => {
+        const draw = makeDraw();
+        let clicked: { row: number; col: number; piece: string } | undefined;
+        render(snubRep("AB,-,-,-,-,-,-\n" + "-,-,-,-,-,-,-\n".repeat(6)), {
+            ...coreRenderOptions,
+            target: draw,
+            boardClick(row, col, piece) {
+                clicked = { row, col, piece };
+            },
+        });
+
+        expect(draw.findOne("#board-click-catcher")).to.not.equal(null);
+        const uses = draw.find("#pieces use");
+        expect(uses.length).to.equal(2);
+        uses[1]!.fire("click");
+
+        expect(clicked).to.deep.equal({ row: 0, col: 0, piece: "1" });
+    });
+
+    it("hex-of-tri: open grid click uses playfield overlay", () => {
+        const draw = makeDraw();
+        let clicked: { row: number; col: number; piece: string } | undefined;
+        render(hexOfTriRep(null), {
+            ...coreRenderOptions,
+            target: draw,
+            boardClick(row, col, piece) {
+                clicked = { row, col, piece };
+            },
+        });
+
+        const catcher = draw.findOne("#board-click-catcher polygon")!;
+        expect(catcher).to.not.equal(null);
+        const box = catcher.rbox(draw);
+        catcher.fire("click", { clientX: box.cx, clientY: box.cy });
+
+        expect(clicked).to.not.equal(undefined);
+        expect(clicked?.piece).to.equal("");
+    });
+
+    it("vertex (default renderer): open grid click uses playfield overlay", () => {
         const draw = makeDraw();
         let clicked: { row: number; col: number; piece: string } | undefined;
         render(vertexRep(null), {
@@ -85,11 +133,10 @@ describe("line-grid nearest boardClick", () => {
             },
         });
 
-        const board = draw.findOne("#board");
-        expect(board).to.not.equal(null);
-        expect(board!.attr("pointer-events")).to.equal("bounding-box");
-        const box = board!.rbox(draw);
-        board!.fire("click", { clientX: box.cx, clientY: box.cy });
+        const catcher = draw.findOne("#board-click-catcher polygon")!;
+        expect(catcher).to.not.equal(null);
+        const box = catcher.rbox(draw);
+        catcher.fire("click", { clientX: box.cx, clientY: box.cy });
 
         expect(clicked).to.not.equal(undefined);
         expect(clicked?.piece).to.equal("");

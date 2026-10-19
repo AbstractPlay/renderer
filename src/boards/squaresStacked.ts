@@ -1,6 +1,6 @@
 import { IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { BoardReturn, createGridlineLayers } from "./index.js";
+import { attachBoardNearestClick, boardClickLocalPoint, BoardReturn, createGridlineLayers } from "./index.js";
 
 export const squaresStacked = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -202,35 +202,6 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, gridExpanded});
 
-    if (ctx.options.boardClick !== undefined) {
-        const originX = grid[0][0].x;
-        const originY = grid[0][0].y;
-        const realwidth = (width * 2) - 1;
-        const realheight = (height * 2) - 1;
-        const realsize = cellsize / 2;
-        const clickCells = board.group().id("click-cells");
-        for (let y = 0; y < realheight; y++) {
-            for (let x = 0; x < realwidth; x++) {
-                const cx = originX - (realsize / 2) + ((x + 0.5) * realsize);
-                const cy = originY - (realsize / 2) + ((y + 0.5) * realsize);
-                const clickRow = y;
-                const clickCol = x;
-                clickCells.rect(realsize, realsize)
-                    .center(cx, cy)
-                    .fill({ color: ctx.options.colourContext.background, opacity: 0 })
-                    .attr({
-                        "pointer-events": "all",
-                        "data-ap-click-row": clickRow,
-                        "data-ap-click-col": clickCol,
-                    })
-                    .click(() => {
-                        ctx.options.boardClick!(clickRow, clickCol, "");
-                    });
-            }
-        }
-    }
-
-    // derive boardFill
     const delta = cellsize / 1.5;
     const boardFill: IPolyPolygon = {
         type: "poly",
@@ -241,6 +212,25 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
             {x: grid[height - 1][0].x - (delta), y: grid[height - 1][0].y + (delta)},
         ],
     };
+
+    if (ctx.options.boardClick !== undefined) {
+        const originX = grid[0][0].x;
+        const originY = grid[0][0].y;
+        const clickDeltaX = (ctx.json.board.clickDeltaX ?? 0);
+        const clickDeltaY = (ctx.json.board.clickDeltaY ?? 0);
+        const realwidth = (width * 2) - 1;
+        const realheight = (height * 2) - 1;
+        const realsize = cellsize / 2;
+        const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+            const point = boardClickLocalPoint(board, e.clientX, e.clientY);
+            const x = Math.floor((point.x - (originX - (realsize / 2))) / realsize);
+            const y = Math.floor((point.y - (originY - (realsize / 2))) / realsize);
+            if (x >= 0 - clickDeltaX && x < realwidth + clickDeltaX && y >= 0 - clickDeltaY && y < realheight + clickDeltaY) {
+                ctx.options.boardClick!(y, x, "");
+            }
+        });
+        attachBoardNearestClick(board, genericCatcher, boardFill);
+    }
 
     return {grid, boardFill};
 }

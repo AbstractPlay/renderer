@@ -82,6 +82,7 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
         })
     };
 
+    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
     if (ctx.options.boardClick !== undefined) {
         const genericCatcher = ((e: { clientX: number; clientY: number; }) => {
             const clicked = boardClickLocalPoint(board, e.clientX, e.clientY);
@@ -105,10 +106,8 @@ export const bentTri = (ctx: RendererBase): BoardReturn => {
                 ctx.options.boardClick!(closest.row, closest.col, "");
             }
         });
-        attachBoardNearestClick(board, genericCatcher);
+        attachBoardNearestClick(board, genericCatcher, boardFill);
     }
-
-    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
     // Grid rows run outside-in (row 0 = perimeter, last row = hub), same as star.
 

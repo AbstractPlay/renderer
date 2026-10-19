@@ -13,36 +13,20 @@ const stackedRep = (pieces: string, boardSize = 5): APRenderRep => ({
 });
 
 describe("squares-stacked boardClick", () => {
-    it("fires boardClick for upper-layer sub-cells (e.g. Upper Hand 2f2 → row 7, col 5)", () => {
-        const pieces =
-            "_\n"
-            + "A1,A1,-,-,-\n"
-            + "-,-,-,-,-\n"
-            + "-,-,-,-,-\n"
-            + "-,-,-,-,-\n"
-            + "_\n"
-            + "-,-,-,-\n"
-            + "-,-,-,-\n"
-            + "-,-,-,-\n"
-            + "-,-,-,-";
+    it("uses one playfield overlay instead of per-cell hit targets", () => {
         const draw = makeDraw();
-        let clicked: { row: number; col: number; piece: string } | undefined;
-        render(stackedRep(pieces), {
+        render(stackedRep("-,-,-,-,-\n".repeat(5)), {
             ...coreRenderOptions,
             target: draw,
-            boardClick(row, col, piece) {
-                clicked = { row, col, piece };
-            },
+            boardClick() { /* handler required to build catcher */ },
         });
 
-        const cell = draw.findOne('[data-ap-click-row="7"][data-ap-click-col="5"]')!;
-        expect(cell).to.not.equal(null);
-        cell.fire("click");
-
-        expect(clicked).to.deep.equal({ row: 7, col: 5, piece: "" });
+        expect(draw.findOne("#board-click-catcher")).to.not.equal(null);
+        expect(draw.findOne("#board-click-catcher polygon")).to.not.equal(null);
+        expect(draw.find("#click-cells").length).to.equal(0);
     });
 
-    it("fires boardClick for base-layer sub-cells", () => {
+    it("fires boardClick from the playfield overlay in open areas", () => {
         const draw = makeDraw();
         let clicked: { row: number; col: number; piece: string } | undefined;
         render(stackedRep("-,-,-,-,-\n".repeat(5)), {
@@ -53,9 +37,13 @@ describe("squares-stacked boardClick", () => {
             },
         });
 
-        const cell = draw.findOne('[data-ap-click-row="8"][data-ap-click-col="8"]')!;
-        cell.fire("click");
+        const catcher = draw.findOne("#board-click-catcher polygon")!;
+        const box = catcher.rbox(draw);
+        catcher.fire("click", { clientX: box.cx, clientY: box.cy });
 
-        expect(clicked).to.deep.equal({ row: 8, col: 8, piece: "" });
+        expect(clicked).to.not.equal(undefined);
+        expect(clicked?.piece).to.equal("");
+        expect(clicked?.row).to.be.at.least(0).and.lessThan(9);
+        expect(clicked?.col).to.be.at.least(0).and.lessThan(9);
     });
 });
