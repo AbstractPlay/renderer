@@ -29,7 +29,7 @@ Follow the canonical org-wide policy in [gameslib `AGENTS.md` — Abstract Play 
 | `npm run playground` / `dist-dev` | Build `dist/` demo bundle |
 | `npm run test:browser` | Playwright over all snippets (CI; build first) |
 | `npm run regenerate-glyphs` | After glyph sheet edits (+ commit contact sheet / catalog) |
-| `npm run docs:check:local` | Doc links when sibling `docs` repo exists |
+| `npm run docs:check:local` | Nav slugs in `docs/nav.json` have matching pages (not link validation) |
 
 Handoff: **`npm run typecheck`** and **`npm run lint`** (exit 0). Run `npm test`; run `npm run test:browser` when changing playground snippets or browser-visible bundle behaviour.
 
@@ -49,7 +49,13 @@ Detail: [docs/playground-samples.md](docs/playground-samples.md).
 
 ## Documentation
 
-New `docs/**/*.md` → [`docs/nav.json`](docs/nav.json). Run `npm run docs:check:local` after doc edits.
+Published site: [docs.abstractplay.com/renderer/](https://docs.abstractplay.com/renderer/) (built from the [docs](https://github.com/AbstractPlay/docs) repo; renderer `main` triggers `dep_update_prod`).
+
+- New `docs/**/*.md` → [`docs/nav.json`](docs/nav.json) (`slug` without `.md`).
+- **Internal links** in `docs/**/*.md`: use **published paths** (`/renderer/playground-samples/`, `/renderer/samples/foo.json`), not sibling `other-page.md` — `docs:check` resolves from the page URL (e.g. `/renderer/engines/`), so relative `.md` links break prod deploy. Copy URL style from [`docs/index.md`](docs/index.md).
+- **`docs/samples/*.json`**: sheet legend glyphs use **`paint`** (`paint.fill`, etc.), not `colour` / `colour2`; `npm test` enforces via `docs-samples-glyph-paint.test.ts`. Use `npm run migrate-glyph-paint` when copying gameslib JSON.
+
+**After doc edits:** `npm run docs:check:local` here, then from sibling **`../docs`**: `npm run docs:check` (fix all `ERROR:` lines, especially `Broken doc link in vendor/renderer/...`).
 
 ## Changelog
 
