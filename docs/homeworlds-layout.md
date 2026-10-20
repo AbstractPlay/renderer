@@ -30,4 +30,4 @@ In a two-home game, three peripherals can share one row and sort left-to-right b
 }
 ```
 
-Full sample: [`docs/samples/niche-homeworlds-layout.json`](samples/niche-homeworlds-layout.json) and playground `niche-homeworlds-layout` in [Playground samples](playground-samples.md).
+Full sample: [`docs/samples/niche-homeworlds-layout.json`](/renderer/samples/niche-homeworlds-layout.json) and playground `niche-homeworlds-layout` in [Playground samples](/renderer/playground-samples/).
