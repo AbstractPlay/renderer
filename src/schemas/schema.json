@@ -3957,12 +3957,54 @@
             ],
             "additionalProperties": false
         },
+        "homeworldsSystemLayout": {
+            "description": "Optional peripheral system placement for the `homeworlds` renderer. Values are in seat/compass frame; the renderer maps `row` or `column` through `options.rotate`. Supply either `row` or `column` (not both). `order` sorts within the band (screen left-to-right for row mode, top-to-bottom for column mode). Omit on home systems. All peripherals must use the same axis or layout is ignored.",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "row": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "order": {
+                            "type": "number"
+                        },
+                        "column": false
+                    },
+                    "required": [
+                        "row"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "column": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "order": {
+                            "type": "number"
+                        },
+                        "row": false
+                    },
+                    "required": [
+                        "column"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
         "boardHomeworlds": {
             "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.",
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
+                    "layout": {
+                        "$ref": "#/$defs/homeworldsSystemLayout"
+                    },
                     "name": {
                         "description": "The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.",
                         "type": "string",

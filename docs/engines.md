@@ -67,6 +67,8 @@ A bespoke engine specifically for Homeworlds.
 
 *Example games:* [Homeworlds](https://play.abstractplay.com/games/homeworlds)
 
+Peripheral ordering: [Homeworlds layout](homeworlds-layout.md).
+
 {% renderWidget "samples/niche-homeworlds.json" %}
 
 ## Entropy

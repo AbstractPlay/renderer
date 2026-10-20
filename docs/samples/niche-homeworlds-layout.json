@@ -1,0 +1,88 @@
+{
+  "renderer": "homeworlds",
+  "board": [
+    {
+      "name": "North",
+      "stars": ["Y3", "G2"],
+      "seat": "N"
+    },
+    {
+      "name": "South",
+      "stars": ["G2", "B1"],
+      "seat": "S"
+    },
+    {
+      "name": "Pheedo",
+      "stars": ["Y1"],
+      "layout": { "row": 0, "order": 0 }
+    },
+    {
+      "name": "Pyblov",
+      "stars": ["R3"],
+      "layout": { "row": 0, "order": 1 }
+    },
+    {
+      "name": "Equisnad",
+      "stars": ["Y2"],
+      "layout": { "row": 0, "order": 2 }
+    }
+  ],
+  "pieces": [
+    ["pB3N"],
+    ["pY3S", "pY1S", "pY2S"],
+    ["pG1N"],
+    ["pY1S"],
+    ["pG1N"]
+  ],
+  "areas": [
+    {
+      "type": "globalStash",
+      "R": "11122233",
+      "G": "12333",
+      "B": "1122233",
+      "Y": "23"
+    }
+  ],
+  "legend": {
+    "R1": { "name": "pyramid-up-small-upscaled", "colour": 1 },
+    "R2": { "name": "pyramid-up-medium-upscaled", "colour": 1 },
+    "R3": { "name": "pyramid-up-large-upscaled", "colour": 1 },
+    "B1": { "name": "pyramid-up-small-upscaled", "colour": 2 },
+    "B2": { "name": "pyramid-up-medium-upscaled", "colour": 2 },
+    "B3": { "name": "pyramid-up-large-upscaled", "colour": 2 },
+    "G1": { "name": "pyramid-up-small-upscaled", "colour": 3 },
+    "G2": { "name": "pyramid-up-medium-upscaled", "colour": 3 },
+    "G3": { "name": "pyramid-up-large-upscaled", "colour": 3 },
+    "Y1": { "name": "pyramid-up-small-upscaled", "colour": 4 },
+    "Y2": { "name": "pyramid-up-medium-upscaled", "colour": 4 },
+    "Y3": { "name": "pyramid-up-large-upscaled", "colour": 4 },
+    "pR1N": { "name": "pyramid-flat-small", "colour": 1, "rotate": 180 },
+    "pR2N": { "name": "pyramid-flat-medium", "colour": 1, "rotate": 180 },
+    "pR3N": { "name": "pyramid-flat-large", "colour": 1, "rotate": 180 },
+    "pB1N": { "name": "pyramid-flat-small", "colour": 2, "rotate": 180 },
+    "pB2N": { "name": "pyramid-flat-medium", "colour": 2, "rotate": 180 },
+    "pB3N": { "name": "pyramid-flat-large", "colour": 2, "rotate": 180 },
+    "pG1N": { "name": "pyramid-flat-small", "colour": 3, "rotate": 180 },
+    "pG2N": { "name": "pyramid-flat-medium", "colour": 3, "rotate": 180 },
+    "pG3N": { "name": "pyramid-flat-large", "colour": 3, "rotate": 180 },
+    "pY1N": { "name": "pyramid-flat-small", "colour": 4, "rotate": 180 },
+    "pY2N": { "name": "pyramid-flat-medium", "colour": 4, "rotate": 180 },
+    "pY3N": { "name": "pyramid-flat-large", "colour": 4, "rotate": 180 },
+    "pR1S": { "name": "pyramid-flat-small", "colour": 1 },
+    "pR2S": { "name": "pyramid-flat-medium", "colour": 1 },
+    "pR3S": { "name": "pyramid-flat-large", "colour": 1 },
+    "pB1S": { "name": "pyramid-flat-small", "colour": 2 },
+    "pB2S": { "name": "pyramid-flat-medium", "colour": 2 },
+    "pB3S": { "name": "pyramid-flat-large", "colour": 2 },
+    "pG1S": { "name": "pyramid-flat-small", "colour": 3 },
+    "pG2S": { "name": "pyramid-flat-medium", "colour": 3 },
+    "pG3S": { "name": "pyramid-flat-large", "colour": 3 },
+    "pY1S": { "name": "pyramid-flat-small", "colour": 4 },
+    "pY2S": { "name": "pyramid-flat-medium", "colour": 4 },
+    "pY3S": { "name": "pyramid-flat-large", "colour": 4 }
+  },
+  "annotations": [
+    { "system": "Pheedo", "action": 4 },
+    { "system": "Equisnad", "action": 4 }
+  ]
+}

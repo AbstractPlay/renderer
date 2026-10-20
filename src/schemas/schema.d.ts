@@ -343,9 +343,24 @@ export type ChatActorRef =
       kind: "none";
     };
 /**
+ * Optional peripheral system placement for the `homeworlds` renderer. Values are in seat/compass frame; the renderer maps `row` or `column` through `options.rotate`. Supply either `row` or `column` (not both). `order` sorts within the band (screen left-to-right for row mode, top-to-bottom for column mode). Omit on home systems. All peripherals must use the same axis or layout is ignored.
+ */
+export type HomeworldsSystemLayout =
+  | {
+      row: number;
+      order?: number;
+      column?: never;
+    }
+  | {
+      column: number;
+      order?: number;
+      row?: never;
+    };
+/**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
 export type BoardHomeworlds = {
+  layout?: HomeworldsSystemLayout;
   /**
    * The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.
    */
