@@ -63,7 +63,7 @@ import {
 } from "../common/buttonBar.js";
 import { attachMarkerPulse } from "../common/markerPulse.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, eleven, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, eleven, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, bricka, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
 import {
     glyphForLayoutRotation,
     glyphKeepsUpright,
@@ -3576,6 +3576,9 @@ export abstract class RendererBase {
                     break;
                 case "onyx":
                     ({ grid: gridPoints, boardFill } = onyx(this));
+                    break;
+                case "bricka":
+                    ({ grid: gridPoints, boardFill } = bricka(this));
                     break;
                 case "snubsquare-cells":
                     ({ grid: gridPoints, polys, boardFill } = snubSquareCells(this));

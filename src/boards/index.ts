@@ -19,6 +19,7 @@ export { hexSlanted } from "./hexSlanted.js";
 export { fracturedFlat } from "./fracturedFlat.js";
 export { moon } from "./moon.js";
 export { onyx } from "./onyx.js";
+export { bricka } from "./bricka.js";
 export { pentagonal } from "./pentagonal.js";
 export { bentTri } from "./bentTri.js";
 export { star } from "./star.js";

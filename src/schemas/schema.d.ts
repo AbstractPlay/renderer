@@ -283,6 +283,7 @@ export type BoardStyles =
   | "snubsquare"
   | "snubsquare-cells"
   | "onyx"
+  | "bricka"
   | "pentagonal"
   | "pentagonal-bluestone"
   | "bent-tri"
