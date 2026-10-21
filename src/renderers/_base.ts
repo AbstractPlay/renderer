@@ -3655,7 +3655,7 @@ export abstract class RendererBase {
                     ({ grid: gridPoints, boardFill } = onyx(this));
                     break;
                 case "bricka":
-                    ({ grid: gridPoints, boardFill } = bricka(this));
+                    ({ grid: gridPoints, polys, boardFill } = bricka(this));
                     break;
                 case "snubsquare-cells":
                     ({ grid: gridPoints, polys, boardFill } = snubSquareCells(this));
