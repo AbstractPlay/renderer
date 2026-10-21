@@ -2,7 +2,7 @@
   "board-bricka": {
     "name": "Boards: Bricka",
     "description": "Board for the game Bricka, made up of pentagonal cells, played on intersections with both 5- and 6-connectivity, and the possibility to mark cells around an intersection.",
-    "render": "{\"board\":{\"style\":\"bricka\",\"width\":12,\"height\":12},\"legend\":{\"A\":{\"name\":\"piece\",\"scale\":0.75,\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"scale\":0.75,\"paint\":{\"fill\":2}}},\"pieces\":\"A\"}"
+    "render": "{\"board\":{\"style\":\"bricka\",\"width\":12,\"height\":12,\"markers\":[{\"type\":\"edge\",\"edge\":\"NW\",\"colour\":3},{\"type\":\"edge\",\"edge\":\"SE\",\"colour\":3},{\"type\":\"edge\",\"edge\":\"NE\",\"colour\":5},{\"type\":\"edge\",\"edge\":\"SW\",\"colour\":5},{\"type\":\"edge\",\"edge\":\"W\",\"colour\":6},{\"type\":\"edge\",\"edge\":\"E\",\"colour\":6}]},\"legend\":{\"A\":{\"name\":\"piece\",\"scale\":0.75,\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"scale\":0.75,\"paint\":{\"fill\":2}}},\"pieces\":\"A\"}"
   },
   "pieces-simple": {
     "name": "Glyphs: Simple",

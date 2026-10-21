@@ -278,6 +278,7 @@ export interface IMarkBoardOptions {
     hexWidth?: number;
     hexHeight?: number;
     polys?: Poly[][];
+    boardFill?: Poly;
     cairoStart?: "H"|"V";
 }
 
@@ -2200,6 +2201,7 @@ export abstract class RendererBase {
         if (opts.polys !== undefined) {
             polys = opts.polys;
         }
+        let boardFill: Poly|undefined = opts.boardFill;
 
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
@@ -3280,6 +3282,40 @@ export abstract class RendererBase {
                                 pts.push(...realgrid.map(row => row[row.length - 1]))
                         }
                         targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
+                    } else if (style === "bricka" && boardFill !== undefined) {
+                        let pts: IPoint[] = [];
+                        const edge: IPoint[] = (boardFill as IPolyPolygon).points;
+                        switch (marker.edge) {
+                            case "NW":
+                                pts = edge.slice(1, 9);
+                                break;
+                            case "NE":
+                                pts = edge.slice(9, 17);
+                                break;
+                            case "SE":
+                                pts = edge.slice(18, 26);
+                                break;
+                            case "SW":
+                                pts = edge.slice(26, 34);
+                                break;
+                            case "W":
+                                pts = [edge[0]];
+                                break;
+                            case "E":
+                                pts = [edge[17]];
+                                break;
+                        }
+                        targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
+                        pts.forEach(
+                            (pt) => {
+                                targetGroup.circle(baseStroke * 10)
+                                    .attr({ 'pointer-events': 'none' })
+                                    .fill(colour)
+                                    .opacity(opacity)
+                                    .stroke({width: 0})
+                                    .center(pt.x, pt.y);
+                            }
+                        );
                     }
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;

@@ -1,4 +1,5 @@
 import { IPolyPolygon, rectOfRects } from "../grids/index.js";
+import { IPoint} from "../grids/_base.js";
 import { RendererBase } from "../renderers/_base.js";
 import { Graph, SquareOrthGraph } from "../graphs/index.js";
 import { BoardReturn, createGridlineLayers } from "./index.js";
@@ -204,26 +205,41 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
             }
         );
     }
-
-    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
-
-    // derive boardFill
-    const delta = cellsize / 1.5;
-    const xs = grid.flat().map(pt => pt.x);
-    const ys = grid.flat().map(pt => pt.y);
-    const minx = Math.min(...xs);
-    const miny = Math.min(...ys);
-    const maxx = Math.max(...xs);
-    const maxy = Math.max(...ys);
+    
+    // derive the board edge polygon, this will be used for boardFill and in the
+    // renderer _base.ts for the edge markings. Going clockwise starting from the
+    // leftmost point.
+    
+    const leftpt = [6, 0]
+    const NW = [
+        [5, 1],
+        [3, 1],
+        [3, 2],
+        [2, 2],
+        [2, 4],
+        [1, 4],
+        [1, 5],
+        [0, 5]
+    ]
+    let NE = [...NW]
+    NE.reverse();
+    NE = NE.map(([x, y]) => ([x, height - y - 1]));
+    const rightpt = [6, 12]
+    let SE = [...NE]
+    SE.reverse();
+    SE = SE.map(([x, y]) => ([width - x - 1, y]));
+    let SW = [...NW]
+    SW.reverse();
+    SW = SW.map(([x, y]) => ([width - x - 1, y]));
+    const boardEdge = [leftpt].concat(NW, NE, [rightpt], SE, SW);
+    const boardEdgePoints: IPoint[] = boardEdge.map(([x, y]) => (grid[x][y]));
+    
     const boardFill: IPolyPolygon = {
         type: "poly",
-        points: [
-            {x: minx - (delta), y: miny - (delta)},
-            {x: maxx + (delta), y: miny - (delta)},
-            {x: maxx + (delta), y: maxy + (delta)},
-            {x: minx - (delta), y: maxy + (delta)},
-        ]
+        points: boardEdgePoints
     };
+
+    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, boardFill: boardFill});
 
     return {grid, boardFill};
 }
