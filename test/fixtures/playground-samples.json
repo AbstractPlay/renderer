@@ -1,9 +1,4 @@
 {
-  "board-bricka": {
-    "name": "Boards: Bricka",
-    "description": "Board for the game Bricka, made up of pentagonal cells, played on intersections with both 5- and 6-connectivity, and the possibility to mark cells around an intersection.",
-    "render": "{\"board\":{\"style\":\"bricka\",\"width\":12,\"height\":12,\"markers\":[{\"type\":\"edge\",\"edge\":\"NW\",\"colour\":3},{\"type\":\"edge\",\"edge\":\"SE\",\"colour\":3},{\"type\":\"edge\",\"edge\":\"NE\",\"colour\":5},{\"type\":\"edge\",\"edge\":\"SW\",\"colour\":5},{\"type\":\"edge\",\"edge\":\"W\",\"colour\":6},{\"type\":\"edge\",\"edge\":\"E\",\"colour\":6}]},\"legend\":{\"A\":{\"name\":\"piece\",\"scale\":0.75,\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"scale\":0.75,\"paint\":{\"fill\":2}}},\"pieces\":\"A\"}"
-  },
   "pieces-simple": {
     "name": "Glyphs: Simple",
     "description": "Simple glyphs on a square board",
@@ -98,6 +93,11 @@
     "name": "Boards: Snubsquare (Cells)",
     "description": "A version of a snubsquare board where you place pieces on the spaces instead of the vertices. The height and width you provide relate to the number of regular vertices. Because at many sizes the number of spaces varies from row to row, the labelling mirrors the `hex-of-*` model.",
     "render": "{\"board\":{\"style\":\"snubsquare-cells\",\"width\":8,\"height\":8,\"markers\":[{\"type\":\"flood\",\"colour\":2,\"points\":[{\"row\":2,\"col\":3},{\"row\":2,\"col\":2},{\"row\":2,\"col\":4}]},{\"type\":\"edge\",\"edge\":\"N\",\"colour\":1},{\"type\":\"edge\",\"edge\":\"S\",\"colour\":1},{\"type\":\"edge\",\"edge\":\"E\",\"colour\":2},{\"type\":\"edge\",\"edge\":\"W\",\"colour\":2}]},\"legend\":{\"A\":{\"name\":\"piece\",\"scale\":0.5,\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"scale\":0.5,\"paint\":{\"fill\":2}}},\"pieces\":\"ABA\"}"
+  },
+  "board-bricka": {
+    "name": "Boards: Bricka",
+    "description": "Board for the game Bricka, made up of pentagonal cells, played on intersections with both 5- and 6-connectivity, and the possibility to mark cells around an intersection.",
+    "render": "{\"board\":{\"style\":\"bricka\",\"width\":12,\"height\":12,\"markers\":[{\"type\":\"edge\",\"edge\":\"NW\",\"colour\":4},{\"type\":\"edge\",\"edge\":\"SE\",\"colour\":4},{\"type\":\"edge\",\"edge\":\"NE\",\"colour\":5},{\"type\":\"edge\",\"edge\":\"SW\",\"colour\":5},{\"type\":\"edge\",\"edge\":\"W\",\"colour\":6},{\"type\":\"edge\",\"edge\":\"E\",\"colour\":6},{\"type\":\"flood\",\"points\":[{\"row\":2,\"col\":5},{\"row\":3,\"col\":6},{\"row\":4,\"col\":4}],\"colour\":1},{\"type\":\"flood\",\"points\":[{\"row\":6,\"col\":7},{\"row\":5,\"col\":9},{\"row\":7,\"col\":9}],\"colour\":2}]},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}},\"C\":{\"name\":\"piece\",\"paint\":{\"fill\":3}}},\"pieces\":\"\\n\\n\\n,,,,,A\\n,,,,,C\\n\\n,,,,,,,,B\"}"
   },
   "board-pentagonal": {
     "name": "Boards: Pentagonal (Bluestone)",

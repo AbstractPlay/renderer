@@ -34,7 +34,6 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
     const board = ctx.rootSvg.group().id("board");
     const layers = createGridlineLayers(board);
     const gridlines = layers.root;
-    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
 
     // Add board labels
     let labelColour = ctx.options.colourContext.labels;
@@ -164,48 +163,6 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
         addEdgeSymm(x1, y1, x2, y2);
     });
     
-    // Draw the edges based on the graph
-    graph.graph.forEachEdge(
-        (_edge, _attributes, source, target) => {
-            const [cx1, cy1]: number[] = source.split(",").map(s => parseInt(s, 10));
-            const [cx2, cy2]: number[] = target.split(",").map(s => parseInt(s, 10));
-            const x1: number = grid[cx1][cy1].x;
-            const y1: number = grid[cx1][cy1].y;
-            const x2: number = grid[cx2][cy2].x;
-            const y2: number = grid[cx2][cy2].y;
-            layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
-        }
-    );
-
-    // Draw dots for each cell
-    graph.graph.forEachNode(
-        (node) => {
-            const [x, y]: number[] = node.split(",").map(s => parseInt(s, 10));
-            const pt = grid[x][y];
-            layers.strokes.circle(baseStroke * 7.5)
-                .attr({ 'pointer-events': 'none' })
-                .fill(baseColour)
-                .opacity(baseOpacity)
-                .stroke({width: 0})
-                .center(pt.x, pt.y);
-        }
-    );
-
-    if (ctx.options.boardClick !== undefined) {
-        // moving to click catchers across the board to make arbitrary rotation easier
-        const tiles = board.group().id("tiles");
-        const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
-
-        graph.graph.forEachNode(
-            (node) => {
-                const [row, col]: number[] = node.split(",").map(s => parseInt(s, 10));
-                const {x, y} = grid[row][col];
-                const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                t.click(() => ctx.options.boardClick!(row, col, ""));
-            }
-        );
-    }
-    
     // derive the board edge polygon, this will be used for boardFill and in the
     // renderer _base.ts for the edge markings. Going clockwise starting from the
     // leftmost point.
@@ -239,7 +196,98 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
         points: boardEdgePoints
     };
 
-    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, boardFill: boardFill});
+    // Polygons are indexed by their center coordinate, there will be empty spots
+    // in the array.
+    const polys: IPolyPolygon[][] = [];
+    for (let i = 0; i < 13; i++) {
+        polys[i] = [];
+    }
+    const polyCenters = [
+        [1, 6],
+        [2, 5],
+        [3, 3],
+        [3, 6],
+        [4, 2],
+        [4, 4],
+        [5, 3],
+        [5, 6],
+        [6, 1],
+        [6, 5]
+    ]
+    polyCenters.push(...polyCenters.map(([x, y]) => ([width - x - 1, y])));
+    polyCenters.push(...polyCenters.map(([x, y]) => ([x, height - y - 1])));
+    const offsets = [
+        [-1, -1],
+        [-1, 0],
+        [-1, 1],
+        [0, 1],
+        [1, 1],
+        [1, 0],
+        [1, -1],
+        [0, -1]
+    ]
+    
+    polyCenters.forEach(([x, y]) => {
+        if(!(y in polys[x])) {
+            const pts: IPoint[] = [];
+            offsets.forEach(([dx, dy]) => {
+                if(graph.hasNode([x + dx, y + dy])) {
+                    pts.push(grid[x + dx][y + dy]);
+                }
+            });
+            polys[x][y] = {
+                type: "poly",
+                points: pts
+            };
+        }
+    });
 
-    return {grid, boardFill};
+    /* Everything generated, now do the actual drawing */
+    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys: polys, boardFill: boardFill});
+
+
+    // Draw the edges based on the graph
+    graph.graph.forEachEdge(
+        (_edge, _attributes, source, target) => {
+            const [cx1, cy1]: number[] = source.split(",").map(s => parseInt(s, 10));
+            const [cx2, cy2]: number[] = target.split(",").map(s => parseInt(s, 10));
+            const x1: number = grid[cx1][cy1].x;
+            const y1: number = grid[cx1][cy1].y;
+            const x2: number = grid[cx2][cy2].x;
+            const y2: number = grid[cx2][cy2].y;
+            layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"}).attr({ 'pointer-events': 'none' });
+        }
+    );
+
+    // Draw dots for each cell
+    graph.graph.forEachNode(
+        (node) => {
+            const [x, y]: number[] = node.split(",").map(s => parseInt(s, 10));
+            const pt = grid[x][y];
+            layers.strokes.circle(baseStroke * 7.5)
+                .attr({ 'pointer-events': 'none' })
+                .fill(baseColour)
+                .opacity(baseOpacity)
+                .stroke({width: 0})
+                .center(pt.x, pt.y);
+        }
+    );
+
+    if (ctx.options.boardClick !== undefined) {
+        const tiles = board.group().id("tiles");
+        const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
+
+        graph.graph.forEachNode(
+            (node) => {
+                const [row, col]: number[] = node.split(",").map(s => parseInt(s, 10));
+                const {x, y} = grid[row][col];
+                const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                t.click(() => ctx.options.boardClick!(row, col, ""));
+            }
+        );
+    }
+
+    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys: polys, boardFill: boardFill});
+
+    return {grid, polys, boardFill};
 }
