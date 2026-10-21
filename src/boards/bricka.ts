@@ -2,7 +2,7 @@ import { IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { IPoint} from "../grids/_base.js";
 import { RendererBase } from "../renderers/_base.js";
 import { Graph, SquareOrthGraph } from "../graphs/index.js";
-import { BoardReturn, createGridlineLayers } from "./index.js";
+import { BoardReturn, CompassDirection, createGridlineLayers } from "./index.js";
 
 export const bricka = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) || (ctx.json.board === null) ) {
@@ -47,7 +47,7 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
 
     const labels = board.group().id("labels");
     // Columns (letters)
-    let columnLabels = ctx.getLabels(undefined, width);
+    const columnLabels = ctx.getLabels(undefined, width);
     for (let col = 0; col < width; col++) {
         const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) };
         const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) };
@@ -56,7 +56,7 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
     }
 
     // Rows (numbers)
-    let rowLabels: string[] = [];
+    const rowLabels: string[] = [];
     for (let row = 0; row < height; row++) {
         rowLabels.push((height - row).toString());
     }
@@ -188,13 +188,15 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
     let SW = [...NW]
     SW.reverse();
     SW = SW.map(([x, y]) => ([width - x - 1, y]));
-    const boardEdge = [leftpt].concat(NW, NE, [rightpt], SE, SW);
-    const boardEdgePoints: IPoint[] = boardEdge.map(([x, y]) => (grid[x][y]));
-    
-    const boardFill: IPolyPolygon = {
-        type: "poly",
-        points: boardEdgePoints
-    };
+
+    const boardEdges: Map<CompassDirection, IPolyPolygon> = new Map([
+        ["W", [leftpt]],
+        ["NW", NW],
+        ["NE", NE],
+        ["E", [rightpt]],
+        ["SE", SE],
+        ["SW", SW]
+    ].map(([k, pts]) => ([(k as CompassDirection), {type: "poly", points: (pts as number[][]).map(([x, y]) => (grid[x][y]))}])))
 
     // Polygons are indexed by their center coordinate, there will be empty spots
     // in the array.
@@ -243,7 +245,7 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
     });
 
     /* Everything generated, now do the actual drawing */
-    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys: polys, boardFill: boardFill});
+    ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys: polys, boardEdges: boardEdges});
 
 
     // Draw the edges based on the graph
@@ -287,7 +289,7 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
         );
     }
 
-    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys: polys, boardFill: boardFill});
+    ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys: polys, boardEdges: boardEdges});
 
-    return {grid, polys, boardFill};
+    return {grid, polys};
 }
