@@ -8,7 +8,7 @@
 /**
  * An individual glyph with options, used in the `legend` property.
  */
-export type Glyph = SheetGlyph | TextGlyph;
+export type Glyph = SheetGlyph | TextGlyph | CustomGlyph;
 /**
  * Shorthand colour or structured slot paint.
  */
@@ -344,9 +344,24 @@ export type ChatActorRef =
       kind: "none";
     };
 /**
+ * Optional peripheral system placement for the `homeworlds` renderer. Values are in seat/compass frame; the renderer maps `row` or `column` through `options.rotate`. Supply either `row` or `column` (not both). `order` sorts within the band (screen left-to-right for row mode, top-to-bottom for column mode). Omit on home systems. All peripherals must use the same axis or layout is ignored.
+ */
+export type HomeworldsSystemLayout =
+  | {
+      row: number;
+      order?: number;
+      column?: never;
+    }
+  | {
+      column: number;
+      order?: number;
+      row?: never;
+    };
+/**
  * The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.
  */
 export type BoardHomeworlds = {
+  layout?: HomeworldsSystemLayout;
   /**
    * The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.
    */
@@ -495,11 +510,15 @@ export interface APRenderRep {
     | "isometric"
     | "tree-pyramid";
   /**
-   * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers on `squares*` and `vertex` boards; on `circular-wheel*` boards it replaces default letter labels around the circumference with numbers `1` through `n`. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
+   * A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. On `squares*` and `vertex` boards, `hide-labels-north`, `hide-labels-south`, `hide-labels-west`, and `hide-labels-east` hide labels on that board edge (grid north = row 0); `hide-labels-half` is equivalent to north plus east. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers on `squares*` and `vertex` boards; on `circular-wheel*` boards it replaces default letter labels around the circumference with numbers `1` through `n`. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.
    */
   options?: (
     | "hide-labels"
     | "hide-labels-half"
+    | "hide-labels-north"
+    | "hide-labels-south"
+    | "hide-labels-east"
+    | "hide-labels-west"
     | "hide-star-points"
     | "no-border"
     | "hw-light"
@@ -514,6 +533,12 @@ export interface APRenderRep {
     | "no-iso-depth-shade"
     | "no-iso-cell-footprint"
   )[];
+  /**
+   * Shared custom SVG definitions referenced by legend layers (`def`). Keys are definition ids; values hold `viewBox` and sanitized `markup`.
+   */
+  glyphDefs?: {
+    [k: string]: GlyphDefsEntry;
+  };
   /**
    * Map each `piece` to an actual glyph with possible options.
    */
@@ -548,6 +573,22 @@ export interface APRenderRep {
    * Instruct the renderer how to show any changes to the game state. See the docs for details. For the `entropy` renderer, the pieces are theoretically laid out on a grid 14 cells wide. So to show annotations on the second board, you will reference column indexes starting at 7. The number of rows does not change.
    */
   annotations?: (AnnotationBasic | AnnotationSowing | AnnotationHomeworlds | AnnotationFreespace | AnnotationTree)[];
+}
+/**
+ * Shared custom vector art referenced by legend layers via `def`. Markup is sanitized at render time; tag paint regions with `data-slot-fill` / `data-slot-stroke` like sheet glyphs.
+ */
+export interface GlyphDefsEntry {
+  /**
+   * Symbol viewBox as `[minX, minY, width, height]`.
+   *
+   * @minItems 4
+   * @maxItems 4
+   */
+  viewBox: [number, number, number, number];
+  /**
+   * Inner SVG fragment (paths and primitive shapes only). Not a full `<svg>` document.
+   */
+  markup: string;
 }
 /**
  * A named glyph from a sheet. Use paint (fill, border, …); colour/colour2 are deprecated aliases.
@@ -601,7 +642,7 @@ export interface SheetGlyph {
   colour2?: ColourResolvable | Gradient;
 }
 /**
- * Per-slot colours for sheet artwork slots (fill, border, detail, …).
+ * Per-slot colours for sheet artwork slots (fill, border, detail, highlight, …). See glyph-slots.md per glyph.
  */
 export interface SheetGlyphPaintMap {
   [k: string]: PaintEntry;
@@ -746,6 +787,57 @@ export interface TextGlyphPaintMap {
   border?: TextPaintBorderEntry;
 }
 /**
+ * A legend layer that references shared art in `glyphDefs`. Use `paint` like sheet glyphs; markup must declare slot bindings.
+ */
+export interface CustomGlyph {
+  /**
+   * A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.
+   */
+  scale?: number;
+  /**
+   * Layer opacity multiplier on the placed glyph (0–1).
+   */
+  opacity?: number;
+  /**
+   * A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.
+   */
+  rotate?: number | null;
+  /**
+   * Determines how the piece (usually a text element) is reorientated after rotation is done.
+   */
+  orientation?: "vertical" | "fluid";
+  /**
+   * Flips x coordinates
+   */
+  flipx?: boolean;
+  /**
+   * Flips the y coordinates
+   */
+  flipy?: boolean;
+  /**
+   * The number of units to nudge the glyph from centre.
+   */
+  nudge?: {
+    /**
+     * Nudge coordinate system.
+     */
+    relativeTo?: "piece" | "glyph";
+    dx?: number;
+    dy?: number;
+  };
+  /**
+   * Key into the render root `glyphDefs` map.
+   */
+  def: string;
+  paint?: SheetGlyphPaintMap;
+  colour?: GlyphPaintColour;
+  /**
+   * @deprecated
+   * Deprecated — use paint.border or paint.detail. Maps like sheet glyphs (default border).
+   */
+  colour2?: ColourResolvable | Gradient;
+}
+/**
  * Sheet glyphs on cube faces (`cube` and cube lintels). Keys use intrinsic N/E/S/W + top.
  */
 export interface IsoFaceDecor {
@@ -888,6 +980,15 @@ export interface BoardBasic {
    * An optional array of strings to override the default row labeling.
    */
   rowLabels?: string[];
+  /**
+   * Only on `squares*` and `vertex` boards. Optional per-edge coordinate label strings (north/south length = `width`, west/east length = `height`). Omitted sides use the shared `columnLabels` / `rowLabels` sequences after `reverse-*` and `swap-labels`; provided values are literal and are not transformed again.
+   */
+  edgeLabels?: {
+    north?: string[];
+    south?: string[];
+    east?: string[];
+    west?: string[];
+  };
   /**
    * Currently only applies to hex fields
    */

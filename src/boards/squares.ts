@@ -1,11 +1,17 @@
 import { Element as SVGElement, Rect as SVGRect, StrokeData, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
 import { expandSquareGrid, IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { rotatePoint, shortenLine } from "../common/plotting.js";
+import { shortenLine } from "../common/plotting.js";
 import tinycolor from "tinycolor2";
 import { MarkerOutline } from "../schemas/schema.js";
-import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from "./index.js";
+import { boardClickLocalPoint, BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from "./index.js";
 import { drawSquareCellGridEdges, drawSquaresOuterBorder } from "./squaresOuterBorder.js";
+import {
+    hiddenRectLabelSides,
+    resolveRectEdgeLabelStrings,
+    shouldDrawRectLabelSide,
+    type RectEdgeLabelsOverride,
+} from "./rectEdgeLabels.js";
 
 export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -474,49 +480,45 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
         labelOpacity = ctx.json.board.labelOpacity;
     }
     if ( (! ctx.json.options) || (! ctx.json.options.includes("hide-labels") ) ) {
-        let hideHalf = false;
-        if (ctx.json.options?.includes("hide-labels-half")) {
-            hideHalf = true;
-        }
+        const hiddenSides = hiddenRectLabelSides(ctx.json.options);
         const labels = board.group().id("labels");
         let customLabels: string[]|undefined;
         if ( ("columnLabels" in ctx.json.board) && (ctx.json.board.columnLabels !== undefined) ) {
             customLabels = ctx.json.board.columnLabels;
         }
-        let columnLabels = ctx.getLabels(customLabels, width);
-        if ( (ctx.json.options !== undefined) && (ctx.json.options.includes("reverse-letters")) ) {
-            columnLabels.reverse();
+        let edgeLabels: RectEdgeLabelsOverride | undefined;
+        if ( ("edgeLabels" in ctx.json.board) && (ctx.json.board.edgeLabels !== undefined) ) {
+            edgeLabels = ctx.json.board.edgeLabels as RectEdgeLabelsOverride;
         }
-
-        let rowLabels = ctx.getRowLabels(ctx.json.board.rowLabels, height);
-        if ( (ctx.json.options !== undefined) && (ctx.json.options.includes("reverse-numbers")) ) {
-            rowLabels.reverse();
-        }
-
-        if (ctx.json.options?.includes("swap-labels")) {
-            const scratch = [...columnLabels];
-            columnLabels = [...rowLabels];
-            columnLabels.reverse();
-            rowLabels = [...scratch];
-            rowLabels.reverse();
-        }
+        const edge = resolveRectEdgeLabelStrings(ctx, {
+            width,
+            height,
+            columnLabels: customLabels,
+            rowLabels: ctx.json.board.rowLabels,
+            edgeLabels,
+            options: ctx.json.options,
+        });
         // Columns (letters)
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize - (show.includes("N") ? bufferwidth : 0)};
             const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize + (show.includes("S") ? bufferwidth : 0)};
-            if (! hideHalf) {
-                ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
+            if (shouldDrawRectLabelSide(hiddenSides, "north")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.north[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
-            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
+            if (shouldDrawRectLabelSide(hiddenSides, "south")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.south[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
+            }
         }
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - cellsize - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + cellsize + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
-            ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
-            if (! hideHalf) {
-                ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
+            if (shouldDrawRectLabelSide(hiddenSides, "west")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.west[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
+            }
+            if (shouldDrawRectLabelSide(hiddenSides, "east")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.east[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
             }
         }
     }
@@ -759,17 +761,14 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
     }
 
     if ( (ctx.options.boardClick !== undefined) && (tileSpace === 0) && (style !== "pegboard") ) {
-        const rotation = ctx.getRotation();
-        const centre = ctx.getBoardCentre();
         const clickDeltaX: number = (ctx.json.board.clickDeltaX ?? 0);
         const clickDeltaY: number = (ctx.json.board.clickDeltaX ?? 0);
         const originX = grid[0][0].x;
         const originY = grid[0][0].y;
         // const maxX = grid[0][grid[0].length - 1].x;
         // const maxY = grid[grid.length - 1][0].y;
-        const root = ctx.rootSvg;
         let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-            const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+            const point = boardClickLocalPoint(board, e.clientX, e.clientY);
             const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
             const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
             if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
@@ -781,7 +780,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
         });
         if (ctx.options.rotate === 180) {
             genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
+                const point = boardClickLocalPoint(board, e.clientX, e.clientY);
                 const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
                 const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
                 if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
@@ -792,7 +791,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
                 }
             });
         }
-        ctx.rootSvg.click(genericCatcher);
+        board.click(genericCatcher);
     }
 
     // Add edge click handlers if requested

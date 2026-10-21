@@ -1,6 +1,6 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
-import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
-import { hexOfTri, IPolyPolygon } from "../grids/index.js";
+import { attachNearestGridPointClick, boardFillBBoxFromGrid, BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
+import { hexOfTri } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
 
 export const rectOfTri = (ctx: RendererBase): BoardReturn => {
@@ -65,8 +65,8 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
 
     const board = ctx.rootSvg.group().id("board");
 
-    // have to define tiles early for clickable markers to work
-    const tiles = board.group().id("tiles");
+    // `#tiles` must exist before markers for clickable gridline helpers
+    board.group().id("tiles");
     const layers = createGridlineLayers(board);
     const gridlines = layers.root;
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid});
@@ -588,42 +588,13 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
         }
     }
 
-    if (ctx.options.boardClick !== undefined) {
-        // moving to click catchers across the board to make arbitrary rotation easier
-        // const tiles = board.group().id("tiles");
-        const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
-        for (let row = 0; row < grid.length; row++) {
-            for (let col = 0; col < grid[row].length; col++) {
-                const found = blocked?.find(b => b.row === row && b.col === col);
-                if (found !== undefined) {
-                    continue;
-                }
-                const {x, y} = grid[row][col];
-                const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                t.click(() => ctx.options.boardClick!(row, col, ""));
-            }
-        }
-    }
-
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
-    // derive boardFill
-    const delta = cellsize / 1.5;
-    const xs = grid.flat().map(pt => pt.x);
-    const ys = grid.flat().map(pt => pt.y);
-    const minx = Math.min(...xs);
-    const miny = Math.min(...ys);
-    const maxx = Math.max(...xs);
-    const maxy = Math.max(...ys);
-    const boardFill: IPolyPolygon = {
-        type: "poly",
-        points: [
-            {x: minx - (delta), y: miny - (delta)},
-            {x: maxx + (delta), y: miny - (delta)},
-            {x: maxx + (delta), y: maxy + (delta)},
-            {x: minx - (delta), y: maxy + (delta)},
-        ]
-    };
+    const boardFill = boardFillBBoxFromGrid(grid, cellsize);
+
+    if (ctx.options.boardClick !== undefined) {
+        attachNearestGridPointClick(board, grid, boardFill, ctx.options.boardClick, { blocked });
+    }
 
     return {grid, boardFill};
 }

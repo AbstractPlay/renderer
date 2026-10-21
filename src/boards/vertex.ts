@@ -1,10 +1,16 @@
 import { Element as SVGElement, Rect as SVGRect } from "@svgdotjs/svg.js";
 import { IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
-import { rotatePoint, shortenLine } from "../common/plotting.js";
+import { attachBoardNearestClick, boardClickLocalPoint, BoardReturn, CompassDirection, createGridlineLayers, IBuffer } from "./index.js";
+import { shortenLine } from "../common/plotting.js";
 import { Graph, SquareFanoronaGraph, SquareGraph, SquareOrthGraph } from "../graphs/index.js";
 import { calcStarPoints } from "../common/starPoints.js";
+import {
+    hiddenRectLabelSides,
+    resolveRectEdgeLabelStrings,
+    shouldDrawRectLabelSide,
+    type RectEdgeLabelsOverride,
+} from "./rectEdgeLabels.js";
 
 export const vertex = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -413,50 +419,46 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
         labelOpacity = ctx.json.board.labelOpacity;
     }
     if ( (! ctx.json.options) || (! ctx.json.options.includes("hide-labels") ) ) {
-        let hideHalf = false;
-        if (ctx.json.options?.includes("hide-labels-half")) {
-            hideHalf = true;
-        }
+        const hiddenSides = hiddenRectLabelSides(ctx.json.options);
         const labels = board.group().id("labels");
         let customLabels: string[]|undefined;
         if ( ("columnLabels" in ctx.json.board) && (ctx.json.board.columnLabels !== undefined) ) {
             customLabels = ctx.json.board.columnLabels;
         }
-        let columnLabels = ctx.getLabels(customLabels, width);
-        if ( (ctx.json.options !== undefined) && (ctx.json.options.includes("reverse-letters")) ) {
-            columnLabels.reverse();
+        let edgeLabels: RectEdgeLabelsOverride | undefined;
+        if ( ("edgeLabels" in ctx.json.board) && (ctx.json.board.edgeLabels !== undefined) ) {
+            edgeLabels = ctx.json.board.edgeLabels as RectEdgeLabelsOverride;
         }
-
-        let rowLabels = ctx.getRowLabels(ctx.json.board.rowLabels, height);
-        if ( (ctx.json.options !== undefined) && (ctx.json.options.includes("reverse-numbers")) ) {
-            rowLabels.reverse();
-        }
-
-        if (ctx.json.options?.includes("swap-labels")) {
-            const scratch = [...columnLabels];
-            columnLabels = [...rowLabels];
-            columnLabels.reverse();
-            rowLabels = [...scratch];
-            rowLabels.reverse();
-        }
+        const edge = resolveRectEdgeLabelStrings(ctx, {
+            width,
+            height,
+            columnLabels: customLabels,
+            rowLabels: ctx.json.board.rowLabels,
+            edgeLabels,
+            options: ctx.json.options,
+        });
 
         // Columns (letters)
         for (let col = 0; col < width; col++) {
             const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
             const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
-            if (! hideHalf) {
-                ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
+            if (shouldDrawRectLabelSide(hiddenSides, "north")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.north[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
-            ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
+            if (shouldDrawRectLabelSide(hiddenSides, "south")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.south[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
+            }
         }
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
             const pointL = {x: grid[row][0].x - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
             const pointR = {x: grid[row][width - 1].x + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][width - 1].y};
-            ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
-            if (! hideHalf) {
-                ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
+            if (shouldDrawRectLabelSide(hiddenSides, "west")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.west[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
+            }
+            if (shouldDrawRectLabelSide(hiddenSides, "east")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.east[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
             }
         }
     }
@@ -646,56 +648,6 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
         }
     }
 
-    if (ctx.options.boardClick !== undefined) {
-        if ( (ctx.json.renderer !== "stacking-offset") && (tileSpace === 0) ) {
-            const rotation = ctx.getRotation();
-            const centre = ctx.getBoardCentre();
-            const clickDeltaX: number = (ctx.json.board.clickDeltaX ?? 0);
-            const clickDeltaY: number = (ctx.json.board.clickDeltaX ?? 0);
-            const originX = grid[0][0].x;
-            const originY = grid[0][0].y;
-            // const maxX = grid[0][grid[0].length - 1].x;
-            // const maxY = grid[grid.length - 1][0].y;
-            const root = ctx.rootSvg;
-            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
-                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
-                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
-                if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                    // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                    // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                        ctx.options.boardClick!(y, x, "");
-                    // }
-                }
-            });
-            if (ctx.options.rotate === 180) {
-                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
-                    const point = rotatePoint(root.point(e.clientX, e.clientY), rotation*-1, centre);
-                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
-                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
-                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
-                        // // try to cull double click handlers with buffer zones by making the generic handler less sensitive at the edges
-                        // if ( (bufferwidth === 0) || ( (point.x >= originX) && (point.x <= maxX) && (point.y >= originY) && (point.y <= maxY) ) ) {
-                            ctx.options.boardClick!(y, x, "");
-                        // }
-                    }
-                });
-            }
-            ctx.rootSvg.click(genericCatcher);
-        } else {
-            const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
-            for (let row = 0; row < grid.length; row++) {
-                for (let col = 0; col < grid[row].length; col++) {
-                    if (graph.hasNode([col, row])) {
-                        const {x, y} = grid[row][col];
-                        const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                        t.click(() => ctx.options.boardClick!(row, col, ""));
-                    }
-                }
-            }
-        }
-    }
-
     // If square `vertex` board, not tiled, and no blocked cells, consider adding star points
     if (style === "vertex" && width === height && tileSpace === 0 && blocked === undefined && (ctx.json.options === undefined || !ctx.json.options.includes("hide-star-points"))) {
         const pts = calcStarPoints(width);
@@ -740,6 +692,45 @@ export const vertex = (ctx: RendererBase): BoardReturn => {
             {x: minx - (delta), y: maxy + (delta)},
         ]
     };
+
+    if (ctx.options.boardClick !== undefined) {
+        if (tileSpace === 0) {
+            const clickDeltaX: number = (ctx.json.board.clickDeltaX ?? 0);
+            const clickDeltaY: number = (ctx.json.board.clickDeltaY ?? 0);
+            const originX = grid[0][0].x;
+            const originY = grid[0][0].y;
+            let genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                const point = boardClickLocalPoint(board, e.clientX, e.clientY);
+                const x = Math.floor((point.x - (originX - (cellsize / 2))) / cellsize);
+                const y = Math.floor((point.y - (originY - (cellsize / 2))) / cellsize);
+                if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
+                    ctx.options.boardClick!(y, x, "");
+                }
+            });
+            if (ctx.options.rotate === 180) {
+                genericCatcher = ((e: { clientX: number; clientY: number; }) => {
+                    const point = boardClickLocalPoint(board, e.clientX, e.clientY);
+                    const x = width - Math.floor((point.x - (originX - (cellsize / 2))) / cellsize) - 1;
+                    const y = height - Math.floor((point.y - (originY - (cellsize / 2))) / cellsize) - 1;
+                    if (x >= 0 - clickDeltaX && x < width + clickDeltaX && y >= 0 - clickDeltaY && y < height + clickDeltaY) {
+                        ctx.options.boardClick!(y, x, "");
+                    }
+                });
+            }
+            attachBoardNearestClick(board, genericCatcher, boardFill);
+        } else {
+            const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    if (graph.hasNode([col, row])) {
+                        const {x, y} = grid[row][col];
+                        const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
+                        t.click(() => ctx.options.boardClick!(row, col, ""));
+                    }
+                }
+            }
+        }
+    }
 
     return {grid, boardFill};
 }

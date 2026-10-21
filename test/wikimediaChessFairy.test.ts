@@ -5,6 +5,7 @@ import fs from "node:fs";
 function extractGlyphBlock(source: string, glyphName: string): string {
     const markers = [
         `registerDuotoneGlyph(sheet, "${glyphName}"`,
+        `registerSolidChessGlyph(sheet, "${glyphName}"`,
         `registerDiscFrameGlyph(sheet, "${glyphName}"`,
         `sheet.glyphs.set("${glyphName}"`,
     ];
@@ -27,16 +28,16 @@ function extractGlyphBlock(source: string, glyphName: string): string {
 
 /**
  * Regression guards for Wikimedia fairy-chess solid glyph emit rules.
- * Champion T bars must stay border-slot strokes (open paths with relative h/v segments).
+ * Champion T bars must stay highlight-slot strokes (open paths with relative h/v segments).
  */
 describe("Wikimedia fairy chess import", () => {
-    it("champion solid T uses border slot stroke", () => {
+    it("champion solid T uses highlight slot stroke", () => {
         const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-champion-solid-traditional");
         expect(block).to.include("M18.5 19h8");
         expect(block).to.include("M22.5 19v12");
-        expect(block).to.match(/M18\.5 19h8[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
-        expect(block).to.match(/M22\.5 19v12[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
+        expect(block).to.match(/M18\.5 19h8[\s\S]*\.attr\("data-slot-stroke", "highlight"\)/);
+        expect(block).to.match(/M22\.5 19v12[\s\S]*\.attr\("data-slot-stroke", "highlight"\)/);
     });
 
     it("giraffe solid horns use border stroke slot", () => {
@@ -46,12 +47,12 @@ describe("Wikimedia fairy chess import", () => {
         expect(block).to.match(/m22\.7,11[\s\S]*\.attr\("data-slot-stroke", "border"\)/);
     });
 
-    it("knight solid nose stroke uses border slot like mane highlight", () => {
+    it("knight solid nose stroke uses highlight slot like mane highlight", () => {
         const chessTs = fs.readFileSync("src/sheets/contact/chess.ts", "utf8");
         const block = extractGlyphBlock(chessTs, "chess-knight-solid-traditional");
         expect(block).to.match(/M 24\.55,10\.4[\s\S]*\.stroke\("none"\)/);
         expect(block).to.match(
-            /M 15 15\.5 A 0\.5 1\.5[\s\S]*\.attr\("data-slot-stroke", "border"\)/,
+            /M 15 15\.5 A 0\.5 1\.5[\s\S]*\.attr\("data-slot-stroke", "highlight"\)/,
         );
     });
 
@@ -105,7 +106,7 @@ describe("Wikimedia fairy chess import", () => {
         expect(deckBlock).to.include('fill("#fff")');
         expect(deckBlock).not.to.include('.stroke("none")');
         expect(block).to.match(
-            /m40\.979 26\.006[\s\S]*\.attr\("data-slot-stroke", "border"\)[\s\S]*stroke\(\{color: "#fff", width: 1\}/,
+            /m40\.979 26\.006[\s\S]*\.attr\("data-slot-stroke", "highlight"\)[\s\S]*stroke\(\{color: "#fff", width: 1\}/,
         );
     });
 

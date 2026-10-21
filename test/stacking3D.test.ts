@@ -159,11 +159,12 @@ describe("Stacking-3D renderer", () => {
         type Projectable = Stacking3DRenderer & { project(x: number, y: number): [number, number] };
         const project = (renderer as Projectable).project.bind(renderer);
         const grid = rectOfRects({ gridHeight: 3, gridWidth: 3, cellSize: 50 });
+        const board = draw.findOne("#board") as Svg;
         const fireClickAtCell = (row: number, col: number): void => {
             const { x, y } = grid[row][col];
             const [px, py] = project(x, y);
-            draw.point = () => ({ x: px, y: py });
-            draw.fire("click", { clientX: px, clientY: py });
+            board.point = () => ({ x: px, y: py });
+            board.fire("click", { clientX: px, clientY: py });
         };
 
         fireClickAtCell(1, 1);

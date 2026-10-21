@@ -254,7 +254,10 @@ export class StackingOffsetRenderer extends RendererBase {
                     }
                     const use = usePieceAt({svg: group, piece, cellsize: this.cellsize, x, y, scalingFactor: 0.85});
                     if ( (this.options.boardClick !== undefined) && (! this.json.options?.includes("no-piece-click")) ) {
-                        use.click((e : Event) => {this.options.boardClick!(row, col, idx.toString()); e.stopPropagation();});
+                        use.click((e: Event) => {
+                            this.options.boardClick!(row, col, idx.toString());
+                            e.stopPropagation?.();
+                        });
                     } else {
                         use.attr({"pointer-events": "none"});
                     }

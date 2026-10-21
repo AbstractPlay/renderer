@@ -1,7 +1,7 @@
 import { IPoint, IPolyPolygon } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
 import { hexOfTri as hexOfTriGrid } from "../grids/index.js";
-import { BoardReturn, createGridlineLayers } from "./index.js";
+import { attachNearestGridPointClick, BoardReturn, createGridlineLayers } from "./index.js";
 import { offsetPolygon } from "../common/plotting.js";
 
 export const hexOfTri = (ctx: RendererBase): BoardReturn => {
@@ -165,23 +165,6 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
         }
     }
 
-    if (ctx.options.boardClick !== undefined) {
-        // moving to click catchers across the board to make arbitrary rotation easier
-        const tiles = board.group().id("tiles");
-        const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
-        for (let row = 0; row < grid.length; row++) {
-            for (let col = 0; col < grid[row].length; col++) {
-                const found = blocked?.find(b => b.row === row && b.col === col);
-                if (found !== undefined) {
-                    continue;
-                }
-                const {x, y} = grid[row][col];
-                const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                t.click(() => ctx.options.boardClick!(row, col, ""));
-            }
-        }
-    }
-
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid});
 
     // build backFill
@@ -238,6 +221,10 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
             type: "poly",
             points: offsetPolygon([ptWideL, ptOtherL, ptOtherR, ptWideR], cellsize / 1.5),
         };
+    }
+
+    if (ctx.options.boardClick !== undefined) {
+        attachNearestGridPointClick(board, grid, boardFill, ctx.options.boardClick, { blocked });
     }
 
     return {grid, boardFill};

@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "$id": "https://www.abstractplay.com/schemas/rendergame/0-7-0.json#",
+    "$id": "https://www.abstractplay.com/schemas/rendergame/0-8-0.json#",
     "title": "AP Render Rep",
     "description": "Games on the Abstract Play service must produce representations of the play area based on this schema. The front-end renderer will then translate that into various forms. Detailed documentation is difficult within a JSON document (e.g., no multi-line strings allowed), so see the website for standalone documentation.",
     "$defs": {
@@ -599,7 +599,7 @@
             ]
         },
         "sheetGlyphPaintMap": {
-            "description": "Per-slot colours for sheet artwork slots (fill, border, detail, …).",
+            "description": "Per-slot colours for sheet artwork slots (fill, border, detail, highlight, …). See glyph-slots.md per glyph.",
             "type": "object",
             "additionalProperties": { "$ref": "#/$defs/paintEntry" }
         },
@@ -815,11 +815,102 @@
             },
             "additionalProperties": false
         },
+        "glyphDefsEntry": {
+            "description": "Shared custom vector art referenced by legend layers via `def`. Markup is sanitized at render time; tag paint regions with `data-slot-fill` / `data-slot-stroke` like sheet glyphs.",
+            "type": "object",
+            "required": ["viewBox", "markup"],
+            "properties": {
+                "viewBox": {
+                    "description": "Symbol viewBox as `[minX, minY, width, height]`.",
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "minItems": 4,
+                    "maxItems": 4
+                },
+                "markup": {
+                    "description": "Inner SVG fragment (paths and primitive shapes only). Not a full `<svg>` document.",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "customGlyph": {
+            "description": "A legend layer that references shared art in `glyphDefs`. Use `paint` like sheet glyphs; markup must declare slot bindings.",
+            "type": "object",
+            "required": ["def"],
+            "properties": {
+                "scale": {
+                    "description": "A number representing how you want the glyph proportionately scaled. Numbers <1 will shrink the glyph. Numbers >1 will enlarge it.",
+                    "type": "number",
+                    "default": 1
+                },
+                "opacity": {
+                    "description": "Layer opacity multiplier on the placed glyph (0–1).",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1
+                },
+                "rotate": {
+                    "description": "A number between -360 and 360 representing the degrees to rotate the glyph. Negative values rotate counterclockwise.",
+                    "anyOf": [
+                        { "type": "number", "minimum": -360, "maximum": 360 },
+                        { "type": "null" }
+                    ],
+                    "default": 0
+                },
+                "orientation": {
+                    "description": "Determines how the piece (usually a text element) is reorientated after rotation is done.",
+                    "enum": ["vertical", "fluid"],
+                    "default": "fluid"
+                },
+                "flipx": {
+                    "description": "Flips x coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "flipy": {
+                    "description": "Flips the y coordinates",
+                    "type": "boolean",
+                    "default": false
+                },
+                "nudge": {
+                    "description": "The number of units to nudge the glyph from centre.",
+                    "type": "object",
+                    "properties": {
+                        "relativeTo": {
+                            "description": "Nudge coordinate system.",
+                            "enum": ["piece", "glyph"]
+                        },
+                        "dx": { "type": "number", "default": 0 },
+                        "dy": { "type": "number", "default": 0 }
+                    },
+                    "additionalProperties": false
+                },
+                "def": {
+                    "description": "Key into the render root `glyphDefs` map.",
+                    "type": "string",
+                    "pattern": "^\\S+$"
+                },
+                "paint": { "$ref": "#/$defs/sheetGlyphPaintMap" },
+                "colour": { "$ref": "#/$defs/glyphPaintColour" },
+                "colour2": {
+                    "deprecated": true,
+                    "description": "Deprecated — use paint.border or paint.detail. Maps like sheet glyphs (default border).",
+                    "anyOf": [
+                        { "$ref": "#/$defs/colourResolvable" },
+                        { "$ref": "#/$defs/gradient" }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
         "glyph": {
             "description": "An individual glyph with options, used in the `legend` property.",
             "oneOf": [
                 { "$ref": "#/$defs/sheetGlyph" },
-                { "$ref": "#/$defs/textGlyph" }
+                { "$ref": "#/$defs/textGlyph" },
+                { "$ref": "#/$defs/customGlyph" }
             ]
         },
         "polymatrix": {
@@ -3592,6 +3683,37 @@
                         "type": "string"
                     }
                 },
+                "edgeLabels": {
+                    "description": "Only on `squares*` and `vertex` boards. Optional per-edge coordinate label strings (north/south length = `width`, west/east length = `height`). Omitted sides use the shared `columnLabels` / `rowLabels` sequences after `reverse-*` and `swap-labels`; provided values are literal and are not transformed again.",
+                    "type": "object",
+                    "properties": {
+                        "north": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "south": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "east": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "west": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "labelStyle": {
                     "description": "Currently only applies to hex fields",
                     "enum": [
@@ -3836,12 +3958,54 @@
             ],
             "additionalProperties": false
         },
+        "homeworldsSystemLayout": {
+            "description": "Optional peripheral system placement for the `homeworlds` renderer. Values are in seat/compass frame; the renderer maps `row` or `column` through `options.rotate`. Supply either `row` or `column` (not both). `order` sorts within the band (screen left-to-right for row mode, top-to-bottom for column mode). Omit on home systems. All peripherals must use the same axis or layout is ignored.",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "row": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "order": {
+                            "type": "number"
+                        },
+                        "column": false
+                    },
+                    "required": [
+                        "row"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "column": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "order": {
+                            "type": "number"
+                        },
+                        "row": false
+                    },
+                    "required": [
+                        "column"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
         "boardHomeworlds": {
             "description": "The required schema for the `homeworlds` renderer. It supports 4 players and colours. The `board` property describes the systems. The `pieces` property describes the pieces.",
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
+                    "layout": {
+                        "$ref": "#/$defs/homeworldsSystemLayout"
+                    },
                     "name": {
                         "description": "The name of the system. For simplicity, no whitespace, no weird characters, and 1–25 characters in length.",
                         "type": "string",
@@ -4038,6 +4202,223 @@
                 "height"
             ],
             "additionalProperties": false
+        },
+        "compositeLayoutAlign": {
+            "type": "string",
+            "enum": [
+                "start",
+                "center",
+                "end"
+            ],
+            "default": "center"
+        },
+        "compositeLayout": {
+            "description": "Arrangement of independent render panels in a composite document.",
+            "type": "object",
+            "properties": {
+                "arrangement": {
+                    "enum": [
+                        "row",
+                        "column",
+                        "grid"
+                    ]
+                },
+                "gap": {
+                    "description": "Space between panels, in default cell-size units (50px per unit).",
+                    "$ref": "#/$defs/positiveNumber"
+                },
+                "columns": {
+                    "description": "Required when `arrangement` is `grid`. Panels fill left-to-right, top-to-bottom.",
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "align": {
+                    "$ref": "#/$defs/compositeLayoutAlign"
+                }
+            },
+            "required": [
+                "arrangement"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "arrangement": {
+                                "const": "grid"
+                            }
+                        },
+                        "required": [
+                            "arrangement"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "columns"
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "compositePanelRotate": {
+            "type": "integer",
+            "enum": [
+                0,
+                90,
+                180,
+                270
+            ]
+        },
+        "compositePanel": {
+            "description": "One independent board render plus layout metadata.",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "$ref": "#/$defs/renderLabel"
+                },
+                "rotate": {
+                    "$ref": "#/$defs/compositePanelRotate"
+                },
+                "render": {
+                    "description": "A complete single-board render representation.",
+                    "$ref": "#"
+                }
+            },
+            "required": [
+                "id",
+                "render"
+            ],
+            "additionalProperties": false
+        },
+        "compositeCellRef": {
+            "description": "A cell on a specific composite panel (logical row/col in that panel's pieces grid).",
+            "type": "object",
+            "properties": {
+                "panel": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "row": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "col": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "panel",
+                "row",
+                "col"
+            ],
+            "additionalProperties": false
+        },
+        "compositeAnnotation": {
+            "description": "Annotation spanning one or more panels. Targets use compositeCellRef; draw in composite SVG space above all panels.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "move",
+                        "line",
+                        "dots",
+                        "outline"
+                    ]
+                },
+                "targets": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/compositeCellRef"
+                    }
+                },
+                "style": {
+                    "enum": [
+                        "solid",
+                        "dashed"
+                    ]
+                },
+                "strokeWidth": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "colour": {
+                    "$ref": "#/$defs/colourResolvable"
+                },
+                "arrow": {
+                    "type": "boolean"
+                },
+                "anchors": {
+                    "type": "boolean"
+                },
+                "size": {
+                    "type": "number"
+                },
+                "dashed": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "dotShape": {
+                    "enum": [
+                        "circle",
+                        "ring",
+                        "ring-large",
+                        "chevron",
+                        "explosion"
+                    ]
+                },
+                "rotation": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "type",
+                "targets"
+            ],
+            "additionalProperties": false
+        },
+        "APRenderComposite": {
+            "description": "Multiple independent boards in one SVG. Use `renderComposite` in the renderer package; each `panels[].render` validates as a normal render rep.",
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "const": "composite"
+                },
+                "layout": {
+                    "$ref": "#/$defs/compositeLayout"
+                },
+                "panels": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/compositePanel"
+                    }
+                },
+                "annotations": {
+                    "description": "Cross-panel annotations (arrows, lines, dots, outlines). Within-panel annotations stay on panels[].render.annotations.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/compositeAnnotation"
+                    }
+                }
+            },
+            "required": [
+                "kind",
+                "layout",
+                "panels"
+            ],
+            "additionalProperties": false
         }
     },
     "type": "object",
@@ -4065,12 +4446,16 @@
             "default": "default"
         },
         "options": {
-            "description": "A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers on `squares*` and `vertex` boards; on `circular-wheel*` boards it replaces default letter labels around the circumference with numbers `1` through `n`. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.",
+            "description": "A list of flags to pass to the renderer. The `hide-labels` option hides all external row/column labels. The `hide-labels-half` option only applies to boards with double labelling (e.g., square boards), and it hides the labels on the top and right of the board. On `squares*` and `vertex` boards, `hide-labels-north`, `hide-labels-south`, `hide-labels-west`, and `hide-labels-east` hide labels on that board edge (grid north = row 0); `hide-labels-half` is equivalent to north plus east. `no-border` hides the very outside border of the square boards. The `hw-*` options are for Homeworlds. The option `clickable-edges` only applies to rect-of-hex and `squares*` boards and makes the individual edges clickable. The option `reverse-letters` reverses the order of the column or row displaying letters. The option `reverse-numbers` does the same for numerical labelling. The option `swap-labels` swaps the position of the letters and numbers on `squares*` and `vertex` boards; on `circular-wheel*` boards it replaces default letter labels around the circumference with numbers `1` through `n`. The option `no-piece-click` disables all click handling of pieces; instead only the board cells themselves detect the clicks.",
             "type": "array",
             "items": {
                 "enum": [
                     "hide-labels",
                     "hide-labels-half",
+                    "hide-labels-north",
+                    "hide-labels-south",
+                    "hide-labels-east",
+                    "hide-labels-west",
                     "hide-star-points",
                     "no-border",
                     "hw-light",
@@ -4085,6 +4470,13 @@
                     "no-iso-depth-shade",
                     "no-iso-cell-footprint"
                 ]
+            }
+        },
+        "glyphDefs": {
+            "description": "Shared custom SVG definitions referenced by legend layers (`def`). Keys are definition ids; values hold `viewBox` and sanitized `markup`.",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/glyphDefsEntry"
             }
         },
         "legend": {

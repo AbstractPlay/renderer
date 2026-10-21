@@ -27,6 +27,7 @@ import {
     applySlotPaint,
     applyTextGlyphFill,
     collectPatternsFromGlyphPaint,
+    isCustomGlyph,
     normalizeGlyphPaint,
     normalizeTextGlyphPaint,
     TEXT_GLYPH_BASE_FONT_SIZE,
@@ -46,6 +47,8 @@ import {
     resolveColour2SlotForGlyph,
 } from "../sheets/registry/glyphRegistry.js";
 import { getGlyphDefinitionMeta } from "../sheets/registry/defineGlyph.js";
+import { inferSlotsFromSymbol } from "../sheets/registry/inferSlots.js";
+import { buildCustomGlyphSymbol } from "../glyphs/loadCustomGlyphSymbol.js";
 import { applyProceduralShadedPaint, isOrbShadingProfile } from "./orbShading.js";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys.js";
@@ -887,6 +890,23 @@ export abstract class RendererBase {
         throw new Error("The glyph '" + glyph + "' could not be found in the requested sheets: " + this.options.sheets.join(", "));
     }
 
+    protected loadCustomGlyph(defId: string, canvas?: Svg): SVGSymbol {
+        if (this.json === undefined) {
+            throw new Error("Object in an invalid state!");
+        }
+        const entry = this.json.glyphDefs?.[defId];
+        if (entry === undefined) {
+            throw new Error(`Custom glyph definition "${defId}" was not found in glyphDefs.`);
+        }
+        if (canvas === undefined) {
+            if (this.rootSvg === undefined) {
+                throw new Error("Object in an invalid state!");
+            }
+            canvas = this.rootSvg;
+        }
+        return buildCustomGlyphSymbol(entry, defId, canvas);
+    }
+
     /**
      * Layer glyphs into a parent group (legend composite or isometric face overlay).
      */
@@ -953,6 +973,21 @@ export abstract class RendererBase {
                     if (i >= 0) {
                         baseScale = this.options.glyphmap[i][2];
                     }
+                }
+            } else if (isCustomGlyph(g)) {
+                const defId = g.def;
+                const colour2Slot = "border";
+                const normalized = normalizeGlyphPaint(g, colour2Slot)!;
+                const cacheKey = [
+                    defId, layout, paintFingerprint(normalized.paint),
+                ].join("\u0000");
+                const already = this.glyphCache.get(cacheKey);
+                if (already !== undefined) {
+                    got = already;
+                    shared = true;
+                } else {
+                    got = this.loadCustomGlyph(defId, layout === "isoFace" ? parent : this.rootSvg);
+                    this.glyphCache.set(cacheKey, got);
                 }
             } else if (("text" in g) && (g.text !== undefined) && (g.text.length > 0)) {
                 const symbolParent = layout === "isoFace" ? (parent.defs() as Svg) : parent;
@@ -1073,6 +1108,31 @@ export abstract class RendererBase {
                             knownSlots,
                         });
                     }
+                } else if (isCustomGlyph(g)) {
+                    const defId = g.def;
+                    const colour2Slot = "border";
+                    const normalized = normalizeGlyphPaint(g, colour2Slot)!;
+                    const slotMeta = inferSlotsFromSymbol(got, colour2Slot);
+                    const knownSlots = Object.keys(slotMeta);
+                    applySlotDefaults(got, normalized.paint, (symbol) => {
+                        this.applyContextStylesToGlyphSymbol(symbol);
+                    });
+
+                    let sheetCellSize = got.viewbox().height;
+                    if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                        sheetCellSize = got.attr("data-cellsize") as number;
+                        if ((sheetCellSize === null) || (sheetCellSize === undefined)) {
+                            throw new Error(`The custom glyph "${defId}" does not contain the necessary information for scaling.`);
+                        }
+                    }
+
+                    applySlotPaint(got, normalized.paint, paintApplier, {
+                        sheetCellSize,
+                        colour2Slot,
+                        slotted,
+                        glyphName: defId,
+                        knownSlots,
+                    });
                 } else if (("text" in g) && (g.text !== undefined)) {
                     applyTextGlyphFill(
                         got,
@@ -1089,8 +1149,6 @@ export abstract class RendererBase {
                         { fontSize: TEXT_GLYPH_BASE_FONT_SIZE },
                     );
                 }
-            } else if (("name" in g) && (g.name !== undefined)) {
-                this.applyContextStylesToGlyphSymbol(got);
             }
 
             let layerOpacity = 1;
@@ -1104,6 +1162,8 @@ export abstract class RendererBase {
                 }
                 const colour2Slot = resolveColour2SlotForGlyph(resolvedGlyphName, this.options.sheets);
                 layerOpacity = normalizeGlyphPaint(g, colour2Slot)!.layerOpacity;
+            } else if (isCustomGlyph(g)) {
+                layerOpacity = normalizeGlyphPaint(g, "border")!.layerOpacity;
             } else if (("text" in g) && (g.text !== undefined) && (g.text.length > 0)) {
                 layerOpacity = normalizeTextGlyphPaint(g).layerOpacity;
             } else if (g.opacity !== undefined) {
@@ -1119,7 +1179,7 @@ export abstract class RendererBase {
             let layerIsoFaceX = isoFaceOriginX;
             let layerIsoFaceY = isoFaceOriginY;
             if (layout === "isoFace") {
-                if (("name" in g) && (g.name !== undefined)) {
+                if ((("name" in g) && (g.name !== undefined)) || isCustomGlyph(g)) {
                     layerIsoFaceDrawSize = isoFaceGlyphDrawSize(
                         got as unknown as Svg,
                         isoFaceBasis,

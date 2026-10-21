@@ -2,8 +2,13 @@
 import { Box, StrokeData, Svg, Use } from "@svgdotjs/svg.js";
 import { rectOfRects } from "../grids/index.js";
 import type { IPoint } from "../grids/_base.js";
-import { APRenderRep, AreaHWStash } from "../schemas/schema.js";
+import { APRenderRep, AreaHWStash, HomeworldsSystemLayout } from "../schemas/schema.js";
 import { IRendererOptionsIn, RendererBase } from "./_base.js";
+import {
+    placeExplicitPeriphSystems,
+    resolveExplicitPeriphLayoutAxis,
+    type PeriphSystemLayout,
+} from "./homeworldsPeriphLayout.js";
 import { placeAreaTitleAt } from "../common/areaLabelText.js";
 import { usePieceAt } from "../common/plotting.js";
 
@@ -22,6 +27,8 @@ interface ISystem {
     stars: string[];
     ships: string[];
     highlight?: number;
+    layout?: HomeworldsSystemLayout;
+    boardIndex?: number;
 }
 
 /**
@@ -99,7 +106,11 @@ export class HomeworldsRenderer extends RendererBase {
                 stars: [...sys.stars],
                 // tslint:disable-next-line: object-literal-sort-keys
                 ships: [...shps],
+                boardIndex: i,
             };
+            if (sys.layout !== undefined) {
+                node.layout = sys.layout;
+            }
             if ( ("annotations" in this.json) && (this.json.annotations !== undefined) ) {
                 const note = this.json.annotations.find((n) => ("system" in n) && (n.system === node.name));
                 if (note !== undefined) {
@@ -157,48 +168,42 @@ export class HomeworldsRenderer extends RendererBase {
             maxPeriphWidths[size-1] = Math.max(maxPeriphWidths[size-1], svg.width() as number);
         });
 
-        // Now plot those systems on the game board
-        // Place peripheral systems first
-        const sysSort = (a: ISystem, b: ISystem): number => {
-            const aSize = parseInt(a.stars[0][1], 10);
-            const bSize = parseInt(b.stars[0][1], 10);
-            return aSize - bSize;
-            // if (aSize === bSize) {
-            //     return a.name.localeCompare(b.name);
-            // } else {
-            //     if (aSize < bSize) {
-            //         return -1;
-            //     } else {
-            //         return 1;
-            //     }
-            // }
-        }
-        // plot into three columns, one for each size
         const vbuffer = 12.5;
         const hbuffer = 12.5;
-        let yPlace = 0;
-        let xPlace = 0;
-        let maxColumnHeight = 0;
-        for (const starSize of [1,2,3]) {
-            yPlace = 0;
-            const maxWidth = maxPeriphWidths[starSize - 1];
-            const systems = [...sysPeriph.filter(s => parseInt(s.stars[0][1], 10) === starSize)].sort(sysSort);
-            for (const sys of systems) {
-                const id = `#_sysPeriph_${sys.name}`;
-                const system = this.rootSvg.findOne(id) as Svg;
-                if ( (system === null) || (system === undefined) ) {
-                    throw new Error(`Could not find the requested system (${id}). This should never happen`);
-                }
-                const width = system.width() as number;
-                system.dmove(xPlace + ((maxWidth - width) / 2), yPlace);
-                yPlace += system.height() as number + vbuffer;
-            }
-            maxColumnHeight = Math.max(maxColumnHeight, yPlace);
-            if (systems.length > 0) {
-                xPlace += maxPeriphWidths[starSize - 1] + hbuffer;
-            }
+        const explicitAxis = resolveExplicitPeriphLayoutAxis(sysPeriph);
+        const anyLayout = sysPeriph.some((s) => s.layout !== undefined);
+        if (anyLayout && explicitAxis === null) {
+            console.warn("homeworlds peripheral layout incomplete or mixed—falling back to star-size columns");
         }
-        yPlace = maxColumnHeight;
+        let xPlace = 0;
+        let yPlace = 0;
+        if (explicitAxis !== null) {
+            const layoutSystems: PeriphSystemLayout[] = sysPeriph.map((s) => ({
+                name: s.name,
+                boardIndex: s.boardIndex ?? 0,
+                layout: s.layout!,
+            }));
+            const block = placeExplicitPeriphSystems(
+                this.rootSvg,
+                layoutSystems,
+                explicitAxis,
+                rotation,
+                vbuffer,
+                hbuffer,
+            );
+            xPlace = block.width;
+            yPlace = block.height;
+        } else {
+            const block = HomeworldsRenderer.placePeriphStarColumns(
+                this.rootSvg,
+                sysPeriph,
+                maxPeriphWidths,
+                vbuffer,
+                hbuffer,
+            );
+            xPlace = block.width;
+            yPlace = block.height;
+        }
 
         // Place home systems
         let minx = 0;
@@ -375,6 +380,46 @@ export class HomeworldsRenderer extends RendererBase {
         }
         // width, height
         return [Math.max(...seatMap.values()), [...seatMap.keys()].length];
+    }
+
+    private static placePeriphStarColumns(
+        rootSvg: Svg,
+        sysPeriph: ISystem[],
+        maxPeriphWidths: [number, number, number],
+        vbuffer: number,
+        hbuffer: number,
+    ): { width: number; height: number } {
+        const sysSort = (a: ISystem, b: ISystem): number => {
+            const aSize = parseInt(a.stars[0][1], 10);
+            const bSize = parseInt(b.stars[0][1], 10);
+            if (aSize !== bSize) {
+                return aSize - bSize;
+            }
+            return (a.boardIndex ?? 0) - (b.boardIndex ?? 0);
+        };
+        let yPlace = 0;
+        let xPlace = 0;
+        let maxColumnHeight = 0;
+        for (const starSize of [1, 2, 3]) {
+            yPlace = 0;
+            const maxWidth = maxPeriphWidths[starSize - 1];
+            const systems = [...sysPeriph.filter(s => parseInt(s.stars[0][1], 10) === starSize)].sort(sysSort);
+            for (const sys of systems) {
+                const id = `#_sysPeriph_${sys.name}`;
+                const system = rootSvg.findOne(id) as Svg;
+                if ( (system === null) || (system === undefined) ) {
+                    throw new Error(`Could not find the requested system (${id}). This should never happen`);
+                }
+                const width = system.width() as number;
+                system.dmove(xPlace + ((maxWidth - width) / 2), yPlace);
+                yPlace += system.height() as number + vbuffer;
+            }
+            maxColumnHeight = Math.max(maxColumnHeight, yPlace);
+            if (systems.length > 0) {
+                xPlace += maxPeriphWidths[starSize - 1] + hbuffer;
+            }
+        }
+        return { width: xPlace, height: maxColumnHeight };
     }
 
     /**

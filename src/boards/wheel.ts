@@ -1,7 +1,6 @@
 import { Element as SVGElement, StrokeData } from "@svgdotjs/svg.js";
 import { GridPoints, IPolyPath, IPolyPolygon } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import { ptDistance, rotatePoint } from "../common/plotting.js";
 import tinycolor from "tinycolor2";
 import {
     IWheelArgs,
@@ -13,7 +12,7 @@ import {
     wheelPolys,
     wheelPolysInterlaced,
 } from "../grids/wheel.js";
-import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { attachNearestGridPointClick, BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 
 type WheelStyle =
     | "circular-wheel"
@@ -87,42 +86,6 @@ function deriveBoardFill(grid: GridPoints, cellsize: number): IPolyPolygon {
             {x: minx - delta, y: maxy + delta},
         ],
     };
-}
-
-function nearestGridClick(
-    ctx: RendererBase,
-    grid: GridPoints,
-    blocked: Blocked | undefined,
-    rowFilter?: (row: number) => boolean,
-): void {
-    const rotation = ctx.getRotation();
-    const centre = ctx.getBoardCentre();
-    const root = ctx.rootSvg!;
-    const handler = (e: { clientX: number; clientY: number; }) => {
-        const clicked = rotatePoint(root.point(e.clientX, e.clientY), rotation * -1, centre);
-        const closest = {dist: Infinity, row: null as null | number, col: null as null | number};
-        for (let row = 0; row < grid.length; row++) {
-            if (rowFilter !== undefined && !rowFilter(row)) {
-                continue;
-            }
-            for (let col = 0; col < grid[row].length; col++) {
-                if (isBlocked(blocked, row, col)) {
-                    continue;
-                }
-                const pt = grid[row][col];
-                const dist = ptDistance(pt.x, pt.y, clicked.x, clicked.y);
-                if (dist < closest.dist) {
-                    closest.dist = dist;
-                    closest.row = row;
-                    closest.col = col;
-                }
-            }
-        }
-        if (closest.dist !== Infinity && closest.row !== null && closest.col !== null) {
-            ctx.options.boardClick!(closest.row, closest.col, "");
-        }
-    };
-    root.click(handler);
 }
 
 export const wheel = (ctx: RendererBase): BoardReturn => {
@@ -363,16 +326,15 @@ export const wheel = (ctx: RendererBase): BoardReturn => {
         }
     }
 
-    if (ctx.options.boardClick !== undefined) {
-        if (verticesMode) {
-            nearestGridClick(ctx, grid, blocked);
-        } else if (!spacesMode) {
-            nearestGridClick(ctx, grid, blocked);
-        }
-    }
-
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys});
 
     const boardFill = deriveBoardFill(grid, cellsize);
+    if (ctx.options.boardClick !== undefined) {
+        if (verticesMode || !spacesMode) {
+            attachNearestGridPointClick(board, grid, boardFill, ctx.options.boardClick, {
+                blocked,
+            });
+        }
+    }
     return {grid, polys, boardFill};
 };
