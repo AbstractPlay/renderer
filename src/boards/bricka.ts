@@ -2,7 +2,7 @@ import { IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { IPoint} from "../grids/_base.js";
 import { RendererBase } from "../renderers/_base.js";
 import { Graph, SquareOrthGraph } from "../graphs/index.js";
-import { BoardReturn, CompassDirection, createGridlineLayers } from "./index.js";
+import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill } from "./index.js";
 
 export const bricka = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) || (ctx.json.board === null) ) {
@@ -245,6 +245,11 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
     });
 
     /* Everything generated, now do the actual drawing */
+
+    // Do boardfill before the markers
+    const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
+    layers.fill.polygon([...boardEdges.values()].map((poly) => (poly.points)).flat().map((ipt) => ([ipt.x, ipt.y])).flat()).fill(hexFill!).opacity(hexOpacity);
+
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys: polys, boardEdges: boardEdges});
 
 
