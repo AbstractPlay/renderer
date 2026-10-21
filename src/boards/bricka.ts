@@ -3,6 +3,13 @@ import { IPoint} from "../grids/_base.js";
 import { RendererBase } from "../renderers/_base.js";
 import { Graph, SquareOrthGraph } from "../graphs/index.js";
 import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill } from "./index.js";
+import {
+    hiddenRectLabelSides,
+    resolveRectEdgeLabelStrings,
+    shouldDrawRectLabelSide,
+    type RectEdgeLabelsOverride,
+} from "./rectEdgeLabels.js";
+import { BoardBasic } from "../schemas/schema.js";
 
 export const bricka = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) || (ctx.json.board === null) ) {
@@ -45,26 +52,49 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
         labelOpacity = ctx.json.board.labelOpacity;
     }
 
-    const labels = board.group().id("labels");
-    // Columns (letters)
-    const columnLabels = ctx.getLabels(undefined, width);
-    for (let col = 0; col < width; col++) {
-        const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize) };
-        const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize) };
-        ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
-        ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
-    }
+    if ( (! ctx.json.options) || (! ctx.json.options.includes("hide-labels") ) ) {
+        const hiddenSides = hiddenRectLabelSides(ctx.json.options);
+        const labels = board.group().id("labels");
+        let customLabels: string[]|undefined;
+        if ( ("columnLabels" in ctx.json.board) && (ctx.json.board.columnLabels !== undefined) ) {
+            customLabels = ctx.json.board.columnLabels;
+        }
+        let edgeLabels: RectEdgeLabelsOverride | undefined;
+        if ( ("edgeLabels" in ctx.json.board) && (ctx.json.board.edgeLabels !== undefined) ) {
+            edgeLabels = ctx.json.board.edgeLabels as RectEdgeLabelsOverride;
+        }
+        const edge = resolveRectEdgeLabelStrings(ctx, {
+            width,
+            height,
+            columnLabels: customLabels,
+            rowLabels: (ctx.json.board as BoardBasic).rowLabels,
+            edgeLabels,
+            options: ctx.json.options,
+        });
 
-    // Rows (numbers)
-    const rowLabels: string[] = [];
-    for (let row = 0; row < height; row++) {
-        rowLabels.push((height - row).toString());
-    }
-    for (let row = 0; row < height; row++) {
-        const pointL = {x: grid[row][0].x - (cellsize), y: grid[row][0].y};
-        const pointR = {x: grid[row][width - 1].x + (cellsize), y: grid[row][width - 1].y};
-        ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
-        ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
+        // Columns (letters)
+        for (let col = 0; col < width; col++) {
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - (cellsize)};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + (cellsize)};
+            if (shouldDrawRectLabelSide(hiddenSides, "north")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.north[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
+            }
+            if (shouldDrawRectLabelSide(hiddenSides, "south")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.south[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
+            }
+        }
+
+        // Rows (numbers)
+        for (let row = 0; row < height; row++) {
+            const pointL = {x: grid[row][0].x - (cellsize), y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + (cellsize), y: grid[row][width - 1].y};
+            if (shouldDrawRectLabelSide(hiddenSides, "west")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.west[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
+            }
+            if (shouldDrawRectLabelSide(hiddenSides, "east")) {
+                ctx.applyCoordinateLabelStyle(labels.text(edge.east[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);
+            }
+        }
     }
 
 
