@@ -66,7 +66,7 @@ import {
 } from "../common/buttonBar.js";
 import { attachMarkerPulse } from "../common/markerPulse.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
-import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, eleven, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
+import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, eleven, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, bricka, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
 import {
     glyphForLayoutRotation,
     glyphKeepsUpright,
@@ -281,6 +281,7 @@ export interface IMarkBoardOptions {
     hexWidth?: number;
     hexHeight?: number;
     polys?: Poly[][];
+    boardEdges?: Map<CompassDirection, IPolyPolygon>;
     cairoStart?: "H"|"V";
 }
 
@@ -2260,6 +2261,7 @@ export abstract class RendererBase {
         if (opts.polys !== undefined) {
             polys = opts.polys;
         }
+        const boardEdges: Map<CompassDirection, IPolyPolygon> | undefined = opts.boardEdges;
 
         if ( (this.json === undefined) || (this.rootSvg === undefined) ) {
             throw new Error("Object in an invalid state!");
@@ -3340,6 +3342,21 @@ export abstract class RendererBase {
                                 pts.push(...realgrid.map(row => row[row.length - 1]))
                         }
                         targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
+                    } else if (style === "bricka" && boardEdges !== undefined) {
+                        if (boardEdges.has(marker.edge)) {
+                            const pts: IPoint[] = boardEdges.get(marker.edge)!.points;
+                            targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
+                            pts.forEach(
+                                (pt) => {
+                                    targetGroup.circle(baseStroke * 10)
+                                        .attr({ 'pointer-events': 'none' })
+                                        .fill(colour)
+                                        .opacity(opacity)
+                                        .stroke({width: 0})
+                                        .center(pt.x, pt.y);
+                                }
+                            );
+                        }
                     }
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;
@@ -3636,6 +3653,9 @@ export abstract class RendererBase {
                     break;
                 case "onyx":
                     ({ grid: gridPoints, boardFill } = onyx(this));
+                    break;
+                case "bricka":
+                    ({ grid: gridPoints, polys, boardFill } = bricka(this));
                     break;
                 case "snubsquare-cells":
                     ({ grid: gridPoints, polys, boardFill } = snubSquareCells(this));
