@@ -2,7 +2,15 @@ import { IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { IPoint} from "../grids/_base.js";
 import { RendererBase } from "../renderers/_base.js";
 import { Graph, SquareOrthGraph } from "../graphs/index.js";
-import { BoardReturn, CompassDirection, createGridlineLayers, getBoardFill } from "./index.js";
+import {
+    attachNearestGridPointClick,
+    BoardClickBlockedCell,
+    BoardReturn,
+    CompassDirection,
+    createGridlineLayers,
+    getBoardFill,
+} from "./index.js";
+import { offsetPolygon } from "../common/plotting.js";
 import {
     hiddenRectLabelSides,
     resolveRectEdgeLabelStrings,
@@ -10,6 +18,19 @@ import {
     type RectEdgeLabelsOverride,
 } from "./rectEdgeLabels.js";
 import { BoardBasic } from "../schemas/schema.js";
+
+const BRICKA_OUTLINE_EDGE_ORDER: CompassDirection[] = ["W", "NW", "NE", "E", "SE", "SW"];
+
+function brickaOutlineFromEdges(boardEdges: Map<CompassDirection, IPolyPolygon>): IPoint[] {
+    const points: IPoint[] = [];
+    for (const dir of BRICKA_OUTLINE_EDGE_ORDER) {
+        const seg = boardEdges.get(dir);
+        if (seg !== undefined) {
+            points.push(...seg.points);
+        }
+    }
+    return points;
+}
 
 export const bricka = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) || (ctx.json.board === null) ) {
@@ -211,7 +232,7 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
     let NE = [...NW]
     NE.reverse();
     NE = NE.map(([x, y]) => ([x, height - y - 1]));
-    const rightpt = [6, 12]
+    const rightpt = [6, height - 1]
     let SE = [...NE]
     SE.reverse();
     SE = SE.map(([x, y]) => ([width - x - 1, y]));
@@ -276,9 +297,15 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
 
     /* Everything generated, now do the actual drawing */
 
+    const outline = brickaOutlineFromEdges(boardEdges);
+    const boardFill: IPolyPolygon = {
+        type: "poly",
+        points: offsetPolygon(outline, cellsize / 1.5),
+    };
+
     // Do boardfill before the markers
     const [hexFill, hexOpacity] = getBoardFill(ctx, "white");
-    layers.fill.polygon([...boardEdges.values()].map((poly) => (poly.points)).flat().map((ipt) => ([ipt.x, ipt.y])).flat()).fill(hexFill!).opacity(hexOpacity);
+    layers.fill.polygon(outline.map((p) => `${p.x},${p.y}`).join(" ")).fill(hexFill!).opacity(hexOpacity);
 
     ctx.markBoard({svgGroup: gridlines, preGridLines: true, grid, polys: polys, boardEdges: boardEdges});
 
@@ -310,21 +337,19 @@ export const bricka = (ctx: RendererBase): BoardReturn => {
         }
     );
 
-    if (ctx.options.boardClick !== undefined) {
-        const tiles = board.group().id("tiles");
-        const tile = ctx.rootSvg.defs().rect(ctx.cellsize, ctx.cellsize).fill(ctx.options.colourContext.background).opacity(0).id("_clickCatcher");
-
-        graph.graph.forEachNode(
-            (node) => {
-                const [row, col]: number[] = node.split(",").map(s => parseInt(s, 10));
-                const {x, y} = grid[row][col];
-                const t = tiles.use(tile).dmove(x - (cellsize / 2), y - (cellsize / 2));
-                t.click(() => ctx.options.boardClick!(row, col, ""));
-            }
-        );
-    }
-
     ctx.markBoard({svgGroup: gridlines, preGridLines: false, grid, polys: polys, boardEdges: boardEdges});
+
+    if (ctx.options.boardClick !== undefined) {
+        const blocked: BoardClickBlockedCell[] = [];
+        for (let row = 0; row < height; row++) {
+            for (let col = 0; col < width; col++) {
+                if (!graph.hasNode([row, col])) {
+                    blocked.push({ row, col });
+                }
+            }
+        }
+        attachNearestGridPointClick(board, grid, boardFill, ctx.options.boardClick, { blocked });
+    }
 
     return {grid, polys};
 }

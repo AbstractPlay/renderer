@@ -3342,21 +3342,9 @@ export abstract class RendererBase {
                                 pts.push(...realgrid.map(row => row[row.length - 1]))
                         }
                         targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
-                    } else if (style === "bricka" && boardEdges !== undefined) {
-                        if (boardEdges.has(marker.edge)) {
-                            const pts: IPoint[] = boardEdges.get(marker.edge)!.points;
-                            targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
-                            pts.forEach(
-                                (pt) => {
-                                    targetGroup.circle(baseStroke * 10)
-                                        .attr({ 'pointer-events': 'none' })
-                                        .fill(colour)
-                                        .opacity(opacity)
-                                        .stroke({width: 0})
-                                        .center(pt.x, pt.y);
-                                }
-                            );
-                        }
+                    } else if (boardEdges !== undefined && boardEdges.has(marker.edge)) {
+                        const pts: IPoint[] = boardEdges.get(marker.edge)!.points;
+                        targetGroup.polyline(pts.map(pt => `${pt.x},${pt.y}`).join(" ")).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"}).fill("none");
                     }
                 } else if (marker.type === "fence") {
                     let colour = this.options.colourContext.strokes;
