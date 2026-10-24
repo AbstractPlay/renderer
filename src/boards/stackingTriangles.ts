@@ -158,6 +158,7 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
             maxY = Math.max(maxY, y);
         });
     });
+    const labelGapHalf = ctx.scaleCoordinateLabelGap(cellsize * 0.5);
 
     // Columns
     for (let col = 0; col < width; col++) {
@@ -172,11 +173,11 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
             let pointTop: IPoint;
             let pointBottom: IPoint;
             if (inc === 0) {
-                pointTop = {x: hex.points[4].x, y: minY - (cellsize * 0.5)};
-                pointBottom = {x: hex.points[4].x, y: maxY + (cellsize * 0.5)};
+                pointTop = {x: hex.points[4].x, y: minY - labelGapHalf};
+                pointBottom = {x: hex.points[4].x, y: maxY + labelGapHalf};
             } else {
-                pointTop = {x: cx, y: minY - (cellsize * 0.5)};
-                pointBottom = {x: cx, y: maxY + (cellsize * 0.5)};
+                pointTop = {x: cx, y: minY - labelGapHalf};
+                pointBottom = {x: cx, y: maxY + labelGapHalf};
             }
             if (! skipped.includes(label)) {
                 if (! hideHalf) {
@@ -198,17 +199,17 @@ export const stackingTriangles = (ctx: RendererBase): BoardReturn => {
             let pointR: IPoint;
             switch (inc) {
                 case 0:
-                    pointL = {x: minX - (cellsize * 0.5), y: cy};
-                    pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                    pointL = {x: minX - labelGapHalf, y: cy};
+                    pointR = {x: maxX + labelGapHalf, y: cy};
                     break;
                 case 1:
-                    pointL = {x: minX - (cellsize * 0.5), y: hex.points[1].y};
-                    pointR = {x: maxX + (cellsize * 0.5), y: hex.points[1].y};
+                    pointL = {x: minX - labelGapHalf, y: hex.points[1].y};
+                    pointR = {x: maxX + labelGapHalf, y: hex.points[1].y};
                     localOpacity *= 0.66;
                     break;
                 case 2:
-                    pointL = {x: minX - (cellsize * 0.5), y: hex.points[2].y};
-                    pointR = {x: maxX + (cellsize * 0.5), y: hex.points[2].y};
+                    pointL = {x: minX - labelGapHalf, y: hex.points[2].y};
+                    pointR = {x: maxX + labelGapHalf, y: hex.points[2].y};
                     localOpacity *= 0.33;
                     break;
                 default:

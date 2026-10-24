@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-10-22
+## [1.0.0-ci] - 2026-10-24
 
 ### Added
 
+- **Halo markers:** per-segment `degrees` and `skip` for variable arc spans (mixed mode splits remaining angle among segments without `degrees`); **`bricka`** supports elliptical stroke halos with `circular-start` / marker `offset`; optional **`wedge`** on the halo marker draws filled pie slices behind the board (default is stroked arcs on all supported styles, including `hex-of-*`).
+- **`board.labelOutset`:** multiplier on coordinate-label outward gap (`1` default) on boards that use scalar label spacing; buffer margins on squares/vertex unchanged.
 - **Bricka board (`bricka`)** — fixed 13×13 intersection grid with pentagonal cell floods, diagonal border `edge` markers (`NW`/`NE`/…), and shared rect-style coordinate labels.
 - **Homeworlds peripheral `layout`:** Optional per-system `layout` on `board` entries (`row` or `column`, 0-based seat frame, optional `order`). When every peripheral supplies a valid same-axis layout, the renderer places bands using `options.rotate`; otherwise star-size columns unchanged. Docs: [Homeworlds layout](docs/homeworlds-layout.md).
 - **`squares*` and `vertex` edge labels:** `hide-labels-north`, `hide-labels-south`, `hide-labels-west`, and `hide-labels-east` hide coordinate labels on one board edge; `hide-labels-half` remains north plus east. Optional `board.edgeLabels` overrides strings per edge (literal; other sides still use `columnLabels` / `rowLabels` and `reverse-*` / `swap-labels`).
@@ -26,6 +28,8 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Fixed
 
+- **Halo stroke arcs:** When the halo ring is circular (`rx` ≈ `ry`), arc endpoints use the same table-facing projection as `circular-*` boards instead of the elliptical helper (fixes skewed segments on square playfields such as Bricka).
+- **`board.labelOutset`:** Scales only the margin beyond the playfield edge; `0` places labels just outside the board instead of on the cells.
 - **Glyph paint cache:** Reusing a styled sheet symbol across legend keys no longer re-applies theme `data-context-*` defaults on the shared symbol (which overwrote `paint.border` and similar slot colours on the second key).
 - **Line-grid and `squares-stacked` `boardClick`:** A single `#board-click-catcher` overlay (same shape as `boardFill`, above grid chrome, below pieces) receives clicks in Firefox and other engines where group `pointer-events: bounding-box` misses open playfield; nearest-vertex / sub-cell coordinate math is unchanged on vertex, snubsquare, onyx, pentagonal, bent-tri, star, hex-of-tri, rect-of-tri, circular-wheel (vertex modes), and `squares-stacked`. `stacking-offset` still reports per-stack piece indices on `#pieces` above the overlay. Fixes upper Shibumi layers where `pointer-events: none` pieces left no hit target under half-offset positions.
 - **`boardClick` with seat/board rotation:** Generic handlers on `#board` use `boardClickLocalPoint` (`board.point()` only); dropping the extra `rotatePoint` pass fixes wrong cells after `rotateBoard` (regression from the composite click-handler move).

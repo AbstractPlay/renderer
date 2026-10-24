@@ -902,6 +902,10 @@ export interface BoardBasic {
    */
   labelScale?: number;
   /**
+   * Multiplier on the outward margin beyond the playfield edge (1 = each style's default gap). At 0, labels sit just outside the edge; values between 0 and 1 scale only the extra margin, not the centre-to-edge distance. Buffer margins on squares/vertex boards are not scaled. Minimum 0.
+   */
+  labelOutset?: number;
+  /**
    * The opacity of lines drawn to construct the board.
    */
   strokeOpacity?: number;
@@ -1279,20 +1283,28 @@ export interface MarkerOutline {
 }
 export interface MarkerHalo {
   /**
-   * Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments
+   * Draws an encompassing circle or ellipse around the board (circular-*, conical-hex*, hex-of-*, bricka). Usually used to indicate ownership of segments.
    */
   type: "halo";
   /**
-   * If only one segment is given, then a single circle will be drawn. Otherwise, the circle will be divided into equal chunks and drawn in the order specified, proceeding clockwise. The first segment will align with the `circular-start` given in `board` (`0` by default).
+   * If only one segment is given without `degrees`, a single full circle is drawn. Otherwise segments are placed clockwise from `circular-start` + marker `offset`. Omit `degrees` on every segment for equal 360/n slices. Set `degrees` per segment for custom arc width; segments without `degrees` share the remaining angle equally. When every segment has `degrees`, their sum may be less than 360 to leave a gap. Use `skip` to advance the cursor without drawing.
    *
    * @minItems 1
    */
   segments: [
     {
       /**
-       * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+       * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string. Not required when `skip` is true.
        */
-      colour: ColourResolvable;
+      colour?: ColourResolvable;
+      /**
+       * Arc span for this segment in degrees (clockwise from the halo start angle).
+       */
+      degrees?: number;
+      /**
+       * When true, this segment's arc length is reserved but nothing is drawn.
+       */
+      skip?: boolean;
       /**
        * 1 is fully opaque. 0 is fully transparent.
        */
@@ -1301,9 +1313,17 @@ export interface MarkerHalo {
     },
     ...{
       /**
-       * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.
+       * The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string. Not required when `skip` is true.
        */
-      colour: ColourResolvable;
+      colour?: ColourResolvable;
+      /**
+       * Arc span for this segment in degrees (clockwise from the halo start angle).
+       */
+      degrees?: number;
+      /**
+       * When true, this segment's arc length is reserved but nothing is drawn.
+       */
+      skip?: boolean;
       /**
        * 1 is fully opaque. 0 is fully transparent.
        */
@@ -1330,6 +1350,10 @@ export interface MarkerHalo {
    * Fill is drawn before grid lines, segments are drawn after grid lines.
    */
   fill?: ColourResolvable;
+  /**
+   * When true, each segment is a filled pie slice from the halo centre to the ring (drawn behind the board). When false or omitted, segments are stroked arcs above the grid.
+   */
+  wedge?: boolean;
 }
 export interface MarkerLine {
   /**

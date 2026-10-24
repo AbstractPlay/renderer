@@ -93,10 +93,11 @@ export const sowing = (ctx: RendererBase): BoardReturn => {
             columnLabels.reverse();
         }
 
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize);
         // Columns (letters)
         for (let col = 0; col < width; col++) {
-            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - cellsize};
-            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + cellsize};
+            const pointTop = {x: grid[0][col].x, y: grid[0][col].y - labelGap};
+            const pointBottom = {x: grid[height - 1][col].x, y: grid[height - 1][col].y + labelGap};
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointBottom.x, pointBottom.y);
         }
@@ -108,8 +109,8 @@ export const sowing = (ctx: RendererBase): BoardReturn => {
         }
 
         for (let row = 0; row < height; row++) {
-            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
-            const pointR = {x: grid[row][width - 1].x + cellsize, y: grid[row][width - 1].y};
+            const pointL = {x: grid[row][0].x - labelGap, y: grid[row][0].y};
+            const pointR = {x: grid[row][width - 1].x + labelGap, y: grid[row][width - 1].y};
             if (endpits) {
                 pointL.x -= cellsize * shrinkage;
                 pointR.x += cellsize * shrinkage;

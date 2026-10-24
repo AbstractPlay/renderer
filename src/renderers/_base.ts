@@ -65,6 +65,7 @@ import {
     placeButtonBarGlyph,
 } from "../common/buttonBar.js";
 import { attachMarkerPulse } from "../common/markerPulse.js";
+import { haloIsFullCircle, resolveHaloSegmentSpans, HaloSegmentDegreesError } from "../markers/haloSpans.js";
 import { CompassDirection, edges2corners, getBoardFill, BoardReturn } from "../boards/index.js";
 import { cairoCatalan, cairoCollinear, cobweb, conhex, conicalHex, dvgc, eleven, fracturedFlat, hexOfCir, hexOfHex, hexOfTri, hexOfTriF, hexSlanted, moon, onyx, bricka, pentagonal, bentTri, star, pyramidHex, rectOfHex, rectOfTri, snubSquare, snubSquareCells, sowing, squares, squaresDiamonds, squaresStacked, stackingTriangles, vertex, wheel } from "../boards/index.js";
 import {
@@ -2542,219 +2543,215 @@ export abstract class RendererBase {
                         line.attr({ 'pointer-events': 'none' });
                     }
                 } else if (marker.type === "halo") {
-                    /**
-                     * There are two types of halos:
-                     *   - One drawn with line segments around a circular board
-                     *   - One drawn around `hex-of-*` boards where a board backfill is necessary
-                     *     because it draws a solid circle occluded by the board
-                     */
-                    if (! this.json.board.style.startsWith("circular") && ! this.json.board.style.startsWith("conical-hex") && !this.json.board.style.startsWith("hex-of") ) {
+                    if (! this.haloStyleSupported(this.json.board.style) ) {
                         if (this.options.sanitizeMode === "live") {
                             continue;
                         }
-                        throw new Error("The `halo` marker only works with `circular-*`, `conical-hex*`, and `hex-of*` boards.");
+                        throw new Error("The `halo` marker only works with `circular-*`, `conical-hex*`, `hex-of*`, and `bricka` boards.");
                     }
 
-                    // full circle one
-                    if (this.json.board.style.startsWith("hex-of")) {
-                        if (!preGridLines) {
+                    const wedge = marker.wedge === true;
+                    let polys: Poly[][]|undefined;
+                    if (opts.polys !== undefined) {
+                        polys = opts.polys;
+                    }
+                    if (polys === undefined) {
+                        if (this.options.sanitizeMode === "live") {
+                            continue;
+                        }
+                        throw new Error("The `halo` marker requires that the polygons be passed.");
+                    }
 
-                            let polys: Poly[][]|undefined;
-                            if (opts.polys !== undefined) {
-                                polys = opts.polys;
-                            }
-                            if (polys === undefined) {
-                                if (this.options.sanitizeMode === "live") {
-                                    continue;
+                    const boardStyle = this.json.board.style;
+                    let rx = 0;
+                    let ry = 0;
+                    let cx = 0;
+                    let cy = 0;
+                    if (boardStyle.startsWith("hex-of")) {
+                        const union = unionPolys(polys.flat()).map(([x, y]) => { return { x, y }; }) as IPoint[];
+                        const minx = Math.min(...union.map((pt) => pt.x));
+                        const maxx = Math.max(...union.map((pt) => pt.x));
+                        const hullWidth = maxx - minx;
+                        cx = minx + (hullWidth / 2);
+                        const miny = Math.min(...union.map((pt) => pt.y));
+                        const maxy = Math.max(...union.map((pt) => pt.y));
+                        const hullHeight = maxy - miny;
+                        cy = miny + (hullHeight / 2);
+                        const diameter = Math.max(hullHeight, hullWidth) + (this.cellsize / 2);
+                        const r = diameter / 2;
+                        rx = r;
+                        ry = r;
+                    } else if (boardStyle.startsWith("circular") && !boardStyle.endsWith("moon")) {
+                        for (const poly of polys.flat()) {
+                            if (poly.type !== "circle") {
+                                for (const pt of poly.points) {
+                                    rx = rx === undefined ? Math.max(pt.x, pt.y) : Math.max(rx, pt.x, pt.y);
+                                    ry = rx;
                                 }
-                                throw new Error("The `halo` marker requires that the polygons be passed.");
                             }
-                            const union = unionPolys(polys.flat()).map(([x,y]) => {return {x,y}}) as IPoint[];
-                            const minx = Math.min(...union.map(pt => pt.x));
-                            const maxx = Math.max(...union.map(pt => pt.x));
-                            const hullWidth = maxx - minx;
-                            let cx = minx + (hullWidth / 2);
-                            const miny = Math.min(...union.map(pt => pt.y));
-                            const maxy = Math.max(...union.map(pt => pt.y));
-                            const hullHeight = maxy - miny;
-                            let cy = miny + (hullHeight / 2);
-                            const diameter = Math.max(hullHeight, hullWidth) + (this.cellsize / 2);
-                            const r = diameter / 2;
+                        }
+                    } else {
+                        const allCoords: IPoint[] = (polys.flat() as IPolyPolygon[]).map((p) => p.points).flat();
+                        const minx = Math.min(...allCoords.map((pt) => pt.x));
+                        const maxx = Math.max(...allCoords.map((pt) => pt.x));
+                        let miny = Math.min(...allCoords.map((pt) => pt.y));
+                        if (boardStyle.endsWith("narrow")) {
+                            miny -= 15;
+                        }
+                        const maxy = Math.max(...allCoords.map((pt) => pt.y));
+                        const width = maxx - minx;
+                        const height = maxy - miny;
+                        rx = (width / 2);
+                        if (!boardStyle.endsWith("moon")) {
+                            rx *= 1.05;
+                        } else {
+                            rx *= 1.02;
+                        }
+                        const dx = Math.abs(rx - (width / 2));
+                        cx = minx + rx - dx;
+                        ry = (height / 2);
+                        if (!boardStyle.endsWith("moon")) {
+                            ry *= 1.05;
+                        } else {
+                            ry *= 1.02;
+                        }
+                        const dy = Math.abs(ry - (height / 2));
+                        cy = miny + ry - dy;
 
-                            // check for centre nudging
-                            if ("nudge" in marker && marker.nudge !== undefined) {
-                                cx += marker.nudge.dx;
-                                cy += marker.nudge.dy;
-                            }
-
-                            let degStart = 0;
-                            if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
-                                degStart = this.json.board["circular-start"];
-                            }
-                            if ( ("offset" in marker) && (marker.offset !== undefined) ) {
-                                degStart += marker.offset;
-                            }
-                            const phi = 360 / marker.segments.length;
-                            for (let i = 0; i < marker.segments.length; i++) {
-                                const segment: ISegment = marker.segments[i] as ISegment;
-                                let colour = baseColour;
-                                if ( ("colour" in segment) && (segment.colour !== undefined) ) {
-                                    colour = this.resolveColour(segment.colour) as string;
-                                }
-                                let opacity = baseOpacity;
-                                if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
-                                    opacity = segment.opacity;
-                                }
-                                const fill: FillData = {
-                                    color: colour,
-                                    opacity,
-                                };
-                                // if there's only one segment, draw a full circle/ellipse
-                                let haloPoly: SVGCircle|SVGPath;
-                                if (phi === 360) {
-                                    haloPoly = this.rootSvg.circle(r * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill(fill).stroke("none");
-                                }
-                                // otherwise, draw an arc
-                                else {
-                                    const [xleft, yleft] = projectPoint(cx, cy, r, degStart + (phi * i));
-                                    const [xright, yright] = projectPoint(cx, cy, r, degStart + (phi * (i+1)));
-                                    haloPoly = this.rootSvg.path(`M${xleft},${yleft} A ${r} ${r} 0 0 1 ${xright},${yright} L${cx},${cy} L${xleft},${yleft}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill(fill).stroke("none");
-                                }
-                                haloPoly.back();
-                            }
+                        if (boardStyle.endsWith("moon")) {
+                            const max = Math.max(rx, ry);
+                            rx = max;
+                            ry = max;
                         }
                     }
-                    // the line segment one
-                    else {
 
-                        let polys: Poly[][]|undefined;
-                        if (opts.polys !== undefined) {
-                            polys = opts.polys;
+                    if ( ("nudge" in marker) && (marker.nudge !== undefined) ) {
+                        cx += marker.nudge.dx;
+                        cy += marker.nudge.dy;
+                    }
+
+                    if (preGridLines) {
+                        if (!wedge && ("fill" in marker) && (marker.fill !== undefined) ) {
+                            const fill = this.resolveColour(marker.fill) as string;
+                            if (boardStyle.startsWith("circular")) {
+                                targetGroup.circle(rx * 2).fill(fill).center(cx, cy);
+                            } else {
+                                targetGroup.ellipse(rx * 2, ry * 2).fill(fill).center(cx, cy);
+                            }
                         }
-                        if (polys === undefined) {
+                        continue;
+                    }
+
+                    let width = baseStroke;
+                    if ( ("width" in marker) && (marker.width !== undefined) ) {
+                        width = marker.width;
+                    }
+                    const ringRx = wedge ? rx : rx + width / 2;
+                    const ringRy = wedge ? ry : ry + width / 2;
+
+                    let degStart = 0;
+                    if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
+                        degStart = this.json.board["circular-start"];
+                    }
+                    if ( ("offset" in marker) && (marker.offset !== undefined) ) {
+                        degStart += marker.offset;
+                    }
+                    let spans;
+                    try {
+                        spans = resolveHaloSegmentSpans(marker.segments);
+                    } catch (e) {
+                        if (e instanceof HaloSegmentDegreesError) {
                             if (this.options.sanitizeMode === "live") {
                                 continue;
                             }
-                            throw new Error("The `halo` marker requires that the polygons be passed.");
+                            throw e;
                         }
-                        let rx = 0;
-                        let ry = 0;
-                        let cx = 0;
-                        let cy = 0;
-                        if (this.json.board.style.startsWith("circular") && !this.json.board.style.endsWith("moon")) {
-                            for (const poly of polys.flat()) {
-                                if (poly.type !== "circle") {
-                                    for (const pt of poly.points) {
-                                        rx = rx === undefined ? Math.max(pt.x, pt.y) : Math.max(rx, pt.x, pt.y);
-                                        ry = rx;
-                                    }
-                                }
-                            }
-                        } else {
-                            const allCoords: IPoint[] = (polys.flat() as IPolyPolygon[]).map(p => p.points).flat();
-                            const minx = Math.min(...allCoords.map(pt => pt.x));
-                            const maxx = Math.max(...allCoords.map(pt => pt.x));
-                            let miny = Math.min(...allCoords.map(pt => pt.y));
-                            if (this.json.board.style.endsWith("narrow")) {
-                                miny -= 15;
-                            }
-                            const maxy = Math.max(...allCoords.map(pt => pt.y));
-                            const width = maxx - minx;
-                            const height = maxy - miny;
-                            rx = (width / 2)
-                            if (!this.json.board.style.endsWith("moon")) {
-                                rx *= 1.05;
-                            } else {
-                                rx *= 1.02;
-                            }
-                            const dx = Math.abs(rx - (width / 2));
-                            cx = minx + rx - dx;
-                            ry = (height / 2);
-                            if (!this.json.board.style.endsWith("moon")) {
-                                ry *= 1.05;
-                            } else {
-                                ry *= 1.02;
-                            }
-                            const dy = Math.abs(ry - (height / 2));
-                            cy = miny + ry - dy;
+                        throw e;
+                    }
 
-                            if (this.json.board.style.endsWith("moon")) {
-                                const max = Math.max(rx, ry);
-                                rx = max;
-                                ry = max;
-                                // cy++;
-                            }
+                    const haloUsesCircularArc =
+                        boardStyle.startsWith("circular")
+                        || boardStyle.startsWith("hex-of")
+                        || Math.abs(ringRx - ringRy) < 1e-6;
+                    const ringPoint = (deg: number): [number, number] => {
+                        if (haloUsesCircularArc) {
+                            return projectPoint(cx, cy, ringRx, deg);
                         }
-                        if (preGridLines) {
-                            let fill: string|undefined;
-                            if ( ("fill" in marker) && (marker.fill !== undefined) ) {
-                                fill = this.resolveColour(marker.fill) as string;
-                            }
-                            if (fill !== undefined) {
-                                if (this.json.board.style.startsWith("circular")) {
-                                    targetGroup.circle(rx * 2).fill(fill).center(cx,cy);
-                                } else {
-                                    targetGroup.ellipse(rx * 2, ry * 2).fill(fill).center(cx,cy);
-                                }
+                        return projectPointEllipse(cx, cy, ringRx, ringRy, deg);
+                    };
+
+                    const segmentStroke = (segment: ISegment): StrokeData => {
+                        let colour = baseColour;
+                        if ( ("colour" in segment) && (segment.colour !== undefined) ) {
+                            colour = this.resolveColour(segment.colour) as string;
+                        }
+                        let opacity = baseOpacity;
+                        if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
+                            opacity = segment.opacity;
+                        }
+                        const stroke: StrokeData = {
+                            color: colour,
+                            opacity,
+                            width,
+                            linecap: "round",
+                            linejoin: "round",
+                        };
+                        if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
+                            stroke.dasharray = "4";
+                        }
+                        return stroke;
+                    };
+                    const segmentFill = (segment: ISegment): FillData => {
+                        const stroke = segmentStroke(segment);
+                        return { color: stroke.color, opacity: stroke.opacity };
+                    };
+
+                    if (wedge) {
+                        const wedgeLayer = this.rootSvg;
+                        if (haloIsFullCircle(spans)) {
+                            const segment: ISegment = marker.segments[0] as ISegment;
+                            const fill = segmentFill(segment);
+                            if (haloUsesCircularArc) {
+                                wedgeLayer.circle(ringRx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment1`).fill(fill).stroke("none").back();
+                            } else {
+                                wedgeLayer.ellipse(ringRx * 2, ringRy * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment1`).fill(fill).stroke("none").back();
                             }
                         } else {
-                            let width = baseStroke;
-                            if ( ("width" in marker) && (marker.width !== undefined) ) {
-                                width = marker.width;
+                            for (const span of spans) {
+                                if (!span.draw) {
+                                    continue;
+                                }
+                                const segment: ISegment = marker.segments[span.segmentIndex] as ISegment;
+                                const fill = segmentFill(segment);
+                                const [xleft, yleft] = ringPoint(degStart + span.startDeg);
+                                const [xright, yright] = ringPoint(degStart + span.endDeg);
+                                const largeArc = span.spanDeg > 180 ? 1 : 0;
+                                wedgeLayer.path(`M${xleft},${yleft} A ${ringRx} ${ringRy} 0 ${largeArc} 1 ${xright},${yright} L${cx},${cy} L${xleft},${yleft}`)
+                                    .addClass(`aprender-marker-${x2uid(cloned)}-segment${span.segmentIndex + 1}`)
+                                    .fill(fill).stroke("none").back();
                             }
-                            rx += width / 2;
-                            ry += width / 2;
-                            let degStart = 0;
-                            if ( ("circular-start" in this.json.board) && (this.json.board["circular-start"] !== undefined) ) {
-                                degStart = this.json.board["circular-start"];
+                        }
+                    } else if (haloIsFullCircle(spans)) {
+                        const segment: ISegment = marker.segments[0] as ISegment;
+                        const stroke = segmentStroke(segment);
+                        if (boardStyle.startsWith("circular")) {
+                            targetGroup.circle(ringRx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment1`).fill("none").stroke(stroke);
+                        } else {
+                            targetGroup.ellipse(ringRx * 2, ringRy * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment1`).fill("none").stroke(stroke);
+                        }
+                    } else {
+                        for (const span of spans) {
+                            if (!span.draw) {
+                                continue;
                             }
-                            if ( ("offset" in marker) && (marker.offset !== undefined) ) {
-                                degStart += marker.offset;
-                            }
-                            const phi = 360 / marker.segments.length;
-                            for (let i = 0; i < marker.segments.length; i++) {
-                                const segment: ISegment = marker.segments[i] as ISegment;
-                                let colour = baseColour;
-                                if ( ("colour" in segment) && (segment.colour !== undefined) ) {
-                                    colour = this.resolveColour(segment.colour) as string;
-                                }
-                                let opacity = baseOpacity;
-                                if ( ("opacity" in segment) && (segment.opacity !== undefined) ) {
-                                    opacity = segment.opacity;
-                                }
-                                const stroke: StrokeData = {
-                                    color: colour,
-                                    opacity,
-                                    width,
-                                    linecap: "round", linejoin: "round"
-                                };
-                                if ( ("style" in segment) && (segment.style !== undefined) && (segment.style === "dashed") ) {
-                                    stroke.dasharray = "4";
-                                }
-                                // if there's only one segment, draw a full circle/ellipse
-                                if (phi === 360) {
-                                    if (this.json.board.style.startsWith("circular")) {
-                                        targetGroup.circle(rx * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
-                                    } else {
-                                        targetGroup.ellipse(rx * 2, ry * 2).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
-                                    }
-                                }
-                                // otherwise, draw an arc
-                                else {
-                                    let xleft: number;
-                                    let yleft: number;
-                                    let xright: number;
-                                    let yright: number;
-                                    if (this.json.board.style.startsWith("circular")) {
-                                        [xleft, yleft] = projectPoint(cx, cy, rx, degStart + (phi * i));
-                                        [xright, yright] = projectPoint(cx, cy, rx, degStart + (phi * (i+1)));
-                                    } else {
-                                        [xleft, yleft] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * i));
-                                        [xright, yright] = projectPointEllipse(cx, cy, rx, ry, degStart + (phi * (i+1)));
-                                    }
-                                    targetGroup.path(`M${xleft},${yleft} A ${rx} ${ry} 0 0 1 ${xright},${yright}`).addClass(`aprender-marker-${x2uid(cloned)}-segment${i+1}`).fill("none").stroke(stroke);
-                                }
-                            }
+                            const segment: ISegment = marker.segments[span.segmentIndex] as ISegment;
+                            const stroke = segmentStroke(segment);
+                            const [xleft, yleft] = ringPoint(degStart + span.startDeg);
+                            const [xright, yright] = ringPoint(degStart + span.endDeg);
+                            const largeArc = span.spanDeg > 180 ? 1 : 0;
+                            targetGroup.path(`M${xleft},${yleft} A ${ringRx} ${ringRy} 0 ${largeArc} 1 ${xright},${yright}`)
+                                .addClass(`aprender-marker-${x2uid(cloned)}-segment${span.segmentIndex + 1}`)
+                                .fill("none").stroke(stroke);
                         }
                     }
                 } else if (marker.type === "label") {
@@ -3571,6 +3568,45 @@ export abstract class RendererBase {
             scale = board.labelScale;
         }
         return this.coordinateLabelBaseFontSize() * scale;
+    }
+
+    /** Multiplier for outward coordinate-label gap (`board.labelOutset`, default 1). */
+    public labelOutsetMultiplier(): number {
+        const board = this.json?.board;
+        if (
+            board !== null &&
+            board !== undefined &&
+            "labelOutset" in board &&
+            typeof board.labelOutset === "number" &&
+            board.labelOutset >= 0
+        ) {
+            return board.labelOutset;
+        }
+        return 1;
+    }
+
+    /**
+     * Scale a board style's base outward label gap (in px) by {@link labelOutsetMultiplier}.
+     * The first half of the default gap reaches the playfield edge from the cell centre; only the
+     * remainder is scaled so `labelOutset: 0` keeps labels on the margin, not on the cells.
+     */
+    public scaleCoordinateLabelGap(gap: number): number {
+        const m = this.labelOutsetMultiplier();
+        if (m === 1) {
+            return gap;
+        }
+        const minGap = gap * 0.5 + this.boardLabelFontSize() * 0.5;
+        if (m <= 1) {
+            return minGap + (gap - minGap) * m;
+        }
+        return gap * m;
+    }
+
+    protected haloStyleSupported(style: string): boolean {
+        return style.startsWith("circular")
+            || style.startsWith("conical-hex")
+            || style.startsWith("hex-of")
+            || style === "bricka";
     }
 
     public applyCoordinateLabelStyle(

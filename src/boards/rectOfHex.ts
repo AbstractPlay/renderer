@@ -251,6 +251,7 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
             });
         });
 
+        const labelGapHalf = ctx.scaleCoordinateLabelGap(cellsize * 0.5);
         // Columns
         // if flat, columns are straight lines
         // if pointy, place at minimum of first and second row centre points
@@ -260,15 +261,15 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
             let pointTop: IPoint;
             let pointBottom: IPoint;
             if (style.endsWith("-f")) {
-                pointTop = {x: cx, y: minY - (cellsize * 0.5)};
-                pointBottom = {x: cx, y: maxY + (cellsize * 0.5)};
+                pointTop = {x: cx, y: minY - labelGapHalf};
+                pointBottom = {x: cx, y: maxY + labelGapHalf};
             } else {
                 if (style.includes("-even")) {
-                    pointTop = {x: cx - (cellsize * 1), y: minY - (cellsize * 0.5)};
-                    pointBottom = {x: cx - (cellsize * 1), y: maxY + (cellsize * 0.5)};
+                    pointTop = {x: cx - (cellsize * 1), y: minY - labelGapHalf};
+                    pointBottom = {x: cx - (cellsize * 1), y: maxY + labelGapHalf};
                 } else {
-                    pointTop = {x: cx, y: minY - (cellsize * 0.5)};
-                    pointBottom = {x: cx, y: maxY + (cellsize * 0.5)};
+                    pointTop = {x: cx, y: minY - labelGapHalf};
+                    pointBottom = {x: cx, y: maxY + labelGapHalf};
                 }
             }
             if (! hideHalf) {
@@ -286,15 +287,15 @@ export const rectOfHex = (ctx: RendererBase): BoardReturn => {
             let pointL: IPoint;
             let pointR: IPoint;
             if (style.endsWith("-p")) {
-                pointL = {x: minX - (cellsize * 0.5), y: cy};
-                pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                pointL = {x: minX - labelGapHalf, y: cy};
+                pointR = {x: maxX + labelGapHalf, y: cy};
             } else {
                 if (style.includes("-even")) {
-                    pointL = {x: minX - (cellsize * 0.5), y: cy};
-                    pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                    pointL = {x: minX - labelGapHalf, y: cy};
+                    pointR = {x: maxX + labelGapHalf, y: cy};
                 } else {
-                    pointL = {x: minX - (cellsize * 0.5), y: cy};
-                    pointR = {x: maxX + (cellsize * 0.5), y: cy};
+                    pointL = {x: minX - labelGapHalf, y: cy};
+                    pointR = {x: maxX + labelGapHalf, y: cy};
                 }
             }
             ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);

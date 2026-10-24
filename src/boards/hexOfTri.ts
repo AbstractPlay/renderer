@@ -71,6 +71,7 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
         if ( (ctx.json.options !== undefined) && (ctx.json.options.includes("reverse-letters")) ) {
             columnLabels.reverse();
         }
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize);
 
         for (let row = 0; row < grid.length; row++) {
             let leftNum = "1";
@@ -81,8 +82,8 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
                 rightNum = scratch;
             }
 
-            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
-            const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
+            const pointL = {x: grid[row][0].x - labelGap, y: grid[row][0].y};
+            const pointR = {x: grid[row][grid[row].length - 1].x + labelGap, y: grid[row][grid[row].length - 1].y};
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + leftNum), labelColour, labelOpacity).center(pointL.x, pointL.y);
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + rightNum), labelColour, labelOpacity).center(pointR.x, pointR.y);
         }

@@ -456,13 +456,14 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
         const miny = Math.min(...grid.flat().map(pt => pt.y));
         const maxx = Math.max(...grid.flat().map(pt => pt.x));
         const maxy = Math.max(...grid.flat().map(pt => pt.y));
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize);
         for (let col = 0; col < realWidth; col++) {
             const wideRow = start === "W" ? 0 : 1;
             const narrowRow = start === "W" ? 1 : 0;
             const xcol = Math.floor(col / 2);
             const xrow = (col % 2 === 0) ? wideRow : narrowRow;
-            const pointTop = {x: grid[xrow][xcol].x, y: miny - (cellsize) - (show.includes("N") ? bufferwidth : 0)};
-            const pointBottom = {x: grid[xrow][xcol].x, y: maxy + (cellsize) + (show.includes("S") ? bufferwidth : 0)};
+            const pointTop = {x: grid[xrow][xcol].x, y: miny - labelGap - (show.includes("N") ? bufferwidth : 0)};
+            const pointBottom = {x: grid[xrow][xcol].x, y: maxy + labelGap + (show.includes("S") ? bufferwidth : 0)};
             if (! hideHalf) {
                 ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
@@ -471,8 +472,8 @@ export const rectOfTri = (ctx: RendererBase): BoardReturn => {
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
-            const pointL = {x: minx - (cellsize) - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
-            const pointR = {x: maxx + (cellsize) + (show.includes("E") ? bufferwidth : 0), y: grid[row][0].y};
+            const pointL = {x: minx - labelGap - (show.includes("W") ? bufferwidth : 0), y: grid[row][0].y};
+            const pointR = {x: maxx + labelGap + (show.includes("E") ? bufferwidth : 0), y: grid[row][0].y};
             ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
                 ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);

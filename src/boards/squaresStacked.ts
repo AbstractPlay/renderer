@@ -76,6 +76,7 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
             rowLabels.reverse();
         }
 
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize);
         if (ctx.json.options?.includes("swap-labels")) {
             const scratch = [...columnLabels];
             columnLabels = [...rowLabels];
@@ -94,11 +95,11 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
                 opacity *= 0.5;
             }
             if (col % 2 === 0) {
-                pointTop = {x: grid[0][realcol].x, y: grid[0][realcol].y - cellsize};
-                pointBottom = {x: grid[height - 1][realcol].x, y: grid[height - 1][realcol].y + cellsize};
+                pointTop = {x: grid[0][realcol].x, y: grid[0][realcol].y - labelGap};
+                pointBottom = {x: grid[height - 1][realcol].x, y: grid[height - 1][realcol].y + labelGap};
             } else {
-                pointTop = {x: grid[0][realcol].x+half, y: grid[0][realcol].y - cellsize};
-                pointBottom = {x: grid[height - 1][realcol].x+half, y: grid[height - 1][realcol].y + cellsize};
+                pointTop = {x: grid[0][realcol].x+half, y: grid[0][realcol].y - labelGap};
+                pointBottom = {x: grid[height - 1][realcol].x+half, y: grid[height - 1][realcol].y + labelGap};
             }
             if (! hideHalf) {
                 ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, opacity).center(pointTop.x, pointTop.y);
@@ -116,11 +117,11 @@ export const squaresStacked = (ctx: RendererBase): BoardReturn => {
                 opacity *= 0.5;
             }
             if (row % 2 === 0) {
-                pointL = {x: grid[realrow][0].x - cellsize, y: grid[realrow][0].y};
-                pointR = {x: grid[realrow][width - 1].x + cellsize, y: grid[realrow][width - 1].y};
+                pointL = {x: grid[realrow][0].x - labelGap, y: grid[realrow][0].y};
+                pointR = {x: grid[realrow][width - 1].x + labelGap, y: grid[realrow][width - 1].y};
             } else {
-                pointL = {x: grid[realrow][0].x - cellsize, y: grid[realrow][0].y+half};
-                pointR = {x: grid[realrow][width - 1].x + cellsize, y: grid[realrow][width - 1].y+half};
+                pointL = {x: grid[realrow][0].x - labelGap, y: grid[realrow][0].y+half};
+                pointR = {x: grid[realrow][width - 1].x + labelGap, y: grid[realrow][width - 1].y+half};
             }
             ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, opacity).center(pointL.x, pointL.y);
             if (! hideHalf) {

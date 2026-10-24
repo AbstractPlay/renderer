@@ -2762,25 +2762,35 @@
             "type": "object",
             "properties": {
                 "type": {
-                    "description": "Only used for `circular-*` and `conical-hex*` boards. Draws an encompassing circle around the board, usually used to indicate ownership of segments",
+                    "description": "Draws an encompassing circle or ellipse around the board (circular-*, conical-hex*, hex-of-*, bricka). Usually used to indicate ownership of segments.",
                     "enum": [
                         "halo"
                     ]
                 },
                 "segments": {
-                    "description": "If only one segment is given, then a single circle will be drawn. Otherwise, the circle will be divided into equal chunks and drawn in the order specified, proceeding clockwise. The first segment will align with the `circular-start` given in `board` (`0` by default).",
+                    "description": "If only one segment is given without `degrees`, a single full circle is drawn. Otherwise segments are placed clockwise from `circular-start` + marker `offset`. Omit `degrees` on every segment for equal 360/n slices. Set `degrees` per segment for custom arc width; segments without `degrees` share the remaining angle equally. When every segment has `degrees`, their sum may be less than 360 to leave a gap. Use `skip` to advance the cursor without drawing.",
                     "type": "array",
                     "minItems": 1,
                     "items": {
                         "type": "object",
                         "properties": {
                             "colour": {
-                                "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string.",
+                                "description": "The colour of the line. Can be either a number (which will be interpreted as a built-in player colour) or a hexadecimal colour string. Not required when `skip` is true.",
                                 "anyOf": [
                                     {
                                         "$ref": "#/$defs/colourResolvable"
                                     }
                                 ]
+                            },
+                            "degrees": {
+                                "description": "Arc span for this segment in degrees (clockwise from the halo start angle).",
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                            },
+                            "skip": {
+                                "description": "When true, this segment's arc length is reserved but nothing is drawn.",
+                                "type": "boolean",
+                                "default": false
                             },
                             "opacity": {
                                 "description": "1 is fully opaque. 0 is fully transparent.",
@@ -2797,9 +2807,6 @@
                                 "default": "solid"
                             }
                         },
-                        "required": [
-                            "colour"
-                        ],
                         "additionalProperties": false
                     }
                 },
@@ -2838,6 +2845,11 @@
                             "$ref": "#/$defs/colourResolvable"
                         }
                     ]
+                },
+                "wedge": {
+                    "description": "When true, each segment is a filled pie slice from the halo centre to the ring (drawn behind the board). When false or omitted, segments are stroked arcs above the grid.",
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "required": [
@@ -3556,6 +3568,12 @@
                     "description": "Multiplier on the default row and column coordinate label font size (16px on most boards; rect-of-hex styles use cell size / 5). Defaults to 1.",
                     "type": "number",
                     "exclusiveMinimum": 0,
+                    "default": 1
+                },
+                "labelOutset": {
+                    "description": "Multiplier on the outward margin beyond the playfield edge (1 = each style's default gap). At 0, labels sit just outside the edge; values between 0 and 1 scale only the extra margin, not the centre-to-edge distance. Buffer margins on squares/vertex boards are not scaled. Minimum 0.",
+                    "type": "number",
+                    "minimum": 0,
                     "default": 1
                 },
                 "strokeOpacity": {

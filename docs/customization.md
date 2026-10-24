@@ -52,6 +52,10 @@ Optional number on `boardBasic` (default `1`). Row/column coordinate labels unde
 
 `baseFontSize × labelScale` (base is topology-specific; many rect grids use a fixed px default, hex rects use `cellsize / 5`).
 
+## `labelOutset`
+
+Optional multiplier on the **extra** outward margin after the label reaches the playfield edge (`1` = each style’s default gap, `0` = flush with the edge, still outside the cells). Does not scale optional `board.buffer` margin on squares/vertex boards.
+
 ## Markers
 
 - Omitted in `render.board` → keep game markers; live sanitize may drop unsupported types.

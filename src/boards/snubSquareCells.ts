@@ -194,11 +194,11 @@ export const snubSquareCells = (ctx: RendererBase): BoardReturn => {
             columnLabels.reverse();
         }
 
-        const buffer = cellsize * 0.25;
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize * 0.25);
         // Rows (combined labels)
         for (let row = 0; row < grid.length; row++) {
-            const pointL = {x: minx - buffer, y: grid[row][0].y};
-            const pointR = {x: maxx + buffer, y: grid[row][grid[row].length - 1].y};
+            const pointL = {x: minx - labelGap, y: grid[row][0].y};
+            const pointR = {x: maxx + labelGap, y: grid[row][grid[row].length - 1].y};
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[row] + "1"), labelColour, labelOpacity).center(pointL.x, pointL.y);
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[row] + polys[row].length.toString()), labelColour, labelOpacity).center(pointR.x, pointR.y);
         }

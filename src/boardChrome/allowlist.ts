@@ -6,6 +6,7 @@ export const BOARD_CHROME_BOARD_KEYS = new Set([
     "labelColour",
     "labelOpacity",
     "labelScale",
+    "labelOutset",
     "strokeColour",
     "strokeWeight",
     "strokeOpacity",

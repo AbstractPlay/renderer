@@ -331,10 +331,11 @@ export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
             rowLabels.reverse();
         }
         const realwidth = width * 2;
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize * 1.25);
         // Columns (letters)
         for (let col = 0; col < realwidth; col += 2) {
-            const pointTop = {x: (grid[0][col].x + grid[0][col+1].x) / 2, y: ((grid[0][col].y + grid[0][col+1].y) / 2) - (cellsize * 1.25)};
-            const pointBottom = {x: (grid[height - 1][col].x + grid[height - 1][col+1].x) / 2, y: ((grid[height - 1][col].y + grid[height - 1][col+1].y) / 2) + (cellsize * 1.25)};
+            const pointTop = {x: (grid[0][col].x + grid[0][col+1].x) / 2, y: ((grid[0][col].y + grid[0][col+1].y) / 2) - labelGap};
+            const pointBottom = {x: (grid[height - 1][col].x + grid[height - 1][col+1].x) / 2, y: ((grid[height - 1][col].y + grid[height - 1][col+1].y) / 2) + labelGap};
             if (! hideHalf) {
                 ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col / 2]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
@@ -343,8 +344,8 @@ export const cairoCollinear = (ctx: RendererBase): BoardReturn => {
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
-            const pointL = {x: ((grid[row][0].x + grid[row][1].x) / 2) - (cellsize * 1.25), y: (grid[row][0].y + grid[row][1].y) / 2};
-            const pointR = {x: ((grid[row][realwidth - 1].x + grid[row][realwidth - 2].x) / 2) + (cellsize * 1.25), y: (grid[row][realwidth - 1].y + grid[row][realwidth - 2].y) / 2};
+            const pointL = {x: ((grid[row][0].x + grid[row][1].x) / 2) - labelGap, y: (grid[row][0].y + grid[row][1].y) / 2};
+            const pointR = {x: ((grid[row][realwidth - 1].x + grid[row][realwidth - 2].x) / 2) + labelGap, y: (grid[row][realwidth - 1].y + grid[row][realwidth - 2].y) / 2};
             ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
                 ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);

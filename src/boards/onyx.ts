@@ -112,11 +112,11 @@ export const onyx = (ctx: RendererBase): BoardReturn => {
             rowLabels.reverse();
         }
 
-        const buffer = cellsize; // * 0.75;
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize);
         // Columns (letters)
         for (let col = 0; col < width; col++) {
-            const pointTop = {x: gridOrig[0][col].x, y: miny - buffer};
-            const pointBottom = {x: gridOrig[height - 1][col].x, y: maxy + buffer};
+            const pointTop = {x: gridOrig[0][col].x, y: miny - labelGap};
+            const pointBottom = {x: gridOrig[height - 1][col].x, y: maxy + labelGap};
             if (! hideHalf) {
                 ctx.applyCoordinateLabelStyle(labels.text(columnLabels[col]), labelColour, labelOpacity).center(pointTop.x, pointTop.y);
             }
@@ -125,8 +125,8 @@ export const onyx = (ctx: RendererBase): BoardReturn => {
 
         // Rows (numbers)
         for (let row = 0; row < height; row++) {
-            const pointL = {x: minx - buffer, y: gridOrig[row][0].y};
-            const pointR = {x: maxx + buffer, y: gridOrig[row][width - 1].y};
+            const pointL = {x: minx - labelGap, y: gridOrig[row][0].y};
+            const pointR = {x: maxx + labelGap, y: gridOrig[row][width - 1].y};
             ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointL.x, pointL.y);
             if (! hideHalf) {
                 ctx.applyCoordinateLabelStyle(labels.text(rowLabels[row]), labelColour, labelOpacity).center(pointR.x, pointR.y);

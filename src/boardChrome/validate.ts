@@ -64,6 +64,13 @@ export function validateRenderCustomization(
         }
     }
 
+    if (boardChrome.labelOutset !== undefined) {
+        const lo = boardChrome.labelOutset;
+        if (typeof lo !== "number" || lo < 0) {
+            errors.push("labelOutset must be a number greater than or equal to 0.");
+        }
+    }
+
     if (errors.length > 0) {
         return { ok: false, errors, warnings, sanitized: null };
     }

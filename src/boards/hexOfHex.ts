@@ -120,6 +120,7 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
             columnLabels.reverse();
         }
 
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize);
         for (let row = 0; row < height; row++) {
             let leftNum = "1";
             let rightNum = grid[row].length.toString();
@@ -129,8 +130,8 @@ export const hexOfHex = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardRetur
                 rightNum = scratch;
             }
 
-            const pointL = {x: grid[row][0].x - cellsize, y: grid[row][0].y};
-            const pointR = {x: grid[row][grid[row].length - 1].x + cellsize, y: grid[row][grid[row].length - 1].y};
+            const pointL = {x: grid[row][0].x - labelGap, y: grid[row][0].y};
+            const pointR = {x: grid[row][grid[row].length - 1].x + labelGap, y: grid[row][grid[row].length - 1].y};
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + leftNum), labelColour, labelOpacity).center(pointL.x, pointL.y);
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + rightNum), labelColour, labelOpacity).center(pointR.x, pointR.y);
         }

@@ -169,6 +169,7 @@ export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
         if ( (ctx.json.options !== undefined) && (ctx.json.options.includes("reverse-letters")) ) {
             columnLabels.reverse();
         }
+        const labelGap = ctx.scaleCoordinateLabelGap(cellsize);
 
         for (let row = 0; row < gridBase.length - 1; row++) {
             let leftNum = "1";
@@ -179,8 +180,8 @@ export const hexOfTriF = (ctx: RendererBase): BoardReturn => {
                 rightNum = scratch;
             }
 
-            const pointL = {x: gridBase[row][0].x - cellsize, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
-            const pointR = {x: gridBase[row][gridBase[row].length - 1].x + cellsize, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
+            const pointL = {x: gridBase[row][0].x - labelGap, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
+            const pointR = {x: gridBase[row][gridBase[row].length - 1].x + labelGap, y: (gridBase[row][0].y + gridBase[row+1][0].y) / 2};
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + leftNum), labelColour, labelOpacity).center(pointL.x, pointL.y);
             ctx.applyCoordinateLabelStyle(labels.text(columnLabels[height - row - 1] + rightNum), labelColour, labelOpacity).center(pointR.x, pointR.y);
         }
