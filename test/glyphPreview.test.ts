@@ -6,13 +6,14 @@ import { CoreSheet } from "../src/sheets/contact/core.js";
 import {
     buildGlyphSymbolForContactSheet,
     usesContactSheetProceduralPreview,
-} from "../src/renderers/glyphPreview.js";
+} from "../src/glyphs/preview.js";
 import { invokeGlyphBuild } from "../src/sheets/registry/defineGlyph.js";
 
 describe("glyphPreview (contact sheet)", () => {
-    it("only orbs use procedural contact preview", () => {
+    it("procedural orbs and piece-marbled use contact preview shading", () => {
         expect(usesContactSheetProceduralPreview("orb")).to.equal(true);
         expect(usesContactSheetProceduralPreview("orb1")).to.equal(true);
+        expect(usesContactSheetProceduralPreview("piece-marbled")).to.equal(true);
         expect(usesContactSheetProceduralPreview("piece")).to.equal(false);
         expect(usesContactSheetProceduralPreview("orca")).to.equal(false);
     });

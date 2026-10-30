@@ -15,6 +15,8 @@ export const BOARD_CHROME_BOARD_KEYS = new Set([
     "clickDeltaX",
     "clickDeltaY",
     "startLight",
+    "checkeredLight",
+    "checkeredDark",
     "labelGrid",
     "columnLabels",
     "rowLabels",

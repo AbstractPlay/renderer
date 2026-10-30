@@ -13,7 +13,7 @@ import {
     paintColourValue,
     paintFingerprint,
     priorCompositeLayerTint,
-} from "../src/renderers/glyphPaint.js";
+} from "../src/glyphs/paint.js";
 import { normalizeSvgForGlyphCompare } from "./helpers/normalizeSvgForGlyphCompare.js";
 
 const makeDraw = (): Svg => {

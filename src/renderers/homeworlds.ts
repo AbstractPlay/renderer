@@ -8,7 +8,7 @@ import {
     placeExplicitPeriphSystems,
     resolveExplicitPeriphLayoutAxis,
     type PeriphSystemLayout,
-} from "./homeworldsPeriphLayout.js";
+} from "../common/homeworlds/periphLayout.js";
 import { placeAreaTitleAt } from "../common/areaLabelText.js";
 import { usePieceAt } from "../common/plotting.js";
 

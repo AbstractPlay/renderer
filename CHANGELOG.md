@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-10-24
+## [1.0.0-ci] - 2026-10-30
 
 ### Added
 
+- **`squares-checkered` and `circular-wheel-spaces-checkered`:** optional `board.checkeredLight` and `board.checkeredDark` for explicit checker colours at full opacity; omitted or `null` keeps the legacy theme-tinted pattern (per side). Playground `formatting-checkered-colours`; sample [formatting-checkered-colours.json](/renderer/samples/formatting-checkered-colours.json).
+- **`piece-marbled` (core sheet):** procedural checker-style disc; games set `paint.fill` to a player colour (gradient, dark edge, speckles, and veins are renderer-built). Contact sheet uses grey preview shading like orbs. Sample [pieces-marbled.json](/renderer/samples/pieces-marbled.json).
 - **Halo markers:** per-segment `degrees` and `skip` for variable arc spans (mixed mode splits remaining angle among segments without `degrees`); **`bricka`** supports elliptical stroke halos with `circular-start` / marker `offset`; optional **`wedge`** on the halo marker draws filled pie slices behind the board (default is stroked arcs on all supported styles, including `hex-of-*`).
 - **`board.labelOutset`:** multiplier on coordinate-label outward gap (`1` default) on boards that use scalar label spacing; buffer margins on squares/vertex unchanged.
 - **Bricka board (`bricka`)** — fixed 13×13 intersection grid with pentagonal cell floods, diagonal border `edge` markers (`NW`/`NE`/…), and shared rect-style coordinate labels.

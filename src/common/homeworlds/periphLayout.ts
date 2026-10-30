@@ -1,5 +1,5 @@
 import type { Svg } from "@svgdotjs/svg.js";
-import type { HomeworldsSystemLayout } from "../schemas/schema.js";
+import type { HomeworldsSystemLayout } from "../../schemas/schema.js";
 
 export type PeriphLayoutAxis = "row" | "column";
 

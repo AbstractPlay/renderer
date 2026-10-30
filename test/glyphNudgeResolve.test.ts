@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { isTextGlyphLayer, resolveGlyphNudgeRelativeTo } from "../src/renderers/glyphNudge.js";
+import { isTextGlyphLayer, resolveGlyphNudgeRelativeTo } from "../src/glyphs/nudge.js";
 import type { Glyph } from "../src/schemas/schema.js";
 
 describe("resolveGlyphNudgeRelativeTo", () => {

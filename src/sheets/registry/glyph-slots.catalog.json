@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-18T18:06:01.926Z",
+  "generated": "2026-10-30T18:59:00.490Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -701,6 +701,21 @@
         }
       },
       "colour2Slot": "border"
+    },
+    "core:piece-marbled": {
+      "sheet": "core",
+      "name": "piece-marbled",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Base player colour; renderer builds marble gradient and edge."
+        }
+      },
+      "colour2Slot": "border",
+      "paintMode": "proceduralShaded",
+      "shadingProfile": "piece-marbled"
     },
     "core:piece-pentagon": {
       "sheet": "core",

@@ -40,7 +40,7 @@ import {
     symbolHasSlotBindings,
     type GlyphPaintApplier,
     type TextGlyphFillContext,
-} from "./glyphPaint.js";
+} from "../glyphs/paint.js";
 import {
     knownPaintSlotNames,
     proceduralShadingProfile,
@@ -49,7 +49,8 @@ import {
 import { getGlyphDefinitionMeta } from "../sheets/registry/defineGlyph.js";
 import { inferSlotsFromSymbol } from "../sheets/registry/inferSlots.js";
 import { buildCustomGlyphSymbol } from "../glyphs/loadCustomGlyphSymbol.js";
-import { applyProceduralShadedPaint, isOrbShadingProfile } from "./orbShading.js";
+import { applyProceduralShadedPaint, isOrbShadingProfile } from "../glyphs/procedural/orbShading.js";
+import { applyProceduralMarbledPaint, isMarbledShadingProfile } from "../glyphs/procedural/marbledShading.js";
 import tinycolor from "tinycolor2";
 import { unionPolys } from "../common/polys.js";
 import { hex2rgb, rgb2hex, afterOpacity, lighten } from "../common/colours.js";
@@ -81,7 +82,7 @@ import {
     applyPieceGlyphNudge,
     resolveGlyphNudgeRelativeTo,
     rotatePieceNudgeVector,
-} from "./glyphNudge.js";
+} from "../glyphs/nudge.js";
 import {
     computeAnnulusPlacement,
     computeSidebarPlacement,
@@ -1067,22 +1068,26 @@ export abstract class RendererBase {
 
                     const shadingProfile = proceduralShadingProfile(resolvedGlyphName);
                     let slotPaint = normalized.paint;
-                    if (shadingProfile !== undefined && isOrbShadingProfile(shadingProfile)) {
+                    if (shadingProfile !== undefined) {
                         const baseHex = resolvedPaintBaseHex(normalized.paint, paintApplier.resolveFill);
-                        let detailOverride: string | undefined;
-                        if (normalized.paint.detail !== undefined) {
-                            const detailVal = paintColourValue(normalized.paint.detail);
-                            if (detailVal !== undefined) {
-                                const resolvedDetail = paintApplier.resolveFill(
-                                    detailVal as number | string | Gradient | Colourfuncs,
-                                    "#000",
-                                );
-                                if (typeof resolvedDetail === "string") {
-                                    detailOverride = resolvedDetail;
+                        if (isOrbShadingProfile(shadingProfile)) {
+                            let detailOverride: string | undefined;
+                            if (normalized.paint.detail !== undefined) {
+                                const detailVal = paintColourValue(normalized.paint.detail);
+                                if (detailVal !== undefined) {
+                                    const resolvedDetail = paintApplier.resolveFill(
+                                        detailVal as number | string | Gradient | Colourfuncs,
+                                        "#000",
+                                    );
+                                    if (typeof resolvedDetail === "string") {
+                                        detailOverride = resolvedDetail;
+                                    }
                                 }
                             }
+                            applyProceduralShadedPaint(got, shadingProfile, baseHex, detailOverride);
+                        } else if (isMarbledShadingProfile(shadingProfile)) {
+                            applyProceduralMarbledPaint(got, baseHex);
                         }
-                        applyProceduralShadedPaint(got, shadingProfile, baseHex, detailOverride);
                         const fillOpacity =
                             normalized.paint.fill !== undefined ? paintSlotOpacity(normalized.paint.fill) : 1;
                         if (fillOpacity !== 1) {

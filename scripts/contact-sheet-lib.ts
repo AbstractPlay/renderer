@@ -1,6 +1,6 @@
 import { createSVGWindow } from "svgdom";
 import { sheets } from "../src/sheets/index.js";
-import { buildGlyphSymbolForContactSheet } from "../src/renderers/glyphPreview.js";
+import { buildGlyphSymbolForContactSheet } from "../src/glyphs/preview.js";
 import { registerWindow, SVG, Svg } from "@svgdotjs/svg.js";
 
 /** SVG viewBox width (user units at 96 DPI baseline). */

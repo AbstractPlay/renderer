@@ -1,8 +1,8 @@
 import type { Element as SVGElement, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
 import convert from "color-convert";
 import fnv from "fnv-plus";
-import { lighten } from "../common/colours.js";
-import { findBindings } from "./glyphPaint.js";
+import { lighten } from "../../common/colours.js";
+import { findBindings } from "../paint.js";
 
 const convert_rgb = convert.rgb;
 const convert_hex = convert.hex;

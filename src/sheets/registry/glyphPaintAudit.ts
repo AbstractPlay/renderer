@@ -14,7 +14,7 @@ import {
     symbolHasSlotBindings,
     type GlyphPaintApplier,
     type NormalizedPaintMap,
-} from "../../renderers/glyphPaint.js";
+} from "../../glyphs/paint.js";
 import { contactSheets } from "../contact/index.js";
 import type { ISheet } from "../ISheet.js";
 import { getGlyphDefinitionMeta, invokeGlyphBuild } from "./defineGlyph.js";

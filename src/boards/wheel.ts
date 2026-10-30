@@ -1,7 +1,6 @@
 import { Element as SVGElement, StrokeData } from "@svgdotjs/svg.js";
 import { GridPoints, IPolyPath, IPolyPolygon } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
-import tinycolor from "tinycolor2";
 import {
     IWheelArgs,
     resolveWheelArgs,
@@ -13,6 +12,7 @@ import {
     wheelPolysInterlaced,
 } from "../grids/wheel.js";
 import { attachNearestGridPointClick, BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
+import { resolveCheckeredTilePair } from "./checkeredColours.js";
 
 type WheelStyle =
     | "circular-wheel"
@@ -161,18 +161,7 @@ export const wheel = (ctx: RendererBase): BoardReturn => {
 
     if (spacesMode) {
         if (checkered) {
-            const cBg = tinycolor(cellFill ?? ctx.options.colourContext.background);
-            const cFill = tinycolor(ctx.options.colourContext.fill);
-            let lightOpacity = 0;
-            let darkOpacity = baseOpacity * 0.25;
-            let lightColor = cellFill ?? ctx.options.colourContext.background;
-            let darkColor = ctx.options.colourContext.fill;
-            if (cBg.getLuminance() <= cFill.getLuminance()) {
-                lightOpacity = baseOpacity * 0.25;
-                darkOpacity = 0;
-                lightColor = ctx.options.colourContext.fill;
-                darkColor = cellFill ?? ctx.options.colourContext.background;
-            }
+            const { light: lightTile, dark: darkTile } = resolveCheckeredTilePair(ctx, cellFill, baseOpacity);
 
             let startLight = 1;
             if (height % 2 === 0) {
@@ -194,8 +183,8 @@ export const wheel = (ctx: RendererBase): BoardReturn => {
                     const cell = ringPolys[row][col];
                     const dark = col % 2 !== lightCol;
                     drawPolyFill(layers, cell, {
-                        color: dark ? darkColor : lightColor,
-                        opacity: dark ? darkOpacity : lightOpacity,
+                        color: dark ? darkTile.color : lightTile.color,
+                        opacity: dark ? darkTile.opacity : lightTile.opacity,
                     });
                 }
             }

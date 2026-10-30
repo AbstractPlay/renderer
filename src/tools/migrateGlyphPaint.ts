@@ -5,7 +5,7 @@ import {
     normalizeSheetGlyphPaint,
     type NormalizedPaintMap,
     type PaintValue,
-} from "../renderers/glyphPaint.js";
+} from "../glyphs/paint.js";
 import { resolveColour2SlotForGlyph } from "../sheets/registry/glyphRegistry.js";
 
 /** Default sheet search order (matches RendererBase). */

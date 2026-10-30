@@ -1,10 +1,10 @@
-import { Element as SVGElement, Rect as SVGRect, StrokeData, Symbol as SVGSymbol, Use as SVGUse } from "@svgdotjs/svg.js";
+import { Element as SVGElement, Rect as SVGRect, StrokeData, Use as SVGUse } from "@svgdotjs/svg.js";
 import { expandSquareGrid, IPoint, IPolyPolygon, rectOfRects } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
 import { shortenLine } from "../common/plotting.js";
-import tinycolor from "tinycolor2";
 import { MarkerOutline } from "../schemas/schema.js";
 import { boardClickLocalPoint, BoardReturn, CompassDirection, createGridlineLayers, getBoardFill, IBuffer } from "./index.js";
+import { resolveCheckeredTilePair } from "./checkeredColours.js";
 import { drawSquareCellGridEdges, drawSquaresOuterBorder } from "./squaresOuterBorder.js";
 import {
     hiddenRectLabelSides,
@@ -526,40 +526,17 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
 
     // Now the tiles
     if (style === "squares-checkered") {
-        // Load glyphs for light and dark squares
-        const cBg = tinycolor(cellFill ?? ctx.options.colourContext.background);
-        const cFill = tinycolor(ctx.options.colourContext.fill);
-        // If the background colour is lighter than the fill colour, then light tiles are fully transparent, and dark tiles are 75% transparent.
-        let tileDark: SVGSymbol;
-        let tileLight: SVGSymbol;
-        if (cBg.getLuminance() > cFill.getLuminance()) {
-            tileLight = ctx.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
-            tileLight.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill({color: cellFill ?? ctx.options.colourContext.background})
-                .opacity(0)
-                .stroke({width: 0});
-            tileDark = ctx.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
-            tileDark.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill(ctx.options.colourContext.fill)
-                .opacity(baseOpacity * 0.25)
-                .stroke({width: 0});
-        // If the background colour is darker than the fill colour (dark mode), then light tiles are 75% transparent and dark tiles are fully transparent.
-        } else {
-            tileLight = ctx.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
-            tileLight.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill({color: ctx.options.colourContext.fill})
-                .opacity(baseOpacity * 0.25)
-                .stroke({width: 0});
-            tileDark = ctx.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
-            tileDark.rect(cellsize, cellsize)
-                .move(0, 0)
-                .fill(cellFill ?? ctx.options.colourContext.background)
-                .opacity(0)
-                .stroke({width: 0});
-        }
+        const { light: lightTile, dark: darkTile } = resolveCheckeredTilePair(ctx, cellFill, baseOpacity);
+        const tileLight = ctx.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
+        tileLight.rect(cellsize, cellsize)
+            .move(0, 0)
+            .fill({ color: lightTile.color, opacity: lightTile.opacity })
+            .stroke({ width: 0 });
+        const tileDark = ctx.rootSvg.defs().symbol().id("tile-dark").viewbox(0, 0, cellsize, cellsize);
+        tileDark.rect(cellsize, cellsize)
+            .move(0, 0)
+            .fill({ color: darkTile.color, opacity: darkTile.opacity })
+            .stroke({ width: 0 });
         // const tileBlocked = ctx.rootSvg.defs().symbol().id("tile-blocked").viewbox(0, 0, cellsize, cellsize);
         // tileBlocked.rect(cellsize, cellsize)
         //     .move(0, 0)

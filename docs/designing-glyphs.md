@@ -44,7 +44,7 @@ defineGlyph(sheet, "my-piece", {
 | --- | --- |
 | `slots` | Named paint regions and which SVG channel each uses (`fill` and/or `stroke`). |
 | `colour2Slot` | Where legacy legend **`colour2`** maps during transition: **`border`** (chess, arimaa, most duotone) or **`detail`** (dice pips, gnostica wedges, `orca` second tone). Default **`border`**. |
-| `paintMode: "proceduralShaded"` | Orbs only — tinting and gradients run in [`orbShading.ts`](../../src/renderers/orbShading.ts), not in the sheet builder. |
+| `paintMode: "proceduralShaded"` | Orbs and **`piece-marbled`** — tinting and gradients run under `src/glyphs/procedural/` (`orbShading.ts`, `marbledShading.ts`), not in the sheet builder. |
 | `paintMode: "fixed"` | Hard-coded colours only (e.g. core `brick` / `bricks`); legend `paint` is ignored. |
 | `build` | One-arg `(canvas) => symbol` — **no** player colour argument. |
 
@@ -84,6 +84,7 @@ Slot paint runs after context defaults; explicit `paint.border` / `paint.fill` w
 | Chess / arimaa / experimental bodies | `fill`, `border` | `border` |
 | Dice `d6-*` | `fill`, `border`, `detail` (pips) | `detail` |
 | Orbs `orb*` | `fill` (+ optional `detail` highlights) | procedural shaded |
+| `piece-marbled` | `fill` (base player colour) | procedural marbled disc |
 | Gnostica / `orca` | `fill`, `detail`, `border` | `detail` where `colour2` was pips/wedge |
 
 ## Glyphmap
@@ -96,7 +97,7 @@ Compare slot lists in [Glyph paint slots](/renderer/glyph-slots/) when documenti
 
 ## Contact sheet preview
 
-[`glyphPreview.ts`](../../src/renderers/glyphPreview.ts) builds contact-sheet tiles: most glyphs use sheet defaults only; **orbs** run the same procedural **`paint.fill`** path as in-game rendering (neutral preview tint).
+[`preview.ts`](../../src/glyphs/preview.ts) builds contact-sheet tiles: most glyphs use sheet defaults only; **orbs** and **`piece-marbled`** run procedural **`paint.fill`** shading (neutral grey on the contact sheet).
 
 ## Migrating game JSON
 

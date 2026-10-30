@@ -3673,6 +3673,34 @@
                     "description": "Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. Determines whether the first row start with a light or dark square.",
                     "type": "boolean"
                 },
+                "checkeredLight": {
+                    "description": "Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. When set (not `null`), the light checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for light squares.",
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/colourfuncs"
+                        },
+                        {
+                            "$ref": "#/$defs/colourstrings"
+                        }
+                    ]
+                },
+                "checkeredDark": {
+                    "description": "Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. When set (not `null`), the dark checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for dark squares.",
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/colourfuncs"
+                        },
+                        {
+                            "$ref": "#/$defs/colourstrings"
+                        }
+                    ]
+                },
                 "alternatingSymmetry": {
                     "description": "Only meaningful for `hex-of-*` boards and generates configurations where the sides alternate between two sizes. Mutually exclusive with `half`.",
                     "type": "boolean"

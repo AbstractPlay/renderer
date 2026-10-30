@@ -6,8 +6,8 @@ import {
     applyProceduralShadedPaint,
     orbDetailHighlightColour,
     orbGradientStopColours,
-} from "../src/renderers/orbShading.js";
-import { CONTACT_SHEET_ORB_PREVIEW_GREY } from "../src/renderers/glyphPreview.js";
+} from "../src/glyphs/procedural/orbShading.js";
+import { CONTACT_SHEET_ORB_PREVIEW_GREY } from "../src/glyphs/preview.js";
 
 describe("orbShading", () => {
     it("derives highlight and shadow stops from base hex", () => {

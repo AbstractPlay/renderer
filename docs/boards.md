@@ -14,6 +14,8 @@ Board `style` selects the topology. Width, height, markers, and stroke options f
 
 *Example games:* [Amazons](https://play.abstractplay.com/games/amazons), [Arimaa](https://play.abstractplay.com/games/arimaa)
 
+Optional `checkeredLight` and `checkeredDark` set explicit square colours (full opacity; colour functions allowed). Omitted or `null` keeps the theme-tinted checker. `startLight` still controls which corner is light.
+
 {% renderWidget "samples/board-squares-checkered.json" %}
 
 ### `squares-beveled`
@@ -226,7 +228,7 @@ Vertices only — intersection points at each ring radius. Row 0 is the outer ri
 
 ### `circular-wheel-spaces-checkered`
 
-Like `circular-wheel-spaces` with alternating light/dark sector fills (no flood markers required). Optional `startLight` controls which ring/column parity is light.
+Like `circular-wheel-spaces` with alternating light/dark sector fills (no flood markers required). Optional `startLight` controls which ring/column parity is light. Optional `checkeredLight` / `checkeredDark` override the default theme tint (same as `squares-checkered`).
 
 {% renderWidget "samples/board-wheel-annular-chess.json" %}
 

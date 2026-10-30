@@ -1,5 +1,5 @@
 import type { Container as SVGContainer, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import type { Colour2Slot } from "../../renderers/glyphPaint.js";
+import type { Colour2Slot } from "../../glyphs/paint.js";
 
 export type GlyphBuildFn =
     | ((svg: SVGContainer) => SVGSymbol)

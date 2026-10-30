@@ -1,4 +1,4 @@
-import type { Colour2Slot } from "../../renderers/glyphPaint.js";
+import type { Colour2Slot } from "../../glyphs/paint.js";
 import type { SlotMeta } from "./glyphDefinition.js";
 import catalogSnapshot from "./glyph-slots.catalog.json" with { type: "json" };
 
@@ -30,7 +30,7 @@ const SHEET_COLOUR2_DEFAULT: Record<string, Colour2Slot> = {
     dice: "detail",
 };
 
-const PROCEDURAL_SHADED_GLYPHS = new Set(["orb", "orb1", "orb2", "orb3"]);
+const PROCEDURAL_SHADED_GLYPHS = new Set(["orb", "orb1", "orb2", "orb3", "piece-marbled"]);
 
 function cloneBundledCatalog(): GlyphCatalogFile {
     return structuredClone(catalogSnapshot as GlyphCatalogFile);

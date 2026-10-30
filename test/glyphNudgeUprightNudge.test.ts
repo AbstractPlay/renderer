@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { glyphKeepsUpright } from "../src/renderers/isometric/faceGlyphFit.js";
-import { rotatePieceNudgeVector } from "../src/renderers/glyphNudge.js";
+import { rotatePieceNudgeVector } from "../src/glyphs/nudge.js";
 
 describe("upright piece nudge viewer compensation", () => {
     it("treats vertical sheet glyphs as upright like default text", () => {

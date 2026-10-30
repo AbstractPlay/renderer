@@ -7,7 +7,7 @@ import { IRendererOptionsIn } from "../src/renderers/_base.js";
 import {
     layoutAxis,
     resolveExplicitPeriphLayoutAxis,
-} from "../src/renderers/homeworldsPeriphLayout.js";
+} from "../src/common/homeworlds/periphLayout.js";
 import {
     homeworldsPartialLayoutFixture,
     homeworldsRowLayoutFixture,

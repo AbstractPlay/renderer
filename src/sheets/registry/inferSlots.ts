@@ -1,5 +1,5 @@
 import type { Element as SVGElement, Symbol as SVGSymbol } from "@svgdotjs/svg.js";
-import type { Colour2Slot } from "../../renderers/glyphPaint.js";
+import type { Colour2Slot } from "../../glyphs/paint.js";
 import type { SlotChannel, SlotMeta } from "./glyphDefinition.js";
 
 function attrPresent(el: SVGElement, name: string): boolean {

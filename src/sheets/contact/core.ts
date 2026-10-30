@@ -4,7 +4,9 @@ import type { SlotMeta } from "../registry/glyphDefinition.js";
 import type { ISheet } from "../ISheet.js";
 import { Orientation, defineHex } from "honeycomb-grid";
 import { projectPoint } from "../../common/plotting.js";
-import type { OrbShadingProfile } from "../../renderers/orbShading.js";
+import type { OrbShadingProfile } from "../../glyphs/procedural/orbShading.js";
+import { MARBLED_SHADING_PROFILE } from "../../glyphs/procedural/marbledShading.js";
+import { buildPieceMarbledSymbol } from "../pieceMarbledGeometry.js";
 
 const sheet: ISheet = {
     name: "core",
@@ -17,15 +19,12 @@ const sheet: ISheet = {
 const orbFillSlot: SlotMeta = { channels: ["fill"] };
 const orbDetailSlot: SlotMeta = { channels: ["fill"] };
 
-function registerProceduralOrb(
-    name: OrbShadingProfile,
-    shadingProfile: OrbShadingProfile,
+function registerProceduralShadedGlyph(
+    name: string,
+    shadingProfile: string,
+    slots: Record<string, SlotMeta>,
     build: (canvas: SVGContainer) => SVGSymbol,
 ): void {
-    const slots: Record<string, SlotMeta> = { fill: orbFillSlot };
-    if (name === "orb2" || name === "orb3") {
-        slots.detail = orbDetailSlot;
-    }
     defineGlyph(
         sheet.name,
         name,
@@ -37,6 +36,18 @@ function registerProceduralOrb(
         },
         sheet.glyphs,
     );
+}
+
+function registerProceduralOrb(
+    name: OrbShadingProfile,
+    shadingProfile: OrbShadingProfile,
+    build: (canvas: SVGContainer) => SVGSymbol,
+): void {
+    const slots: Record<string, SlotMeta> = { fill: orbFillSlot };
+    if (name === "orb2" || name === "orb3") {
+        slots.detail = orbDetailSlot;
+    }
+    registerProceduralShadedGlyph(name, shadingProfile, slots, build);
 }
 
 const slotOrca: Record<string, SlotMeta> = {
@@ -1073,6 +1084,13 @@ registerDiscToken("piece-horse", (canvas: SVGContainer) => {
 });
 
 registerHemisphereDiscToken("piece-lr", slotPieceLR, "lr", buildPieceHemisphereDisc);
+
+registerProceduralShadedGlyph(
+    "piece-marbled",
+    MARBLED_SHADING_PROFILE,
+    { fill: { channels: ["fill"], description: "Base player colour; renderer builds marble gradient and edge." } },
+    buildPieceMarbledSymbol,
+);
 
 registerDiscToken("piece-pentagon", (canvas: SVGContainer) => {
     const symbol = canvas.symbol();

@@ -1,0 +1,22 @@
+{
+  "board": {
+    "style": "squares",
+    "width": 4,
+    "height": 2
+  },
+  "legend": {
+    "A": {
+      "name": "piece-marbled",
+      "paint": {
+        "fill": 1
+      }
+    },
+    "B": {
+      "name": "piece-marbled",
+      "paint": {
+        "fill": 2
+      }
+    }
+  },
+  "pieces": "AABB"
+}

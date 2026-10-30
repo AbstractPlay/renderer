@@ -434,7 +434,7 @@ export function resolvedPaintBaseHex(
 
 export function paintMapAfterProceduralShading(
     paint: NormalizedPaintMap,
-    profile: import("./orbShading.js").OrbShadingProfile,
+    profile: string,
 ): NormalizedPaintMap {
     const next: NormalizedPaintMap = { ...paint };
     delete next.fill;
