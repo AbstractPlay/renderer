@@ -161,7 +161,7 @@ export const wheel = (ctx: RendererBase): BoardReturn => {
 
     if (spacesMode) {
         if (checkered) {
-            const { light: lightTile, dark: darkTile } = resolveCheckeredTilePair(ctx, cellFill, baseOpacity);
+            const { light: lightTile, dark: darkTile } = resolveCheckeredTilePair(ctx, cellFill, 1);
 
             let startLight = 1;
             if (height % 2 === 0) {

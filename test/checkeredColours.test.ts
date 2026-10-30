@@ -82,6 +82,29 @@ describe("checkered board colours", () => {
         expect(dark.opacity).to.equal(1);
     });
 
+    it("ignores strokeOpacity for explicit checker fills", () => {
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        const rep: APRenderRep = {
+            board: {
+                style: "squares-checkered",
+                width: 2,
+                height: 2,
+                checkeredLight: "#eeeed2",
+                checkeredDark: "#769656",
+                strokeOpacity: 0.35,
+            },
+            legend: { P: { name: "piece", paint: { fill: 1 } } },
+            pieces: "--\n--",
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const light = symbolRectFill(draw, "tile-light");
+        const dark = symbolRectFill(draw, "tile-dark");
+        expect(light.opacity).to.equal(1);
+        expect(dark.opacity).to.equal(1);
+    });
+
     it("falls back to legacy tint when explicit colours are null", () => {
         const draw = makeDraw();
         const renderer = new DefaultRenderer();

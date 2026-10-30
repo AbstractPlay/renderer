@@ -55,6 +55,7 @@ const resolveExplicitSide = (
 /**
  * Light/dark tile colours for `squares-checkered` and `circular-wheel-spaces-checkered`.
  * Omitted or null `checkeredLight` / `checkeredDark` keeps the legacy theme-tinted pattern for that side.
+ * The third parameter is legacy tint strength (not `strokeOpacity`); callers pass a fixed scale.
  */
 export const resolveCheckeredTilePair = (
     ctx: RendererBase,

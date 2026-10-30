@@ -526,7 +526,7 @@ export const squares = (ctx: RendererBase, opts?: {noSvg: boolean}): BoardReturn
 
     // Now the tiles
     if (style === "squares-checkered") {
-        const { light: lightTile, dark: darkTile } = resolveCheckeredTilePair(ctx, cellFill, baseOpacity);
+        const { light: lightTile, dark: darkTile } = resolveCheckeredTilePair(ctx, cellFill, 1);
         const tileLight = ctx.rootSvg.defs().symbol().id("tile-light").viewbox(0, 0, cellsize, cellsize);
         tileLight.rect(cellsize, cellsize)
             .move(0, 0)

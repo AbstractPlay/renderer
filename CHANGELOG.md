@@ -30,6 +30,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Fixed
 
+- **`squares-checkered` / wheel checkered fills:** `board.strokeOpacity` no longer scales checker tile fill opacity (explicit `checkeredLight` / `checkeredDark` or legacy theme tint).
 - **Halo stroke arcs:** When the halo ring is circular (`rx` ≈ `ry`), arc endpoints use the same table-facing projection as `circular-*` boards instead of the elliptical helper (fixes skewed segments on square playfields such as Bricka).
 - **`board.labelOutset`:** Scales only the margin beyond the playfield edge; `0` places labels just outside the board instead of on the cells.
 - **Glyph paint cache:** Reusing a styled sheet symbol across legend keys no longer re-applies theme `data-context-*` defaults on the shared symbol (which overwrote `paint.border` and similar slot colours on the second key).
