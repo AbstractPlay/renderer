@@ -1,6 +1,7 @@
 import type { G } from "@svgdotjs/svg.js";
 import type { StrokeData } from "@svgdotjs/svg.js";
 import { x2uid } from "../common/glyph2uid.js";
+import { applyCellInsetToMovePoints, shouldApplyMoveCellInset } from "../common/annotationInset.js";
 import type { IRenderCompositeOptions } from "../renderOptions.js";
 import type { APRenderComposite, CompositeAnnotation } from "../schemas/composite.js";
 import type { SquareClickMeta } from "./captureSquareClickMeta.js";
@@ -191,7 +192,17 @@ export const renderCompositeAnnotations = (
         const points = resolvePoints(note, measured, placements);
 
         if (note.type === "move") {
-            drawMoveOrLine(layer, note, points, colour, cellsize, true);
+            let drawPoints = points;
+            const noteCellInset = note.cellInset;
+            if (shouldApplyMoveCellInset("squares", opts.moveAnnotationCellInset, noteCellInset)) {
+                drawPoints = applyCellInsetToMovePoints(
+                    points,
+                    note.targets.map((t) => ({ row: t.row, col: t.col })),
+                    cellsize,
+                    undefined,
+                );
+            }
+            drawMoveOrLine(layer, note, drawPoints, colour, cellsize, true);
         } else if (note.type === "line") {
             drawMoveOrLine(layer, note, points, colour, cellsize, false);
         } else if (note.type === "dots") {

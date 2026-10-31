@@ -1408,6 +1408,11 @@
                     "type": "boolean",
                     "default": true
                 },
+                "cellInset": {
+                    "description": "Only meaningful for `type: \"move\"`. When false, the arrow uses cell centers. When true or omitted on supported boards (squares, vertex, hex-of-*), endpoints sit halfway between center and cell edge along the travel direction.",
+                    "type": "boolean",
+                    "default": true
+                },
                 "size": {
                     "description": "The size of the diameter of the dot as a fraction of cellsize.",
                     "type": "number",

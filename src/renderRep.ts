@@ -127,6 +127,7 @@ export const renderRep = (
         contextGlobal: opts.contextGlobal,
         rotate: opts.rotate,
         showAnnotations: opts.showAnnotations,
+        moveAnnotationCellInset: opts.moveAnnotationCellInset,
         boardClick,
         boardHover,
         glyphmap: opts.glyphmap,

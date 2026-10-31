@@ -17,6 +17,7 @@ import {
     localStashVerticalStepPx,
 } from "../common/localStashArea.js";
 import { sheets } from "../sheets/index.js";
+import { applyCellInsetToMovePoints, shouldApplyMoveCellInset } from "../common/annotationInset.js";
 import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOffset, projectPointEllipse, rotatePoint, calcBearing, smallestDegreeDiff, shortenLine, roundPolygon } from "../common/plotting.js";
 import { areaTitleBand, measureAreaTitle, placeAreaTitleInBand, placeTextInkTop } from "../common/areaLabelText.js";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionTextYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
@@ -186,6 +187,10 @@ export interface IRendererOptionsIn {
      */
     showAnnotations?: boolean;
     /**
+     * When false, move annotations use cell centers (legacy). When true or omitted on supported boards, move arrows inset to mid-edge along travel.
+     */
+    moveAnnotationCellInset?: boolean;
+    /**
      * A string of unique characters that will be used to create column labels. Defaults to the lowercase English alphabet.
      */
     columnLabels?: string;
@@ -239,6 +244,7 @@ export interface IRendererOptionsOut {
     rotate: number;
     columnLabels: string;
     showAnnotations: boolean;
+    moveAnnotationCellInset: boolean;
     glyphmap: [string,string,number][];
     boardClick?: (row: number, col: number, piece: string) => void;
     boardHover?: (row: number, col: number, piece: string) => void;
@@ -385,6 +391,7 @@ export abstract class RendererBase {
             patterns: false,
             patternList: [...PATTERN_NAMES],
             showAnnotations: true,
+            moveAnnotationCellInset: true,
             columnLabels: "abcdefghijklmnopqrstuvwxyz",
             rotate: 0,
             glyphmap: [],
@@ -488,6 +495,9 @@ export abstract class RendererBase {
         // Check for annotation screening
         if (opts.showAnnotations !== undefined) {
             this.options.showAnnotations = opts.showAnnotations;
+        }
+        if (opts.moveAnnotationCellInset !== undefined) {
+            this.options.moveAnnotationCellInset = opts.moveAnnotationCellInset;
         }
 
         // Check for different column labels
@@ -1532,14 +1542,27 @@ export abstract class RendererBase {
                     // const markerArrow = notes.marker(5, 5, (add) => add.path("M 0 0 L 10 5 L 0 10 z"));
                     const markerArrow = notes.marker(4 * unit + 3 * s, 4 * unit + 2 * s, (add) => add.path(`M${s},${s} L${s + 4 * unit},${s + 2 * unit} ${s},${s + 4 * unit} Z`).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const markerCircle = notes.marker(2 * unit + 2 * s, 2 * unit + 2 * s, (add) => add.circle(2 * unit).center(unit + s, unit + s).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
-                    const points: string[] = [];
-                    for (const node of (note.targets as ITarget[])) {
+                    const targets = note.targets as ITarget[];
+                    const centerPoints: IPoint[] = [];
+                    for (const node of targets) {
                         const pt = this.getStackedPoint(grid, node.col, node.row);
                         if (pt === undefined) {
                             throw new Error(`Annotation - Move: Could not find coordinates for row ${node.row}, column ${node.col}.`);
                         }
-                        points.push(`${pt.x},${pt.y}`);
+                        centerPoints.push(pt);
                     }
+                    const boardStyle = (this.json.board !== undefined && this.json.board !== null && "style" in this.json.board)
+                        ? this.json.board.style
+                        : undefined;
+                    const noteCellInset = ("cellInset" in note) ? note.cellInset : undefined;
+                    const drawPoints = shouldApplyMoveCellInset(
+                        boardStyle,
+                        this.options.moveAnnotationCellInset,
+                        noteCellInset,
+                    )
+                        ? applyCellInsetToMovePoints(centerPoints, targets, this.cellsize, polys)
+                        : centerPoints;
+                    const points = drawPoints.map((pt) => `${pt.x},${pt.y}`);
                     const stroke: StrokeData = {
                         color: colour,
                         opacity,

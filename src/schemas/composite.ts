@@ -16,6 +16,8 @@ export interface CompositeAnnotation {
     colour?: ColourResolvable;
     arrow?: boolean;
     anchors?: boolean;
+    /** When false on a move annotation, endpoints stay at cell centers. */
+    cellInset?: boolean;
     size?: number;
     dashed?: number[];
     dotShape?: NonNullable<AnnotationBasic["dotShape"]>;

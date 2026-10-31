@@ -2200,6 +2200,10 @@ export interface AnnotationBasic {
    */
   anchors?: boolean;
   /**
+   * Only meaningful for `type: "move"`. When false, the arrow uses cell centers. When true or omitted on supported boards (squares, vertex, hex-of-*), endpoints sit halfway between center and cell edge along the travel direction.
+   */
+  cellInset?: boolean;
+  /**
    * The size of the diameter of the dot as a fraction of cellsize.
    */
   size?: number;
