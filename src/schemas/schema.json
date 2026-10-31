@@ -3097,6 +3097,12 @@
                     "items": {
                         "type": "number"
                     }
+                },
+                "shorten": {
+                    "description": "Trim each end of the fence segment. Expressed as a fraction of total length (0.1 trims 10% from each end).",
+                    "type": "number",
+                    "minimum": 0,
+                    "exclusiveMaximum": 1
                 }
             },
             "required": [
@@ -3149,6 +3155,12 @@
                     "items": {
                         "type": "number"
                     }
+                },
+                "shorten": {
+                    "description": "Trim each end of the fence segment. Expressed as a fraction of total length (0.1 trims 10% from each end).",
+                    "type": "number",
+                    "minimum": 0,
+                    "exclusiveMaximum": 1
                 }
             },
             "required": [

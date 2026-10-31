@@ -1493,6 +1493,10 @@ export interface MarkerFence {
    * A valid `dasharray` appropriate for the game's display.
    */
   dashed?: number[];
+  /**
+   * Trim each end of the fence segment. Expressed as a fraction of total length (0.1 trims 10% from each end).
+   */
+  shorten?: number;
 }
 /**
  * Just a container marker for multiple fences
@@ -1519,6 +1523,10 @@ export interface MarkerFenceData {
    * A valid `dasharray` appropriate for the game's display.
    */
   dashed?: number[];
+  /**
+   * Trim each end of the fence segment. Expressed as a fraction of total length (0.1 trims 10% from each end).
+   */
+  shorten?: number;
 }
 export interface MarkerGlyph {
   /**

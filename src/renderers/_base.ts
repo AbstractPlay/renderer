@@ -3429,6 +3429,9 @@ export abstract class RendererBase {
                                 yTo = south.y;
                                 break;
                         }
+                        if ("shorten" in marker && marker.shorten !== undefined && marker.shorten > 0) {
+                            [xFrom, yFrom, xTo, yTo] = shortenLine(xFrom, yFrom, xTo, yTo, marker.shorten);
+                        }
                         const newclone = {...cloned};
                         // @ts-expect-error (only used to generate UUID)
                         delete newclone.cell;
@@ -3449,8 +3452,13 @@ export abstract class RendererBase {
                             const edge = edges.find(e => e.dir === side);
                             if (edge !== undefined) {
                                 const [idx1, idx2] = edge.corners;
-                                const {x: xFrom, y: yFrom} = hex.corners[idx1];
-                                const {x: xTo, y: yTo} = hex.corners[idx2];
+                                let xFrom = hex.corners[idx1].x;
+                                let yFrom = hex.corners[idx1].y;
+                                let xTo = hex.corners[idx2].x;
+                                let yTo = hex.corners[idx2].y;
+                                if ("shorten" in marker && marker.shorten !== undefined && marker.shorten > 0) {
+                                    [xFrom, yFrom, xTo, yTo] = shortenLine(xFrom, yFrom, xTo, yTo, marker.shorten);
+                                }
                                 targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke(stroke).attr({ 'pointer-events': 'none' });
                             }
                         }
