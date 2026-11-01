@@ -2208,7 +2208,7 @@ export interface AnnotationBasic {
    */
   anchors?: boolean;
   /**
-   * Only meaningful for `type: "move"`. When false, the arrow uses cell centers. When true or omitted on supported boards (squares, vertex, hex-of-*), endpoints sit halfway between center and cell edge along the travel direction.
+   * Only meaningful for `type: "move"`. When false, the arrow uses cell centers. When true or omitted on supported boards (squares*, hex-of-hex, hex-of-cir), endpoints inset slightly along the travel direction (~10% of cell size per end). Not applied on vertex or hex-of-tri boards.
    */
   cellInset?: boolean;
   /**

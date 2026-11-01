@@ -3,6 +3,7 @@ import "mocha";
 import {
     applyCellInsetToMovePoints,
     boardSupportsMoveCellInset,
+    moveAnnotationInsetDistance,
     rayDistanceToPolygonBoundary,
     squareHalfExtentAlongDirection,
     trimAnnotationEndpoints,
@@ -16,14 +17,20 @@ describe("annotationInset", () => {
         expect(squareHalfExtentAlongDirection(cell, 1, 0)).to.be.closeTo(cell / 4, 1e-9);
     });
 
+    it("moveAnnotationInsetDistance is cellsize/10 on axis-aligned directions", () => {
+        const cell = 40;
+        expect(moveAnnotationInsetDistance(cell, 0, 1)).to.be.closeTo(cell * 0.1, 1e-9);
+        expect(moveAnnotationInsetDistance(cell, 1, 0)).to.be.closeTo(cell * 0.1, 1e-9);
+    });
+
     it("trimAnnotationEndpoints offsets vertical move endpoints inward along travel", () => {
         const cell = 40;
         const centers: IPoint[] = [{ x: 10, y: 0 }, { x: 10, y: 40 }];
         const insetAt = (_index: number, dir: IPoint) =>
-            squareHalfExtentAlongDirection(cell, dir.x, dir.y);
+            moveAnnotationInsetDistance(cell, dir.x, dir.y);
         const trimmed = trimAnnotationEndpoints(centers, insetAt);
-        expect(trimmed[0]!.y).to.be.closeTo(10, 1e-9);
-        expect(trimmed[1]!.y).to.be.closeTo(30, 1e-9);
+        expect(trimmed[0]!.y).to.be.closeTo(4, 1e-9);
+        expect(trimmed[1]!.y).to.be.closeTo(36, 1e-9);
         expect(trimmed[0]!.x).to.equal(10);
         expect(trimmed[1]!.x).to.equal(10);
     });
@@ -42,8 +49,10 @@ describe("annotationInset", () => {
 
     it("boardSupportsMoveCellInset matches regular grid styles", () => {
         expect(boardSupportsMoveCellInset("squares-checkered")).to.equal(true);
-        expect(boardSupportsMoveCellInset("vertex-cross")).to.equal(true);
+        expect(boardSupportsMoveCellInset("vertex-cross")).to.equal(false);
         expect(boardSupportsMoveCellInset("hex-of-hex")).to.equal(true);
+        expect(boardSupportsMoveCellInset("hex-of-cir")).to.equal(true);
+        expect(boardSupportsMoveCellInset("hex-of-tri")).to.equal(false);
         expect(boardSupportsMoveCellInset("hex-of-tri-f")).to.equal(false);
         expect(boardSupportsMoveCellInset("entropy")).to.equal(false);
     });
@@ -71,7 +80,7 @@ describe("annotationInset", () => {
             ],
         }]];
         const trimmed = applyCellInsetToMovePoints(centers, targets, cell, polys);
-        expect(trimmed[0]!.y).to.be.closeTo(100 + cell / 4, 1e-9);
-        expect(trimmed[1]!.y).to.be.closeTo(140 - cell / 4, 1e-9);
+        expect(trimmed[0]!.y).to.be.closeTo(100 + cell * 0.1, 1e-9);
+        expect(trimmed[1]!.y).to.be.closeTo(140 - cell * 0.1, 1e-9);
     });
 });

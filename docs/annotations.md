@@ -6,7 +6,7 @@ Annotations render **above** pieces to show moves, entries, exits, and highlight
 
 *Example games:* [Arimaa](https://play.abstractplay.com/games/arimaa), [Bao](https://play.abstractplay.com/games/bao)
 
-On **squares**, **vertex**, and **hex-of-hex** / **hex-of-tri** / **hex-of-cir** boards, **move** arrows default to starting and ending halfway between each cell centre and the cell edge along the direction of travel (so a vertical one-step arrow does not sit entirely on centre points). **`line`** annotations are unchanged and still use cell centres.
+On **squares**, **hex-of-hex**, and **hex-of-cir** boards, **move** arrows default to a small inset along the direction of travel (about **10% of cell size** at each end, not centre-to-centre). **`vertex`**, **`hex-of-tri`**, and **`line`** annotations stay centre-to-centre.
 
 To restore centre-to-centre move arrows for one annotation, set `"cellInset": false` on that move entry. To disable inset for an entire render, pass `moveAnnotationCellInset: false` in render options.
 

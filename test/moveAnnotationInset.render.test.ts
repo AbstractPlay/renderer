@@ -29,7 +29,7 @@ const baseBoard: APRenderRep = {
 };
 
 describe("move annotation cell inset (render)", () => {
-    it("shortens default move arrow span to half a cell step", () => {
+    it("shortens default move arrow span by 0.1 cellsize at each end", () => {
         const draw = makeDraw();
         render({
             ...baseBoard,
@@ -42,7 +42,7 @@ describe("move annotation cell inset (render)", () => {
         const lines = annotationPolylines(draw);
         expect(lines.length).to.equal(1);
         const span = verticalSpan(lines[0]!.attr("points") as string);
-        expect(span).to.be.closeTo(25, 0.5);
+        expect(span).to.be.closeTo(40, 0.5);
     });
 
     it("line annotations stay centre-to-centre", () => {

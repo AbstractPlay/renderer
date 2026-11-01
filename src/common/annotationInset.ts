@@ -11,9 +11,22 @@ export const squareCenterToEdgeAlongDirection = (cellsize: number, ux: number, u
     return half / Math.max(ax, ay);
 };
 
-/** Halfway from center to edge along direction (default move-arrow inset). */
+/** Halfway from center to edge along direction. */
 export const squareHalfExtentAlongDirection = (cellsize: number, ux: number, uy: number): number =>
     squareCenterToEdgeAlongDirection(cellsize, ux, uy) / 2;
+
+/** Move arrow endpoint inset as a fraction of cell size on axis-aligned square cells (0.1 ≈ subtle trim). */
+export const MOVE_ANNOTATION_INSET_CELL_FRACTION = 0.1;
+
+/** Inset distance along a unit direction: `cellsize * MOVE_ANNOTATION_INSET_CELL_FRACTION`, scaled for diagonal rays on square cells. */
+export const moveAnnotationInsetDistance = (cellsize: number, ux: number, uy: number): number => {
+    const ax = Math.abs(ux);
+    const ay = Math.abs(uy);
+    if (ax < 1e-12 && ay < 1e-12) {
+        return 0;
+    }
+    return (cellsize * MOVE_ANNOTATION_INSET_CELL_FRACTION) / Math.max(ax, ay);
+};
 
 const raySegmentHit = (
     ox: number,
@@ -112,10 +125,7 @@ export const boardSupportsMoveCellInset = (style: string | undefined): boolean =
     if (style.startsWith("squares") || style === "pegboard") {
         return true;
     }
-    if (style.startsWith("vertex")) {
-        return true;
-    }
-    return style === "hex-of-hex" || style === "hex-of-tri" || style === "hex-of-cir";
+    return style === "hex-of-hex" || style === "hex-of-cir";
 };
 
 export interface MoveCellInsetTarget {
@@ -168,12 +178,16 @@ const insetFromCell = (
     const verts = polyVertices(poly);
     if (verts !== undefined && verts.length >= 3) {
         const toEdge = rayDistanceToPolygonBoundary(center, { x: ux, y: uy }, verts);
-        return (toEdge / 2);
+        const axisToEdge = squareCenterToEdgeAlongDirection(cellsize, ux, uy);
+        if (axisToEdge > 1e-9) {
+            return toEdge * (moveAnnotationInsetDistance(cellsize, ux, uy) / axisToEdge);
+        }
+        return toEdge * MOVE_ANNOTATION_INSET_CELL_FRACTION * 2;
     }
     if (poly !== undefined && poly !== null && poly.type === "circle") {
-        return poly.r / 2;
+        return poly.r * MOVE_ANNOTATION_INSET_CELL_FRACTION * 2;
     }
-    return squareHalfExtentAlongDirection(cellsize, ux, uy);
+    return moveAnnotationInsetDistance(cellsize, ux, uy);
 };
 
 export const applyCellInsetToMovePoints = (
@@ -189,7 +203,7 @@ export const applyCellInsetToMovePoints = (
     return trimAnnotationEndpoints(points, (vertexIndex, outward) => {
         const target = targets[vertexIndex];
         if (target === undefined) {
-            return squareHalfExtentAlongDirection(cellsize, outward.x, outward.y);
+            return moveAnnotationInsetDistance(cellsize, outward.x, outward.y);
         }
         const center = points[vertexIndex]!;
         const poly = polys?.[target.row]?.[target.col];
