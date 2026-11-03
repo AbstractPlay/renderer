@@ -1611,6 +1611,13 @@ export abstract class RendererBase {
                     if ( ("strokeWidth" in note) && (note.strokeWidth !== undefined) ) {
                         strokeWidth = note.strokeWidth;
                     }
+                    let anchors = true;
+                    if ( ("anchors" in note) && (note.anchors !== undefined) ) {
+                        anchors = note.anchors;
+                    }
+                    const unit = strokeWidth / 0.03;
+                    const s = this.cellsize * strokeWidth / 2;
+                    const markerCircle = notes.marker(2 * unit + 2 * s, 2 * unit + 2 * s, (add) => add.circle(2 * unit).center(unit + s, unit + s).fill(colour)).attr({ 'pointer-events': 'none' }).addClass(`aprender-annotation-${x2uid(cloned)}`);
                     const points: string[] = [];
                     for (const node of (note.targets as ITarget[])) {
                         const pt = this.getStackedPoint(grid, node.col, node.row);
@@ -1632,7 +1639,11 @@ export abstract class RendererBase {
                             stroke.dasharray = (4 * Math.ceil(strokeWidth / 0.03)).toString();
                         }
                     }
-                    notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    const line = notes.polyline(points.join(" ")).addClass(`aprender-annotation-${x2uid(cloned)}`).stroke(stroke).fill("none").attr({ 'pointer-events': 'none' });
+                    if (anchors) {
+                        line.marker("start", markerCircle);
+                        line.marker("end", markerCircle);
+                    }
                 } else if ( (note.type !== undefined) && (note.type === "eject") ) {
                     if (note.targets.length !== 2) {
                         throw new Error("Eject annotations require exactly two 'targets'.");

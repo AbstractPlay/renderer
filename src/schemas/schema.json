@@ -1404,7 +1404,7 @@
                     "default": true
                 },
                 "anchors": {
-                    "description": "Whether the move annotation should have dot anchors.",
+                    "description": "For `move` and `line` annotations: when true (default), draws filled circular markers at the polyline endpoints. On `move`, the end marker is an arrow instead when `arrow` is true.",
                     "type": "boolean",
                     "default": true
                 },

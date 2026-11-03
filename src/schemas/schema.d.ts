@@ -2204,7 +2204,7 @@ export interface AnnotationBasic {
   colour?: ColourResolvable;
   arrow?: boolean;
   /**
-   * Whether the move annotation should have dot anchors.
+   * For `move` and `line` annotations: when true (default), draws filled circular markers at the polyline endpoints. On `move`, the end marker is an arrow instead when `arrow` is true.
    */
   anchors?: boolean;
   /**

@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-11-01
+## [1.0.0-ci] - 2026-11-03
 
 ### Changed
 
 - **Move annotation inset:** Endpoints use ~**10% of cell size** per end (was ~25%). **`vertex*`** and **`hex-of-tri`** boards no longer inset move arrows (centre-to-centre as before). Supported hex styles: **`hex-of-hex`** and **`hex-of-cir`** only.
+- **`line` annotations:** circular endpoint markers by default (same dots as **`move`** with `"arrow": false`); set `"anchors": false` to omit them.
 
 ## [1.0.0-ci] - 2026-10-31
 
