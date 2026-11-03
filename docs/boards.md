@@ -36,6 +36,12 @@ Optional `checkeredLight` and `checkeredDark` set explicit square colours (full 
 
 {% renderWidget "samples/board-squares-diamonds.json" %}
 
+### `squares-diamonds-checkered`
+
+Same topology as `squares-diamonds`, but octagon play spaces use the same light/dark checker as `squares-checkered` (diamond connectors keep the plain board fill). Optional `checkeredLight`, `checkeredDark`, and `startLight` behave like `squares-checkered`.
+
+{% renderWidget "samples/board-squares-diamonds-checkered.json" %}
+
 ### `heightmap-squares`
 
 Square grid with per-cell elevation for the [isometric](/renderer/engines/) renderer.

@@ -9,6 +9,10 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ## [1.0.0-ci] - 2026-11-03
 
+### Added
+
+- **`squares-diamonds-checkered`:** same topology as `squares-diamonds` with a light/dark checker on octagon play spaces only; optional `startLight`, `checkeredLight`, and `checkeredDark` match `squares-checkered`. Playground `board-squares-diamonds-checkered`; sample [board-squares-diamonds-checkered.json](/renderer/samples/board-squares-diamonds-checkered.json).
+
 ### Changed
 
 - **Move annotation inset:** Endpoints use ~**10% of cell size** per end (was ~25%). **`vertex*`** and **`hex-of-tri`** boards no longer inset move arrows (centre-to-centre as before). Supported hex styles: **`hex-of-hex`** and **`hex-of-cir`** only.

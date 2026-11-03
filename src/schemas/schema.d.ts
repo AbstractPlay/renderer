@@ -266,6 +266,7 @@ export type BoardStyles =
   | "squares-beveled"
   | "squares-stacked"
   | "squares-diamonds"
+  | "squares-diamonds-checkered"
   | "vertex"
   | "vertex-cross"
   | "vertex-fanorona"
@@ -965,15 +966,15 @@ export interface BoardBasic {
    */
   clickDeltaY?: number;
   /**
-   * Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. Determines whether the first row start with a light or dark square.
+   * Only meaningful for the `squares-checkered`, `squares-diamonds-checkered`, and `circular-wheel-spaces-checkered` boards. Determines whether the first row start with a light or dark square.
    */
   startLight?: boolean;
   /**
-   * Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. When set (not `null`), the light checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for light squares.
+   * Only meaningful for the `squares-checkered`, `squares-diamonds-checkered`, and `circular-wheel-spaces-checkered` boards. When set (not `null`), the light checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for light squares.
    */
   checkeredLight?: null | Colourfuncs | Colourstrings;
   /**
-   * Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. When set (not `null`), the dark checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for dark squares.
+   * Only meaningful for the `squares-checkered`, `squares-diamonds-checkered`, and `circular-wheel-spaces-checkered` boards. When set (not `null`), the dark checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for dark squares.
    */
   checkeredDark?: null | Colourfuncs | Colourstrings;
   /**

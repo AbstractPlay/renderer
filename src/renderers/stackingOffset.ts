@@ -48,6 +48,7 @@ export class StackingOffsetRenderer extends RendererBase {
                 ({ grid: gridPoints, polys, boardFill } = squares(this));
                 break;
             case "squares-diamonds":
+            case "squares-diamonds-checkered":
                 ({ grid: gridPoints, polys, boardFill } = squaresDiamonds(this));
                 break;
             case "vertex":

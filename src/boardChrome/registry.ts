@@ -126,6 +126,7 @@ REGISTRY["hex-of-tri"] = entryHexMinMaxGrid(false);
 
 /** Distinct or specialized topologies — not in the row/col style swap group. */
 REGISTRY["squares-diamonds"] = NO_CUSTOMIZE;
+REGISTRY["squares-diamonds-checkered"] = NO_CUSTOMIZE;
 REGISTRY["pegboard"] = entryPegboard();
 REGISTRY["vertex-fanorona"] = NO_CUSTOMIZE;
 REGISTRY["eleven"] = {

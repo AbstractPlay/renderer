@@ -377,6 +377,7 @@
                 "squares-beveled",
                 "squares-stacked",
                 "squares-diamonds",
+                "squares-diamonds-checkered",
                 "vertex",
                 "vertex-cross",
                 "vertex-fanorona",
@@ -3687,11 +3688,11 @@
                     "$ref": "#/$defs/positiveInteger"
                 },
                 "startLight": {
-                    "description": "Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. Determines whether the first row start with a light or dark square.",
+                    "description": "Only meaningful for the `squares-checkered`, `squares-diamonds-checkered`, and `circular-wheel-spaces-checkered` boards. Determines whether the first row start with a light or dark square.",
                     "type": "boolean"
                 },
                 "checkeredLight": {
-                    "description": "Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. When set (not `null`), the light checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for light squares.",
+                    "description": "Only meaningful for the `squares-checkered`, `squares-diamonds-checkered`, and `circular-wheel-spaces-checkered` boards. When set (not `null`), the light checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for light squares.",
                     "anyOf": [
                         {
                             "type": "null"
@@ -3705,7 +3706,7 @@
                     ]
                 },
                 "checkeredDark": {
-                    "description": "Only meaningful for the `squares-checkered` and `circular-wheel-spaces-checkered` boards. When set (not `null`), the dark checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for dark squares.",
+                    "description": "Only meaningful for the `squares-checkered`, `squares-diamonds-checkered`, and `circular-wheel-spaces-checkered` boards. When set (not `null`), the dark checker colour is taken from this value at full opacity instead of the default theme-tinted pattern. Omitted or `null` keeps the legacy behaviour for dark squares.",
                     "anyOf": [
                         {
                             "type": "null"

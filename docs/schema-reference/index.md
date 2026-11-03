@@ -53,6 +53,7 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 | `squares-beveled` |
 | `squares-stacked` |
 | `squares-diamonds` |
+| `squares-diamonds-checkered` |
 | `vertex` |
 | `vertex-cross` |
 | `vertex-fanorona` |

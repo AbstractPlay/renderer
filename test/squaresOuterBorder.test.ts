@@ -38,8 +38,8 @@ const squaresFixture = (overrides?: Partial<APRenderRep>): APRenderRep => ({
     ...overrides,
 });
 
-const diamondsFixture = (sdStart: "S" | "D"): APRenderRep => ({
-    board: { style: "squares-diamonds", width: 3, height: 3, strokeWeight: 2, sdStart },
+const diamondsFixture = (sdStart: "S" | "D", style: "squares-diamonds" | "squares-diamonds-checkered" = "squares-diamonds"): APRenderRep => ({
+    board: { style, width: 3, height: 3, strokeWeight: 2, sdStart },
     legend: { P: { name: "piece", colour: 1 } },
     pieces: "---\n---\n---",
 });
@@ -101,6 +101,15 @@ describe("squares outer border emphasis", () => {
         expect(thickS).to.be.greaterThan(0);
         expect(thickD).to.be.greaterThan(0);
         expect(thickS).to.not.equal(thickD);
+    });
+
+    it("should emphasize outer edges on squares-diamonds-checkered", () => {
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        renderer.render(diamondsFixture("S", "squares-diamonds-checkered"), draw, baseOptions);
+
+        const strokes = draw.findOne("#gridlines-strokes") as SVGElement;
+        expect(countLinesAtWidth(strokes, 4)).to.be.greaterThan(0);
     });
 
     it("should draw 2× outer frame on contiguous tiled boards (Azacru-style)", () => {

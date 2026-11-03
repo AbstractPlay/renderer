@@ -2901,7 +2901,7 @@ export abstract class RendererBase {
                                 break;
                         }
                         targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
-                    } else if (style === "squares-diamonds") {
+                    } else if (style === "squares-diamonds" || style === "squares-diamonds-checkered") {
                         const xMin = Math.min(...grid.flat().flat().map(pt => pt.x));
                         const yMin = Math.min(...grid.flat().flat().map(pt => pt.y));
                         const xMax = Math.max(...grid.flat().flat().map(pt => pt.x));
@@ -3709,6 +3709,7 @@ export abstract class RendererBase {
                     ({ grid: gridPoints, polys, boardFill } = squares(this));
                     break;
                 case "squares-diamonds":
+                case "squares-diamonds-checkered":
                     ({ grid: gridPoints, polys, boardFill } = squaresDiamonds(this));
                     break;
                 case "squares-stacked":

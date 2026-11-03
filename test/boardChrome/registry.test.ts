@@ -45,6 +45,20 @@ describe("boardChrome registry", () => {
         expect(isBoardChromeEligible(rep)).to.equal(false);
     });
 
+    it("excludes squares-diamonds-checkered from style swap options", () => {
+        expect(getCompatibleStyles("vertex")).to.not.include("squares-diamonds-checkered");
+        expect(getCompatibleStyles("squares-checkered")).to.not.include(
+            "squares-diamonds-checkered",
+        );
+        expect(getCompatibleStyles("squares-diamonds-checkered")).to.deep.equal([]);
+        const rep = {
+            board: { style: "squares-diamonds-checkered", width: 4, height: 4 },
+            legend: { P: { name: "piece", colour: 1 } },
+            pieces: "----\n----\n----\n----",
+        };
+        expect(isBoardChromeEligible(rep)).to.equal(false);
+    });
+
     it("excludes pegboard and vertex-fanorona from customization", () => {
         expect(getCompatibleStyles("vertex")).to.not.include("pegboard");
         expect(getCompatibleStyles("vertex")).to.not.include("vertex-fanorona");

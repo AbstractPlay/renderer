@@ -1,3 +1,4 @@
+import { resolveCheckeredTilePair } from "./checkeredColours.js";
 import { BoardReturn, createGridlineLayers, getBoardFill } from "./index.js";
 import { drawPolyBoundaryEmphasis } from "./squaresOuterBorder.js";
 import { centroid } from "../common/plotting.js";
@@ -149,14 +150,54 @@ export const squaresDiamonds = (ctx: RendererBase): BoardReturn => {
         blocked = [...(ctx.json.board.blocked as Blocked)];
     }
     const [cellFill, cellOpacity] = getBoardFill(ctx, "white");
+    const checkered = ctx.json.board.style === "squares-diamonds-checkered";
+    const octagonRowOffset = gridStart === "S" ? 0 : 1;
+    let lightTile: { color: string; opacity: number } | undefined;
+    let darkTile: { color: string; opacity: number } | undefined;
+    let startLight = 1;
+    if (checkered) {
+        ({ light: lightTile, dark: darkTile } = resolveCheckeredTilePair(ctx, cellFill, 1));
+        if (height % 2 === 0) {
+            startLight = 0;
+        }
+        if ("startLight" in ctx.json.board) {
+            if (ctx.json.board.startLight) {
+                startLight = 0;
+            } else {
+                startLight = 1;
+            }
+        }
+    }
     for (let row = 0; row < polys.length; row++) {
         for (let col = 0; col < polys[row].length; col++) {
             const isBlocked = blocked?.find(entry => entry.row === row && entry.col === col) !== undefined;
             if (isBlocked) { continue; }
             const poly = polys[row][col];
+            let fillColor = cellFill;
+            let fillOpacity = cellOpacity;
+            if (checkered && lightTile !== undefined && darkTile !== undefined) {
+                const relRow = row - octagonRowOffset;
+                if (relRow >= 0 && relRow % 2 === 0) {
+                    const logicalRow = relRow / 2;
+                    if (logicalRow < height && col < width) {
+                        let lightCol = 1;
+                        if (logicalRow % 2 === startLight) {
+                            lightCol = 0;
+                        }
+                        const isDark = col % 2 !== lightCol;
+                        if (isDark) {
+                            fillColor = darkTile.color;
+                            fillOpacity = darkTile.opacity;
+                        } else {
+                            fillColor = lightTile.color;
+                            fillOpacity = lightTile.opacity;
+                        }
+                    }
+                }
+            }
             layers.fill.polygon(poly.points.map(({ x, y }) => `${x},${y}`).join(" "))
                      .stroke("none")
-                     .fill({color: cellFill, opacity: cellOpacity});
+                     .fill({color: fillColor, opacity: fillOpacity});
         }
     }
 

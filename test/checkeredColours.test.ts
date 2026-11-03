@@ -56,6 +56,17 @@ describe("checkered board colours", () => {
             legend: {},
             pieces: "--\n--",
         })).to.equal(true);
+        expect(validate({
+            board: {
+                style: "squares-diamonds-checkered",
+                width: 2,
+                height: 2,
+                checkeredLight: "#eeeed2",
+                checkeredDark: "#769656",
+            },
+            legend: {},
+            pieces: "--\n--",
+        })).to.equal(true);
     });
 
     it("uses explicit light and dark fills at full opacity", () => {
@@ -150,5 +161,57 @@ describe("checkered board colours", () => {
 
         const markers = draw.findOne("#gridlines-markers") as SVGElement;
         expect(markers.children().length).to.be.greaterThan(0);
+    });
+
+    it("checkers octagon cells on squares-diamonds-checkered", () => {
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        const rep: APRenderRep = {
+            board: {
+                style: "squares-diamonds-checkered",
+                width: 2,
+                height: 2,
+                checkeredLight: "#eeeed2",
+                checkeredDark: "#769656",
+            },
+            legend: { P: { name: "piece", paint: { fill: 1 } } },
+            pieces: "--\n--",
+        };
+        renderer.render(rep, draw, baseOptions);
+
+        const fillLayer = draw.findOne("#gridlines-fill") as SVGElement;
+        expect(fillLayer).to.not.equal(undefined);
+        const fills = fillLayer.find("polygon").map((el) =>
+            (el as SVGElement).attr("fill")?.toLowerCase() ?? "",
+        );
+        expect(fills.filter((f) => f === "#eeeed2").length).to.be.greaterThan(0);
+        expect(fills.filter((f) => f === "#769656").length).to.be.greaterThan(0);
+    });
+
+    it("alternates octagon fills by column on squares-diamonds-checkered", () => {
+        const draw = makeDraw();
+        const renderer = new DefaultRenderer();
+        const rep: APRenderRep = {
+            board: {
+                style: "squares-diamonds-checkered",
+                width: 2,
+                height: 2,
+                checkeredLight: "#eeeed2",
+                checkeredDark: "#769656",
+            },
+            legend: { P: { name: "piece", paint: { fill: 1 } } },
+            pieces: "--\n--",
+        };
+        renderer.render(rep, draw, baseOptions);
+        const fillLayer = draw.findOne("#gridlines-fill") as SVGElement;
+        const octagonFills = fillLayer
+            .find("polygon")
+            .filter((el) => {
+                const pts = (el as SVGElement).attr("points") ?? "";
+                return pts.split(/\s+/).filter(Boolean).length === 8;
+            })
+            .map((el) => (el as SVGElement).attr("fill")?.toLowerCase() ?? "");
+        expect(octagonFills.length).to.equal(4);
+        expect(new Set(octagonFills).size).to.equal(2);
     });
 });

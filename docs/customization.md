@@ -24,7 +24,7 @@ Entry points exported from `@abstractplay/renderer`:
 | `isBoardFieldChromeEligible(rep)` | May merge other `render.board` fields (`labelScale`, strokes, markers, …) |
 | `render.options` / `render.glyphmap` | Applied for any rep; unsupported options are ignored at draw time |
 
-Specialized styles (`pegboard`, `vertex-fanorona`, `squares-diamonds`, …) do not allow **style** swaps; **labelScale**, **render options**, and **glyphmap** still apply when saved.
+Specialized styles (`pegboard`, `vertex-fanorona`, `squares-diamonds`, `squares-diamonds-checkered`, …) do not allow **style** swaps; **labelScale**, **render options**, and **glyphmap** still apply when saved.
 
 ## Style compatibility
 
@@ -36,7 +36,7 @@ Specialized styles (`pegboard`, `vertex-fanorona`, `squares-diamonds`, …) do n
 | Stacked squares | `squares-stacked` + flat rect styles above (not vertex) |
 | Hex min/max grid | [`hex-of-hex`](/renderer/boards/) (hex cells) ↔ [`hex-of-tri`](/renderer/boards/) (triangle vertices); same `minWidth` / `maxWidth` string grid |
 
-`squares-diamonds`, `pegboard`, and `vertex-fanorona` are not user-swappable. `hex-of-tri-f` and other hex topologies are outside the hex min/max pair for now.
+`squares-diamonds`, `squares-diamonds-checkered`, `pegboard`, and `vertex-fanorona` are not user-swappable. `hex-of-tri-f` and other hex topologies are outside the hex min/max pair for now.
 
 Swapping hex-of-hex ↔ hex-of-tri changes drawing and click geometry while **row/col indices** stay the same (like vertex ↔ checkered on square grids).
 
