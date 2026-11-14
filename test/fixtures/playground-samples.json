@@ -94,6 +94,11 @@
     "description": "Snubsquare board with stacking pieces. You can use the `snubStart` property to change whether the top-left corner starts with a square (the default) or a triangle.",
     "render": "{\"renderer\":\"stacking-offset\",\"board\":{\"style\":\"snubsquare\",\"width\":7,\"height\":7},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"-,-,-,-,-,-,-\\nB,A,-,-,-,-,-\\nBA,A,-,-,-,-,-\\nA,B,AB,A,-,-,-\\nAB,BA,B,B,-,-,-\\n-,-,-,-,-,-,-\\n-,-,-,-,-,-,-\"}"
   },
+  "board-snubsquare-blocked": {
+    "name": "Boards: Snubsquare (blocked)",
+    "description": "Vertex-style <code>snubsquare</code> with <code>board.blocked</code> trimming the Cairo grid (same row/column indices as other vertex boards). Blocked intersections are not drawn and are skipped by nearest-vertex <code>boardClick</code>.",
+    "render": "{\"renderer\":\"stacking-offset\",\"board\":{\"style\":\"snubsquare\",\"width\":7,\"height\":7,\"blocked\":[{\"row\":0,\"col\":0},{\"row\":0,\"col\":6},{\"row\":6,\"col\":0},{\"row\":6,\"col\":6}]},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"-,-,-,-,-,-,-\\n-,-,A,-,A,-,-\\n-,-,-,-,-,-,-\\n-,-,-,B,-,-,-\\n-,-,-,-,-,-,-\\n-,-,A,-,A,-,-\\n-,-,-,-,-,-,-\"}"
+  },
   "board-onyx": {
     "name": "Boards: Onyx",
     "description": "A snubsquare board where you can also place at the midpoint of squares. The notation and `pieces` string become more complicated. As with the snubsquare board, you can use the `snubStart` property to change whether the top-left corner starts with a triangle (the default) or a square.",
