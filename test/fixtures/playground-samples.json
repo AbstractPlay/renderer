@@ -139,6 +139,11 @@
     "description": "A hexagon of triangles, with pieces placed on the spaces.",
     "render": "{\"board\":{\"style\":\"hex-of-tri-f\",\"minWidth\":5,\"maxWidth\":9},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"AB\"}"
   },
+  "board-gipf": {
+    "name": "Boards: GIPF",
+    "description": "Same grid as <code>hex-of-tri</code> with perimeter dot-to-dot chords removed and dots drawn on the outer ring. Standard size is <code>minWidth: 5</code>, <code>maxWidth: 9</code>; use <code>rotate</code> and label options for column notation.",
+    "render": "{\"options\":[\"reverse-numbers\"],\"renderer\":\"stacking-offset\",\"board\":{\"style\":\"gipf\",\"minWidth\":5,\"maxWidth\":9,\"rotate\":90},\"legend\":{\"A\":{\"name\":\"piece\",\"paint\":{\"fill\":1}},\"B\":{\"name\":\"piece\",\"paint\":{\"fill\":2}}},\"pieces\":\"-,-,-,-,-\\n-,-,-,-,-,-\\n-,-,-,-,-,-,-\\n-,-,-,B,-,-,-,-\\n-,-,B,-,-,-,A,-,-\\n-,-,-,A,-,-,-,-\\n-,-,-,-,-,-,-\\n-,-,-,-,-,-\\n-,-,-,-,-\"}"
+  },
   "board-hexhex": {
     "name": "Boards: Hex of hexes",
     "description": "A hexagon of hexes, with pieces placed in the centres.",

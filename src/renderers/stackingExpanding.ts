@@ -87,6 +87,7 @@ export class StackingExpandingRenderer extends RendererBase {
                     ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));
                     break;
                 case "hex-of-tri":
+                case "gipf":
                     ({ grid: gridPoints, boardFill } = hexOfTri(this));
                     break;
                 case "hex-of-cir":

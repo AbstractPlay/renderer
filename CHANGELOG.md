@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-11-14
+## [1.0.0-ci] - 2026-11-20
 
 ### Added
 
+- **`gipf` board style** — same `minWidth` / `maxWidth` grid and parameters as `hex-of-tri`, with outer perimeter chords omitted and tip dots drawn on the outer ring. Playground `board-gipf`; sample [board-gipf.json](/renderer/samples/board-gipf.json).
 - **`squares-diamonds-checkered`:** same topology as `squares-diamonds` with a light/dark checker on octagon play spaces only; optional `startLight`, `checkeredLight`, and `checkeredDark` match `squares-checkered`. Playground `board-squares-diamonds-checkered`; sample [board-squares-diamonds-checkered.json](/renderer/samples/board-squares-diamonds-checkered.json).
 - **`snubsquare` (vertex placement):** `board.blocked` omits grid lines at blocked intersections and excludes them from nearest-vertex `boardClick`. Playground `board-snubsquare-blocked`.
 

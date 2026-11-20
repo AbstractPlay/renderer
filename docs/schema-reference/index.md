@@ -66,6 +66,7 @@ Auto-generated from `schema.json`. Narrative documentation is in the other rende
 | `hex-of-hex` |
 | `hex-of-tri` |
 | `hex-of-tri-f` |
+| `gipf` |
 | `hex-of-cir` |
 | `rect-of-tri` |
 | `snubsquare` |

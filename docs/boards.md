@@ -136,6 +136,12 @@ Same as `hex-of-tri` but pieces are placed on the faces of the triangles.
 
 {% renderWidget "samples/board-hextrif.json" %}
 
+### `gipf`
+
+Same intersection grid and parameters as [`hex-of-tri`](/renderer/boards/) (`minWidth` / `maxWidth`). Omits perimeter chords between outer tips, draws dots on the outer ring (GIPF-style), and keeps the same row/col indexing.
+
+{% renderWidget "samples/board-gipf.json" %}
+
 ### `hex-of-cir`
 
 {% renderWidget "samples/board-hexcir.json" %}

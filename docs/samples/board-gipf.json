@@ -1,0 +1,25 @@
+{
+  "renderer": "stacking-offset",
+  "options": ["reverse-numbers"],
+  "board": {
+    "style": "gipf",
+    "minWidth": 5,
+    "maxWidth": 9,
+    "rotate": 90
+  },
+  "legend": {
+    "A": {
+      "name": "piece",
+      "paint": {
+        "fill": 1
+      }
+    },
+    "B": {
+      "name": "piece",
+      "paint": {
+        "fill": 2
+      }
+    }
+  },
+  "pieces": "-,-,-,-,-\n-,-,-,-,-,-\n-,-,-,-,-,-,-\n-,-,-,B,-,-,-,-\n-,-,B,-,-,-,A,-,-\n-,-,-,A,-,-,-,-\n-,-,-,-,-,-,-\n-,-,-,-,-,-\n-,-,-,-,-"
+}

@@ -279,6 +279,7 @@ export type BoardStyles =
   | "hex-of-hex"
   | "hex-of-tri"
   | "hex-of-tri-f"
+  | "gipf"
   | "hex-of-cir"
   | "rect-of-tri"
   | "snubsquare"
@@ -922,7 +923,7 @@ export interface BoardBasic {
     opacity?: number;
   };
   /**
-   * On `squares*` and `circular-wheel*` boards, blacks out the specified cells and disables clicking. For hex grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, left column.
+   * On `squares*` and `circular-wheel*` boards, blacks out the specified cells and disables clicking. On vertex line grids such as `vertex`, `snubsquare`, `hex-of-tri`, and `bent-tri`, blocked entries remove that intersection and its incident edges and are skipped by nearest-vertex click. For hex cell grids, the hex simply isn't drawn. Like with `annotations`, the renderer knows nothing about a game's notation. You must provide instead the column and row numbers, which are zero-based: 0,0 is the top row, left column.
    *
    * @minItems 1
    */

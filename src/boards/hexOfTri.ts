@@ -1,8 +1,31 @@
-import { IPoint, IPolyPolygon } from "../grids/index.js";
+import { GridPoints, IPoint, IPolyPolygon } from "../grids/index.js";
 import { RendererBase } from "../renderers/_base.js";
 import { hexOfTri as hexOfTriGrid } from "../grids/index.js";
 import { attachNearestGridPointClick, BoardReturn, createGridlineLayers } from "./index.js";
 import { offsetPolygon } from "../common/plotting.js";
+
+/** Tip dot diameter as a fraction of `cellsize` (matches common `markers` dot sizing). */
+export const GIPF_DOT_SIZE = 0.33;
+
+export function hexOfTriIsPerimeter(row: number, col: number, grid: GridPoints): boolean {
+    const lastRow = grid.length - 1;
+    if (row === 0 || row === lastRow) {
+        return true;
+    }
+    const lastCol = grid[row]!.length - 1;
+    return col === 0 || col === lastCol;
+}
+
+/** Whether a grid edge is an outer dot-to-dot chord on a GIPF board (any link between two perimeter nodes). */
+export function gipfShouldOmitPerimeterChord(
+    rowA: number,
+    colA: number,
+    rowB: number,
+    colB: number,
+    grid: GridPoints,
+): boolean {
+    return hexOfTriIsPerimeter(rowA, colA, grid) && hexOfTriIsPerimeter(rowB, colB, grid);
+}
 
 export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     if ( (ctx.json === undefined) || (ctx.rootSvg === undefined) ) {
@@ -15,6 +38,8 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
     }
     const minWidth: number = ctx.json.board.minWidth;
     const maxWidth: number = ctx.json.board.maxWidth;
+    const boardStyle = ctx.json.board.style;
+    const isGipf = boardStyle === "gipf";
     const cellsize = ctx.cellsize;
     let height = ((maxWidth - minWidth) * 2) + 1;
     let half: "top"|"bottom"|undefined;
@@ -102,25 +127,27 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
         midrow = 0;
     }
 
+    const strokeAttrs = {width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round" as const, linejoin: "round" as const};
+    const drawGridLine = (rowA: number, colA: number, rowB: number, colB: number, a: IPoint, b: IPoint) => {
+        if (isGipf && gipfShouldOmitPerimeterChord(rowA, colA, rowB, colB, grid)) {
+            return;
+        }
+        layers.strokes.line(a.x, a.y, b.x, b.y).stroke(strokeAttrs);
+    };
+    const nodeBlocked = (r: number, c: number) => blocked?.find(b => b.row === r && b.col === c) !== undefined;
+
     for (let row = 0; row < grid.length; row++) {
         const currRow = grid[row];
         for (let col = 0; col < grid[row].length; col++) {
             const curr = currRow[col];
-            const isBlocked = blocked?.find(b => b.row === row && b.col === col);
-            if (isBlocked !== undefined) {
+            if (nodeBlocked(row, col)) {
                 continue;
             }
             // always connect to cell to the left
             if (col > 0) {
-                // skip if blocked
-                const found = blocked?.find(b => b.row === row && b.col === col - 1);
-                if (found === undefined) {
+                if (!nodeBlocked(row, col - 1)) {
                     const prev = currRow[col - 1];
-                    const x1 = curr.x;
-                    const y1 = curr.y;
-                    const x2 = prev.x;
-                    const y2 = prev.y;
-                    layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                    drawGridLine(row, col, row, col - 1, curr, prev);
                 }
             }
 
@@ -128,40 +155,45 @@ export const hexOfTri = (ctx: RendererBase): BoardReturn => {
             if (row > 0) {
                 // always connect to the cell directly above, if one exists
                 if (col <= grid[row - 1].length - 1) {
-                    const found = blocked?.find(b => b.row === row-1 && b.col === col);
-                    if (found === undefined) {
+                    if (!nodeBlocked(row - 1, col)) {
                         const prev = grid[row - 1][col];
-                        const x1 = curr.x;
-                        const y1 = curr.y;
-                        const x2 = prev.x;
-                        const y2 = prev.y;
-                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        drawGridLine(row, col, row - 1, col, curr, prev);
                     }
                 }
                 // up to and including the midline, connect to the above-previous cell if there is one
                 if ( (row <= midrow) && (col > 0) ) {
-                    const found = blocked?.find(b => b.row === row-1 && b.col === col-1);
-                    if (found === undefined) {
+                    if (!nodeBlocked(row - 1, col - 1)) {
                         const prev = grid[row - 1][col - 1];
-                        const x1 = curr.x;
-                        const y1 = curr.y;
-                        const x2 = prev.x;
-                        const y2 = prev.y;
-                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        drawGridLine(row, col, row - 1, col - 1, curr, prev);
                     }
                 }
                 // after the midline, connect to the above-next cell instead
                 if (row > midrow) {
-                    const found = blocked?.find(b => b.row === row-1 && b.col === col+1);
-                    if (found === undefined) {
+                    if (!nodeBlocked(row - 1, col + 1)) {
                         const prev = grid[row - 1][col + 1];
-                        const x1 = curr.x;
-                        const y1 = curr.y;
-                        const x2 = prev.x;
-                        const y2 = prev.y;
-                        layers.strokes.line(x1, y1, x2, y2).stroke({width: baseStroke, color: baseColour, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+                        drawGridLine(row, col, row - 1, col + 1, curr, prev);
                     }
                 }
+            }
+        }
+    }
+
+    if (isGipf) {
+        const dotDiameter = cellsize * GIPF_DOT_SIZE;
+        const dotLayer = board.group().id("gipf-dots");
+        for (let row = 0; row < grid.length; row++) {
+            for (let col = 0; col < grid[row].length; col++) {
+                if (nodeBlocked(row, col) || !hexOfTriIsPerimeter(row, col, grid)) {
+                    continue;
+                }
+                const pt = grid[row][col];
+                dotLayer
+                    .circle(dotDiameter)
+                    .fill(baseColour)
+                    .opacity(baseOpacity)
+                    .stroke({width: 0})
+                    .center(pt.x, pt.y)
+                    .attr({"pointer-events": "none"});
             }
         }
     }

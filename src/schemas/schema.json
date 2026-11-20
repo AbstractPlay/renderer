@@ -390,6 +390,7 @@
                 "hex-of-hex",
                 "hex-of-tri",
                 "hex-of-tri-f",
+                "gipf",
                 "hex-of-cir",
                 "rect-of-tri",
                 "snubsquare",

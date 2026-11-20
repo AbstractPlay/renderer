@@ -2939,7 +2939,7 @@ export abstract class RendererBase {
                                 break;
                         }
                         targetGroup.line(xFrom, yFrom, xTo, yTo).addClass(`aprender-marker-${x2uid(cloned)}`).stroke({width: baseStroke * 3, color: colour, opacity, linecap: "round", linejoin: "round"});
-                    } else if (style === "hex-of-tri") {
+                    } else if (style === "hex-of-tri" || style === "gipf") {
                         const midrow = Math.floor(grid.length / 2);
                         let xFrom = 0; let yFrom = 0;
                         let xTo = 0; let yTo = 0;
@@ -3746,6 +3746,7 @@ export abstract class RendererBase {
                     ({ grid: gridPoints, polys, boardFill } = hexOfHex(this));
                     break;
                 case "hex-of-tri":
+                case "gipf":
                     ({ grid: gridPoints, boardFill } = hexOfTri(this));
                     break;
                 case "hex-of-tri-f":
