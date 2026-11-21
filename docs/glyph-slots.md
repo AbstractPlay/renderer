@@ -141,7 +141,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `palace` | fill (fill), border (fill+stroke) | — |
 | core | `piece` | fill (fill), border (stroke) | — |
 | core | `piece-borderless` | fill (fill) | — |
-| core | `piece-chariot` | fill (fill), border (stroke) | — |
+| core | `piece-chariot` | fill (fill), border (stroke), inner (stroke) | — |
 | core | `piece-cog` | fill (fill), border (fill+stroke) | — |
 | core | `piece-dashed` | fill (fill), border (stroke) | — |
 | core | `piece-horse` | fill (fill), border (stroke) | — |

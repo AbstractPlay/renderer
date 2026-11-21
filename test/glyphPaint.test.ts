@@ -233,6 +233,35 @@ describe("glyphPaint", () => {
             );
         });
 
+        function strokeColoursForSlot(svg: string, slot: string): string[] {
+            const tags = svg.match(/<circle[^>]*>/gi) ?? [];
+            return tags
+                .filter((t) => t.includes(`data-slot-stroke="${slot}"`))
+                .map((t) => t.match(/\bstroke="([^"]+)"/i)?.[1]?.toLowerCase() ?? "")
+                .filter((c) => c.length > 0);
+        }
+
+        it("piece-chariot: border paints outer stroke; inner rings inherit border when inner omitted", () => {
+            const svg = renderLegendGlyphs([
+                { name: "piece-chariot", paint: { fill: "#3366cc", border: "#ff9900" } },
+            ]);
+            const lower = svg.toLowerCase();
+            expect((lower.match(/fill="#3366cc"/g) ?? []).length).to.be.at.least(3);
+            expect(strokeColoursForSlot(svg, "border")).to.deep.equal(["#ff9900"]);
+            expect(strokeColoursForSlot(svg, "inner")).to.deep.equal(["#ff9900", "#ff9900"]);
+        });
+
+        it("piece-chariot: paint.inner recolours inner rings only", () => {
+            const svg = renderLegendGlyphs([
+                {
+                    name: "piece-chariot",
+                    paint: { fill: "#3366cc", border: "#ff9900", inner: "#00cc66" },
+                },
+            ]);
+            expect(strokeColoursForSlot(svg, "border")).to.deep.equal(["#ff9900"]);
+            expect(strokeColoursForSlot(svg, "inner")).to.deep.equal(["#00cc66", "#00cc66"]);
+        });
+
         it("chess-king solid: fill, border rim, and highlight slots paint independently", () => {
             const customFill = {
                 func: "custom" as const,

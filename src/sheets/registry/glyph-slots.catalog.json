@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-30T19:26:36.389Z",
+  "generated": "2026-11-21T01:48:07.927Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -608,13 +608,19 @@
           "channels": [
             "fill"
           ],
-          "description": "Primary player colour (body or main silhouette)."
+          "description": "Disc fill (all concentric circles)."
         },
         "border": {
           "channels": [
             "stroke"
           ],
-          "description": "Secondary outline, rim, or theme border band."
+          "description": "Outer rim stroke."
+        },
+        "inner": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Middle and center ring strokes; uses paint.border when paint.inner is omitted."
         }
       },
       "colour2Slot": "border"

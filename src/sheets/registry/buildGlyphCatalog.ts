@@ -16,6 +16,7 @@ const SLOT_DESCRIPTIONS: Record<string, string> = {
     fill: "Primary player colour (body or main silhouette).",
     border: "Secondary outline, rim, or theme border band.",
     detail: "Interior accent, ink, or pips (not the outer rim).",
+    inner: "Interior ring strokes (defaults to border when paint.inner is omitted).",
     target: "Fixed target ring (plane engine cowlings; default brown unless paint.target is set).",
 };
 

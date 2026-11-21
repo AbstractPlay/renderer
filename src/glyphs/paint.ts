@@ -444,6 +444,50 @@ export function paintMapAfterProceduralShading(
     return next;
 }
 
+/** Stroke slot → legend paint key when the stroke slot is omitted (e.g. chariot inner rings). */
+const STROKE_SLOT_FALLBACK_FROM: Record<string, keyof NormalizedPaintMap> = {
+    inner: "border",
+};
+
+function applySlottedStrokeFromEntry(
+    got: SVGSymbol,
+    slot: string,
+    entry: PaintValue,
+    ctx: GlyphPaintApplier,
+    opts: { sheetCellSize: number; colour2Slot: Colour2Slot },
+): void {
+    const colourVal = paintColourValue(entry);
+    const slotOpacity = paintSlotOpacity(entry);
+    const opacityOnly =
+        colourVal === undefined &&
+        !isColourfuncs(entry) &&
+        !isGradientPaint(entry) &&
+        isSlotPaintObject(entry) &&
+        entry.opacity !== undefined;
+
+    if (colourVal === undefined && !opacityOnly) {
+        return;
+    }
+
+    if (opacityOnly) {
+        applyStrokeSlotStrokeChannelOpacity(got, slot, slotOpacity, opts.colour2Slot);
+        return;
+    }
+
+    const resolved = ctx.resolveFill(colourVal as number | string | Gradient | Colourfuncs, "#000", {
+        scale: opts.sheetCellSize,
+    });
+    const { stroke: strokeSels } = findBindings(slot, opts.colour2Slot);
+    for (const sel of strokeSels) {
+        if (sel.startsWith("[data-playerstroke") || sel.startsWith("[data-context-border")) {
+            continue;
+        }
+        got.find(sel).each(function (this: SVGElement) {
+            applyResolvedStroke(this, resolved, slotOpacity, ctx.isPatternSVGElement);
+        });
+    }
+}
+
 /** Apply player/context slot paint; layer opacity must remain 1 on the symbol. */
 export function applySlotPaint(
     got: SVGSymbol,
@@ -514,6 +558,20 @@ export function applySlotPaint(
                 continue;
             }
             ctx.applyPlayerFillTargets(got, legacySuffix, resolved, slotOpacity);
+        }
+    }
+
+    if (opts.slotted) {
+        const strokeOpts = { sheetCellSize: opts.sheetCellSize, colour2Slot: opts.colour2Slot };
+        for (const [strokeSlot, fallbackKey] of Object.entries(STROKE_SLOT_FALLBACK_FROM)) {
+            if (paint[strokeSlot] !== undefined) {
+                continue;
+            }
+            const fallbackEntry = paint[fallbackKey];
+            if (fallbackEntry === undefined) {
+                continue;
+            }
+            applySlottedStrokeFromEntry(got, strokeSlot, fallbackEntry, ctx, strokeOpts);
         }
     }
 }

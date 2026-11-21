@@ -17,6 +17,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Changed
 
+- **`piece-chariot`:** all concentric circles share **`paint.fill`**; outer rim uses **`paint.border`**; middle and centre ring strokes use optional **`paint.inner`** or inherit **`paint.border`** when `inner` is omitted (default stroke black).
 - **Move annotation inset:** Endpoints use ~**10% of cell size** per end (was ~25%). **`vertex*`** and **`hex-of-tri`** boards no longer inset move arrows (centre-to-centre as before). Supported hex styles: **`hex-of-hex`** and **`hex-of-cir`** only.
 - **`line` annotations:** circular endpoint markers by default (same dots as **`move`** with `"arrow": false`); set `"anchors": false` to omit them.
 
