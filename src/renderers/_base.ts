@@ -1713,6 +1713,7 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = this.resolveColour(note.colour ) as string;
                     }
+                    const occludeColour = this.enterExitOccludeStrokeColour();
                     let strokeWeight = this.cellsize* 0.05;
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
                         strokeWeight = this.json.board.strokeWeight;
@@ -1741,7 +1742,7 @@ export abstract class RendererBase {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(poly.r * 2)
@@ -1754,7 +1755,7 @@ export abstract class RendererBase {
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -1765,7 +1766,7 @@ export abstract class RendererBase {
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -1789,7 +1790,7 @@ export abstract class RendererBase {
                                 notes.rect(this.cellsize, this.cellsize)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.rect(this.cellsize, this.cellsize)
@@ -1802,7 +1803,7 @@ export abstract class RendererBase {
                                 notes.circle(this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(this.cellsize * 1.1)
@@ -1823,7 +1824,7 @@ export abstract class RendererBase {
                                 notes.polygon(periph)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(periph)
@@ -1840,6 +1841,7 @@ export abstract class RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = this.resolveColour(note.colour ) as string;
                     }
+                    const occludeColour = this.enterExitOccludeStrokeColour();
                     let strokeWeight = this.cellsize* 0.05;
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
                         strokeWeight = this.json.board.strokeWeight;
@@ -1868,7 +1870,7 @@ export abstract class RendererBase {
                                 notes.circle(poly.r * 2)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(poly.cx, poly.cy)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(poly.r * 2)
@@ -1881,7 +1883,7 @@ export abstract class RendererBase {
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.path(poly.path)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -1892,7 +1894,7 @@ export abstract class RendererBase {
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(poly.points.map(({x,y}) => [x,y].join(",")).join(" "))
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
@@ -1916,7 +1918,7 @@ export abstract class RendererBase {
                                 notes.rect(this.cellsize, this.cellsize)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.rect(this.cellsize, this.cellsize)
@@ -1929,7 +1931,7 @@ export abstract class RendererBase {
                                 notes.circle(this.cellsize * 1.1)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.circle(this.cellsize * 1.1)
@@ -1950,7 +1952,7 @@ export abstract class RendererBase {
                                 notes.polygon(periph)
                                     .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                     .fill("none")
-                                    .stroke({color: this.options.colourContext.board ?? this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                    .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                     .center(pt.x, pt.y)
                                     .attr({ 'pointer-events': 'none' });
                                 notes.polygon(periph)
@@ -5263,6 +5265,12 @@ export abstract class RendererBase {
                 }
             }
         }
+    }
+
+    /** Solid under-stroke for enter/exit dashed outlines; matches board cell / backFill paint. */
+    protected enterExitOccludeStrokeColour(): string {
+        const [fill] = getBoardFill(this, this.options.colourContext.background);
+        return fill ?? this.options.colourContext.background;
     }
 
     protected backFill(boardFill?: Poly, preRotation = false): boolean {

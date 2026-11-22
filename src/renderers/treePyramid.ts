@@ -206,6 +206,7 @@ export class TreePyramidRenderer extends RendererBase {
                     if ( ("colour" in note) && (note.colour !== undefined) ) {
                         colour = this.resolveColour(note.colour) as string;
                     }
+                    const occludeColour = this.enterExitOccludeStrokeColour();
                     let strokeWeight = this.cellsize* 0.05;
                     if (this.json.board !== null && this.json.board !== undefined && "strokeWeight" in this.json.board && this.json.board.strokeWeight !== undefined) {
                         strokeWeight = this.json.board.strokeWeight;
@@ -235,7 +236,7 @@ export class TreePyramidRenderer extends RendererBase {
                             notes.rect(this.cellsize, this.cellsize)
                                 .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                 .fill("none")
-                                .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' });
                             notes.rect(this.cellsize, this.cellsize)
@@ -248,7 +249,7 @@ export class TreePyramidRenderer extends RendererBase {
                             notes.circle(this.cellsize * 1.1)
                                 .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                 .fill("none")
-                                .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' });
                             notes.circle(this.cellsize * 1.1)
@@ -269,7 +270,7 @@ export class TreePyramidRenderer extends RendererBase {
                             notes.polygon(periph)
                                 .addClass(`aprender-annotation-${x2uid(cloned)}`)
                                 .fill("none")
-                                .stroke({color: this.options.colourContext.background, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
+                                .stroke({color: occludeColour, width: strokeWeight, linecap: "round", linejoin: "round", opacity: bgopacity})
                                 .center(pt.x, pt.y)
                                 .attr({ 'pointer-events': 'none' });
                             notes.polygon(periph)
