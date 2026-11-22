@@ -262,6 +262,21 @@ describe("glyphPaint", () => {
             expect(strokeColoursForSlot(svg, "inner")).to.deep.equal(["#00cc66", "#00cc66"]);
         });
 
+        it("piece-horse: dashed inner ring uses inner slot and border fallback", () => {
+            const borderOnly = renderLegendGlyphs([
+                { name: "piece-horse", paint: { fill: "#3366cc", border: "#ff9900" } },
+            ]);
+            expect((borderOnly.toLowerCase().match(/fill="#3366cc"/g) ?? []).length).to.be.at.least(2);
+            expect(strokeColoursForSlot(borderOnly, "border")).to.deep.equal(["#ff9900"]);
+            expect(strokeColoursForSlot(borderOnly, "inner")).to.deep.equal(["#ff9900"]);
+
+            const withInner = renderLegendGlyphs([
+                { name: "piece-horse", paint: { fill: "#3366cc", border: "#ff9900", inner: "#00cc66" } },
+            ]);
+            expect(strokeColoursForSlot(withInner, "border")).to.deep.equal(["#ff9900"]);
+            expect(strokeColoursForSlot(withInner, "inner")).to.deep.equal(["#00cc66"]);
+        });
+
         it("chess-king solid: fill, border rim, and highlight slots paint independently", () => {
             const customFill = {
                 func: "custom" as const,

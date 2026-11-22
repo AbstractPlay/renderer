@@ -1006,12 +1006,12 @@ registerFillOnlyToken("piece-borderless", (canvas: SVGContainer) => {
     return group;
 });
 
-const slotPieceChariot: Record<string, SlotMeta> = {
+const slotPieceConcentricRings: Record<string, SlotMeta> = {
     fill: { channels: ["fill"], description: "Disc fill (all concentric circles)." },
     border: { channels: ["stroke"], description: "Outer rim stroke." },
     inner: {
         channels: ["stroke"],
-        description: "Middle and center ring strokes; uses paint.border when paint.inner is omitted.",
+        description: "Interior ring strokes; uses paint.border when paint.inner is omitted.",
     },
 };
 
@@ -1019,7 +1019,7 @@ defineGlyph(
     sheet.name,
     "piece-chariot",
     {
-        slots: slotPieceChariot,
+        slots: slotPieceConcentricRings,
         colour2Slot: "border",
         build(canvas: SVGContainer) {
             const group = canvas.symbol();
@@ -1087,25 +1087,38 @@ registerDiscToken("piece-dashed", (canvas: SVGContainer) => {
     return group;
 });
 
-registerDiscToken("piece-horse", (canvas: SVGContainer) => {
-    const group = canvas.symbol();
-    const border = 5;
-    group.circle(sheet.cellsize - border)
-        .attr("data-slot-fill", "fill")
-        .attr("data-context-border", true)
-        .fill("#fff")
-        .stroke({width: border, color: "#000"})
-        .attr("data-slot-stroke", "border")
-        .center(sheet.cellsize / 2, sheet.cellsize / 2);
-    group.circle(sheet.cellsize * 0.7)
-        .fill("none")
-        .stroke({width: border * 2, color: "#000", dasharray: "10"})
-        .attr("data-slot-stroke", "border")
-        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+defineGlyph(
+    sheet.name,
+    "piece-horse",
+    {
+        slots: slotPieceConcentricRings,
+        colour2Slot: "border",
+        build(canvas: SVGContainer) {
+            const group = canvas.symbol();
+            const border = 5;
+            const cx = sheet.cellsize / 2;
+            const cy = sheet.cellsize / 2;
+            group
+                .circle(sheet.cellsize - border)
+                .attr("data-slot-fill", "fill")
+                .fill("#fff")
+                .stroke({ width: border, color: "#000" })
+                .attr("data-slot-stroke", "border")
+                .center(cx, cy);
+            group
+                .circle(sheet.cellsize * 0.7)
+                .attr("data-slot-fill", "fill")
+                .fill("#fff")
+                .stroke({ width: border * 2, color: "#000", dasharray: "10" })
+                .attr("data-slot-stroke", "inner")
+                .center(cx, cy);
 
-    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
-    return group;
-});
+            group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+            return group;
+        },
+    },
+    sheet.glyphs,
+);
 
 registerHemisphereDiscToken("piece-lr", slotPieceLR, "lr", buildPieceHemisphereDisc);
 
