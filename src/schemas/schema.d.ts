@@ -53,9 +53,13 @@ export type GlyphPaintColour = ColourResolvable | Gradient;
  */
 export type TextPaintBorderEntry = "auto" | PaintEntry;
 /**
+ * Decoration drawn at the centre of a polymatrix hex cell.
+ */
+export type PolymatrixCellGlyph = Glyph | Glyph[] | string;
+/**
  * Schema for the `matrix` part of a polyomino-related feature
  */
-export type Polymatrix = (ColourResolvable | 0 | null)[][];
+export type Polymatrix = (ColourResolvable | PolymatrixHexCell | 0 | null)[][];
 /**
  * Schema for a single piece in an `isoPieces` object.
  */
@@ -840,6 +844,13 @@ export interface CustomGlyph {
   colour2?: ColourResolvable | Gradient;
 }
 /**
+ * Polymatrix cell with explicit fill and optional per-cell glyph overlay (hex lattice and decorated square polyforms).
+ */
+export interface PolymatrixHexCell {
+  fill: ColourResolvable;
+  glyph?: PolymatrixCellGlyph;
+}
+/**
  * Sheet glyphs on cube faces (`cube` and cube lintels). Keys use intrinsic N/E/S/W + top.
  */
 export interface IsoFaceDecor {
@@ -874,7 +885,7 @@ export interface IsoFaceDecor1 {
   west?: IsoFaceGlyphList1;
 }
 /**
- * One of the preset boards.
+ * One of the preset boards. A style-only object (`style` set, no `width`/`height`/`minWidth`/`maxWidth`) triggers the same inline single-glyph path as `board: null`; `style` still selects polymatrix hex geometry (e.g. `hex-of-hex`, `hex-even-f`).
  */
 export interface BoardBasic {
   style: BoardStyles;

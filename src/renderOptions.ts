@@ -1,4 +1,5 @@
 import type { NumberAlias, Svg } from "@svgdotjs/svg.js";
+import type { APRenderRep } from "./schemas/schema.js";
 import type { IRendererOptionsIn } from "./renderers/_base.js";
 
 /**
@@ -46,6 +47,10 @@ export interface IRenderOptions extends IRendererOptionsIn {
      * Set by {@link renderStatic} and inline glyph helpers; not for live {@link render}.
      */
     staticAnimations?: boolean;
+    /**
+     * Inline glyph only: `null` or a style-only board (`{ "style": "hex-of-hex" }`, etc.) forwarded to the mini render rep.
+     */
+    board?: APRenderRep["board"];
 }
 
 /**

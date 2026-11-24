@@ -3,6 +3,7 @@ import { IPolyPolygon } from "../grids/_base.js";
 import { APRenderRep } from "../schemas/schema.js";
 import { peripheralReferenceSides } from "../references/helpers.js";
 import { IRendererOptionsIn, RendererBase} from "./_base.js";
+import { usesInlineGlyphRender } from "../common/inlineGlyphBoard.js";
 import { placeInlineLegendIcon } from "../common/plotting.js";
 
 /**
@@ -23,8 +24,11 @@ export class DefaultRenderer extends RendererBase {
 
         // BOARD
         // Delegate to style-specific renderer
-        if (this.json.board === null) {
+        if (usesInlineGlyphRender(this.json.board)) {
             return this.renderGlyph();
+        }
+        if (this.json.board === null) {
+            throw new Error("Board is required.");
         }
 
         // Load all the pieces in the legend (have to do this first so the glyphs are available for marking the board)

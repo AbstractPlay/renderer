@@ -1,5 +1,5 @@
 import { Element as SVGElement, G as SVGG, Rect as SVGRect, Circle as SVGCircle, Polygon as SVGPolygon, Path as SVGPath, StrokeData, Svg, Symbol as SVGSymbol, FillData, Gradient as SVGGradient, Box as SVGBox, Text as SVGText } from "@svgdotjs/svg.js";
-import { Grid } from "honeycomb-grid";
+import { Grid, defineHex, rectangle } from "honeycomb-grid";
 import type { Hex } from "honeycomb-grid";
 import { GridPoints, IPoint, type Poly, IPolyPolygon, resolveSquareBoardPoint, type SquarePoint, isTileCornerPoint, expandSquareGrid } from "../grids/index.js";
 import { AnnotationBasic, AnnotationSowing, APRenderRep, AreaButtonBar, AreaCompassRose, AreaKey, AreaPieces, AreaReserves, AreaScrollBar, AreaTrack, AreaVolcanoStash, BoardReference, ButtonBarButton, Colourfuncs, ColourResolvable, Glyph, Gradient, MarkerFence, MarkerFences, PatternName, type Polymatrix } from "../schemas/schema.js";
@@ -22,6 +22,28 @@ import { projectPoint, scale, rotate, usePieceAt, calcPyramidOffset, calcLazoOff
 import { areaTitleBand, measureAreaTitle, placeAreaTitleInBand, placeTextInkTop } from "../common/areaLabelText.js";
 import { dominoClickPayload, composeDominoTile, buildPiecesAreaRows, isDominoTileRef, piecesAreaCaption, piecesAreaCaptionTextYFromSlotTop, piecesAreaDominoTileTopFromSlotTop, piecesAreaHorizontalGap, piecesAreaLegendKey, piecesAreaPieceCenterYFromSlotTop, piecesAreaSlotHeight, piecesAreaSlotWidth, piecesAreaVerticalGap, shouldRotateAreaPieces } from "../common/dominoHand.js";
 import { glyph2uid, x2uid } from "../common/glyph2uid.js";
+import { usesInlineGlyphRender } from "../common/inlineGlyphBoard.js";
+import {
+    hexOffsetParams,
+    hexNeighborAt,
+    isPolymatrixCellEmpty,
+    polymatrixExteriorStrokeWidth,
+    polymatrixOccupied,
+    resolvePolymatrixLegendLattice,
+    resolvePolymatrixCell,
+    type PolyLattice,
+} from "../common/polymatrix.js";
+import {
+    polyhexOfHexCenterGrid,
+    polymatrixCellExteriorEdgeIndices,
+    polymatrixExteriorSegmentsFromPolygons,
+    polyhexOfHexCellPolygon,
+    polyhexOfHexExteriorEdges,
+    polyhexOfHexExteriorSegments,
+    chainExteriorSegmentsToPathD,
+    POLYHEX_ICON_STROKE_PAD,
+    polyhexOfHexLayoutBox,
+} from "../common/polyhexGeometry.js";
 import {
     applyFillSlotFillChannelOpacity,
     applySlotDefaults,
@@ -923,7 +945,7 @@ export abstract class RendererBase {
      * Layer glyphs into a parent group (legend composite or isometric face overlay).
      */
     protected composeGlyphsLayer(
-        parent: Svg,
+        parent: Svg | SVGG,
         glyphs: Glyph[],
         opts: {
             legendKey: string;
@@ -977,7 +999,7 @@ export abstract class RendererBase {
                     got = already;
                     shared = true;
                 } else {
-                    got = this.loadGlyph(g.name, player, layout === "isoFace" ? parent : this.rootSvg);
+                    got = this.loadGlyph(g.name, player, layout === "isoFace" ? (parent as Svg) : this.rootSvg);
                     this.glyphCache.set(cacheKey, got);
                 }
                 if (this.options.glyphmap.length > 0) {
@@ -998,11 +1020,11 @@ export abstract class RendererBase {
                     got = already;
                     shared = true;
                 } else {
-                    got = this.loadCustomGlyph(defId, layout === "isoFace" ? parent : this.rootSvg);
+                    got = this.loadCustomGlyph(defId, layout === "isoFace" ? (parent as Svg) : this.rootSvg);
                     this.glyphCache.set(cacheKey, got);
                 }
             } else if (("text" in g) && (g.text !== undefined) && (g.text.length > 0)) {
-                const symbolParent = layout === "isoFace" ? (parent.defs() as Svg) : parent;
+                const symbolParent = layout === "isoFace" ? (parent as Svg).defs() as Svg : this.rootSvg;
                 const group = symbolParent.symbol();
                 const fontsize = TEXT_GLYPH_BASE_FONT_SIZE;
                 const fontOpts: Record<string, unknown> = {
@@ -1280,13 +1302,20 @@ export abstract class RendererBase {
                 rotate(use, rotation, rotOrigin, rotOriginY);
             }
 
-            if (layout === "legend" && ("board" in this.json) && (this.json.board !== undefined) && (this.json.board !== null) && ("style" in this.json.board) && (this.json.board.style !== undefined)) {
-                const style = this.json.board.style;
-                if ((style === "hex-of-hex") || (style === "hex-slanted")) {
+            if (layout === "legend") {
+                const legendLattice = resolvePolymatrixLegendLattice(this.json);
+                const style =
+                    this.json.board !== null &&
+                    this.json.board !== undefined &&
+                    "style" in this.json.board &&
+                    this.json.board.style !== undefined
+                        ? this.json.board.style
+                        : undefined;
+                if (legendLattice === "hex" || style === "hex-of-hex" || style === "hex-slanted") {
                     factor *= 0.85;
-                } else if (style.endsWith("-tri-f")) {
+                } else if (style !== undefined && style.endsWith("-tri-f")) {
                     factor *= 0.5;
-                } else if (style.startsWith("vertex")) {
+                } else if (style !== undefined && style.startsWith("vertex")) {
                     factor *= 1.16;
                 }
             }
@@ -1411,15 +1440,9 @@ export abstract class RendererBase {
             for (const key in this.json.legend) {
                 if (Array.isArray(this.json.legend[key]) && Array.isArray((this.json.legend[key] as unknown[])[0])) {
                     const matrix = this.json.legend[key] as Polymatrix;
-                    const height = matrix.length;
-                    let width = 0;
-                    if (height > 0) {
-                        width = matrix[0].length;
-                    }
-                    const realwidth = (width * this.cellsize);
-                    const realheight = (height * this.cellsize);
-                    maxWidth = Math.max(maxWidth, realwidth);
-                    maxHeight = Math.max(maxHeight, realheight);
+                    const px = this.polymatrixPixelSize(matrix);
+                    maxWidth = Math.max(maxWidth, px.width);
+                    maxHeight = Math.max(maxHeight, px.height);
                 }
             }
             // now build them properly, adjusting the viewbox so they're proportional and centred
@@ -1427,21 +1450,18 @@ export abstract class RendererBase {
             for (const key in this.json.legend) {
                 if (Array.isArray(this.json.legend[key]) && Array.isArray((this.json.legend[key] as unknown[])[0])) {
                     const matrix = this.json.legend[key] as Polymatrix;
-                    const height = matrix.length;
-                    let width = 0;
-                    if (height > 0) {
-                        width = matrix[0].length;
-                    }
-                    const realwidth = (width * this.cellsize);
-                    const realheight = (height * this.cellsize);
+                    const { width: realwidth, height: realheight } = this.polymatrixPixelSize(matrix);
                     const deltax = (maxWidth - realwidth) / 2 * -1;
                     const deltay = (maxHeight - realheight) / 2 * -1;
 
                     // create nested SVG of the piece, with border
                     const nested = this.rootSvg.defs().nested().id(key)
                         .viewbox(deltax, deltay, maxWidth, maxHeight);
-                    this.buildPoly(nested, matrix, {divided: true});
-                    if (this.json.board === null) {
+                    if (this.polymatrixLegendLattice() === "hex") {
+                        nested.attr("overflow", "visible");
+                    }
+                    this.buildPolymatrix(nested, matrix, {divided: true});
+                    if (usesInlineGlyphRender(this.json.board)) {
                         const iconSpan = Math.max(maxWidth, maxHeight) * Math.SQRT2;
                         const padX = (iconSpan - maxWidth) / 2;
                         const padY = (iconSpan - maxHeight) / 2;
@@ -5676,6 +5696,88 @@ export abstract class RendererBase {
         }
     }
 
+    protected polymatrixLegendLattice(): PolyLattice {
+        return resolvePolymatrixLegendLattice(this.json);
+    }
+
+    protected polymatrixPixelSize(matrix: Polymatrix): { width: number; height: number } {
+        if (this.polymatrixLegendLattice() === "hex") {
+            return this.polymatrixHexPixelSize(matrix);
+        }
+        const height = matrix.length;
+        let width = 0;
+        if (height > 0) {
+            width = matrix[0]?.length ?? 0;
+        }
+        return { width: width * this.cellsize, height: height * this.cellsize };
+    }
+
+    protected polymatrixHexPixelSize(matrix: Polymatrix): { width: number; height: number } {
+        const box = this.polyhexLayoutBox(matrix);
+        return { width: box.width, height: box.height };
+    }
+
+    protected polyhexLayoutBox(matrix: Polymatrix): { minX: number; minY: number; width: number; height: number } {
+        const board = this.json?.board;
+        const style =
+            board !== null && board !== undefined && "style" in board && board.style !== undefined
+                ? board.style
+                : "hex-of-hex";
+        if (style === "hex-of-hex") {
+            return polyhexOfHexLayoutBox(matrix, this.cellsize);
+        }
+        const { orientation, offset } = hexOffsetParams(style);
+        const dim = this.cellsize;
+        const myHex = defineHex({ orientation, offset, dimensions: dim });
+        const gridW = Math.max(matrix[0]?.length ?? 1, 1);
+        const gridH = Math.max(matrix.length, 1);
+        const grid = new Grid(myHex, rectangle({ width: gridW, height: gridH }));
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        for (let y = 0; y < matrix.length; y++) {
+            const row = matrix[y];
+            if (row === undefined) {
+                continue;
+            }
+            for (let x = 0; x < row.length; x++) {
+                if (isPolymatrixCellEmpty(row[x])) {
+                    continue;
+                }
+                const hex = grid.getHex({ col: x, row: y }) as Hex | undefined;
+                if (hex === undefined) {
+                    continue;
+                }
+                for (const corner of hex.corners) {
+                    minX = Math.min(minX, corner.x);
+                    minY = Math.min(minY, corner.y);
+                    maxX = Math.max(maxX, corner.x);
+                    maxY = Math.max(maxY, corner.y);
+                }
+            }
+        }
+        if (minX === Infinity) {
+            const pad = POLYHEX_ICON_STROKE_PAD;
+            return { minX: -pad, minY: -pad, width: dim + pad * 2, height: dim + pad * 2 };
+        }
+        const pad = POLYHEX_ICON_STROKE_PAD;
+        return {
+            minX: minX - pad,
+            minY: minY - pad,
+            width: maxX - minX + pad * 2,
+            height: maxY - minY + pad * 2,
+        };
+    }
+
+    protected buildPolymatrix(svg: Svg, matrix: Polymatrix, opts: { divided?: boolean; tlmark?: boolean } = {}): void {
+        if (this.polymatrixLegendLattice() === "hex") {
+            this.buildPolyHex(svg, matrix, opts);
+        } else {
+            this.buildPoly(svg, matrix, opts);
+        }
+    }
+
     // These functions let the base class build polyominoes
     protected buildPoly(svg: Svg, matrix: Polymatrix, {divided = false, tlmark = false} = {}): void {
         if (this.json === undefined) {
@@ -5699,11 +5801,11 @@ export abstract class RendererBase {
         }
         for (let y = 0; y < matrix.length; y++) {
             for (let x = 0; x < matrix[y].length; x++) {
-                const val = matrix[y][x];
-                if (val === null || val === 0) {
+                const resolved = resolvePolymatrixCell(matrix[y][x], this.json.legend);
+                if (resolved === undefined) {
                     continue;
                 }
-                const colour = this.resolveColour(val) as string;
+                const colour = this.resolveColour(resolved.fill) as string;
                 let borderColour = colour;
                 if (divided) {
                     borderColour = baseColour;
@@ -5713,19 +5815,19 @@ export abstract class RendererBase {
 
                 // add borders as necessary
                 // top
-                if (y === 0 || matrix[y-1][x] === null || matrix[y-1][x] === 0) {
+                if (y === 0 || isPolymatrixCellEmpty(matrix[y - 1]?.[x])) {
                     this.drawBorder(svg, x * this.cellsize, y * this.cellsize, (x+1) * this.cellsize, y * this.cellsize);
                 }
                 // bottom
-                if (y === height - 1 || matrix[y+1][x] === null || matrix[y+1][x] === 0) {
+                if (y === height - 1 || isPolymatrixCellEmpty(matrix[y + 1]?.[x])) {
                     this.drawBorder(svg, x * this.cellsize, (y+1) * this.cellsize, (x+1) * this.cellsize, (y+1) * this.cellsize);
                 }
                 // left
-                if (x === 0 || matrix[y][x-1] === null || matrix[y][x-1] === 0) {
+                if (x === 0 || isPolymatrixCellEmpty(matrix[y]?.[x - 1])) {
                     this.drawBorder(svg, x * this.cellsize, y * this.cellsize, x * this.cellsize, (y+1) * this.cellsize);
                 }
                 // right
-                if (x === width - 1 || matrix[y][x+1] === null || matrix[y][x+1] === 0) {
+                if (x === width - 1 || isPolymatrixCellEmpty(matrix[y]?.[x + 1])) {
                     this.drawBorder(svg, (x+1) * this.cellsize, y * this.cellsize, (x+1) * this.cellsize, (y+1) * this.cellsize);
                 }
             }
@@ -5737,27 +5839,234 @@ export abstract class RendererBase {
         }
     }
 
-    protected drawBorder(svg: Svg, x1: number, y1: number, x2: number, y2: number): void {
+    protected buildPolyHex(svg: Svg, matrix: Polymatrix, {divided = false, tlmark = false} = {}): void {
+        if (this.json === undefined || this.rootSvg === undefined) {
+            throw new Error("Invalid JSON");
+        }
+        let baseColour = this.options.colourContext.strokes;
+        const board = this.json.board;
+        if (
+            board !== null &&
+            board !== undefined &&
+            "strokeColour" in board &&
+            board.strokeColour !== undefined
+        ) {
+            baseColour = this.resolveColour(board.strokeColour) as string;
+        }
+        const style =
+            board !== null && board !== undefined && "style" in board && board.style !== undefined
+                ? board.style
+                : "hex-of-hex";
+        const dim = this.cellsize;
+        const layoutBox = this.polyhexLayoutBox(matrix);
+        const { minX, minY } = layoutBox;
+        const edgeStroke = this.polymatrixEdgeStroke();
+        const exteriorStrokeW = polymatrixExteriorStrokeWidth(
+            matrix,
+            layoutBox,
+            dim,
+            edgeStroke.width,
+        );
+        const legend = this.json.legend;
+
+        const drawCellPolygon = (
+            pts: { x: number; y: number }[],
+            cx: number,
+            cy: number,
+            x: number,
+            y: number,
+            cell: ReturnType<typeof resolvePolymatrixCell> & object,
+            exteriorEdges?: number[],
+            perCellOutline = true,
+        ): void => {
+            const colour = this.resolveColour(cell.fill) as string;
+            const fillColour = divided ? colour : colour;
+            let borderColour = colour;
+            if (divided) {
+                borderColour = baseColour;
+            }
+            const points = pts.map((p) => `${p.x - minX},${p.y - minY}`).join(" ");
+            svg.polygon(points).fill({ color: fillColour }).stroke({ color: borderColour, width: divided ? 0 : 1 });
+
+            if (perCellOutline) {
+                let edges = exteriorEdges;
+                if (edges === undefined) {
+                    edges = [];
+                    for (let dir = 0; dir < 6; dir++) {
+                        const nb = hexNeighborAt(x, y, dir);
+                        const nrow = matrix[nb.row];
+                        const neighbour = nrow?.[nb.col];
+                        if (!isPolymatrixCellEmpty(neighbour)) {
+                            continue;
+                        }
+                        edges.push(dir);
+                    }
+                }
+                for (const edge of edges) {
+                    const c0 = pts[edge]!;
+                    const c1 = pts[(edge + 1) % 6]!;
+                    this.drawPolyhexEdge(svg, c0.x - minX, c0.y - minY, c1.x - minX, c1.y - minY, exteriorStrokeW);
+                }
+            }
+
+            if (cell.glyphs.length > 0) {
+                const glyphSize = dim * 0.45;
+                const overlay = svg.group().translate(cx - minX, cy - minY);
+                this.composeGlyphsLayer(overlay, cell.glyphs, {
+                    legendKey: `polyhex-${x}-${y}`,
+                    cellsize: glyphSize,
+                    layout: "legend",
+                    fontStyleRules: [],
+                });
+            }
+        };
+
+        if (style === "hex-of-hex") {
+            const centerGrid = polyhexOfHexCenterGrid(matrix, dim);
+            for (const { x, y, cell } of polymatrixOccupied(matrix, legend)) {
+                const pts = polyhexOfHexCellPolygon(centerGrid, x, y, dim);
+                if (pts === undefined) {
+                    continue;
+                }
+                const center = centerGrid[y]![x]!;
+                const exterior = polyhexOfHexExteriorEdges(matrix, centerGrid, x, y, dim);
+                drawCellPolygon(pts, center.x, center.y, x, y, cell, exterior, !divided);
+            }
+            if (divided) {
+                const segments = polyhexOfHexExteriorSegments(matrix, centerGrid, dim);
+                const pathDs = chainExteriorSegmentsToPathD(segments, minX, minY);
+                for (const d of pathDs) {
+                    svg.path(d)
+                        .fill("none")
+                        .stroke({
+                            color: edgeStroke.colour,
+                            width: exteriorStrokeW,
+                            opacity: edgeStroke.opacity,
+                            linecap: "butt",
+                            linejoin: "miter",
+                        });
+                }
+            }
+        } else {
+            const { orientation, offset } = hexOffsetParams(style);
+            const myHex = defineHex({ orientation, offset, dimensions: dim });
+            const gridW = Math.max(matrix[0]?.length ?? 1, 1);
+            const gridH = Math.max(matrix.length, 1);
+            const grid = new Grid(myHex, rectangle({ width: gridW, height: gridH }));
+            const polygonsByCell = new Map<string, { pts: IPoint[]; hex: Hex }>();
+            for (const { x, y } of polymatrixOccupied(matrix, legend)) {
+                const hex = grid.getHex({ col: x, row: y }) as Hex | undefined;
+                if (hex === undefined) {
+                    continue;
+                }
+                const pts = hex.corners.map((c) => ({ x: c.x, y: c.y }));
+                polygonsByCell.set(`${x},${y}`, { pts, hex });
+            }
+            const polygonMap = new Map<string, IPoint[]>();
+            for (const [key, { pts }] of polygonsByCell) {
+                polygonMap.set(key, pts);
+            }
+            const exteriorAt = (col: number, row: number): number[] =>
+                polymatrixCellExteriorEdgeIndices(polygonMap, col, row);
+            for (const { x, y, cell } of polymatrixOccupied(matrix, legend)) {
+                const entry = polygonsByCell.get(`${x},${y}`);
+                if (entry === undefined) {
+                    continue;
+                }
+                const exterior = exteriorAt(x, y);
+                drawCellPolygon(entry.pts, entry.hex.x, entry.hex.y, x, y, cell, exterior, !divided);
+            }
+            if (divided) {
+                const segments = polymatrixExteriorSegmentsFromPolygons(polygonMap, exteriorAt);
+                const pathDs = chainExteriorSegmentsToPathD(segments, minX, minY);
+                for (const d of pathDs) {
+                    svg.path(d)
+                        .fill("none")
+                        .stroke({
+                            color: edgeStroke.colour,
+                            width: exteriorStrokeW,
+                            opacity: edgeStroke.opacity,
+                            linecap: "butt",
+                            linejoin: "miter",
+                        });
+                }
+            }
+        }
+
+        if (tlmark) {
+            const first = polymatrixOccupied(matrix, legend)[0];
+            if (first !== undefined) {
+                let cx: number | undefined;
+                let cy: number | undefined;
+                if (style === "hex-of-hex") {
+                    const centerGrid = polyhexOfHexCenterGrid(matrix, dim);
+                    const center = centerGrid[first.y]?.[first.x];
+                    if (center !== undefined) {
+                        cx = center.x;
+                        cy = center.y;
+                    }
+                } else {
+                    const { orientation, offset } = hexOffsetParams(style);
+                    const myHex = defineHex({ orientation, offset, dimensions: dim });
+                    const gridW = Math.max(matrix[0]?.length ?? 1, 1);
+                    const gridH = Math.max(matrix.length, 1);
+                    const grid = new Grid(myHex, rectangle({ width: gridW, height: gridH }));
+                    const hex = grid.getHex({ col: first.x, row: first.y }) as Hex | undefined;
+                    if (hex !== undefined) {
+                        cx = hex.x;
+                        cy = hex.y;
+                    }
+                }
+                if (cx !== undefined && cy !== undefined) {
+                    svg.circle(dim / 5)
+                        .center(cx - minX, cy - minY)
+                        .stroke({ width: 1, color: this.options.colourContext.strokes })
+                        .fill(this.options.colourContext.strokes);
+                }
+            }
+        }
+    }
+
+    protected polymatrixEdgeStroke(): { width: number; colour: string; opacity: number } {
         if (this.json === undefined) {
             throw new Error("No valid json found.");
         }
-        let baseStroke = 1;
-        let baseColour = this.options.colourContext.strokes;
-        let baseOpacity = 1;
+        let width = 1;
+        let colour = this.options.colourContext.strokes;
+        let opacity = 1;
         const board = this.json.board;
         if (board !== null && board !== undefined) {
-            if ( ("strokeWeight" in board) && (board.strokeWeight !== undefined) ) {
-                baseStroke = board.strokeWeight;
+            if ("strokeWeight" in board && board.strokeWeight !== undefined) {
+                width = board.strokeWeight;
             }
-            if ( ("strokeColour" in board) && (board.strokeColour !== undefined) ) {
-                baseColour = this.resolveColour(board.strokeColour) as string;
+            if ("strokeColour" in board && board.strokeColour !== undefined) {
+                colour = this.resolveColour(board.strokeColour) as string;
             }
-            if ( ("strokeOpacity" in board) && (board.strokeOpacity !== undefined) ) {
-                baseOpacity = board.strokeOpacity;
+            if ("strokeOpacity" in board && board.strokeOpacity !== undefined) {
+                opacity = board.strokeOpacity;
             }
         }
+        return { width, colour, opacity };
+    }
+
+    protected drawBorder(svg: Svg, x1: number, y1: number, x2: number, y2: number): void {
+        const { width, colour, opacity } = this.polymatrixEdgeStroke();
         svg.line(x1, y1, x2, y2)
-           .stroke({color: baseColour, width: baseStroke, opacity: baseOpacity, linecap: "round", linejoin: "round"});
+            .stroke({ color: colour, width, opacity, linecap: "round", linejoin: "round" });
+    }
+
+    /** Exterior hex polymatrix edges: miter/butt joins avoid wedge gaps at vertices. */
+    protected drawPolyhexEdge(
+        svg: Svg,
+        x1: number,
+        y1: number,
+        x2: number,
+        y2: number,
+        width = this.polymatrixEdgeStroke().width,
+    ): void {
+        const { colour, opacity } = this.polymatrixEdgeStroke();
+        svg.line(x1, y1, x2, y2)
+            .stroke({ color: colour, width, opacity, linecap: "butt", linejoin: "miter" });
     }
 
     protected getStackedPoint (pts: GridPoints, col: number, row: number): IPoint|undefined {

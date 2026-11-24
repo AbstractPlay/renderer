@@ -4,6 +4,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { Matrix } from "transformation-matrix-js";
 import { effectiveCubeYaw } from "./cubeOrientation.js";
 import { IsoProjectionParams, projectedCellDepth, usesLayeredCellDraw } from "./projection.js";
+import { isoBoardPieceScale } from "./pieceSymbols.js";
 import { isoSymbolPlacement } from "./symbolPlacement.js";
 import { IsoPiecesGrid, isMultiFaceCube, parseStackEntry } from "./stack.js";
 
@@ -138,11 +139,7 @@ export const computeCellSortKey = (opts: {
             }
             const piece = rootSvg.findOne("#" + pieceId) as Svg | null;
             if (piece !== null) {
-                let pcScale = 0.75;
-                if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
-                    pcScale = legend[glyph].scale as number;
-                }
-                pcScale *= basePcScale;
+                const pcScale = isoBoardPieceScale(glyph, legend, basePcScale);
                 anchorY = isoSymbolPlacement(cellsize, entry.x, anchorY, piece, pcScale).anchorY;
             }
         }

@@ -915,6 +915,40 @@
                 { "$ref": "#/$defs/customGlyph" }
             ]
         },
+        "polymatrixCellGlyph": {
+            "description": "Decoration drawn at the centre of a polymatrix hex cell.",
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/glyph"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/glyph"
+                    }
+                },
+                {
+                    "type": "string",
+                    "description": "Legend key referencing another def."
+                }
+            ]
+        },
+        "polymatrixHexCell": {
+            "description": "Polymatrix cell with explicit fill and optional per-cell glyph overlay (hex lattice and decorated square polyforms).",
+            "type": "object",
+            "properties": {
+                "fill": {
+                    "$ref": "#/$defs/colourResolvable"
+                },
+                "glyph": {
+                    "$ref": "#/$defs/polymatrixCellGlyph"
+                }
+            },
+            "required": [
+                "fill"
+            ],
+            "additionalProperties": false
+        },
         "polymatrix": {
             "description": "Schema for the `matrix` part of a polyomino-related feature",
             "type": "array",
@@ -924,6 +958,9 @@
                     "anyOf": [
                         {
                             "$ref": "#/$defs/colourResolvable"
+                        },
+                        {
+                            "$ref": "#/$defs/polymatrixHexCell"
                         },
                         {
                             "type": "number",
@@ -3532,7 +3569,7 @@
             "additionalProperties": false
         },
         "boardBasic": {
-            "description": "One of the preset boards.",
+            "description": "One of the preset boards. A style-only object (`style` set, no `width`/`height`/`minWidth`/`maxWidth`) triggers the same inline single-glyph path as `board: null`; `style` still selects polymatrix hex geometry (e.g. `hex-of-hex`, `hex-even-f`).",
             "type": "object",
             "properties": {
                 "style": {
@@ -4577,7 +4614,7 @@
             "description": "This is the game board itself.",
             "oneOf": [
                 {
-                    "description": "Used to render a single glyph",
+                    "description": "Used to render a single glyph (`pieces` as a legend key string). Polymatrix lattice defaults to square; use a style-only `board` object for hex geometry without drawing a grid.",
                     "type": "null"
                 },
                 {

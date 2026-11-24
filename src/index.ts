@@ -65,6 +65,21 @@ export type { BoardChromeInput, ValidateResult } from "./boardChrome/index.js";
 import type { IRenderOptions } from "./renderOptions.js";
 
 export { addPrefix };
+export {
+    resolvePolymatrixCell,
+    polymatrixOccupied,
+    polymatrixLattice,
+    resolvePolymatrixLegendLattice,
+    type PolyLattice,
+} from "./common/polymatrix.js";
+export { isBoardStyleOnlyInline, usesInlineGlyphRender } from "./common/inlineGlyphBoard.js";
+export {
+    matrixHexRotate60,
+    polyformToHexLintels,
+    polyformToBoardPieces,
+    type PolyformBoardIsoPiece,
+    type PolyformLintelCell,
+} from "./common/polyhexMatrix.js";
 
 /**
  * Creates a detached DOM element into which the image is rendered unseen.
@@ -97,24 +112,28 @@ const isIsoLegendEntry = (entry: LegendEntry): boolean => {
     );
 };
 
-const buildMiniLegendRep = (entry: LegendEntry): APRenderRep => {
+const buildMiniLegendRep = (
+    entry: LegendEntry,
+    board: APRenderRep["board"] = null,
+): APRenderRep => {
     if (isIsoLegendEntry(entry)) {
         return {
             renderer: "isometric",
-            board: null,
+            board,
             legend: { A: entry },
             pieces: "A",
         };
     }
     return {
-        board: null,
+        board,
         legend: { A: entry },
         pieces: "A",
     };
 };
 
 const renderMiniLegend = (entry: LegendEntry, opts = {} as IRenderOptions): string => {
-    const obj = buildMiniLegendRep(entry);
+    const board = opts.board !== undefined ? opts.board : null;
+    const obj = buildMiniLegendRep(entry, board);
     if (opts.target != null) {
         const renderOpts = { ...opts, staticAnimations: true };
         const canvas = render(obj, renderOpts);

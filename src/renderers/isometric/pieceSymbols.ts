@@ -8,10 +8,49 @@ import {
     boardHexOrientation,
     drawnCubeEdges,
     effectiveLintelPiece,
+    isLintelPiece,
     isSpacerPiece,
     parseLintelPiece,
     resolveHexLintelDrawnEdges,
 } from "./lintels.js";
+import type { APRenderRep } from "../../schemas/schema.js";
+
+type RenderLegend = NonNullable<APRenderRep["legend"]>;
+
+const legendPieceName = (entry: RenderLegend[string] | undefined): string | undefined => {
+    if (entry === undefined || typeof entry !== "object" || Array.isArray(entry)) {
+        return undefined;
+    }
+    if ("piece" in entry && typeof entry.piece === "string") {
+        return entry.piece;
+    }
+    return undefined;
+};
+
+/** Scale factor for board/stack placement of an isometric piece glyph. */
+export const isoBoardPieceScale = (
+    glyph: string,
+    legend: RenderLegend | undefined,
+    basePcScale: number,
+): number => {
+    const piece = legendPieceName(legend?.[glyph]);
+    const lintel = piece !== undefined && isLintelPiece(piece);
+    let pcScale = lintel ? 1 : 0.75;
+    const legendEntry = legend?.[glyph];
+    if (
+        legendEntry !== undefined
+        && typeof legendEntry === "object"
+        && !Array.isArray(legendEntry)
+        && "scale" in legendEntry
+        && legendEntry.scale !== undefined
+    ) {
+        pcScale = legendEntry.scale as number;
+    }
+    if (lintel) {
+        return pcScale;
+    }
+    return pcScale * basePcScale;
+};
 
 export const effectiveRotatedPiece = (
     piece: IsometricPieces | string,

@@ -7,16 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-11-22
+## [1.0.0-ci] - 2026-11-24
 
 ### Added
 
+- **Hex polymatrix** — `polymatrix` cells may use `{ "fill", "glyph?" }`. On `hex-of-hex` boards, `buildPolyHex` draws unitary stash and staging icons (hex-of-hex cell geometry, geometric exterior edges, per-cell `cellSize` viewBox slots with stroke padding). Isometric renderer supports `polyomino` areas (60° rotate and cancel; no flip). Board placement can use odd-r **hex lintels** via `polyformToHexLintels` / `polyformToBoardPieces` (full-size lintel scale on the playfield). Exports `matrixHexRotate60`. Playground `niche-polyhex`; sample [niche-polyhex.json](/renderer/samples/niche-polyhex.json).
 - **`gipf` board style** — same `minWidth` / `maxWidth` grid and parameters as `hex-of-tri`, with outer perimeter chords omitted and tip dots drawn on the outer ring. Playground `board-gipf`; sample [board-gipf.json](/renderer/samples/board-gipf.json).
 - **`squares-diamonds-checkered`:** same topology as `squares-diamonds` with a light/dark checker on octagon play spaces only; optional `startLight`, `checkeredLight`, and `checkeredDark` match `squares-checkered`. Playground `board-squares-diamonds-checkered`; sample [board-squares-diamonds-checkered.json](/renderer/samples/board-squares-diamonds-checkered.json).
 - **`snubsquare` (vertex placement):** `board.blocked` omits grid lines at blocked intersections and excludes them from nearest-vertex `boardClick`. Playground `board-snubsquare-blocked`.
 
 ### Changed
 
+- **Inline polymatrix geometry** — Style-only `board` (`style` only, no grid) keeps the single-glyph path; polymatrix placement and cell shape follow that `style` (same honeycomb rules as a full `hex-even-f` / `hex-of-hex` board). **Fixed** rect-of-hex polymatrix icons using geometric shared edges for outlines (not odd-r `hexNeighborAt`), so matrices like `A3` render as one connected piece on `hex-even-f`.
 - **`piece-chariot`** and **`piece-horse`:** concentric circles share **`paint.fill`**; outer rim uses **`paint.border`**; interior ring strokes use optional **`paint.inner`** or inherit **`paint.border`** when `inner` is omitted (default stroke black).
 - **Move annotation inset:** Endpoints use ~**10% of cell size** per end (was ~25%). **`vertex*`** and **`hex-of-tri`** boards no longer inset move arrows (centre-to-centre as before). Supported hex styles: **`hex-of-hex`** and **`hex-of-cir`** only.
 - **`line` annotations:** circular endpoint markers by default (same dots as **`move`** with `"arrow": false`); set `"anchors": false` to omit them.

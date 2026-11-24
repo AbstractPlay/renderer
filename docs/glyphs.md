@@ -216,7 +216,9 @@ Board **marker** nudges (labels, halos, and so on) are unrelated; they use the m
 
 **Upright** layers counter-rotate using **`board.rotate` plus `opts.rotate`** so they stay readable when the playground spins the board. That includes **text** (default upright unless `orientation: "fluid"`) and sheet glyphs with **`orientation: "vertical"`**. Piece-relative nudges on those layers are authored in the **`board.rotate` frame** from the render JSON; any extra **`opts.rotate`** is applied to the nudge vector before the layer’s counter-rotate so composite offsets stay aligned with sibling layers.
 
-The legend also supports **polymatrix** entries (arrays of arrays for the polyomino renderer) and **isoPiece** entries (isometric renderer). See [Engines](/renderer/engines/).
+The legend also supports **polymatrix** entries (arrays of arrays for polyomino stash/staging) and **isoPiece** entries (isometric renderer). On hex boards each cell may be a colour/number, `0`/`null`, or `{ "fill": <colour>, "glyph": <glyph|glyph[]|legend key> }` for fill plus a centred overlay. See [Engines](/renderer/engines/) and [niche-polyhex](/renderer/samples/niche-polyhex.json).
+
+With **`board: null`** (single inline icon, `renderLegendGlyph`, Dokuwiki), polymatrix keys default to **square** cells. For hex, use a **style-only board** — `{ "style": "hex-of-hex" }`, `{ "style": "hex-even-f" }`, etc. with **no** `width`/`height`/`minWidth`/`maxWidth`. That keeps the inline single-glyph path (no grid drawn) but **`loadLegend` and polymatrix geometry match that `style`** (honeycomb for `hex-*`, hex-of-hex for `hex-of-hex`). The full `legend` is always built into defs.
 
 ### Isometric face overlays
 

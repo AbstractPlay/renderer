@@ -26,9 +26,11 @@ import { isoShadeFace, isoShadeFaces, IsoFaceFills } from "./isometric/shading.j
 import { ensureIsoContactBlurFilter, isoContactShadow } from "./isometric/shadow.js";
 import { glyphViewBoxSquareDrawSize, isoSymbolDimensions, isoSymbolPlacement } from "./isometric/symbolPlacement.js";
 import { IsoPiecesGrid, isMultiFaceCube, isoPieceHeight, parseStackEntry } from "./isometric/stack.js";
-import { effectiveRotatedPiece, generateIsoLintelOrSpacer } from "./isometric/pieceSymbols.js";
+import { effectiveRotatedPiece, generateIsoLintelOrSpacer, isoBoardPieceScale } from "./isometric/pieceSymbols.js";
 import { boardHexOrientation, isSpacerPiece, parseLintelPiece } from "./isometric/lintels.js";
 import { x2uid } from "../common/glyph2uid.js";
+import { usesInlineGlyphRender } from "../common/inlineGlyphBoard.js";
+import { renderPolyominoAreas } from "./polyominoAreas.js";
 import { Orientation } from "honeycomb-grid";
 import { hexOfCir, hexOfHex, squares } from "../boards/index.js";
 
@@ -80,9 +82,12 @@ export class IsometricRenderer extends RendererBase {
         this.optionsPrecheck(options);
         this.rootSvg = draw;
 
-        if (this.json.board === null) {
+        if (usesInlineGlyphRender(this.json.board)) {
             this.renderIsoInlineGlyph();
             return;
+        }
+        if (this.json.board === null) {
+            throw new Error("Board is required.");
         }
 
         // BOARD
@@ -428,11 +433,7 @@ export class IsometricRenderer extends RendererBase {
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                         }
-                        let pcScale = 0.75;
-                        if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
-                            pcScale = legend[glyph].scale as number;
-                        }
-                        pcScale *= basePcScale;
+                        const pcScale = isoBoardPieceScale(glyph, legend, basePcScale);
                         const pieceSymbol = piece;
                         const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, stackAnchorY, pieceSymbol, pcScale);
                         const pieceTopY = piecePlacement.anchorY;
@@ -593,11 +594,7 @@ export class IsometricRenderer extends RendererBase {
                         if ( (piece === null) || (piece === undefined) ) {
                             throw new Error(`Could not find the requested piece (${pieceId}). Each piece in the \`pieces\` property *must* exist in the \`legend\`.`);
                         }
-                        let pcScale = 0.75;
-                        if (legend !== undefined && glyph in legend && "scale" in legend[glyph] && legend[glyph].scale !== undefined) {
-                            pcScale = legend[glyph].scale as number;
-                        }
-                        pcScale *= basePcScale;
+                        const pcScale = isoBoardPieceScale(glyph, legend, basePcScale);
                         const piecePlacement = isoSymbolPlacement(this.cellsize, entry.x, entry.y, piece, pcScale);
                         entry.y = piecePlacement.anchorY;
                         if (!this.json.options?.includes("no-piece-shadow") && idx === 0) {
@@ -1595,7 +1592,7 @@ export class IsometricRenderer extends RendererBase {
     }
 
     /**
-     * Single isometric legend icon (`board: null`, `pieces` is a legend key string).
+     * Single isometric legend icon (`board: null` or style-only `board`, `pieces` is a legend key string).
      */
     private renderIsoInlineGlyph(): void {
         if (this.json === undefined || this.rootSvg === undefined) {
@@ -1639,5 +1636,14 @@ export class IsometricRenderer extends RendererBase {
         this.rootSvg.use(piece)
             .move((this.cellsize - drawW) / 2, (this.cellsize - drawH) / 2)
             .size(drawW, drawH);
+    }
+
+    protected piecesArea(box: import("@svgdotjs/svg.js").Box, opts?: {padding?: number, canvas?: import("@svgdotjs/svg.js").Svg}): {newY: number|undefined; width: number|undefined} {
+        const hasPolyomino = this.json?.areas?.some((a) => a.type === "polyomino") === true;
+        if (hasPolyomino) {
+            const pad = opts?.padding ?? 0;
+            return renderPolyominoAreas.call(this, box, { boardBottomExtra: pad });
+        }
+        return super.piecesArea(box, opts);
     }
 }

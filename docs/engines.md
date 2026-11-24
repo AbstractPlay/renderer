@@ -119,6 +119,10 @@ Let's you stretch pieces across multiple cells (only rectangular configurations 
 
 {% renderWidget "samples/niche-polyomino.json" %}
 
+On `hex-of-*` boards the same polymatrix / `polyomino` area contract applies on the **isometric** renderer: stash icons use `buildPolyHex`, staging offers cw/ccw/cancel only (60° steps on hex), and games typically place decomposed **hex lintel** pieces on the board. Polymatrix cells may be a colour alone or `{ "fill", "glyph?" }` for per-hex overlays (for example a white-ring `MINOR_DOT` on every cell and a solid `PUNCT_DOT` on the active cell, as in the stash rows below). **Staging `tlmark`** is the same orientation anchor as on square boards—a small filled dot on the first occupied matrix cell—but it is omitted when the staging matrix already declares per-cell `glyph` values so decorations are not doubled.
+
+{% renderWidget "samples/niche-polyhex.json" %}
+
 ## Isometric
 
 Height-mapped boards with 3D piece glyphs. Set `board.projection` to choose camera elevation and ground-axis foreshortening.
