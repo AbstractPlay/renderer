@@ -1639,10 +1639,12 @@ export class IsometricRenderer extends RendererBase {
     }
 
     protected piecesArea(box: import("@svgdotjs/svg.js").Box, opts?: {padding?: number, canvas?: import("@svgdotjs/svg.js").Svg}): {newY: number|undefined; width: number|undefined} {
+        const hasPiecesAreas = this.json?.areas?.some((a) => a.type === "pieces") === true;
         const hasPolyomino = this.json?.areas?.some((a) => a.type === "polyomino") === true;
-        if (hasPolyomino) {
+        const hexPolymatrixHand = hasPiecesAreas && this.polymatrixLegendLattice() === "hex";
+        if (hasPolyomino || hexPolymatrixHand) {
             const pad = opts?.padding ?? 0;
-            return renderPolyominoAreas.call(this, box, { boardBottomExtra: pad });
+            return renderPolyominoAreas.call(this, box, { boardBottomExtra: pad, dominoTilesUnsupported: true });
         }
         return super.piecesArea(box, opts);
     }

@@ -7,7 +7,8 @@
   },
   "legend": {
     "SPACER": {
-      "piece": "spaceHex"
+      "piece": "spaceHex",
+      "scale": 1.1765
     },
     "PUNCT_DOT": {
       "name": "circle",
@@ -48,12 +49,14 @@
       "piece": "lintelp_E",
       "colour": 1,
       "height": 22,
+      "scale": 1.1765,
       "top": [{ "name": "circle", "paint": { "fill": "#111" }, "scale": 0.35 }]
     },
     "BM": {
       "piece": "lintelp_E_W",
       "colour": 1,
       "height": 22,
+      "scale": 1.1765,
       "top": [
         {
           "name": "circle",
@@ -66,6 +69,7 @@
       "piece": "lintelp_W",
       "colour": 1,
       "height": 22,
+      "scale": 1.1765,
       "top": [
         {
           "name": "circle",

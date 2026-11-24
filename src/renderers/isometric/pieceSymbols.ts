@@ -24,14 +24,12 @@ export const isoBoardPieceScale = (
 ): number => {
     let pcScale = 0.75;
     const legendEntry = legend?.[glyph];
-    if (
-        legendEntry !== undefined
-        && typeof legendEntry === "object"
-        && !Array.isArray(legendEntry)
-        && "scale" in legendEntry
-        && legendEntry.scale !== undefined
-    ) {
-        pcScale = legendEntry.scale as number;
+    if (legendEntry !== undefined && typeof legendEntry === "object" && !Array.isArray(legendEntry)) {
+        if ("scale" in legendEntry && legendEntry.scale !== undefined) {
+            pcScale = legendEntry.scale as number;
+        } else if ("piece" in legendEntry) {
+            pcScale = 1;
+        }
     }
     return pcScale * basePcScale;
 };

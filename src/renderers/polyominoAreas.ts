@@ -1,5 +1,5 @@
 import { Box as SVGBox, Svg } from "@svgdotjs/svg.js";
-import type { AreaPieces, AreaPolyomino } from "../schemas/schema.js";
+import type { AreaPieces, AreaPolyomino, Polymatrix } from "../schemas/schema.js";
 import type { RendererBase } from "./_base.js";
 import { areaTitleBand, measureAreaTitle, placeAreaTitleInBand } from "../common/areaLabelText.js";
 import { labelDisplayText } from "../common/renderLabel.js";
@@ -21,6 +21,9 @@ function boardLattice(renderer: RendererBase): "square" | "hex" {
     return polymatrixLattice(renderer.json.board.style);
 }
 
+/** Match polyomino hand scale; polymatrix icons are authored at board `cellsize`. */
+const POLYOMINO_HAND_SCALE = 0.75;
+
 export function renderPolyominoAreas(
     this: RendererBase,
     box: SVGBox,
@@ -35,26 +38,28 @@ export function renderPolyominoAreas(
     }
     const lattice = boardLattice(this);
     const boardBottom = box.y2 + (opts?.boardBottomExtra ?? this.cellsize);
-    const boardWidth = Math.floor(box.width / this.cellsize);
     let placeY = boardBottom + this.cellsize * 0.33;
 
     for (let iArea = 0; iArea < areas.length; iArea++) {
         const area = areas[iArea] as AreaPieces | AreaPolyomino;
         if (area.type === "pieces") {
-            let desiredWidth = boardWidth;
-            if (area.width !== undefined) {
-                desiredWidth = area.width;
-            }
             const numPieces = area.pieces.length;
-            const numRows = Math.ceil(numPieces / desiredWidth);
             const textHeight = this.cellsize / 3;
             const cellsize = this.cellsize;
-            const areaWidth = cellsize * desiredWidth;
+            const slotPitch = cellsize;
+            const rowHeight = cellsize;
+            const boardWidth = Math.max(1, Math.floor(box.width / slotPitch));
+            let desiredWidth = boardWidth;
+            if (area.width !== undefined) {
+                desiredWidth = Math.min(area.width, boardWidth);
+            }
+            const numRows = Math.ceil(numPieces / desiredWidth);
+            const areaWidth = slotPitch * desiredWidth;
             const areaLabelText = labelDisplayText(area.label);
             const labelFill = this.options.colourContext.strokes;
             const areaLabelMeasure = measureAreaTitle(this.rootSvg, areaLabelText, textHeight, labelFill);
             const titleBand = areaTitleBand(areaLabelMeasure.height, textHeight);
-            const areaHeight = titleBand + cellsize * numRows;
+            const areaHeight = titleBand + rowHeight * numRows;
             let markWidth = 0;
             let markColour: string | undefined;
             if ("ownerMark" in area && area.ownerMark !== undefined) {
@@ -79,9 +84,36 @@ export function renderPolyominoAreas(
                 if (piece === null || piece === undefined) {
                     throw new Error(`Could not find the requested piece (${p}). Each piece in the stack *must* exist in the \`legend\`.`);
                 }
-                const newx = col * cellsize;
-                const newy = titleBand + row * cellsize;
-                const use = nested.use(piece).size(cellsize, cellsize).move(newx, newy).scale(0.75, 0.75, newx + cellsize / 2, newy + cellsize / 2);
+                const cx = col * slotPitch + slotPitch / 2;
+                const cy = titleBand + row * rowHeight + rowHeight / 2;
+                const legendEntry = this.json.legend?.[p];
+                const hexMatrix =
+                    lattice === "hex" &&
+                    legendEntry !== undefined &&
+                    Array.isArray(legendEntry) &&
+                    legendEntry.length > 0 &&
+                    Array.isArray(legendEntry[0])
+                        ? (legendEntry as Polymatrix)
+                        : undefined;
+                let use: ReturnType<Svg["use"]>;
+                if (hexMatrix !== undefined) {
+                    // Legend polymatrices share a max viewbox (see loadLegend); scale via a fixed
+                    // cell slot like the square branch — not per-piece bbox — so monohex and polyhex
+                    // cells match in the stash.
+                    use = nested
+                        .use(piece)
+                        .size(cellsize, cellsize)
+                        .center(cx, cy)
+                        .scale(POLYOMINO_HAND_SCALE, POLYOMINO_HAND_SCALE, cx, cy);
+                } else {
+                    const newx = col * cellsize;
+                    const newy = titleBand + row * cellsize;
+                    use = nested
+                        .use(piece)
+                        .size(cellsize, cellsize)
+                        .move(newx, newy)
+                        .scale(POLYOMINO_HAND_SCALE, POLYOMINO_HAND_SCALE, newx + cellsize / 2, newy + cellsize / 2);
+                }
                 if (this.options.boardClick !== undefined) {
                     use.click((e: Event) => {
                         this.options.boardClick!(-1, -1, p);
