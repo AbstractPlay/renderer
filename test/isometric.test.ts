@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { SVG, registerWindow, Svg } from "@svgdotjs/svg.js";
 import { IsometricRenderer } from "../src/renderers/isometric";
+import { isoBoardPieceScale } from "../src/renderers/isometric/pieceSymbols.js";
 import { ISO_PROJECTION_PRESETS, isoProjectionCacheSuffix } from "../src/renderers/isometric/projection";
 import { isoShadeFace, isoDepthModulate } from "../src/renderers/isometric/shading";
 import { SHADOW_OPACITY } from "../src/renderers/isometric/shadow";
@@ -505,6 +506,19 @@ describe("IsometricRenderer lintel pieces", () => {
         const surfaceRatio = parseFloat(draw.findOne("#_surface_0")!.attr("data-width-ratio") as string);
         const pieceRatio = parseFloat(draw.findOne("#L")!.attr("data-width-ratio") as string);
         expect(pieceRatio).to.be.closeTo(surfaceRatio, 0.001);
+    });
+
+    it("applies basePcScale to lintels and spacers on hex-of-hex stacks", () => {
+        const legend: NonNullable<APRenderRep["legend"]> = {
+            H: { piece: "hexp", scale: 1.1765, height: 30, colour: 1 },
+            L: { piece: "lintelp_E", scale: 1.1765, height: 30, colour: 1 },
+            S: { piece: "spaceHex", scale: 1.1765, height: 30 },
+        };
+        const basePcScale = 0.85;
+        const expected = 1.1765 * basePcScale;
+        expect(isoBoardPieceScale("H", legend, basePcScale)).to.be.closeTo(expected, 0.0001);
+        expect(isoBoardPieceScale("L", legend, basePcScale)).to.be.closeTo(expected, 0.0001);
+        expect(isoBoardPieceScale("S", legend, basePcScale)).to.be.closeTo(expected, 0.0001);
     });
 
     it("should match board cell orientation for hex pieces when rotated", () => {

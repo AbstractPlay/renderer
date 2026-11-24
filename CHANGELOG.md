@@ -11,7 +11,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Added
 
-- **Hex polymatrix** — `polymatrix` cells may use `{ "fill", "glyph?" }`. On `hex-of-hex` boards, `buildPolyHex` draws unitary stash and staging icons (hex-of-hex cell geometry, geometric exterior edges, per-cell `cellSize` viewBox slots with stroke padding). Isometric renderer supports `polyomino` areas (60° rotate and cancel; no flip). Board placement can use odd-r **hex lintels** via `polyformToHexLintels` / `polyformToBoardPieces` (full-size lintel scale on the playfield). Exports `matrixHexRotate60`. Playground `niche-polyhex`; sample [niche-polyhex.json](/renderer/samples/niche-polyhex.json).
+- **Hex polymatrix** — `polymatrix` cells may use `{ "fill", "glyph?" }`. On `hex-of-hex` boards, `buildPolyHex` draws unitary stash and staging icons (hex-of-hex cell geometry, geometric exterior edges, per-cell `cellSize` viewBox slots with stroke padding). Isometric renderer supports `polyomino` areas (60° rotate and cancel; no flip). Board placement can use odd-r **hex lintels** via `polyformToHexLintels` / `polyformToBoardPieces`. Exports `matrixHexRotate60`. Playground `niche-polyhex`; sample [niche-polyhex.json](/renderer/samples/niche-polyhex.json).
 - **`gipf` board style** — same `minWidth` / `maxWidth` grid and parameters as `hex-of-tri`, with outer perimeter chords omitted and tip dots drawn on the outer ring. Playground `board-gipf`; sample [board-gipf.json](/renderer/samples/board-gipf.json).
 - **`squares-diamonds-checkered`:** same topology as `squares-diamonds` with a light/dark checker on octagon play spaces only; optional `startLight`, `checkeredLight`, and `checkeredDark` match `squares-checkered`. Playground `board-squares-diamonds-checkered`; sample [board-squares-diamonds-checkered.json](/renderer/samples/board-squares-diamonds-checkered.json).
 - **`snubsquare` (vertex placement):** `board.blocked` omits grid lines at blocked intersections and excludes them from nearest-vertex `boardClick`. Playground `board-snubsquare-blocked`.
@@ -25,6 +25,7 @@ Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0
 
 ### Fixed
 
+- **Isometric hex stacks:** lintels and `spaceHex` spacers on `hex-of-hex` again use the same `legend.scale` × `basePcScale` as base hex pieces (Druid-style level-2 stacks).
 - Enter/exit annotation gap under-strokes use resolved board/`backFill` colour (`getBoardFill`) instead of default white `colourContext`.
 
 ## [1.0.0-ci] - 2026-10-31
