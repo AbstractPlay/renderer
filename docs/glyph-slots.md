@@ -153,6 +153,7 @@ Regenerate with `npm run glyph-catalog`. Machine-readable author JSON: `build/gl
 | core | `piece-square-dashed` | fill (fill), border (stroke) | — |
 | core | `piece-square-single` | fill (fill), border (stroke) | — |
 | core | `piece-tb` | top (fill), bottom (fill), border (stroke) | — |
+| core | `piece-thick` | fill (fill), border (stroke) | — |
 | core | `piece-triangle` | fill (fill), border (stroke) | — |
 | core | `piece-triangle-dot` | fill (fill), border (fill+stroke) | — |
 | core | `plane` | fill (fill), border (fill+stroke), detail (fill), target (fill) | — |

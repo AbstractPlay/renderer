@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-11-22T20:00:35.898Z",
+  "generated": "2026-11-25T17:54:23.640Z",
   "glyphs": {
     "core:arrowhead": {
       "sheet": "core",
@@ -839,6 +839,25 @@
             "stroke"
           ],
           "description": "Outer rim stroke."
+        }
+      },
+      "colour2Slot": "border"
+    },
+    "core:piece-thick": {
+      "sheet": "core",
+      "name": "piece-thick",
+      "slots": {
+        "fill": {
+          "channels": [
+            "fill"
+          ],
+          "description": "Primary player colour (body or main silhouette)."
+        },
+        "border": {
+          "channels": [
+            "stroke"
+          ],
+          "description": "Secondary outline, rim, or theme border band."
         }
       },
       "colour2Slot": "border"

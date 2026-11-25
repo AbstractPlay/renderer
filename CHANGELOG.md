@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Since the `1.0.0-beta` release, the version in `package.json` has stayed at `1.0.0-beta`. CI publishes tarballs as `1.0.0-ci-<GitHub Actions run id>.0` (see `.github/workflows/node-dev.js.yml` and `node-prod.js.yml`). Entries below are grouped by theme and approximate ship window; the exact CI build is whichever workflow run produced the artifact you installed.
 
-## [1.0.0-ci] - 2026-11-24
+## [1.0.0-ci] - 2026-11-25
 
 ### Added
+
+- **`piece-thick` (core sheet):** disc token matching **`piece`** with a thicker rim stroke (12.5px) and expanded viewBox so the border is not clipped.
 
 - **Hex polymatrix** — `polymatrix` cells may use `{ "fill", "glyph?" }`. On `hex-of-hex` boards, `buildPolyHex` draws unitary stash and staging icons (hex-of-hex cell geometry, geometric exterior edges, per-cell `cellSize` viewBox slots with stroke padding). Isometric renderer supports `polyomino` areas (60° rotate and cancel; no flip). Board placement can use odd-r **hex lintels** via `polyformToHexLintels` / `polyformToBoardPieces`. Exports `matrixHexRotate60`. Playground `niche-polyhex`; sample [niche-polyhex.json](/renderer/samples/niche-polyhex.json).
 - **`gipf` board style** — same `minWidth` / `maxWidth` grid and parameters as `hex-of-tri`, with outer perimeter chords omitted and tip dots drawn on the outer ring. Playground `board-gipf`; sample [board-gipf.json](/renderer/samples/board-gipf.json).

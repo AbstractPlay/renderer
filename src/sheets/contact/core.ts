@@ -1213,6 +1213,19 @@ registerDiscToken("piece-square-single", (canvas: SVGContainer) => {
 
 registerHemisphereDiscToken("piece-tb", slotPieceTB, "tb", buildPieceHemisphereDisc);
 
+registerDiscToken("piece-thick", (canvas: SVGContainer) => {
+    const group = canvas.symbol();
+    const border = 12.5;
+    group.circle(sheet.cellsize)
+        .attr("data-slot-fill", "fill")
+        .attr("data-slot-stroke", "border")
+        .fill("#fff")
+        .stroke({width: border, color: "#000"})
+        .center(sheet.cellsize / 2, sheet.cellsize / 2);
+    group.viewbox(border / 2 * -1, border / 2 * -1, sheet.cellsize + border, sheet.cellsize + border);
+    return group;
+});
+
 registerDiscToken("piece-triangle", (canvas: SVGContainer) => {
     const group = canvas.symbol();
     const cellsize = 180;
